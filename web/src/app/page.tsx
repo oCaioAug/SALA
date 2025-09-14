@@ -1,8 +1,5 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <Button className="bg-blue-500 text-white">Olá mundo</Button>
-  );
+  redirect('/auth/login');
 }
