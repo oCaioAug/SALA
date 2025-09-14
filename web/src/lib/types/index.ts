@@ -1,54 +1,54 @@
 // Tipos para o sistema SALA
+import { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus } from '@prisma/client'
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'user';
-  avatar?: string;
+export type { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus }
+
+// Tipos estendidos para o frontend
+export interface RoomWithItems extends Room {
+  items: Item[]
 }
 
-export interface Item {
-  id: string;
-  name: string;
-  specifications: string[];
-  quantity: number;
-  icon: string;
-  roomId?: string;
+export interface RoomWithReservations extends Room {
+  reservations: Reservation[]
 }
 
-export interface Room {
-  id: string;
-  name: string;
-  description: string;
-  status: 'livre' | 'em-uso' | 'reservado';
-  items: Item[];
-  reservation?: Reservation;
+export interface ReservationWithUser extends Reservation {
+  user: User
 }
 
-export interface Reservation {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  startTime: string;
-  endTime: string;
-  purpose?: string;
+export interface ReservationWithRoom extends Reservation {
+  room: Room
 }
 
-export interface RoomStatus {
-  livre: {
+export interface RoomStatusConfig {
+  LIVRE: {
     color: 'green';
     text: 'Livre';
   };
-  'em-uso': {
+  EM_USO: {
     color: 'red';
     text: 'Em Uso';
   };
-  reservado: {
+  RESERVADO: {
     color: 'yellow';
     text: 'Reservado';
   };
 }
 
-export type RoomStatusType = keyof RoomStatus;
+export type RoomStatusType = keyof RoomStatusConfig;
+
+// Configuração de status das salas
+export const ROOM_STATUS_CONFIG: RoomStatusConfig = {
+  LIVRE: {
+    color: 'green',
+    text: 'Livre'
+  },
+  EM_USO: {
+    color: 'red',
+    text: 'Em Uso'
+  },
+  RESERVADO: {
+    color: 'yellow',
+    text: 'Reservado'
+  }
+};

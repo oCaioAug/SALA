@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Room, RoomStatusType } from '@/lib/types';
+import { Room, RoomStatus } from '@/lib/types';
 
 interface RoomFormProps {
   room?: Room;
-  onSubmit: (room: Omit<Room, 'id'>) => void;
+  onSubmit: (room: Omit<Room, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
 }
 
@@ -13,7 +13,8 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     name: room?.name || '',
     description: room?.description || '',
-    status: (room?.status || 'livre') as RoomStatusType
+    capacity: room?.capacity?.toString() || '',
+    status: (room?.status || 'LIVRE') as RoomStatus
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -24,7 +25,6 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
     // Validação
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Nome é obrigatório';
-    if (!formData.description.trim()) newErrors.description = 'Descrição é obrigatória';
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -34,8 +34,8 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
     onSubmit({
       name: formData.name.trim(),
       description: formData.description.trim(),
-      status: formData.status,
-      items: room?.items || []
+      capacity: formData.capacity ? parseInt(formData.capacity) : null,
+      status: formData.status
     });
   };
 
@@ -72,12 +72,18 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           placeholder="Descreva a sala e seus equipamentos..."
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           rows={3}
-          required
         />
-        {errors.description && (
-          <p className="text-sm text-red-500 mt-1">{errors.description}</p>
-        )}
       </div>
+
+      <Input
+        label="Capacidade"
+        name="capacity"
+        type="number"
+        value={formData.capacity}
+        onChange={handleInputChange}
+        placeholder="Ex: 30"
+        min="1"
+      />
       
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
@@ -89,9 +95,9 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           onChange={handleInputChange}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="livre">Livre</option>
-          <option value="em-uso">Em Uso</option>
-          <option value="reservado">Reservado</option>
+          <option value="LIVRE">Livre</option>
+          <option value="EM_USO">Em Uso</option>
+          <option value="RESERVADO">Reservado</option>
         </select>
       </div>
       

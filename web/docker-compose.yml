@@ -1,10 +1,28 @@
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: sala_postgres
+    environment:
+      POSTGRES_DB: sala_db
+      POSTGRES_USER: sala_user
+      POSTGRES_PASSWORD: sala_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sala_user -d sala_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   web:
     build: 
       context: .
       dockerfile: Dockerfile
+    container_name: sala_web
     ports:
       - "3000:3000"
     volumes:
@@ -14,7 +32,19 @@ services:
     environment:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
-    command: npm run dev
+      - DATABASE_URL=postgresql://sala_user:sala_password@postgres:5432/sala_db
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=sala_db
+      - POSTGRES_USER=sala_user
+      - POSTGRES_PASSWORD=sala_password
+    command: sh -c "echo '🚀 Iniciando...' && npx prisma generate && echo '✅ Prisma Client gerado' && npx prisma db push && echo '✅ Schema aplicado' && npm run db:seed && echo '✅ Dados populados' && npm run dev"
     stdin_open: true
     tty: true
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

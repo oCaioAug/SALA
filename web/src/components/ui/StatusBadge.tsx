@@ -1,25 +1,25 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { RoomStatusType } from '@/lib/types';
+import { RoomStatus, ROOM_STATUS_CONFIG } from '@/lib/types';
 
 interface StatusBadgeProps {
-  status: RoomStatusType;
+  status: RoomStatus;
   className?: string;
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
   const statusConfig = {
-    livre: {
+    LIVRE: {
       color: 'bg-green-500',
       text: 'Livre',
       textColor: 'text-green-100'
     },
-    'em-uso': {
+    EM_USO: {
       color: 'bg-red-500',
       text: 'Em Uso',
       textColor: 'text-red-100'
     },
-    reservado: {
+    RESERVADO: {
       color: 'bg-yellow-500',
       text: 'Reservado',
       textColor: 'text-yellow-100'
