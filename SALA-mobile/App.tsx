@@ -1,20 +1,31 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import "react-native-gesture-handler";
+
+import { AppProvider, useApp } from "./src/context/AppContext";
+import TabNavigator from "./src/navigation/TabNavigator";
+import WelcomeScreen from "./src/screens/WelcomeScreen";
+
+const AppContent: React.FC = () => {
+  const { hasSeenWelcome, setHasSeenWelcome } = useApp();
+
+  if (!hasSeenWelcome) {
+    return <WelcomeScreen onGetStarted={() => setHasSeenWelcome(true)} />;
+  }
+
+  return (
+    <NavigationContainer>
+      <TabNavigator />
+      <StatusBar style="light" backgroundColor="#3B82F6" />
+    </NavigationContainer>
+  );
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
