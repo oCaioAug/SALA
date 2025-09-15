@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SALA-mobile",
-    "slug": "SALA-mobile",
+    "name": "S.A.L.A.",
+    "slug": "sala-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#3B82F6"
     },
     "ios": {
       "supportsTablet": true
