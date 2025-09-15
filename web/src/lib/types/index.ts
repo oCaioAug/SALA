@@ -4,8 +4,16 @@ import { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus } fr
 export type { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus }
 
 // Tipos estendidos para o frontend
-export interface RoomWithItems extends Room {
+export interface RoomWithItems {
+  id: string
+  name: string
+  description: string | null
+  status: RoomStatus
+  capacity: number | null
+  createdAt: Date
+  updatedAt: Date
   items: Item[]
+  reservations?: Reservation[]
 }
 
 export interface RoomWithReservations extends Room {

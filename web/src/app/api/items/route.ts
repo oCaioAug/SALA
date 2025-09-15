@@ -1,16 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Cache simples em memória
+let itemsCache: any[] | null = null
+let lastCacheTime = 0
+const CACHE_DURATION = 2 * 60 * 1000 // 2 minutos
+
 export async function GET() {
   try {
+    const now = Date.now()
+    
+    // Verificar cache
+    if (itemsCache && (now - lastCacheTime) < CACHE_DURATION) {
+      return NextResponse.json(itemsCache)
+    }
+    
+    // Consulta otimizada
     const items = await prisma.item.findMany({
-      include: {
-        room: true
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        specifications: true,
+        quantity: true,
+        icon: true,
+        roomId: true,
+        createdAt: true,
+        updatedAt: true,
+        room: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: {
         name: 'asc'
       }
     })
+
+    // Atualizar cache
+    itemsCache = items
+    lastCacheTime = now
 
     return NextResponse.json(items)
   } catch (error) {
@@ -47,6 +78,10 @@ export async function POST(request: NextRequest) {
         room: true
       }
     })
+
+    // Invalidar cache
+    itemsCache = null
+    lastCacheTime = 0
 
     return NextResponse.json(item, { status: 201 })
   } catch (error) {

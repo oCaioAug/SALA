@@ -7,13 +7,7 @@ RUN apk add --no-cache libc6-compat
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de dependências
-COPY package*.json ./
-
-# Instalar todas as dependências (incluindo devDependencies)
-RUN npm install
-
-# Copiar código fonte
+# Copiar código fonte (incluindo node_modules local)
 COPY . .
 
 # Expor porta

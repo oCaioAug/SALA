@@ -2,17 +2,52 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { RoomWithItems } from '@/lib/types'
 
+// Cache simples em memória
+let roomsCache: any[] | null = null
+let lastCacheTime = 0
+const CACHE_DURATION = 2 * 60 * 1000 // 2 minutos
+
 export async function GET() {
   try {
+    const now = Date.now()
+    
+    // Verificar cache
+    if (roomsCache && (now - lastCacheTime) < CACHE_DURATION) {
+      return NextResponse.json(roomsCache)
+    }
+    
+    // Consulta otimizada - apenas dados essenciais
     const rooms = await prisma.room.findMany({
-      include: {
-        items: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        capacity: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        items: {
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+            icon: true
+          }
+        },
         reservations: {
           where: {
             status: 'ACTIVE'
           },
-          include: {
-            user: true
+          select: {
+            id: true,
+            startTime: true,
+            endTime: true,
+            user: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         }
       },
@@ -20,6 +55,10 @@ export async function GET() {
         name: 'asc'
       }
     })
+
+    // Atualizar cache
+    roomsCache = rooms
+    lastCacheTime = now
 
     return NextResponse.json(rooms)
   } catch (error) {
@@ -54,6 +93,10 @@ export async function POST(request: NextRequest) {
         items: true
       }
     })
+
+    // Invalidar cache
+    roomsCache = null
+    lastCacheTime = 0
 
     return NextResponse.json(room, { status: 201 })
   } catch (error) {

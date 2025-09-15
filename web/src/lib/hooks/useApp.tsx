@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useRef } from 'react';
 import { useToast } from '@/components/ui/Toast';
 
 interface AppContextType {
@@ -15,6 +15,14 @@ interface AppContextType {
   // Modals
   isCreateRoomModalOpen: boolean;
   setCreateRoomModalOpen: (open: boolean) => void;
+  
+  // Data cache
+  roomsCache: any[];
+  setRoomsCache: (rooms: any[]) => void;
+  itemsCache: any[];
+  setItemsCache: (items: any[]) => void;
+  lastFetchTime: number;
+  setLastFetchTime: (time: number) => void;
   
   // Notifications
   showSuccess: (message: string, title?: string) => void;
@@ -37,6 +45,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
+  const [roomsCache, setRoomsCache] = useState<any[]>([]);
+  const [itemsCache, setItemsCache] = useState<any[]>([]);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
   const { addToast } = useToast();
 
   const setLoading = useCallback((loading: boolean) => {
@@ -68,6 +79,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setSearchTerm,
         isCreateRoomModalOpen,
         setCreateRoomModalOpen: setIsCreateRoomModalOpen,
+        roomsCache,
+        setRoomsCache,
+        itemsCache,
+        setItemsCache,
+        lastFetchTime,
+        setLastFetchTime,
         showSuccess,
         showError,
         showWarning,

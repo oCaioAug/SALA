@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useApp } from '@/lib/hooks/useApp';
+import { useNavigation } from '@/lib/hooks/useNavigation';
 import { User } from '@/lib/types';
 import { Settings, User as UserIcon, Bell, Shield, Database, Palette } from 'lucide-react';
 
@@ -15,7 +16,10 @@ const mockUser: User = {
   id: '1',
   name: 'Ana Costa',
   email: 'ana.costa@universidade.edu',
-  role: 'ADMIN'
+  role: 'ADMIN',
+  avatar: null,
+  createdAt: new Date(),
+  updatedAt: new Date()
 };
 
 const ConfiguracoesPage: React.FC = () => {
@@ -23,23 +27,11 @@ const ConfiguracoesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('configuracoes');
   const { showInfo } = useApp();
 
-  // Função de navegação
-  const handleNavigate = (page: string) => {
-    setCurrentPage(page);
-    switch (page) {
-      case 'dashboard':
-        router.push('/dashboard');
-        break;
-      case 'itens':
-        router.push('/itens');
-        break;
-      case 'configuracoes':
-        router.push('/configuracoes');
-        break;
-      default:
-        router.push('/dashboard');
-    }
-  };
+  // Hook de navegação otimizada
+  const { navigate, isNavigating } = useNavigation({
+    currentPage,
+    onPageChange: setCurrentPage
+  });
 
   const handleNotificationClick = () => {
     console.log('Notificação clicada');
@@ -84,8 +76,8 @@ const ConfiguracoesPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 flex">
-      <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+      <Sidebar currentPage={currentPage} onNavigate={navigate} isNavigating={isNavigating} />
       
       <div className="flex-1 flex flex-col">
         <Header user={mockUser} onNotificationClick={handleNotificationClick} />
