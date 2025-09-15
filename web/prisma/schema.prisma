@@ -43,7 +43,7 @@ model Item {
   id            String   @id @default(cuid())
   name          String
   description   String?
-  specifications String[]
+  specifications String[] // Array of specifications
   quantity      Int      @default(1)
   icon          String?
   roomId        String?
