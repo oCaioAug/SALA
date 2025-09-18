@@ -17,6 +17,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Room, RootStackParamList } from "../types";
 import ApiService from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { MOCK_USER } from "../utils/config";
 import {
   formatDate,
   formatTime,
@@ -53,8 +54,8 @@ const CreateReservationScreen: React.FC = () => {
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  // Mock user ID - In a real app, this would come from authentication
-  const userId = "user-mock-id";
+  // User ID from configuration
+  const userId = MOCK_USER.id;
 
   useEffect(() => {
     loadRoomDetails();
@@ -154,12 +155,20 @@ const CreateReservationScreen: React.FC = () => {
     setSubmitting(true);
 
     try {
+      console.log("Verificando disponibilidade:", {
+        roomId,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+      });
+
       // Check availability first
       const isAvailable = await ApiService.checkRoomAvailability(
         roomId,
         startTime.toISOString(),
         endTime.toISOString()
       );
+
+      console.log("Resultado da verificação de disponibilidade:", isAvailable);
 
       if (!isAvailable) {
         Alert.alert(

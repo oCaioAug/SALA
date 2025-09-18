@@ -1,16 +1,34 @@
 // Configurações da aplicação
+import { Platform } from "react-native";
+
+// Função para determinar a URL base da API baseada na plataforma
+const getApiBaseUrl = () => {
+  if (Platform.OS === "web") {
+    // Para web, pode usar localhost
+    return "http://172.18.28.7:3000/api";
+  } else {
+    // Para emuladores Android/iOS, precisa usar o IP da máquina
+    // Android emulator: 10.0.2.2
+    // iOS simulator: localhost funciona
+    if (Platform.OS === "android") {
+      return "http://172.18.28.7:3000/api"; // IP especial para Android emulator
+    } else {
+      return "http://localhost:3000/api"; // iOS simulator
+    }
+  }
+};
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: "http://localhost:3000/api", // Altere para a URL do seu backend
+  BASE_URL: getApiBaseUrl(),
   TIMEOUT: 10000,
 };
 
 // Mock User Configuration (para desenvolvimento)
 export const MOCK_USER = {
-  id: "user-mock-id",
-  name: "João Silva",
-  email: "joao.silva@email.com",
+  id: "cmflu6f8h0001tu347v2udw7m", // ID real do usuário de teste no banco
+  name: "Usuário Teste",
+  email: "user@sala.com",
   role: "USER" as const,
 };
 

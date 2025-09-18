@@ -29,8 +29,8 @@ const MyReservationsScreen: React.FC = () => {
     "ALL" | "ACTIVE" | "CANCELLED" | "COMPLETED"
   >("ALL");
 
-  // Mock user ID - In a real app, this would come from authentication
-  const userId = "user-mock-id";
+  // User ID from configuration
+  const userId = "cmflu6f8h0001tu347v2udw7m";
 
   const loadReservations = useCallback(async () => {
     try {

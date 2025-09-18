@@ -41,7 +41,9 @@ const RoomListScreen: React.FC = () => {
       setRooms(data);
       setFilteredRooms(data);
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as salas");
+      const err = error.message;
+      Alert.alert("Erro", "Não foi possível carregar as salas", err);
+      console.log(error);
     } finally {
       setLoading(false);
       setRefreshing(false);
