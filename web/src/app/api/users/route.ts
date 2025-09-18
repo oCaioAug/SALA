@@ -9,7 +9,9 @@ export async function GET() {
         name: true,
         email: true,
         role: true,
-      },
+      },orderBy: {
+        name: 'asc'
+      }
     });
 
     return NextResponse.json(users);
@@ -18,6 +20,6 @@ export async function GET() {
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }
-    );
+    );   
   }
 }

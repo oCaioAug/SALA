@@ -7,13 +7,21 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, className }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, className, size = 'md' }) => {
   if (!isOpen) return null;
 
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl'
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black bg-opacity-50"
@@ -22,7 +30,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, classNa
       
       {/* Modal Content */}
       <div className={cn(
-        'relative bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4',
+        'relative bg-gray-800 rounded-lg shadow-xl w-full mx-4 max-h-[90vh] overflow-y-auto',
+        sizeClasses[size],
         className
       )}>
         {/* Header */}

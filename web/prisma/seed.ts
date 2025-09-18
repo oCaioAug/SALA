@@ -26,6 +26,36 @@ async function main() {
     },
   });
 
+  const user2 = await prisma.user.upsert({
+    where: { email: 'maria.santos@universidade.edu' },
+    update: {},
+    create: {
+      name: 'Maria Santos',
+      email: 'maria.santos@universidade.edu',
+      role: 'USER',
+    },
+  });
+
+  const user3 = await prisma.user.upsert({
+    where: { email: 'joao.silva@universidade.edu' },
+    update: {},
+    create: {
+      name: 'João Silva',
+      email: 'joao.silva@universidade.edu',
+      role: 'USER',
+    },
+  });
+
+  const user4 = await prisma.user.upsert({
+    where: { email: 'ana.costa@universidade.edu' },
+    update: {},
+    create: {
+      name: 'Ana Costa',
+      email: 'ana.costa@universidade.edu',
+      role: 'USER',
+    },
+  });
+
   console.log('✅ Usuários criados');
 
   // Criar salas de exemplo
