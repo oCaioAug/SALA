@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
@@ -11,7 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { RoomForm } from '@/components/forms/RoomForm';
 import { useNavigation } from '@/lib/hooks/useNavigation';
 import { Room, User, RoomWithItems, Item } from '@/lib/types';
-import { Edit, Plus, Trash2, Package, ArrowLeft } from 'lucide-react';
+import { Edit, Plus, Trash2, Package, ArrowLeft, Calendar as CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 
 // Dados mockados para demonstração
@@ -27,6 +27,7 @@ const mockUser: User = {
 
 const RoomDetailPage: React.FC = () => {
   const params = useParams();
+  const router = useRouter();
   const roomId = params.id as string;
   
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -188,6 +189,14 @@ const RoomDetailPage: React.FC = () => {
               </div>
               
               <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/salas/${roomId}/agendamentos`)}
+                  className="gap-2"
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                  Ver Agendamentos
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => setIsEditModalOpen(true)}

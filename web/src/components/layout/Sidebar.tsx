@@ -5,7 +5,8 @@ import {
   Package, 
   Settings, 
   Building2,
-  ChevronRight
+  ChevronRight,
+  Calendar
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,6 +23,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isNavigating
       icon: LayoutDashboard,
       description: 'Dashboard principal',
       active: currentPage === 'dashboard'
+    },
+    {
+      id: 'agendamentos',
+      label: 'Agendamentos',
+      icon: Calendar,
+      description: 'Calendário de reservas',
+      active: currentPage === 'agendamentos'
     },
     {
       id: 'configuracoes',
