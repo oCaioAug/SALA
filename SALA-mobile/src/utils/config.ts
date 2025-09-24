@@ -5,13 +5,13 @@ import { Platform } from "react-native";
 const getApiBaseUrl = () => {
   if (Platform.OS === "web") {
     // Para web, pode usar localhost
-    return "https://sala.ocaioaug.com.br//api";
+    return "https://sala.ocaioaug.com.br/api";
   } else {
     // Para emuladores Android/iOS, precisa usar o IP da máquina
     // Android emulator: 10.0.2.2
     // iOS simulator: localhost funciona
     if (Platform.OS === "android") {
-      return "https://sala.ocaioaug.com.br//api"; // IP especial para Android emulator
+      return "https://sala.ocaioaug.com.br/api"; // IP especial para Android emulator
     } else {
       return "http://localhost:3000/api"; // iOS simulator
     }
