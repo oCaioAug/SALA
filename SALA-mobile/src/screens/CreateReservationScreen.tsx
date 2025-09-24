@@ -18,6 +18,7 @@ import { Room, RootStackParamList } from "../types";
 import ApiService from "../services/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { MOCK_USER } from "../utils/config";
+import { useAuth } from "../context/AuthContext";
 import {
   formatDate,
   formatTime,
@@ -38,6 +39,7 @@ const CreateReservationScreen: React.FC = () => {
   const route = useRoute<CreateReservationRouteProp>();
   const navigation = useNavigation<CreateReservationNavigationProp>();
   const { roomId } = route.params;
+  const { user } = useAuth();
 
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,8 +56,8 @@ const CreateReservationScreen: React.FC = () => {
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
-  // User ID from configuration
-  const userId = MOCK_USER.id;
+  // User ID from authenticated user or fallback to MOCK_USER
+  const userId = user?.id || MOCK_USER.id;
 
   useEffect(() => {
     loadRoomDetails();
@@ -172,8 +174,9 @@ const CreateReservationScreen: React.FC = () => {
 
       if (!isAvailable) {
         Alert.alert(
-          "Sala Indisponível",
-          "A sala não está disponível no horário selecionado. Tente outro horário."
+          "Horário Indisponível",
+          "Este horário já está reservado. Por favor, escolha outro horário disponível.",
+          [{ text: "OK", style: "default" }]
         );
         return;
       }

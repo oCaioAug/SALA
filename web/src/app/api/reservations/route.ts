@@ -3,23 +3,23 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const roomId = searchParams.get('roomId')
-    const status = searchParams.get('status')
-    const userId = searchParams.get('userId')
+    const { searchParams } = new URL(request.url);
+    const roomId = searchParams.get("roomId");
+    const status = searchParams.get("status");
+    const userId = searchParams.get("userId");
 
-    const where: any = {}
+    const where: any = {};
 
     if (roomId) {
-      where.roomId = roomId
+      where.roomId = roomId;
     }
 
     if (status) {
-      where.status = status
+      where.status = status;
     }
 
     if (userId) {
-      where.userId = userId
+      where.userId = userId;
     }
 
     const reservations = await prisma.reservation.findMany({
@@ -56,7 +56,13 @@ export async function POST(request: NextRequest) {
       purpose,
     });
 
-    console.log('Dados recebidos para criar reserva:', { userId, roomId, startTime, endTime, purpose })
+    console.log("Dados recebidos para criar reserva:", {
+      userId,
+      roomId,
+      startTime,
+      endTime,
+      purpose,
+    });
 
     if (!userId || !roomId || !startTime || !endTime) {
       return NextResponse.json(
@@ -81,14 +87,14 @@ export async function POST(request: NextRequest) {
     console.log("Usuário encontrado:", userExists);
     // Verificar se a sala existe
     const room = await prisma.room.findUnique({
-      where: { id: roomId }
-    })
+      where: { id: roomId },
+    });
 
     if (!room) {
       return NextResponse.json(
-        { error: 'Sala não encontrada' },
+        { error: "Sala não encontrada" },
         { status: 404 }
-      )
+      );
     }
 
     // Verificar se a sala está disponível no horário
@@ -106,32 +112,36 @@ export async function POST(request: NextRequest) {
           {
             AND: [
               { startTime: { lt: new Date(endTime) } },
-              { endTime: { gte: new Date(endTime) } }
-            ]
+              { endTime: { gte: new Date(endTime) } },
+            ],
           },
           {
             AND: [
               { startTime: { gte: new Date(startTime) } },
-              { endTime: { lte: new Date(endTime) } }
-            ]
-          }
-        ]
-      }
-    })
+              { endTime: { lte: new Date(endTime) } },
+            ],
+          },
+        ],
+      },
+    });
 
     if (conflictingReservation) {
-      const conflictStart = new Date(conflictingReservation.startTime).toLocaleString('pt-BR')
-      const conflictEnd = new Date(conflictingReservation.endTime).toLocaleString('pt-BR')
-      
+      const conflictStart = new Date(
+        conflictingReservation.startTime
+      ).toLocaleString("pt-BR");
+      const conflictEnd = new Date(
+        conflictingReservation.endTime
+      ).toLocaleString("pt-BR");
+
       return NextResponse.json(
-        { 
+        {
           error: `A sala já está reservada neste horário. Conflito: ${conflictStart} - ${conflictEnd}`,
           conflictingReservation: {
             id: conflictingReservation.id,
             startTime: conflictingReservation.startTime,
             endTime: conflictingReservation.endTime,
-            user: conflictingReservation.userId
-          }
+            user: conflictingReservation.userId,
+          },
         },
         { status: 409 }
       );
@@ -151,37 +161,34 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Atualizar status da sala para RESERVADO
-    await prisma.room.update({
-      where: { id: roomId },
-      data: { status: "RESERVADO" },
-    });
+    // Não mudamos mais o status da sala automaticamente
+    // O status será calculado dinamicamente baseado nas reservas ativas
 
     return NextResponse.json(reservation, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar reserva:', error)
-    
+    console.error("Erro ao criar reserva:", error);
+
     // Verificar se é um erro de validação do Prisma
     if (error instanceof Error) {
-      if (error.message.includes('Unique constraint')) {
+      if (error.message.includes("Unique constraint")) {
         return NextResponse.json(
-          { error: 'Já existe uma reserva com estes dados' },
+          { error: "Já existe uma reserva com estes dados" },
           { status: 409 }
-        )
+        );
       }
-      
-      if (error.message.includes('Foreign key constraint')) {
+
+      if (error.message.includes("Foreign key constraint")) {
         return NextResponse.json(
-          { error: 'Usuário ou sala inválidos' },
+          { error: "Usuário ou sala inválidos" },
           { status: 400 }
-        )
+        );
       }
     }
-    
+
     return NextResponse.json(
-      { 
-        error: 'Erro interno do servidor',
-        details: process.env.NODE_ENV === 'development' ? error : undefined
+      {
+        error: "Erro interno do servidor",
+        details: process.env.NODE_ENV === "development" ? error : undefined,
       },
       { status: 500 }
     );

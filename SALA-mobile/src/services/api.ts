@@ -94,6 +94,20 @@ export class ApiService {
     }
   }
 
+  static async getUserReservations(
+    userId: string
+  ): Promise<ReservationWithDetails[]> {
+    try {
+      console.log("🔍 Buscando reservas para userId:", userId);
+      const response = await api.get(`/reservations?userId=${userId}`);
+      console.log("📡 Resposta da API getUserReservations:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("❌ Erro na API getUserReservations:", error);
+      throw new Error("Erro ao carregar reservas do usuário");
+    }
+  }
+
   static async createReservation(reservationData: {
     userId: string;
     roomId: string;
@@ -183,6 +197,31 @@ export class ApiService {
       return isAvailable;
     } catch (error) {
       throw new Error("Erro ao verificar disponibilidade");
+    }
+  }
+
+  // Novo método para verificar status atual da sala
+  static async getRoomStatus(roomId: string) {
+    try {
+      const response = await api.get(`/rooms/${roomId}/status`);
+      return response.data;
+    } catch (error) {
+      throw new Error("Erro ao verificar status da sala");
+    }
+  }
+
+  // Método para sincronizar usuário do Google Auth com a API
+  static async syncUser(googleUser: any) {
+    try {
+      const response = await api.post("/users/sync", {
+        googleId: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.name,
+        image: googleUser.picture,
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error("Erro ao sincronizar usuário");
     }
   }
 

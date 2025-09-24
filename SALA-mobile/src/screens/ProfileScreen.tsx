@@ -12,15 +12,18 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { User } from "../types";
 import { getInitials } from "../utils";
+import { useAuth } from "../context/AuthContext";
 
 const ProfileScreen: React.FC = () => {
-  // Mock user data - In a real app, this would come from authentication/context
+  const { user: authUser, signOut } = useAuth();
+
+  // Use authenticated user or fallback to mock data
   const [user] = useState<User>({
-    id: "user-mock-id",
-    name: "João Silva",
-    email: "joao.silva@email.com",
+    id: authUser?.id || "user-mock-id",
+    name: authUser?.name || "João Silva",
+    email: authUser?.email || "joao.silva@email.com",
     role: "USER",
-    avatar: undefined,
+    avatar: authUser?.picture,
     createdAt: "2024-01-15T10:00:00Z",
     updatedAt: "2024-09-15T14:30:00Z",
   });
@@ -63,8 +66,16 @@ const ProfileScreen: React.FC = () => {
       {
         text: "Sair",
         style: "destructive",
-        onPress: () => {
-          Alert.alert("Logout", "Funcionalidade de logout em breve!");
+        onPress: async () => {
+          try {
+            await signOut();
+          } catch (error) {
+            console.error("Error during logout:", error);
+            Alert.alert(
+              "Erro",
+              "Não foi possível fazer logout. Tente novamente."
+            );
+          }
         },
       },
     ]);

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "S.A.L.A.",
+    "name": "SALA",
     "slug": "sala-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,10 +21,26 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "dev.ocaioaug.salamobile"
     },
+    "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "webClientId": "199539496823-sgm07ecndbi76o04c4d95ogg381onmdr.apps.googleusercontent.com",
+          "iosUrlScheme": "com.googleusercontent.apps.199539496823-nbechbht00i7cv6gc99df5f6p0coq6vp"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "googleSignIn": {
+        "webClientId": "199539496823-sgm07ecndbi76o04c4d95ogg381onmdr.apps.googleusercontent.com"
+      }
+    },
+    "scheme": "sala"
   }
 }

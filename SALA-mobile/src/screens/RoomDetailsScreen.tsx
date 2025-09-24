@@ -62,14 +62,9 @@ const RoomDetailsScreen: React.FC = () => {
   }, [loadRoomDetails]);
 
   const handleReserveRoom = () => {
-    if (room?.status === "LIVRE") {
-      navigation.navigate("CreateReservation", { roomId });
-    } else {
-      Alert.alert(
-        "Sala Indisponível",
-        "Esta sala não está disponível para reserva no momento."
-      );
-    }
+    // Sempre permite navegar para a tela de reserva
+    // A verificação de disponibilidade será feita lá para horários específicos
+    navigation.navigate("CreateReservation", { roomId });
   };
 
   if (loading) {
@@ -133,6 +128,35 @@ const RoomDetailsScreen: React.FC = () => {
               </Text>
             </View>
           </View>
+        </View>
+      </View>
+
+      {/* Status Atual */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Status Atual</Text>
+        <View style={styles.statusContainer}>
+          <View style={styles.statusItem}>
+            <View
+              style={[
+                styles.statusDot,
+                {
+                  backgroundColor:
+                    room.status === "LIVRE" ? "#10B981" : "#EF4444",
+                },
+              ]}
+            />
+            <Text style={styles.statusText}>
+              {room.status === "LIVRE"
+                ? "Disponível para reserva"
+                : room.status === "RESERVADO"
+                ? "Pode ter reservas ativas"
+                : "Status indeterminado"}
+            </Text>
+          </View>
+          <Text style={styles.statusNote}>
+            💡 Você pode fazer reservas para horários livres mesmo que a sala
+            tenha outras reservas
+          </Text>
         </View>
       </View>
 
@@ -218,22 +242,16 @@ const RoomDetailsScreen: React.FC = () => {
       {/* Reserve Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[
-            styles.reserveButton,
-            room.status !== "LIVRE" && styles.reserveButtonDisabled,
-          ]}
+          style={styles.reserveButton}
           onPress={handleReserveRoom}
-          disabled={room.status !== "LIVRE"}
         >
           <Ionicons
-            name={room.status === "LIVRE" ? "calendar" : "lock-closed"}
+            name="calendar"
             size={20}
             color="#FFFFFF"
             style={styles.buttonIcon}
           />
-          <Text style={styles.reserveButtonText}>
-            {room.status === "LIVRE" ? "Reservar Sala" : "Sala Indisponível"}
-          </Text>
+          <Text style={styles.reserveButtonText}>Reservar Sala</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -420,6 +438,30 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  statusContainer: {
+    gap: 12,
+  },
+  statusItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  statusText: {
+    fontSize: 16,
+    color: "#374151",
+    fontWeight: "500",
+  },
+  statusNote: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontStyle: "italic",
+    paddingHorizontal: 20,
   },
   errorContainer: {
     flex: 1,

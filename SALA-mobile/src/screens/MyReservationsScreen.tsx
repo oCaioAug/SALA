@@ -15,8 +15,11 @@ import ApiService from "../services/api";
 import ReservationCard from "../components/ReservationCard";
 import LoadingSpinner from "../components/LoadingSpinner";
 import EmptyState from "../components/EmptyState";
+import { useAuth } from "../context/AuthContext";
+import { MOCK_USER } from "../utils/config";
 
 const MyReservationsScreen: React.FC = () => {
+  const { user } = useAuth();
   const [reservations, setReservations] = useState<ReservationWithDetails[]>(
     []
   );
@@ -29,19 +32,31 @@ const MyReservationsScreen: React.FC = () => {
     "ALL" | "ACTIVE" | "CANCELLED" | "COMPLETED"
   >("ALL");
 
-  // User ID from configuration
-  const userId = "cmflu6f8h0001tu347v2udw7m";
+  // User ID from authenticated user or fallback to MOCK_USER
+  const userId = user?.id || MOCK_USER.id;
 
   const loadReservations = useCallback(async () => {
     try {
-      const data = await ApiService.getReservations();
-      // Filter only user's reservations
-      const userReservations = data.filter(
-        (reservation) => reservation.userId === userId
+      console.log("🔍 Carregando reservas para usuário:", userId);
+
+      // Buscar reservas específicas do usuário usando parâmetro da API
+      const data = await ApiService.getUserReservations(userId);
+
+      console.log("📋 Reservas encontradas:", data.length);
+      console.log(
+        "📋 Detalhes das reservas:",
+        data.map((r: ReservationWithDetails) => ({
+          id: r.id,
+          roomName: r.room?.name,
+          startTime: r.startTime,
+          status: r.status,
+        }))
       );
-      setReservations(userReservations);
-      setFilteredReservations(userReservations);
+
+      setReservations(data);
+      setFilteredReservations(data);
     } catch (error) {
+      console.error("❌ Erro ao carregar reservas:", error);
       Alert.alert("Erro", "Não foi possível carregar suas reservas");
     } finally {
       setLoading(false);
@@ -200,40 +215,38 @@ const MyReservationsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {reservations.length === 0 ? (
-        <EmptyState
-          icon="calendar-outline"
-          title="Nenhuma reserva encontrada"
-          subtitle="Você ainda não fez nenhuma reserva. Explore as salas disponíveis e faça sua primeira reserva!"
-        />
-      ) : (
-        <FlatList
-          data={filteredReservations}
-          keyExtractor={(item) => item.id}
-          renderItem={renderReservation}
-          ListHeaderComponent={renderHeader}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["#3B82F6"]}
+      <FlatList
+        data={filteredReservations}
+        keyExtractor={(item) => item.id}
+        renderItem={renderReservation}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#3B82F6"]}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          reservations.length === 0 ? (
+            <EmptyState
+              icon="calendar-outline"
+              title="Nenhuma reserva encontrada"
+              subtitle="Você ainda não fez nenhuma reserva. Explore as salas disponíveis e faça sua primeira reserva!"
             />
-          }
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            statusFilter !== "ALL" ? (
-              <EmptyState
-                icon="filter"
-                title="Nenhuma reserva encontrada"
-                subtitle={`Você não possui reservas com status "${getFilterText(
-                  statusFilter
-                ).toLowerCase()}"`}
-              />
-            ) : null
-          }
-        />
-      )}
+          ) : statusFilter !== "ALL" ? (
+            <EmptyState
+              icon="filter"
+              title="Nenhuma reserva encontrada"
+              subtitle={`Você não possui reservas com status "${getFilterText(
+                statusFilter
+              ).toLowerCase()}"`}
+            />
+          ) : null
+        }
+      />
     </View>
   );
 };
