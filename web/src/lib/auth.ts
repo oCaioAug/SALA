@@ -60,4 +60,8 @@ export const authOptions: NextAuthOptions = {
     strategy: "database",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  // Forçar o URL correto para produção
+  ...(process.env.NODE_ENV === "production" && {
+    url: "https://sala.ocaioaug.com.br",
+  }),
 };
