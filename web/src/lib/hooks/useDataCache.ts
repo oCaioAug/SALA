@@ -52,7 +52,9 @@ export const useDataCache = <T>(config: Partial<CacheConfig> = {}) => {
       // Remove oldest entries if cache is full
       if (newCache.size >= finalConfig.maxSize) {
         const oldestKey = newCache.keys().next().value;
-        newCache.delete(oldestKey);
+        if (oldestKey) {
+          newCache.delete(oldestKey);
+        }
       }
       
       newCache.set(key, { data, timestamp: Date.now() });

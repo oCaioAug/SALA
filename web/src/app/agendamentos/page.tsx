@@ -26,16 +26,7 @@ import {
   Trash2
 } from 'lucide-react';
 
-// Dados mockados para demonstração
-const mockUser: User = {
-  id: '1',
-  name: 'Ana Costa',
-  email: 'ana.costa@universidade.edu',
-  role: 'ADMIN',
-  avatar: null,
-  createdAt: new Date(),
-  updatedAt: new Date()
-};
+
 
 const AgendamentosPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('agendamentos');
@@ -100,10 +91,11 @@ const AgendamentosPage: React.FC = () => {
   }, []);
 
   const filteredReservations = reservations.filter(reservation => {
+    const roomName = rooms.find(r => r.id === reservation.roomId)?.name || '';
     const matchesSearch = 
-      reservation.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.room?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.purpose?.toLowerCase().includes(searchTerm.toLowerCase());
+      (reservation.user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reservation.purpose || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || reservation.status === statusFilter;
     
@@ -266,7 +258,7 @@ const AgendamentosPage: React.FC = () => {
       <Sidebar currentPage={currentPage} onNavigate={navigate} isNavigating={isNavigating} />
       
       <div className="flex-1 flex flex-col">
-        <Header user={mockUser} onNotificationClick={() => {}} />
+        <Header onNotificationClick={() => {}} />
         
         <main className="flex-1 p-6">
           {/* Header da página */}
@@ -367,7 +359,7 @@ const AgendamentosPage: React.FC = () => {
                             <Building2 className="w-5 h-5 text-blue-400" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-white">{reservation.room?.name || 'Sala desconhecida'}</h3>
+                            <h3 className="font-semibold text-white">{rooms.find(r => r.id === reservation.roomId)?.name || 'Sala desconhecida'}</h3>
                             <div className="flex items-center gap-4 text-sm text-gray-400">
                               <div className="flex items-center gap-1">
                                 <UserIcon className="w-4 h-4" />
@@ -422,7 +414,7 @@ const AgendamentosPage: React.FC = () => {
                 <label className="text-sm font-medium text-gray-300 mb-2 block">Sala</label>
                 <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
                   <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-white">{selectedReservation.room?.name || 'Sala desconhecida'}</span>
+                  <span className="text-white">{rooms.find(r => r.id === selectedReservation.roomId)?.name || 'Sala desconhecida'}</span>
                 </div>
               </div>
               

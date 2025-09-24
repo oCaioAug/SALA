@@ -27,16 +27,7 @@ import {
   Search
 } from 'lucide-react';
 
-// Dados mockados para demonstração
-const mockUser: User = {
-  id: '1',
-  name: 'Ana Costa',
-  email: 'ana.costa@universidade.edu',
-  role: 'ADMIN',
-  avatar: null,
-  createdAt: new Date(),
-  updatedAt: new Date()
-};
+
 
 const RoomSchedulesPage: React.FC = () => {
   const params = useParams();
@@ -114,8 +105,8 @@ const RoomSchedulesPage: React.FC = () => {
 
   const filteredReservations = reservations.filter(reservation => {
     const matchesSearch = 
-      reservation.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.purpose?.toLowerCase().includes(searchTerm.toLowerCase());
+      (reservation.user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reservation.purpose || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || reservation.status === statusFilter;
     
@@ -287,7 +278,7 @@ const RoomSchedulesPage: React.FC = () => {
       <Sidebar currentPage={currentPage} onNavigate={navigate} isNavigating={isNavigating} />
       
       <div className="flex-1 flex flex-col">
-        <Header user={mockUser} onNotificationClick={() => {}} />
+        <Header onNotificationClick={() => {}} />
         
         <main className="flex-1 p-6">
           {/* Header da página */}

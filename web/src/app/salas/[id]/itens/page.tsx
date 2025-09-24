@@ -9,13 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Room, User, Item } from '@/lib/types';
 
-// Dados mockados para demonstração
-const mockUser: User = {
-  id: '1',
-  name: 'Ana Costa',
-  email: 'ana.costa@universidade.edu',
-  role: 'ADMIN'
-};
+
 
 const RoomItemsPage: React.FC = () => {
   const params = useParams();
@@ -150,7 +144,7 @@ const RoomItemsPage: React.FC = () => {
       <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
       
       <div className="flex-1 flex flex-col">
-        <Header user={mockUser} onNotificationClick={() => {}} />
+        <Header onNotificationClick={() => {}} />
         
         <main className="flex-1 p-6">
           {/* Header */}
@@ -298,7 +292,8 @@ const ItemForm: React.FC<{
       description: formData.description || null,
       specifications: formData.specifications ? formData.specifications.split(',').map(s => s.trim()) : [],
       quantity: parseInt(formData.quantity),
-      icon: formData.icon || null
+      icon: formData.icon || null,
+      roomId: null
     });
   };
 

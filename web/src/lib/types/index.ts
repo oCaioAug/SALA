@@ -28,6 +28,11 @@ export interface ReservationWithRoom extends Reservation {
   room: Room
 }
 
+export interface ReservationWithDetails extends Reservation {
+  user: User
+  room: Room
+}
+
 export interface RoomStatusConfig {
   LIVRE: {
     color: 'green';
