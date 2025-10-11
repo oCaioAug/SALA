@@ -6,7 +6,8 @@ import {
   Settings, 
   Building2,
   ChevronRight,
-  Calendar
+  Calendar,
+  ClipboardList
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -23,6 +24,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isNavigating
       icon: LayoutDashboard,
       description: 'Dashboard principal',
       active: currentPage === 'dashboard'
+    },
+    {
+      id: 'solicitacoes',
+      label: 'Solicitações',
+      icon: ClipboardList,
+      description: 'Aprovar reservas pendentes',
+      active: currentPage === 'solicitacoes'
     },
     {
       id: 'agendamentos',

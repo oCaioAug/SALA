@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { notificationService } from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,6 +8,8 @@ export async function GET(request: NextRequest) {
     const roomId = searchParams.get("roomId");
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
+
+    console.log("🔍 Buscando reservas com filtros:", { roomId, status, userId });
 
     const where: any = {};
 
@@ -22,6 +25,15 @@ export async function GET(request: NextRequest) {
       where.userId = userId;
     }
 
+    console.log("📋 Query where:", where);
+
+    // Se não há filtro de status específico, mostrar apenas reservas ativas/aprovadas
+    if (!status) {
+      where.status = {
+        in: ['APPROVED', 'ACTIVE']
+      };
+    }
+
     const reservations = await prisma.reservation.findMany({
       where,
       include: {
@@ -33,11 +45,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    console.log(`✅ Encontradas ${reservations.length} reservas`);
+
     return NextResponse.json(reservations);
   } catch (error) {
-    console.error("Erro ao buscar reservas:", error);
+    console.error("❌ Erro ao buscar reservas:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
       { status: 500 }
     );
   }
@@ -154,12 +168,21 @@ export async function POST(request: NextRequest) {
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         purpose,
+        status: "PENDING", // Criar como pendente para aprovação
       },
       include: {
         user: true,
         room: true,
       },
     });
+
+    // Criar notificação para admins sobre nova reserva
+    try {
+      await notificationService.reservationCreated(reservation);
+    } catch (notificationError) {
+      console.error("Erro ao criar notificação:", notificationError);
+      // Não falhar a criação da reserva por causa da notificação
+    }
 
     // Não mudamos mais o status da sala automaticamente
     // O status será calculado dinamicamente baseado nas reservas ativas

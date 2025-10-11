@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   Search,
@@ -10,22 +10,102 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import Image from "next/image";
+import { NotificationModal } from "@/components/ui/NotificationModal";
 
 interface HeaderProps {
-  onNotificationClick: () => void;
+  onNotificationClick?: () => void;
+}
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
 }
 
 const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
-  const { data: session } = useSession();
+  const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
 
-  const user = session?.user;
+  useEffect(() => {
+    // Carregar dados do usuário do localStorage
+    const userData = localStorage.getItem('user');
+    console.log('User data from localStorage:', userData);
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      console.log('Parsed user:', parsedUser);
+      setUser(parsedUser);
+    }
+  }, []);
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isNotificationModalOpen && !target.closest('.notification-dropdown')) {
+        setIsNotificationModalOpen(false);
+      }
+    };
+
+    if (isNotificationModalOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isNotificationModalOpen]);
+
+  // Buscar contador de notificações
+  useEffect(() => {
+    if (user?.email) {
+      fetchNotificationCount();
+      
+      // Atualizar contador a cada 30 segundos
+      const interval = setInterval(fetchNotificationCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user?.email]);
+
+  const fetchNotificationCount = async () => {
+    if (!user?.email) {
+      console.log('No user email available for fetching notifications');
+      return;
+    }
+    
+    console.log('🔄 Header: Buscando contador de notificações para:', user.email);
+    try {
+      const response = await fetch(`/api/notifications/count?userId=${user.email}`);
+      console.log('📡 Header: Resposta do contador:', response.status, response.ok);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Header: Contador atualizado:', data.count);
+        setNotificationCount(data.count);
+      } else {
+        console.error('❌ Header: Erro ao buscar contador:', response.status);
+      }
+    } catch (error) {
+      console.error("❌ Header: Erro ao buscar contador de notificações:", error);
+    }
+  };
+
+  const handleNotificationClick = () => {
+    setIsNotificationModalOpen(true);
+    if (onNotificationClick) {
+      onNotificationClick();
+    }
+  };
 
   const handleSignOut = async () => {
     try {
-      await signOut({ callbackUrl: "/auth/login" });
+      // Limpar localStorage
+      localStorage.removeItem('user');
+      // Redirecionar para login
+      router.push('/auth/login');
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
@@ -34,7 +114,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
   if (!user) return null;
 
   return (
-    <header className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b border-slate-600/50 px-6 py-4 shadow-lg backdrop-blur-sm">
+    <header className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b border-slate-600/50 px-6 py-4 shadow-lg backdrop-blur-sm relative z-50">
       <div className="flex items-center justify-between">
         {/* Breadcrumb e título */}
         <div className="flex items-center gap-4">
@@ -60,14 +140,35 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
         {/* Ações e perfil */}
         <div className="flex items-center gap-3">
           {/* Botão de notificações */}
-          <button
-            onClick={onNotificationClick}
-            className="relative p-2.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-xl transition-all duration-300 group"
-          >
-            <Bell className="w-5 h-5" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full opacity-75 animate-ping"></div>
-          </button>
+          <div className="relative notification-dropdown">
+            <button
+              onClick={handleNotificationClick}
+              className="relative p-2.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-xl transition-all duration-300 group"
+            >
+              <Bell className="w-5 h-5" />
+              {notificationCount > 0 && (
+                <>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full opacity-75 animate-ping"></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white font-bold">
+                      {notificationCount > 9 ? "9+" : notificationCount}
+                    </span>
+                  </div>
+                </>
+              )}
+            </button>
+
+                   {/* Modal de Notificações */}
+                   {user && (
+                     <NotificationModal
+                       isOpen={isNotificationModalOpen}
+                       onClose={() => setIsNotificationModalOpen(false)}
+                       userId={user.email || user.id}
+                       onNotificationChange={fetchNotificationCount}
+                     />
+                   )}
+          </div>
 
           {/* Toggle de tema */}
           <button
@@ -89,31 +190,21 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
             >
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  {user.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user.name || "User"}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <span className="text-white font-semibold text-sm">
-                      {user.name
-                        ?.split(" ")
-                        .map((n: string) => n[0])
-                        .join("") || "U"}
-                    </span>
-                  )}
+                  <span className="text-white font-semibold text-sm">
+                    {user.name
+                      ?.split(" ")
+                      .map((n: string) => n[0])
+                      .join("") || "A"}
+                  </span>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-800"></div>
               </div>
 
               <div className="text-left">
                 <p className="text-white font-medium text-sm">
-                  {user.name || "Usuário"}
+                  {user.name || "Administrador"}
                 </p>
-                <p className="text-slate-400 text-xs capitalize">Usuário</p>
+                <p className="text-slate-400 text-xs capitalize">{user.role || "Admin"}</p>
               </div>
 
               <ChevronDown
@@ -129,29 +220,19 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
                 <div className="p-4 border-b border-slate-600/50">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                      {user.image ? (
-                        <Image
-                          src={user.image}
-                          alt={user.name || "User"}
-                          width={48}
-                          height={48}
-                          className="rounded-xl"
-                        />
-                      ) : (
-                        <span className="text-white font-semibold">
-                          {user.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("") || "U"}
-                        </span>
-                      )}
+                      <span className="text-white font-semibold">
+                        {user.name
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("") || "A"}
+                      </span>
                     </div>
                     <div>
                       <p className="text-white font-medium">
-                        {user.name || "Usuário"}
+                        {user.name || "Administrador"}
                       </p>
                       <p className="text-slate-400 text-sm">
-                        {user.email || "email@exemplo.com"}
+                        {user.email || "admin@sala.com"}
                       </p>
                     </div>
                   </div>

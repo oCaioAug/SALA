@@ -26,6 +26,7 @@ model User {
 
   // App relations
   reservations  Reservation[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -68,7 +69,7 @@ model Reservation {
   startTime DateTime
   endTime   DateTime
   purpose   String?
-  status    ReservationStatus @default(ACTIVE)
+  status    ReservationStatus @default(PENDING)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -76,6 +77,22 @@ model Reservation {
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String
+  data        Json?            // Dados adicionais (ex: reservationId, roomId)
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }
 
 enum Role {
@@ -90,9 +107,22 @@ enum RoomStatus {
 }
 
 enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
   ACTIVE
   CANCELLED
   COMPLETED
+}
+
+enum NotificationType {
+  RESERVATION_CREATED
+  RESERVATION_APPROVED
+  RESERVATION_REJECTED
+  RESERVATION_CANCELLED
+  RESERVATION_CONFLICT
+  ROOM_STATUS_CHANGED
+  SYSTEM_ANNOUNCEMENT
 }
 
 // NextAuth.js models

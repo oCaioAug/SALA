@@ -1,7 +1,7 @@
 // Tipos para o sistema SALA
-import { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus } from '@prisma/client'
+import { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus, Notification, NotificationType } from '@prisma/client'
 
-export type { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus }
+export type { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus, Notification, NotificationType }
 
 // Tipos estendidos para o frontend
 export interface RoomWithItems {
@@ -33,6 +33,48 @@ export interface ReservationWithDetails extends Reservation {
   room: Room
 }
 
+export interface NotificationWithUser extends Notification {
+  user: User
+}
+
+export interface NotificationTypeConfig {
+  RESERVATION_CREATED: {
+    color: 'blue';
+    text: 'Nova Reserva';
+    icon: 'calendar-plus';
+  };
+  RESERVATION_APPROVED: {
+    color: 'green';
+    text: 'Reserva Aprovada';
+    icon: 'check-circle';
+  };
+  RESERVATION_REJECTED: {
+    color: 'red';
+    text: 'Reserva Rejeitada';
+    icon: 'x-circle';
+  };
+  RESERVATION_CANCELLED: {
+    color: 'orange';
+    text: 'Reserva Cancelada';
+    icon: 'calendar-x';
+  };
+  RESERVATION_CONFLICT: {
+    color: 'red';
+    text: 'Conflito de Horário';
+    icon: 'alert-triangle';
+  };
+  ROOM_STATUS_CHANGED: {
+    color: 'purple';
+    text: 'Status da Sala Alterado';
+    icon: 'building';
+  };
+  SYSTEM_ANNOUNCEMENT: {
+    color: 'gray';
+    text: 'Anúncio do Sistema';
+    icon: 'megaphone';
+  };
+}
+
 export interface RoomStatusConfig {
   LIVRE: {
     color: 'green';
@@ -48,7 +90,36 @@ export interface RoomStatusConfig {
   };
 }
 
+export interface ReservationStatusConfig {
+  PENDING: {
+    color: 'yellow';
+    text: 'Pendente';
+  };
+  APPROVED: {
+    color: 'green';
+    text: 'Aprovada';
+  };
+  REJECTED: {
+    color: 'red';
+    text: 'Rejeitada';
+  };
+  ACTIVE: {
+    color: 'blue';
+    text: 'Ativa';
+  };
+  CANCELLED: {
+    color: 'red';
+    text: 'Cancelada';
+  };
+  COMPLETED: {
+    color: 'gray';
+    text: 'Concluída';
+  };
+}
+
 export type RoomStatusType = keyof RoomStatusConfig;
+export type ReservationStatusType = keyof ReservationStatusConfig;
+export type NotificationTypeType = keyof NotificationTypeConfig;
 
 // Configuração de status das salas
 export const ROOM_STATUS_CONFIG: RoomStatusConfig = {
@@ -63,5 +134,72 @@ export const ROOM_STATUS_CONFIG: RoomStatusConfig = {
   RESERVADO: {
     color: 'yellow',
     text: 'Reservado'
+  }
+};
+
+// Configuração de status das reservas
+export const RESERVATION_STATUS_CONFIG: ReservationStatusConfig = {
+  PENDING: {
+    color: 'yellow',
+    text: 'Pendente'
+  },
+  APPROVED: {
+    color: 'green',
+    text: 'Aprovada'
+  },
+  REJECTED: {
+    color: 'red',
+    text: 'Rejeitada'
+  },
+  ACTIVE: {
+    color: 'blue',
+    text: 'Ativa'
+  },
+  CANCELLED: {
+    color: 'red',
+    text: 'Cancelada'
+  },
+  COMPLETED: {
+    color: 'gray',
+    text: 'Concluída'
+  }
+};
+
+// Configuração de tipos de notificações
+export const NOTIFICATION_TYPE_CONFIG: NotificationTypeConfig = {
+  RESERVATION_CREATED: {
+    color: 'blue',
+    text: 'Nova Reserva',
+    icon: 'calendar-plus'
+  },
+  RESERVATION_APPROVED: {
+    color: 'green',
+    text: 'Reserva Aprovada',
+    icon: 'check-circle'
+  },
+  RESERVATION_REJECTED: {
+    color: 'red',
+    text: 'Reserva Rejeitada',
+    icon: 'x-circle'
+  },
+  RESERVATION_CANCELLED: {
+    color: 'orange',
+    text: 'Reserva Cancelada',
+    icon: 'calendar-x'
+  },
+  RESERVATION_CONFLICT: {
+    color: 'red',
+    text: 'Conflito de Horário',
+    icon: 'alert-triangle'
+  },
+  ROOM_STATUS_CHANGED: {
+    color: 'purple',
+    text: 'Status da Sala Alterado',
+    icon: 'building'
+  },
+  SYSTEM_ANNOUNCEMENT: {
+    color: 'gray',
+    text: 'Anúncio do Sistema',
+    icon: 'megaphone'
   }
 };

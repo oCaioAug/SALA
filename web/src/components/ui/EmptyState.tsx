@@ -22,7 +22,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className={`flex flex-col items-center justify-center py-12 px-6 text-center ${className}`}>
       <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mb-6">
-        {icon}
+        {React.isValidElement(icon) ? icon : <div>{icon}</div>}
       </div>
       
       <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>

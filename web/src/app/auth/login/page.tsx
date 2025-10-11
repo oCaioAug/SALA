@@ -21,11 +21,33 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simular login (substituir por lógica real)
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Salvar dados do usuário no localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        router.push("/dashboard");
+      } else {
+        alert(data.error || 'Erro no login');
+      }
+    } catch (error) {
+      console.error('Erro no login:', error);
+      alert('Erro de conexão. Tente novamente.');
+    } finally {
       setIsLoading(false);
-      router.push("/dashboard");
-    }, 1000);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

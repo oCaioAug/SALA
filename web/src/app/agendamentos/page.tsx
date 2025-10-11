@@ -212,15 +212,17 @@ const AgendamentosPage: React.FC = () => {
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'ACTIVE': return 'text-green-400 bg-green-500/10';
+      case 'APPROVED': return 'text-green-400 bg-green-500/10';
+      case 'ACTIVE': return 'text-blue-400 bg-blue-500/10';
       case 'CANCELLED': return 'text-red-400 bg-red-500/10';
-      case 'COMPLETED': return 'text-blue-400 bg-blue-500/10';
+      case 'COMPLETED': return 'text-gray-400 bg-gray-500/10';
       default: return 'text-gray-400 bg-gray-500/10';
     }
   };
 
   const getStatusText = (status: string): string => {
     switch (status) {
+      case 'APPROVED': return 'Aprovada';
       case 'ACTIVE': return 'Ativa';
       case 'CANCELLED': return 'Cancelada';
       case 'COMPLETED': return 'Concluída';
@@ -299,6 +301,7 @@ const AgendamentosPage: React.FC = () => {
                 className="px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">Todos os Status</option>
+                <option value="APPROVED">Aprovadas</option>
                 <option value="ACTIVE">Ativas</option>
                 <option value="CANCELLED">Canceladas</option>
                 <option value="COMPLETED">Concluídas</option>
@@ -467,7 +470,7 @@ const AgendamentosPage: React.FC = () => {
               >
                 Fechar
               </Button>
-              {selectedReservation.status === 'ACTIVE' && (
+              {(selectedReservation.status === 'ACTIVE' || selectedReservation.status === 'APPROVED') && (
                 <Button
                   variant="outline"
                   onClick={() => handleDeleteReservation(selectedReservation.id)}
