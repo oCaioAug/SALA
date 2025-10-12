@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,35 +8,30 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String         @unique
   emailVerified DateTime?
   image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // NextAuth.js relations
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   accounts      Account[]
-  sessions      Session[]
-
-  // App relations
-  reservations  Reservation[]
   notifications Notification[]
+  reservations  Reservation[]
+  sessions      Session[]
 
   @@map("users")
 }
 
 model Room {
-  id          String      @id @default(cuid())
-  name        String
-  description String?
-  status      RoomStatus  @default(LIVRE)
-  capacity    Int?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  status       RoomStatus    @default(LIVRE)
+  capacity     Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   items        Item[]
   reservations Reservation[]
 
@@ -47,100 +39,65 @@ model Room {
 }
 
 model Item {
-  id            String   @id @default(cuid())
-  name          String
-  description   String?
-  specifications String[] // Array of specifications
-  quantity      Int      @default(1)
-  icon          String?
-  roomId        String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  room Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  specifications String[]
+  quantity       Int      @default(1)
+  icon           String?
+  roomId         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  room           Room?    @relation(fields: [roomId], references: [id])
 
   @@map("items")
 }
 
 model Reservation {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   userId    String
   roomId    String
   startTime DateTime
   endTime   DateTime
   purpose   String?
   status    ReservationStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  room      Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
 }
 
 model Notification {
-  id          String           @id @default(cuid())
-  userId      String
-  type        NotificationType
-  title       String
-  message     String
-  data        Json?            // Dados adicionais (ex: reservationId, roomId)
-  isRead      Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
 
-enum Role {
-  ADMIN
-  USER
-}
-
-enum RoomStatus {
-  LIVRE
-  EM_USO
-  RESERVADO
-}
-
-enum ReservationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  ACTIVE
-  CANCELLED
-  COMPLETED
-}
-
-enum NotificationType {
-  RESERVATION_CREATED
-  RESERVATION_APPROVED
-  RESERVATION_REJECTED
-  RESERVATION_CANCELLED
-  RESERVATION_CONFLICT
-  ROOM_STATUS_CHANGED
-  SYSTEM_ANNOUNCEMENT
-}
-
-// NextAuth.js models
 model Account {
   id                String  @id @default(cuid())
   userId            String  @map("user_id")
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -163,4 +120,34 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verificationtokens")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum RoomStatus {
+  LIVRE
+  EM_USO
+  RESERVADO
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  RESERVATION_CREATED
+  RESERVATION_APPROVED
+  RESERVATION_REJECTED
+  RESERVATION_CANCELLED
+  RESERVATION_CONFLICT
+  ROOM_STATUS_CHANGED
+  SYSTEM_ANNOUNCEMENT
 }

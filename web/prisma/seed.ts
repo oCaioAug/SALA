@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...');
@@ -371,8 +373,14 @@ async function main() {
 main()
   .catch((e) => {
     console.error('❌ Erro durante o seed:', e);
+    console.error('Stack trace:', e.stack);
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect();
+      console.log('✅ Conexão com banco de dados encerrada');
+    } catch (error) {
+      console.error('❌ Erro ao desconectar:', error);
+    }
   });
