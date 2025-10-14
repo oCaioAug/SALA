@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...');
@@ -300,14 +302,85 @@ async function main() {
 
   console.log('✅ Reservas criadas');
 
+  // Criar notificações de exemplo para o admin
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: adminUser.id,
+        type: 'RESERVATION_CREATED',
+        title: 'Nova Reserva Criada',
+        message: 'Maria Santos criou uma nova reserva para o Laboratório de Química no dia 20/01/2024 das 14:00 às 16:00.',
+        data: { reservationId: 'reserva-exemplo-1', roomId: laboratorioQuimica.id },
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'RESERVATION_APPROVED',
+        title: 'Reserva Aprovada',
+        message: 'A reserva do Laboratório de Robótica para João Silva foi aprovada com sucesso.',
+        data: { reservationId: 'reserva-exemplo-2', roomId: labRobotica.id },
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'RESERVATION_REJECTED',
+        title: 'Reserva Rejeitada',
+        message: 'A reserva do Estúdio de Design para Ana Costa foi rejeitada devido a conflito de horário.',
+        data: { reservationId: 'reserva-exemplo-3', roomId: estudioDesign.id },
+        isRead: true,
+      },
+      {
+        userId: adminUser.id,
+        type: 'ROOM_STATUS_CHANGED',
+        title: 'Status da Sala Alterado',
+        message: 'O Laboratório de Química mudou de status para "Em Uso" automaticamente.',
+        data: { roomId: laboratorioQuimica.id, oldStatus: 'LIVRE', newStatus: 'EM_USO' },
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'SYSTEM_ANNOUNCEMENT',
+        title: 'Manutenção Programada',
+        message: 'Sistema será atualizado no domingo (21/01) das 02:00 às 04:00. Algumas funcionalidades podem estar indisponíveis.',
+        data: { maintenanceDate: '2024-01-21T02:00:00Z' },
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'RESERVATION_CONFLICT',
+        title: 'Conflito de Horário Detectado',
+        message: 'Foi detectado um conflito na reserva do Laboratório de Robótica. Verifique os horários sobrepostos.',
+        data: { reservationId: 'reserva-conflito-1', roomId: labRobotica.id },
+        isRead: false,
+      },
+      {
+        userId: adminUser.id,
+        type: 'RESERVATION_CANCELLED',
+        title: 'Reserva Cancelada',
+        message: 'Maria Santos cancelou a reserva da Sala de Reuniões para o dia 18/01/2024.',
+        data: { reservationId: 'reserva-cancelada-1', roomId: salaReunioes.id },
+        isRead: true,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log('✅ Notificações criadas');
+
   console.log('🎉 Seed concluído com sucesso!');
 }
 
 main()
   .catch((e) => {
     console.error('❌ Erro durante o seed:', e);
+    console.error('Stack trace:', e.stack);
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    try {
+      await prisma.$disconnect();
+      console.log('✅ Conexão com banco de dados encerrada');
+    } catch (error) {
+      console.error('❌ Erro ao desconectar:', error);
+    }
   });

@@ -15,7 +15,7 @@ export const useNavigation = ({ currentPage, onPageChange }: UseNavigationProps)
 
   // Prefetch das páginas mais comuns
   useEffect(() => {
-    const pagesToPrefetch = ['/configuracoes', '/agendamentos'];
+    const pagesToPrefetch = ['/configuracoes', '/agendamentos', '/solicitacoes'];
     
     pagesToPrefetch.forEach(page => {
       if (!prefetchedPages.has(page)) {
@@ -38,6 +38,7 @@ export const useNavigation = ({ currentPage, onPageChange }: UseNavigationProps)
     // Mapear páginas para rotas
     const routeMap: Record<string, string> = {
       'dashboard': '/dashboard',
+      'solicitacoes': '/solicitacoes',
       'agendamentos': '/agendamentos',
       'configuracoes': '/configuracoes'
     };

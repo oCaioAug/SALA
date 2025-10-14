@@ -8,16 +8,16 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String         @unique
   emailVerified DateTime?
   image         String?
-  role          Role            @default(USER)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   accounts      Account[]
-  notifications notifications[]
+  notifications Notification[]
   reservations  Reservation[]
   sessions      Session[]
 
@@ -69,6 +69,21 @@ model Reservation {
   @@map("reservations")
 }
 
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String  @map("user_id")
@@ -107,18 +122,18 @@ model VerificationToken {
   @@map("verificationtokens")
 }
 
-model notifications {
-  id        String           @id
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  data      Json?
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime
-  users     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+// model notifications {
+//   id        String           @id
+//   userId    String
+//   type      NotificationType
+//   title     String
+//   message   String
+//   data      Json?
+//   isRead    Boolean          @default(false)
+//   createdAt DateTime         @default(now())
+//   updatedAt DateTime
+//   users     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+// }
 
 enum Role {
   ADMIN

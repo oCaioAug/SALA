@@ -1,8 +1,7 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, ReactNode } from "react";
+import { useEffect, ReactNode, useState } from "react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ProtectedRouteProps {
@@ -11,34 +10,39 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (status === "loading") return; // Ainda carregando
-
-    if (!session) {
+    // Verificar se há usuário no localStorage
+    const user = localStorage.getItem('user');
+    
+    if (user) {
+      setIsAuthenticated(true);
+    } else {
       router.push("/auth/login");
-      return;
     }
-  }, [session, status, router]);
+    
+    setIsLoading(false);
+  }, [router]);
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
       fallback || (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
           <LoadingSpinner size="lg" />
         </div>
       )
     );
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Redirecionando para login...</p>
+          <p className="text-white">Redirecionando para login...</p>
         </div>
       </div>
     );

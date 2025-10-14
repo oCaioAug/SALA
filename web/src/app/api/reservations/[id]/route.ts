@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { notificationService } from '@/lib/notifications'
 
 export async function GET(
   request: NextRequest,
@@ -122,7 +123,11 @@ export async function DELETE(
   try {
     // Verificar se a reserva existe
     const existingReservation = await prisma.reservation.findUnique({
-      where: { id: params.id }
+      where: { id: params.id },
+      include: {
+        user: true,
+        room: true,
+      },
     })
 
     if (!existingReservation) {
@@ -142,6 +147,14 @@ export async function DELETE(
       where: { id: existingReservation.roomId },
       data: { status: 'LIVRE' }
     })
+
+    // Criar notificação para o usuário sobre o cancelamento
+    try {
+      await notificationService.reservationCancelled(existingReservation);
+    } catch (notificationError) {
+      console.error("Erro ao criar notificação de cancelamento:", notificationError);
+      // Não falhar o cancelamento por causa da notificação
+    }
 
     return NextResponse.json({ message: 'Reserva cancelada com sucesso' })
   } catch (error) {

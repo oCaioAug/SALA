@@ -21,16 +21,16 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, classNa
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      {/* Backdrop - apenas na área do conteúdo, não no header */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute top-16 left-0 right-0 bottom-0 bg-black bg-opacity-50"
         onClick={onClose}
       />
       
       {/* Modal Content */}
       <div className={cn(
-        'relative bg-gray-800 rounded-lg shadow-xl w-full mx-4 max-h-[90vh] overflow-y-auto',
+        'relative bg-gray-800 rounded-lg shadow-xl w-full mx-4 max-h-[90vh] overflow-y-auto z-[61]',
         sizeClasses[size],
         className
       )}>
