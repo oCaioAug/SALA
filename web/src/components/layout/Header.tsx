@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useSession, signOut } from "next-auth/react";
+import Image from "next/image";
 import {
   Bell,
   Search,
@@ -16,70 +17,23 @@ interface HeaderProps {
   onNotificationClick?: () => void;
 }
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
-
 const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
-  const router = useRouter();
+  const { data: session } = useSession();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
 
-  useEffect(() => {
-    // Carregar dados do usuário do localStorage
-    const userData = localStorage.getItem('user');
-    console.log('User data from localStorage:', userData);
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      console.log('Parsed user:', parsedUser);
-      setUser(parsedUser);
-    }
-  }, []);
-
-  // Fechar dropdown quando clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (isNotificationModalOpen && !target.closest('.notification-dropdown')) {
-        setIsNotificationModalOpen(false);
-      }
-    };
-
-    if (isNotificationModalOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isNotificationModalOpen]);
-
   // Buscar contador de notificações
-  useEffect(() => {
-    if (user?.email) {
-      fetchNotificationCount();
-      
-      // Atualizar contador a cada 30 segundos
-      const interval = setInterval(fetchNotificationCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [user?.email]);
-
-  const fetchNotificationCount = async () => {
-    if (!user?.email) {
+  const fetchNotificationCount = useCallback(async () => {
+    if (!session?.user?.email) {
       console.log('No user email available for fetching notifications');
       return;
     }
     
-    console.log('🔄 Header: Buscando contador de notificações para:', user.email);
+    console.log('🔄 Header: Buscando contador de notificações para:', session.user.email);
     try {
-      const response = await fetch(`/api/notifications/count?userId=${user.email}`);
+      const response = await fetch(`/api/notifications/count?userId=${session.user.email}`);
       console.log('📡 Header: Resposta do contador:', response.status, response.ok);
       if (response.ok) {
         const data = await response.json();
@@ -91,7 +45,17 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
     } catch (error) {
       console.error("❌ Header: Erro ao buscar contador de notificações:", error);
     }
-  };
+  }, [session?.user?.email]);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchNotificationCount();
+      
+      // Atualizar contador a cada 30 segundos
+      const interval = setInterval(fetchNotificationCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [session?.user?.email, fetchNotificationCount]);
 
   const handleNotificationClick = () => {
     setIsNotificationModalOpen(true);
@@ -102,16 +66,13 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
 
   const handleSignOut = async () => {
     try {
-      // Limpar localStorage
-      localStorage.removeItem('user');
-      // Redirecionar para login
-      router.push('/auth/login');
+      await signOut({ callbackUrl: '/auth/login' });
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
   };
 
-  if (!user) return null;
+  if (!session?.user) return null;
 
   return (
     <header className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 border-b border-slate-600/50 px-6 py-4 shadow-lg backdrop-blur-sm relative z-50">
@@ -160,11 +121,11 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
             </button>
 
                    {/* Modal de Notificações */}
-                   {user && (
+                   {session?.user && (
                      <NotificationModal
                        isOpen={isNotificationModalOpen}
                        onClose={() => setIsNotificationModalOpen(false)}
-                       userId={user.email || user.id}
+                       userId={session.user.email || session.user.id || ''}
                        onNotificationChange={fetchNotificationCount}
                      />
                    )}
@@ -189,22 +150,32 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
               className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-600/50 transition-all duration-300 group"
             >
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  <span className="text-white font-semibold text-sm">
-                    {user.name
-                      ?.split(" ")
-                      .map((n: string) => n[0])
-                      .join("") || "A"}
-                  </span>
-                </div>
+                {session.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || "Avatar"}
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-xl object-cover shadow-lg group-hover:shadow-xl transition-all duration-300"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                    <span className="text-white font-semibold text-sm">
+                      {session.user.name
+                        ?.split(" ")
+                        .map((n: string) => n[0])
+                        .join("") || "A"}
+                    </span>
+                  </div>
+                )}
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-800"></div>
               </div>
 
               <div className="text-left">
                 <p className="text-white font-medium text-sm">
-                  {user.name || "Administrador"}
+                  {session.user.name || "Usuário"}
                 </p>
-                <p className="text-slate-400 text-xs capitalize">{user.role || "Admin"}</p>
+                <p className="text-slate-400 text-xs capitalize">{session.user.role || "User"}</p>
               </div>
 
               <ChevronDown
@@ -219,20 +190,30 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
               <div className="absolute right-0 top-full mt-2 w-64 bg-slate-800 border border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden">
                 <div className="p-4 border-b border-slate-600/50">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        {user.name
-                          ?.split(" ")
-                          .map((n: string) => n[0])
-                          .join("") || "A"}
-                      </span>
-                    </div>
+                    {session.user.image ? (
+                      <Image
+                        src={session.user.image}
+                        alt={session.user.name || "Avatar"}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <span className="text-white font-semibold">
+                          {session.user.name
+                            ?.split(" ")
+                            .map((n: string) => n[0])
+                            .join("") || "A"}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <p className="text-white font-medium">
-                        {user.name || "Administrador"}
+                        {session.user.name || "Usuário"}
                       </p>
                       <p className="text-slate-400 text-sm">
-                        {user.email || "admin@sala.com"}
+                        {session.user.email || "user@sala.com"}
                       </p>
                     </div>
                   </div>
