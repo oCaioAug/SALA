@@ -10,6 +10,13 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
   ],
   callbacks: {
@@ -26,42 +33,56 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account }) {
-      // Verificar se é o primeiro login e definir role como ADMIN se for o primeiro usuário
-      if (account?.provider === "google") {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+      try {
+        if (account?.provider === "google") {
+          // Verificar se o email existe
+          if (!user.email) {
+            console.error("Email não fornecido pelo Google");
+            return false;
+          }
 
-        if (!existingUser) {
-          // Verificar se é o primeiro usuário do sistema
-          const userCount = await prisma.user.count();
-          const isFirstUser = userCount === 0;
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
 
-          // O primeiro usuário será ADMIN
-          if (isFirstUser) {
-            await prisma.user.create({
-              data: {
-                email: user.email!,
-                name: user.name || "Usuário",
-                image: user.image,
-                role: Role.ADMIN,
-              },
-            });
+          if (!existingUser) {
+            // Verificar se é o primeiro usuário do sistema
+            const userCount = await prisma.user.count();
+            const isFirstUser = userCount === 0;
+
+            console.log("Primeiro usuário do sistema:", isFirstUser);
+            
+            // O PrismaAdapter criará o usuário automaticamente, 
+            // mas vamos aguardar e atualizar o role depois
+            setTimeout(async () => {
+              try {
+                const userRole = isFirstUser ? Role.ADMIN : Role.USER;
+                await prisma.user.update({
+                  where: { email: user.email! },
+                  data: { role: userRole }
+                });
+                console.log("Role definido como:", userRole);
+              } catch (error) {
+                console.error("Erro ao definir role:", error);
+              }
+            }, 2000);
           }
         }
+        
+        return true;
+      } catch (error) {
+        console.error("Erro no signIn callback:", error);
+        return true; // Continuar mesmo com erro para não bloquear login
       }
-      return true;
     },
   },
   pages: {
     signIn: "/auth/login",
+    error: "/auth/error", // Página de erro customizada
   },
   session: {
-    strategy: "database",
+    strategy: "database", // Voltar para database agora que está funcionando
   },
   secret: process.env.NEXTAUTH_SECRET,
-  // Forçar o URL correto para produção
-  ...(process.env.NODE_ENV === "production" && {
-    url: "https://sala.ocaioaug.com.br",
-  }),
+  debug: process.env.NODE_ENV === "development",
 };
