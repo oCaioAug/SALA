@@ -345,8 +345,8 @@ async function main() {
       id: "reserva-1",
       userId: regularUser.id,
       roomId: salaReunioes.id,
-      startTime: new Date("2024-01-15T14:00:00Z"),
-      endTime: new Date("2024-01-15T16:00:00Z"),
+      startTime: new Date("2025-10-15T14:00:00Z"),
+      endTime: new Date("2025-10-15T16:00:00Z"),
       purpose: "Reunião de planejamento do projeto",
       status: "ACTIVE",
     },
@@ -359,14 +359,99 @@ async function main() {
       id: "reserva-2",
       userId: adminUser.id,
       roomId: estudioDesign.id,
-      startTime: new Date("2024-01-16T09:00:00Z"),
-      endTime: new Date("2024-01-16T17:00:00Z"),
+      startTime: new Date("2025-10-16T09:00:00Z"),
+      endTime: new Date("2025-10-16T17:00:00Z"),
       purpose: "Workshop de design gráfico",
       status: "ACTIVE",
     },
   });
 
-  console.log("✅ Reservas criadas");
+  // Criar solicitações pendentes (PENDING)
+  await prisma.reservation.upsert({
+    where: { id: "solicitacao-1" },
+    update: {},
+    create: {
+      id: "solicitacao-1",
+      userId: user2.id,
+      roomId: labRobotica.id,
+      startTime: new Date("2025-10-20T10:00:00Z"),
+      endTime: new Date("2025-10-20T12:00:00Z"),
+      purpose: "Aula prática de programação de robôs",
+      status: "PENDING",
+    },
+  });
+
+  await prisma.reservation.upsert({
+    where: { id: "solicitacao-2" },
+    update: {},
+    create: {
+      id: "solicitacao-2",
+      userId: user3.id,
+      roomId: laboratorioQuimica.id,
+      startTime: new Date("2025-10-22T14:00:00Z"),
+      endTime: new Date("2025-10-22T18:00:00Z"),
+      purpose: "Experimento de química orgânica - síntese de compostos",
+      status: "PENDING",
+    },
+  });
+
+  await prisma.reservation.upsert({
+    where: { id: "solicitacao-3" },
+    update: {},
+    create: {
+      id: "solicitacao-3",
+      userId: user4.id,
+      roomId: estudioDesign.id,
+      startTime: new Date("2025-10-25T09:00:00Z"),
+      endTime: new Date("2025-10-25T11:00:00Z"),
+      purpose: "Sessão de design gráfico para projeto final",
+      status: "PENDING",
+    },
+  });
+
+  await prisma.reservation.upsert({
+    where: { id: "solicitacao-4" },
+    update: {},
+    create: {
+      id: "solicitacao-4",
+      userId: regularUser.id,
+      roomId: salaReunioes.id,
+      startTime: new Date("2025-10-24T15:00:00Z"),
+      endTime: new Date("2025-10-24T17:00:00Z"),
+      purpose: "Reunião de orientação de TCC",
+      status: "PENDING",
+    },
+  });
+
+  await prisma.reservation.upsert({
+    where: { id: "solicitacao-5" },
+    update: {},
+    create: {
+      id: "solicitacao-5",
+      userId: user2.id,
+      roomId: laboratorioQuimica.id,
+      startTime: new Date("2025-10-28T08:00:00Z"),
+      endTime: new Date("2025-10-28T12:00:00Z"),
+      purpose: "Análise quantitativa - determinação de concentrações",
+      status: "PENDING",
+    },
+  });
+
+  await prisma.reservation.upsert({
+    where: { id: "solicitacao-6" },
+    update: {},
+    create: {
+      id: "solicitacao-6",
+      userId: user3.id,
+      roomId: labRobotica.id,
+      startTime: new Date("2025-10-30T13:00:00Z"),
+      endTime: new Date("2025-10-30T17:00:00Z"),
+      purpose: "Desenvolvimento de projeto de robótica colaborativa",
+      status: "PENDING",
+    },
+  });
+
+  console.log("✅ Reservas e solicitações criadas");
 
   // Temporariamente removido devido a erro de schema
   // TODO: Reativar quando o modelo Notification estiver correto

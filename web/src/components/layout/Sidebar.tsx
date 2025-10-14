@@ -2,12 +2,12 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
-  Package, 
   Settings, 
   Building2,
   ChevronRight,
   Calendar,
-  ClipboardList
+  ClipboardList,
+  Bell
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -39,6 +39,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isNavigating
       description: 'Calendário de reservas',
       active: currentPage === 'agendamentos'
     },
+    // {
+    //   id: 'notificacoes',
+    //   label: 'Notificações',
+    //   icon: Bell,
+    //   description: 'Central de notificações',
+    //   active: currentPage === 'notificacoes'
+    // },
     {
       id: 'configuracoes',
       label: 'Configurações',

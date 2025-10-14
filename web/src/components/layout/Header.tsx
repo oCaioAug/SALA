@@ -27,30 +27,42 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
   // Buscar contador de notificações
   const fetchNotificationCount = useCallback(async () => {
     if (!session?.user?.email) {
-      console.log('No user email available for fetching notifications');
+      console.log("No user email available for fetching notifications");
       return;
     }
-    
-    console.log('🔄 Header: Buscando contador de notificações para:', session.user.email);
+
+    console.log(
+      "🔄 Header: Buscando contador de notificações para:",
+      session.user.email
+    );
     try {
-      const response = await fetch(`/api/notifications/count?userId=${session.user.email}`);
-      console.log('📡 Header: Resposta do contador:', response.status, response.ok);
+      const response = await fetch(
+        `/api/notifications/count?userId=${session.user.email}`
+      );
+      console.log(
+        "📡 Header: Resposta do contador:",
+        response.status,
+        response.ok
+      );
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Header: Contador atualizado:', data.count);
+        console.log("✅ Header: Contador atualizado:", data.count);
         setNotificationCount(data.count);
       } else {
-        console.error('❌ Header: Erro ao buscar contador:', response.status);
+        console.error("❌ Header: Erro ao buscar contador:", response.status);
       }
     } catch (error) {
-      console.error("❌ Header: Erro ao buscar contador de notificações:", error);
+      console.error(
+        "❌ Header: Erro ao buscar contador de notificações:",
+        error
+      );
     }
   }, [session?.user?.email]);
 
   useEffect(() => {
     if (session?.user?.email) {
       fetchNotificationCount();
-      
+
       // Atualizar contador a cada 30 segundos
       const interval = setInterval(fetchNotificationCount, 30000);
       return () => clearInterval(interval);
@@ -66,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ callbackUrl: '/auth/login' });
+      await signOut({ callbackUrl: "/auth/login" });
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
@@ -120,15 +132,15 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
               )}
             </button>
 
-                   {/* Modal de Notificações */}
-                   {session?.user && (
-                     <NotificationModal
-                       isOpen={isNotificationModalOpen}
-                       onClose={() => setIsNotificationModalOpen(false)}
-                       userId={session.user.email || session.user.id || ''}
-                       onNotificationChange={fetchNotificationCount}
-                     />
-                   )}
+            {/* Modal de Notificações */}
+            {session?.user && (
+              <NotificationModal
+                isOpen={isNotificationModalOpen}
+                onClose={() => setIsNotificationModalOpen(false)}
+                userId={session.user.email || session.user.id || ""}
+                onNotificationChange={fetchNotificationCount}
+              />
+            )}
           </div>
 
           {/* Toggle de tema */}
@@ -175,7 +187,9 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
                 <p className="text-white font-medium text-sm">
                   {session.user.name || "Usuário"}
                 </p>
-                <p className="text-slate-400 text-xs capitalize">{session.user.role || "User"}</p>
+                <p className="text-slate-400 text-xs capitalize">
+                  {session.user.role || "User"}
+                </p>
               </div>
 
               <ChevronDown

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar se o usuário existe
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!user) {
@@ -30,10 +30,10 @@ export async function POST(request: NextRequest) {
     const notification = await prisma.notification.create({
       data: {
         userId: userId,
-        type: 'SYSTEM_ANNOUNCEMENT',
-        title: title || 'Notificação de Teste',
-        message: message || 'Esta é uma notificação de teste criada pela API.',
-        data: { source: 'test-api' },
+        type: "SYSTEM_ANNOUNCEMENT",
+        title: title || "Notificação de Teste",
+        message: message || "Esta é uma notificação de teste criada pela API.",
+        data: { source: "test-api" },
         isRead: false,
       },
     });
@@ -43,9 +43,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       notification,
-      message: "Notificação de teste criada com sucesso!"
+      message: "Notificação de teste criada com sucesso!",
     });
-
   } catch (error) {
     console.error("❌ Erro ao criar notificação de teste:", error);
     return NextResponse.json(
