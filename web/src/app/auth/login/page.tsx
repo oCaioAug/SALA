@@ -26,10 +26,10 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: formData.email,
@@ -41,14 +41,14 @@ const LoginPage: React.FC = () => {
 
       if (response.ok) {
         // Salvar dados do usuário no localStorage
-        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem("user", JSON.stringify(data.user));
         router.push("/dashboard");
       } else {
-        alert(data.error || 'Erro no login');
+        alert(data.error || "Erro no login");
       }
     } catch (error) {
-      console.error('Erro no login:', error);
-      alert('Erro de conexão. Tente novamente.');
+      console.error("Erro no login:", error);
+      alert("Erro de conexão. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -63,19 +63,15 @@ const LoginPage: React.FC = () => {
 
   const handleLoginWithGoogleClick = async () => {
     try {
-      const result = await signIn("google", {
-        callbackUrl: "/dashboard",
-        redirect: false,
-      });
+      console.log("🔄 Iniciando login com Google...");
 
-      if (result?.error) {
-        console.error("Erro no login:", result.error);
-        router.push(`/auth/error?error=${result.error}`);
-      } else if (result?.url) {
-        router.push(result.url);
-      }
+      // Usar redirect: true para que o NextAuth handle o redirecionamento automaticamente
+      await signIn("google", {
+        callbackUrl: "/dashboard",
+        redirect: true,
+      });
     } catch (error) {
-      console.error("Erro ao tentar fazer login:", error);
+      console.error("❌ Erro ao tentar fazer login:", error);
       router.push("/auth/error?error=Default");
     }
   };

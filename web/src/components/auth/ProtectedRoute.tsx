@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, ReactNode, useState } from "react";
+import { useEffect, ReactNode } from "react";
+import { useSession } from "next-auth/react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ProtectedRouteProps {
@@ -11,23 +12,15 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { status } = useSession();
 
   useEffect(() => {
-    // Verificar se há usuário no localStorage
-    const user = localStorage.getItem('user');
-    
-    if (user) {
-      setIsAuthenticated(true);
-    } else {
+    if (status === "unauthenticated") {
       router.push("/auth/login");
     }
-    
-    setIsLoading(false);
-  }, [router]);
+  }, [status, router]);
 
-  if (isLoading) {
+  if (status === "loading") {
     return (
       fallback || (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
@@ -37,7 +30,7 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (status === "unauthenticated") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
