@@ -12,6 +12,7 @@ import {
   Moon,
 } from "lucide-react";
 import { NotificationModal } from "@/components/ui/NotificationModal";
+import Link from "next/link";
 
 interface HeaderProps {
   onNotificationClick?: () => void;
@@ -235,8 +236,13 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
 
                 <div className="py-2">
                   <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors duration-200">
-                    <UserIcon className="w-4 h-4" />
-                    <span>Meu Perfil</span>
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3 w-full"
+                    >
+                      <UserIcon className="w-4 h-4" />
+                      <span>Perfil</span>
+                    </Link>
                   </button>
 
                   <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors duration-200">

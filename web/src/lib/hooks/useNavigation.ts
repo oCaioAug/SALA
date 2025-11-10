@@ -25,6 +25,8 @@ export const useNavigation = ({
       "/agendamentos",
       "/solicitacoes",
       "/notificacoes",
+      "/users",
+      "/profile",
     ];
 
     pagesToPrefetch.forEach((page) => {
@@ -53,6 +55,8 @@ export const useNavigation = ({
         agendamentos: "/agendamentos",
         notificacoes: "/notificacoes",
         configuracoes: "/configuracoes",
+        users: "/users",
+        profile: "/profile",
       };
 
       const route = routeMap[page] || "/dashboard";

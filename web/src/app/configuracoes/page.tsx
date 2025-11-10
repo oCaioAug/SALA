@@ -17,6 +17,7 @@ import {
   Database,
   Palette,
 } from "lucide-react";
+import Link from "next/link";
 
 const ConfiguracoesPage: React.FC = () => {
   const router = useRouter();
@@ -41,6 +42,7 @@ const ConfiguracoesPage: React.FC = () => {
       icon: <UserIcon className="w-6 h-6" />,
       action: () =>
         showInfo("Configurações de perfil serão implementadas em breve"),
+      url: "/profile",
     },
     {
       id: "notificacoes",
@@ -49,6 +51,7 @@ const ConfiguracoesPage: React.FC = () => {
       icon: <Bell className="w-6 h-6" />,
       action: () =>
         showInfo("Configurações de notificações serão implementadas em breve"),
+      url: "/notifications",
     },
     {
       id: "seguranca",
@@ -57,6 +60,7 @@ const ConfiguracoesPage: React.FC = () => {
       icon: <Shield className="w-6 h-6" />,
       action: () =>
         showInfo("Configurações de segurança serão implementadas em breve"),
+      url: "/security",
     },
     {
       id: "banco-dados",
@@ -67,6 +71,7 @@ const ConfiguracoesPage: React.FC = () => {
         showInfo(
           "Configurações de banco de dados serão implementadas em breve"
         ),
+      url: "/database",
     },
     {
       id: "aparencia",
@@ -75,6 +80,7 @@ const ConfiguracoesPage: React.FC = () => {
       icon: <Palette className="w-6 h-6" />,
       action: () =>
         showInfo("Configurações de aparência serão implementadas em breve"),
+      url: "/appearance",
     },
   ];
 
@@ -135,7 +141,9 @@ const ConfiguracoesPage: React.FC = () => {
                             item.action();
                           }}
                         >
-                          Configurar
+                          <Link href={item.url} className="w-full">
+                            Configurar
+                          </Link>
                         </Button>
                       </div>
                     </div>
