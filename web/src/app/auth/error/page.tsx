@@ -1,12 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
-const AuthErrorPage: React.FC = () => {
+const AuthErrorContent: React.FC = () => {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
@@ -78,6 +78,20 @@ const AuthErrorPage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+const AuthErrorPage: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+          <div className="text-white">Carregando...</div>
+        </div>
+      }
+    >
+      <AuthErrorContent />
+    </Suspense>
   );
 };
 

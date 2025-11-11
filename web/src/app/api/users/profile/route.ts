@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// Force dynamic behavior to prevent static optimization
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticação

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 
-const LoginPage: React.FC = () => {
+const LoginContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
@@ -163,6 +163,20 @@ const LoginPage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+const LoginPage: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+          <div className="text-white">Carregando...</div>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 };
 

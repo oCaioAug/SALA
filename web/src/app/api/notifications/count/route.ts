@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Force dynamic behavior to prevent static optimization
+export const dynamic = "force-dynamic";
+
 // GET /api/notifications/count - Contar notificações não lidas do usuário
 export async function GET(request: NextRequest) {
   try {
@@ -18,15 +21,15 @@ export async function GET(request: NextRequest) {
 
     // Buscar usuário por ID ou email
     let user;
-    if (userId.includes('@')) {
+    if (userId.includes("@")) {
       // Se contém @, é um email
       user = await prisma.user.findUnique({
-        where: { email: userId }
+        where: { email: userId },
       });
     } else {
       // Senão, é um ID
       user = await prisma.user.findUnique({
-        where: { id: userId }
+        where: { id: userId },
       });
     }
 
@@ -45,13 +48,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log(`✅ Usuário ${user.email} (${user.id}) tem ${count} notificações não lidas`);
+    console.log(
+      `✅ Usuário ${user.email} (${user.id}) tem ${count} notificações não lidas`
+    );
 
     return NextResponse.json({ count });
   } catch (error) {
     console.error("❌ Erro ao contar notificações:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
+      {
+        error: "Erro interno do servidor",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
       { status: 500 }
     );
   }
