@@ -15,32 +15,38 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Começar sempre com dark para evitar flash
   const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Carregar tema do localStorage ou usar dark como padrão
+    // Só executar no cliente após montagem
+    setMounted(true);
+    
+    // Carregar tema do localStorage de forma segura
     const savedTheme = safeLocalStorage.getItem("theme") as Theme | null;
     const initialTheme = savedTheme || "dark";
 
-    // Aplicar tema imediatamente antes do primeiro render
-    const root = document.documentElement;
-    if (initialTheme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    // Aplicar tema ao documentElement de forma segura
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      // Remover todas as classes de tema primeiro
+      root.classList.remove("dark", "light");
+      // Adicionar a classe correta
+      root.classList.add(initialTheme);
     }
 
-    setThemeState(initialTheme);
-    setMounted(true);
-  }, []);
+    // Atualizar estado apenas se diferente
+    if (initialTheme !== theme) {
+      setThemeState(initialTheme);
+    }
+  }, [theme]);
 
   const applyTheme = (newTheme: Theme) => {
-    const root = document.documentElement;
-    if (newTheme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      root.classList.remove("dark", "light");
+      root.classList.add(newTheme);
     }
   };
 
@@ -55,13 +61,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(newTheme);
   };
 
-  // Evitar flash de conteúdo sem tema
-  if (!mounted) {
-    return <>{children}</>;
-  }
+  // Renderizar com tema padrão até estar montado para evitar flash
+  const contextValue = {
+    theme: mounted ? theme : "dark",
+    toggleTheme,
+    setTheme,
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

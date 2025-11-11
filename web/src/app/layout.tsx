@@ -5,6 +5,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { ToastProvider } from "@/components/ui/Toast";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import ProductionErrorLogger from "@/components/ui/ProductionErrorLogger";
 import { AppProvider } from "@/lib/hooks/useApp";
 import { ThemeProvider } from "@/lib/providers/ThemeProvider";
 
@@ -33,32 +34,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  if (typeof window !== 'undefined') {
-                    const theme = localStorage.getItem('theme') || 'dark';
-                    if (theme === 'dark') {
-                      document.documentElement.classList.add('dark');
-                    } else {
-                      document.documentElement.classList.remove('dark');
-                    }
-                  }
-                } catch (e) {
-                  // Fallback para modo dark se houver erro
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
+        <meta name="color-scheme" content="dark light" />
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased dark`}
         suppressHydrationWarning
       >
+        <ProductionErrorLogger />
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>
