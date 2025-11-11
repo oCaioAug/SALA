@@ -45,12 +45,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const applyTheme = (newTheme: Theme) => {
     if (typeof document !== "undefined") {
       const root = document.documentElement;
+      console.log(`🎨 Applying theme ${newTheme} to document root`);
+      console.log(`🎨 Before: ${root.classList.toString()}`);
       root.classList.remove("dark", "light");
       root.classList.add(newTheme);
+      console.log(`🎨 After: ${root.classList.toString()}`);
     }
   };
 
   const setTheme = (newTheme: Theme) => {
+    console.log(`🎨 Setting theme to: ${newTheme}`);
     setThemeState(newTheme);
     safeLocalStorage.setItem("theme", newTheme);
     applyTheme(newTheme);
@@ -58,6 +62,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
+    console.log(`🎨 Toggling theme from ${theme} to ${newTheme}`);
     setTheme(newTheme);
   };
 
