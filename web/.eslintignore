@@ -1,0 +1,19 @@
+# Build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# TypeScript output
+*.tsbuildinfo
+
+# Generated files
+.next/types/
+
+# Cache
+.eslintcache
+
+# Misc
+.DS_Store
+*.log
