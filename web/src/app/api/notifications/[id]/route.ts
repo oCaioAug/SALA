@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
 
 // PUT /api/notifications/[id]/read - Marcar notificação como lida
@@ -25,7 +26,10 @@ export async function PUT(
   } catch (error) {
     console.error("❌ Erro ao marcar notificação como lida:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
+      {
+        error: "Erro interno do servidor",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
       { status: 500 }
     );
   }
@@ -51,7 +55,10 @@ export async function DELETE(
   } catch (error) {
     console.error("❌ Erro ao deletar notificação:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
+      {
+        error: "Erro interno do servidor",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
       { status: 500 }
     );
   }

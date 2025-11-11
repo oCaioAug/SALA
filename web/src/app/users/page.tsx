@@ -1,37 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
 import {
-  Card,
-  CardContent,
-} from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useApp } from "@/lib/hooks/useApp";
-import {
-  Users,
-  Search,
-  Edit,
-  Crown,
-  User as UserIcon,
-  Shield,
-  Mail,
   Calendar,
+  Crown,
+  Edit,
+  Mail,
+  Search,
+  Shield,
+  User as UserIcon,
+  Users,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
+
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 interface User {
   id: string;
   name: string | null;
   email: string;
-  role: 'ADMIN' | 'USER';
+  role: "ADMIN" | "USER";
   createdAt: string;
   updatedAt: string;
   image?: string;
@@ -57,14 +55,14 @@ const UsersPage: React.FC = () => {
 
   // Verificar se o usuário é admin
   const isAdmin = session?.user?.role === "ADMIN";
-  
+
   // Debug da sessão
   useEffect(() => {
     console.log("🔍 Sessão do usuário:", {
       hasSession: !!session,
       userEmail: session?.user?.email,
       userRole: session?.user?.role,
-      isAdmin
+      isAdmin,
     });
   }, [session, isAdmin]);
 
@@ -78,14 +76,17 @@ const UsersPage: React.FC = () => {
         const response = await fetch("/api/users");
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Erro ${response.status}: ${response.statusText}`);
+          throw new Error(
+            errorData.error || `Erro ${response.status}: ${response.statusText}`
+          );
         }
 
         const data = await response.json();
         setUsers(data);
       } catch (err) {
         console.error("Erro ao carregar usuários:", err);
-        const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro desconhecido";
         setError(errorMessage);
         showError(errorMessage);
       } finally {
@@ -97,8 +98,8 @@ const UsersPage: React.FC = () => {
   }, [showError]);
 
   // Filtrar usuários
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch = 
+  const filteredUsers = users.filter(user => {
+    const matchesSearch =
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -128,21 +129,35 @@ const UsersPage: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("❌ Erro na API:", errorData);
-        throw new Error(errorData.error || "Erro ao alterar permissão do usuário");
+        throw new Error(
+          errorData.error || "Erro ao alterar permissão do usuário"
+        );
       }
 
       const result = await response.json();
       console.log("✅ Resultado da API:", result);
 
       // Atualizar a lista local
-      setUsers(prev => prev.map(user => 
-        user.id === userId ? { ...user, role: newRole as 'ADMIN' | 'USER' } : user
-      ));
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId
+            ? { ...user, role: newRole as "ADMIN" | "USER" }
+            : user
+        )
+      );
 
-      showSuccess(`Usuário agora é ${newRole === "ADMIN" ? "administrador" : "usuário comum"}`);
+      showSuccess(
+        `Usuário agora é ${
+          newRole === "ADMIN" ? "administrador" : "usuário comum"
+        }`
+      );
     } catch (error) {
       console.error("❌ Erro ao alterar role:", error);
-      showError(error instanceof Error ? error.message : "Erro ao alterar permissão do usuário");
+      showError(
+        error instanceof Error
+          ? error.message
+          : "Erro ao alterar permissão do usuário"
+      );
     } finally {
       setActionLoading(null);
     }
@@ -227,8 +242,8 @@ const UsersPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={testSession}
                     className="px-3 py-2 text-sm"
                   >
@@ -251,14 +266,14 @@ const UsersPage: React.FC = () => {
                     type="text"
                     placeholder="Buscar por nome ou email..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
 
                 <select
                   value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
+                  onChange={e => setRoleFilter(e.target.value)}
                   className="px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">Todas as Funções</option>
@@ -347,8 +362,13 @@ const UsersPage: React.FC = () => {
               />
             ) : (
               <div className="space-y-4">
-                {filteredUsers.map((user) => (
-                  <Card key={user.id} variant="elevated" hover className="group">
+                {filteredUsers.map(user => (
+                  <Card
+                    key={user.id}
+                    variant="elevated"
+                    hover
+                    className="group"
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -364,7 +384,10 @@ const UsersPage: React.FC = () => {
                             ) : (
                               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                                 <span className="text-white font-semibold text-lg">
-                                  {user.name?.split(" ").map(n => n[0]).join("") || "U"}
+                                  {user.name
+                                    ?.split(" ")
+                                    .map(n => n[0])
+                                    .join("") || "U"}
                                 </span>
                               </div>
                             )}
@@ -376,21 +399,25 @@ const UsersPage: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          
+
                           <div>
                             <div className="flex items-center gap-3">
                               <h3 className="text-lg font-semibold text-white">
                                 {user.name || "Usuário sem nome"}
                               </h3>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                user.role === "ADMIN"
-                                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                                  : "bg-green-500/20 text-green-300 border border-green-500/30"
-                              }`}>
-                                {user.role === "ADMIN" ? "Administrador" : "Usuário"}
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  user.role === "ADMIN"
+                                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                    : "bg-green-500/20 text-green-300 border border-green-500/30"
+                                }`}
+                              >
+                                {user.role === "ADMIN"
+                                  ? "Administrador"
+                                  : "Usuário"}
                               </span>
                             </div>
-                            
+
                             <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
                               <div className="flex items-center gap-1">
                                 <Mail className="w-4 h-4" />
@@ -421,14 +448,22 @@ const UsersPage: React.FC = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleToggleRole(user.id, user.role)}
+                              onClick={() =>
+                                handleToggleRole(user.id, user.role)
+                              }
                               disabled={actionLoading === user.id || !isAdmin}
                               className={`${
                                 user.role === "ADMIN"
                                   ? "text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
                                   : "text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
-                              } ${!isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
-                              title={!isAdmin ? "Apenas administradores podem alterar permissões" : undefined}
+                              } ${
+                                !isAdmin ? "opacity-50 cursor-not-allowed" : ""
+                              }`}
+                              title={
+                                !isAdmin
+                                  ? "Apenas administradores podem alterar permissões"
+                                  : undefined
+                              }
                             >
                               {actionLoading === user.id ? (
                                 <LoadingSpinner size="sm" />

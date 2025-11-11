@@ -1,44 +1,42 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { PageLayout } from "@/components/layout/PageLayout";
-import { LoadingPage } from "@/components/layout/LoadingPage";
-import { ErrorPage } from "@/components/layout/ErrorPage";
 import {
-  Card,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useApp } from "@/lib/hooks/useApp";
-import { ReservationWithDetails, Room, User } from "@/lib/types";
-import {
-  ClipboardList,
-  CheckCircle,
-  XCircle,
-  Eye,
   AlertTriangle,
-  Clock,
-  User as UserIcon,
   Building2,
   Calendar,
+  CheckCircle,
+  ClipboardList,
+  Clock,
+  Eye,
   Search,
-  Filter,
+  User as UserIcon,
+  XCircle,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Modal } from "@/components/ui/Modal";
+import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
+import { ReservationWithDetails, Room, User } from "@/lib/types";
 
 const SolicitacoesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState("solicitacoes");
-  const [solicitacoes, setSolicitacoes] = useState<ReservationWithDetails[]>([]);
+  const [solicitacoes, setSolicitacoes] = useState<ReservationWithDetails[]>(
+    []
+  );
   const [rooms, setRooms] = useState<Room[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSolicitacao, setSelectedSolicitacao] = useState<ReservationWithDetails | null>(null);
+  const [selectedSolicitacao, setSelectedSolicitacao] =
+    useState<ReservationWithDetails | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const [conflictData, setConflictData] = useState<any>(null);
@@ -61,15 +59,19 @@ const SolicitacoesPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [solicitacoesResponse, roomsResponse, usersResponse] = await Promise.all([
-          fetch("/api/reservations?status=PENDING"),
-          fetch("/api/rooms"),
-          fetch("/api/users").catch(() => null),
-        ]);
+        const [solicitacoesResponse, roomsResponse, usersResponse] =
+          await Promise.all([
+            fetch("/api/reservations?status=PENDING"),
+            fetch("/api/rooms"),
+            fetch("/api/users").catch(() => null),
+          ]);
 
         if (!solicitacoesResponse.ok) {
           const errorData = await solicitacoesResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Erro ${solicitacoesResponse.status}: ${solicitacoesResponse.statusText}`);
+          throw new Error(
+            errorData.error ||
+              `Erro ${solicitacoesResponse.status}: ${solicitacoesResponse.statusText}`
+          );
         }
 
         if (!roomsResponse.ok) {
@@ -87,7 +89,8 @@ const SolicitacoesPage: React.FC = () => {
         setUsers(usersData || []);
       } catch (err) {
         console.error("Erro ao carregar solicitações:", err);
-        const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro desconhecido";
         setError(errorMessage);
         showError(errorMessage);
       } finally {
@@ -98,15 +101,18 @@ const SolicitacoesPage: React.FC = () => {
     fetchData();
   }, []);
 
-  const filteredSolicitacoes = solicitacoes.filter((solicitacao) => {
-    const roomName = rooms.find((r) => r.id === solicitacao.roomId)?.name || "";
+  const filteredSolicitacoes = solicitacoes.filter(solicitacao => {
+    const roomName = rooms.find(r => r.id === solicitacao.roomId)?.name || "";
     const userName = solicitacao.user.name || "";
     const matchesSearch =
       userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (solicitacao.purpose || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (solicitacao.purpose || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === "all" || solicitacao.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || solicitacao.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -192,7 +198,7 @@ const SolicitacoesPage: React.FC = () => {
     }
 
     // Atualizar lista
-    setSolicitacoes((prev) => prev.filter((s) => s.id !== solicitacaoId));
+    setSolicitacoes(prev => prev.filter(s => s.id !== solicitacaoId));
     showSuccess("Solicitação aprovada com sucesso!");
     setIsDetailsModalOpen(false);
   };
@@ -207,7 +213,7 @@ const SolicitacoesPage: React.FC = () => {
     }
 
     // Atualizar lista
-    setSolicitacoes((prev) => prev.filter((s) => s.id !== solicitacaoId));
+    setSolicitacoes(prev => prev.filter(s => s.id !== solicitacaoId));
     showSuccess("Solicitação rejeitada!");
     setIsDetailsModalOpen(false);
   };
@@ -217,7 +223,7 @@ const SolicitacoesPage: React.FC = () => {
 
     try {
       setActionLoading(conflictData.solicitacao.id);
-      
+
       // Cancelar reservas conflitantes
       for (const conflict of conflictData.conflicts) {
         await fetch(`/api/reservations/${conflict.id}`, {
@@ -227,7 +233,7 @@ const SolicitacoesPage: React.FC = () => {
 
       // Aprovar a nova solicitação
       await approveSolicitacao(conflictData.solicitacao.id);
-      
+
       setIsConflictModalOpen(false);
       setConflictData(null);
       showInfo("Solicitação aprovada! Reservas conflitantes foram canceladas.");
@@ -318,7 +324,9 @@ const SolicitacoesPage: React.FC = () => {
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {solicitacoes.length}
               </p>
-              <p className="text-sm text-slate-600 dark:text-gray-400">Pendentes</p>
+              <p className="text-sm text-slate-600 dark:text-gray-400">
+                Pendentes
+              </p>
             </div>
           </div>
         </div>
@@ -331,14 +339,14 @@ const SolicitacoesPage: React.FC = () => {
               type="text"
               placeholder="Buscar por usuário, sala ou propósito..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={e => setStatusFilter(e.target.value)}
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="PENDING">Pendentes</option>
@@ -352,7 +360,9 @@ const SolicitacoesPage: React.FC = () => {
       {/* Lista de solicitações */}
       {filteredSolicitacoes.length === 0 ? (
         <EmptyState
-          icon={<ClipboardList className="w-8 h-8 text-slate-500 dark:text-gray-400" />}
+          icon={
+            <ClipboardList className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+          }
           title="Nenhuma solicitação encontrada"
           description={
             searchTerm || statusFilter !== "PENDING"
@@ -362,7 +372,7 @@ const SolicitacoesPage: React.FC = () => {
         />
       ) : (
         <div className="space-y-4">
-          {filteredSolicitacoes.map((solicitacao) => (
+          {filteredSolicitacoes.map(solicitacao => (
             <Card
               key={solicitacao.id}
               variant="elevated"
@@ -377,7 +387,7 @@ const SolicitacoesPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-                        {rooms.find((r) => r.id === solicitacao.roomId)?.name ||
+                        {rooms.find(r => r.id === solicitacao.roomId)?.name ||
                           "Sala desconhecida"}
                       </h3>
                       <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
@@ -387,8 +397,9 @@ const SolicitacoesPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          {formatDateTime(new Date(solicitacao.startTime))} -{" "}
-                          {formatDateTime(new Date(solicitacao.endTime))}
+                          {formatDateTime(
+                            new Date(solicitacao.startTime)
+                          )} - {formatDateTime(new Date(solicitacao.endTime))}
                         </div>
                       </div>
                       {solicitacao.purpose && (
@@ -463,127 +474,127 @@ const SolicitacoesPage: React.FC = () => {
         onClose={() => setIsDetailsModalOpen(false)}
         title="Detalhes da Solicitação"
       >
-          {selectedSolicitacao && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Sala
-                  </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                    <Building2 className="w-4 h-4 text-blue-400" />
-                    <span className="text-slate-900 dark:text-white">
-                      {rooms.find((r) => r.id === selectedSolicitacao.roomId)
-                        ?.name || "Sala desconhecida"}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Usuário
-                  </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                    <UserIcon className="w-4 h-4 text-green-400" />
-                    <span className="text-slate-900 dark:text-white">
-                      {selectedSolicitacao.user.name}
-                    </span>
-                  </div>
+        {selectedSolicitacao && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Sala
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  <Building2 className="w-4 h-4 text-blue-400" />
+                  <span className="text-slate-900 dark:text-white">
+                    {rooms.find(r => r.id === selectedSolicitacao.roomId)
+                      ?.name || "Sala desconhecida"}
+                  </span>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Início
-                  </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                    <Clock className="w-4 h-4 text-orange-400" />
-                    <span className="text-slate-900 dark:text-white">
-                      {formatDateTime(new Date(selectedSolicitacao.startTime))}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Fim
-                  </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                    <Clock className="w-4 h-4 text-red-400" />
-                    <span className="text-slate-900 dark:text-white">
-                      {formatDateTime(new Date(selectedSolicitacao.endTime))}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {selectedSolicitacao.purpose && (
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Propósito
-                  </label>
-                  <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
-                    {selectedSolicitacao.purpose}
-                  </p>
-                </div>
-              )}
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Status
+                  Usuário
                 </label>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                    selectedSolicitacao.status
-                  )}`}
-                >
-                  {getStatusText(selectedSolicitacao.status)}
-                </span>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  <UserIcon className="w-4 h-4 text-green-400" />
+                  <span className="text-slate-900 dark:text-white">
+                    {selectedSolicitacao.user.name}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Início
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  <Clock className="w-4 h-4 text-orange-400" />
+                  <span className="text-slate-900 dark:text-white">
+                    {formatDateTime(new Date(selectedSolicitacao.startTime))}
+                  </span>
+                </div>
               </div>
 
-              {selectedSolicitacao.status === "PENDING" && (
-                <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDetailsModalOpen(false)}
-                    className="flex-1"
-                  >
-                    Fechar
-                  </Button>
-                  <Button
-                    onClick={() => handleApprove(selectedSolicitacao)}
-                    disabled={actionLoading === selectedSolicitacao.id}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                  >
-                    {actionLoading === selectedSolicitacao.id ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Aprovar
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    onClick={() => handleReject(selectedSolicitacao)}
-                    disabled={actionLoading === selectedSolicitacao.id}
-                    variant="outline"
-                    className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                  >
-                    {actionLoading === selectedSolicitacao.id ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <>
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Rejeitar
-                      </>
-                    )}
-                  </Button>
+              <div>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Fim
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                  <Clock className="w-4 h-4 text-red-400" />
+                  <span className="text-slate-900 dark:text-white">
+                    {formatDateTime(new Date(selectedSolicitacao.endTime))}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
-          )}
+
+            {selectedSolicitacao.purpose && (
+              <div>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Propósito
+                </label>
+                <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
+                  {selectedSolicitacao.purpose}
+                </p>
+              </div>
+            )}
+
+            <div>
+              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                Status
+              </label>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  selectedSolicitacao.status
+                )}`}
+              >
+                {getStatusText(selectedSolicitacao.status)}
+              </span>
+            </div>
+
+            {selectedSolicitacao.status === "PENDING" && (
+              <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="flex-1"
+                >
+                  Fechar
+                </Button>
+                <Button
+                  onClick={() => handleApprove(selectedSolicitacao)}
+                  disabled={actionLoading === selectedSolicitacao.id}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                >
+                  {actionLoading === selectedSolicitacao.id ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Aprovar
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => handleReject(selectedSolicitacao)}
+                  disabled={actionLoading === selectedSolicitacao.id}
+                  variant="outline"
+                  className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  {actionLoading === selectedSolicitacao.id ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <>
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Rejeitar
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
 
       {/* Modal de conflito */}
@@ -593,75 +604,76 @@ const SolicitacoesPage: React.FC = () => {
         title="Conflito de Horário Detectado"
         size="lg"
       >
-          {conflictData && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-                <AlertTriangle className="w-6 h-6 text-red-400" />
-                <div>
-                  <h3 className="font-semibold text-red-400">
-                    Conflito Detectado!
-                  </h3>
-                  <p className="text-sm text-gray-300">
-                    Esta sala já está reservada no mesmo horário por outro usuário.
-                  </p>
-                </div>
-              </div>
-
+        {conflictData && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+              <AlertTriangle className="w-6 h-6 text-red-400" />
               <div>
-                <h4 className="font-medium text-white mb-3">
-                  Reservas Conflitantes:
-                </h4>
-                <div className="space-y-3">
-                  {conflictData.conflicts.map((conflict: any, index: number) => (
-                    <div
-                      key={index}
-                      className="p-3 bg-slate-800 rounded-lg border border-slate-700"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-white">
-                            {conflict.user?.name || "Usuário desconhecido"}
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            {formatDateTime(new Date(conflict.startTime))} -{" "}
-                            {formatDateTime(new Date(conflict.endTime))}
-                          </p>
-                        </div>
-                        <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
-                          Conflito
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4 border-t border-slate-700">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsConflictModalOpen(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleForceApprove}
-                  disabled={actionLoading === conflictData.solicitacao.id}
-                  className="flex-1 bg-red-600 hover:bg-red-700"
-                >
-                  {actionLoading === conflictData.solicitacao.id ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <>
-                      <AlertTriangle className="w-4 h-4 mr-2" />
-                      Aprovar Mesmo Assim
-                    </>
-                  )}
-                </Button>
+                <h3 className="font-semibold text-red-400">
+                  Conflito Detectado!
+                </h3>
+                <p className="text-sm text-gray-300">
+                  Esta sala já está reservada no mesmo horário por outro
+                  usuário.
+                </p>
               </div>
             </div>
-          )}
-        </Modal>
+
+            <div>
+              <h4 className="font-medium text-white mb-3">
+                Reservas Conflitantes:
+              </h4>
+              <div className="space-y-3">
+                {conflictData.conflicts.map((conflict: any, index: number) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-slate-800 rounded-lg border border-slate-700"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-white">
+                          {conflict.user?.name || "Usuário desconhecido"}
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          {formatDateTime(new Date(conflict.startTime))} -{" "}
+                          {formatDateTime(new Date(conflict.endTime))}
+                        </p>
+                      </div>
+                      <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
+                        Conflito
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-slate-700">
+              <Button
+                variant="outline"
+                onClick={() => setIsConflictModalOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleForceApprove}
+                disabled={actionLoading === conflictData.solicitacao.id}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                {actionLoading === conflictData.solicitacao.id ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <>
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Aprovar Mesmo Assim
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </PageLayout>
   );
 };

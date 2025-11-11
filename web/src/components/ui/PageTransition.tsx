@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { LoadingSpinner } from './LoadingSpinner';
+import React, { useEffect, useState } from "react";
+
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -9,10 +10,10 @@ interface PageTransitionProps {
   fallback?: React.ReactNode;
 }
 
-export const PageTransition: React.FC<PageTransitionProps> = ({ 
-  children, 
-  isLoading, 
-  fallback 
+export const PageTransition: React.FC<PageTransitionProps> = ({
+  children,
+  isLoading,
+  fallback,
 }) => {
   const [showContent, setShowContent] = useState(!isLoading);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -27,7 +28,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
         setShowContent(true);
         setIsTransitioning(false);
       }, 150);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
@@ -40,9 +41,5 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
     );
   }
 
-  return (
-    <div className="animate-fadeIn">
-      {children}
-    </div>
-  );
+  return <div className="animate-fadeIn">{children}</div>;
 };

@@ -1,55 +1,53 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { PageLayout } from '@/components/layout/PageLayout';
-import { LoadingPage } from '@/components/layout/LoadingPage';
-import { ErrorPage } from '@/components/layout/ErrorPage';
-import { Card, CardContent, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { Calendar } from '@/components/ui/Calendar';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { ReservationForm } from '@/components/forms/ReservationForm';
-import { useNavigation } from '@/lib/hooks/useNavigation';
-import { useApp } from '@/lib/hooks/useApp';
-import { ReservationWithUser, Room, User } from '@/lib/types';
-import { 
-  Calendar as CalendarIcon, 
-  Plus, 
-  Filter, 
-  Search, 
-  Clock, 
-  User as UserIcon,
+import {
   Building2,
+  Calendar as CalendarIcon,
+  Clock,
   Eye,
-  Edit,
-  Trash2
-} from 'lucide-react';
+  Plus,
+  Search,
+  Trash2,
+  User as UserIcon,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 
-
+import { ReservationForm } from "@/components/forms/ReservationForm";
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { Button } from "@/components/ui/Button";
+import { Calendar } from "@/components/ui/Calendar";
+import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Modal } from "@/components/ui/Modal";
+import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
+import { ReservationWithUser, Room, User } from "@/lib/types";
 
 const AgendamentosPage: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState('agendamentos');
+  const [currentPage, setCurrentPage] = useState("agendamentos");
   const [reservations, setReservations] = useState<ReservationWithUser[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedReservation, setSelectedReservation] = useState<ReservationWithUser | null>(null);
+  const [selectedReservation, setSelectedReservation] =
+    useState<ReservationWithUser | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [createReservationLoading, setCreateReservationLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [createReservationLoading, setCreateReservationLoading] =
+    useState(false);
 
   const { showSuccess, showError } = useApp();
 
   // Hook de navegação otimizada
   const { navigate, isNavigating } = useNavigation({
     currentPage,
-    onPageChange: setCurrentPage
+    onPageChange: setCurrentPage,
   });
 
   // Carregar dados
@@ -59,28 +57,30 @@ const AgendamentosPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [reservationsResponse, roomsResponse, usersResponse] = await Promise.all([
-          fetch('/api/reservations'),
-          fetch('/api/rooms'),
-          fetch('/api/users').catch(() => null) // API de usuários pode não existir ainda
-        ]);
+        const [reservationsResponse, roomsResponse, usersResponse] =
+          await Promise.all([
+            fetch("/api/reservations"),
+            fetch("/api/rooms"),
+            fetch("/api/users").catch(() => null), // API de usuários pode não existir ainda
+          ]);
 
         if (!reservationsResponse.ok || !roomsResponse.ok) {
-          throw new Error('Erro ao carregar dados');
+          throw new Error("Erro ao carregar dados");
         }
 
         const [reservationsData, roomsData, usersData] = await Promise.all([
           reservationsResponse.json(),
           roomsResponse.json(),
-          usersResponse?.ok ? usersResponse.json() : Promise.resolve([])
+          usersResponse?.ok ? usersResponse.json() : Promise.resolve([]),
         ]);
 
         setReservations(reservationsData);
         setRooms(roomsData);
         setUsers(usersData || []);
       } catch (err) {
-        console.error('Erro ao carregar dados:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+        console.error("Erro ao carregar dados:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "Erro desconhecido";
         setError(errorMessage);
         showError(errorMessage);
       } finally {
@@ -92,14 +92,19 @@ const AgendamentosPage: React.FC = () => {
   }, []);
 
   const filteredReservations = reservations.filter(reservation => {
-    const roomName = rooms.find(r => r.id === reservation.roomId)?.name || '';
-    const matchesSearch = 
-      (reservation.user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const roomName = rooms.find(r => r.id === reservation.roomId)?.name || "";
+    const matchesSearch =
+      (reservation.user.name || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       roomName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (reservation.purpose || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || reservation.status === statusFilter;
-    
+      (reservation.purpose || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || reservation.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -108,11 +113,11 @@ const AgendamentosPage: React.FC = () => {
       const startDate = new Date(reservation.startTime);
       const endDate = new Date(reservation.endTime);
       const checkDate = new Date(date);
-      
+
       startDate.setHours(0, 0, 0, 0);
       endDate.setHours(0, 0, 0, 0);
       checkDate.setHours(0, 0, 0, 0);
-      
+
       return checkDate >= startDate && checkDate <= endDate;
     });
   };
@@ -147,33 +152,33 @@ const AgendamentosPage: React.FC = () => {
   }) => {
     try {
       setCreateReservationLoading(true);
-      
-      const response = await fetch('/api/reservations', {
-        method: 'POST',
+
+      const response = await fetch("/api/reservations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(reservationData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao criar reserva');
+        throw new Error(errorData.error || "Erro ao criar reserva");
       }
 
       const newReservation = await response.json();
-      
+
       // Atualizar lista de reservas
       setReservations(prev => [newReservation, ...prev]);
-      
+
       // Fechar modal
       setIsCreateModalOpen(false);
-      
+
       // Mostrar sucesso
-      showSuccess('Reserva criada com sucesso!');
-      
+      showSuccess("Reserva criada com sucesso!");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar reserva';
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao criar reserva";
       showError(errorMessage);
     } finally {
       setCreateReservationLoading(false);
@@ -181,53 +186,64 @@ const AgendamentosPage: React.FC = () => {
   };
 
   const handleDeleteReservation = async (reservationId: string) => {
-    if (!confirm('Tem certeza que deseja cancelar esta reserva?')) return;
+    if (!confirm("Tem certeza que deseja cancelar esta reserva?")) return;
 
     try {
       const response = await fetch(`/api/reservations/${reservationId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao cancelar reserva');
+        throw new Error("Erro ao cancelar reserva");
       }
 
       setReservations(prev => prev.filter(r => r.id !== reservationId));
-      showSuccess('Reserva cancelada com sucesso!');
+      showSuccess("Reserva cancelada com sucesso!");
       setIsDetailsModalOpen(false);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro ao cancelar reserva';
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao cancelar reserva";
       showError(errorMessage);
     }
   };
 
   const formatDateTime = (date: Date): string => {
-    return date.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'APPROVED': return 'text-green-400 bg-green-500/10';
-      case 'ACTIVE': return 'text-blue-400 bg-blue-500/10';
-      case 'CANCELLED': return 'text-red-400 bg-red-500/10';
-      case 'COMPLETED': return 'text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10';
-      default: return 'text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10';
+      case "APPROVED":
+        return "text-green-400 bg-green-500/10";
+      case "ACTIVE":
+        return "text-blue-400 bg-blue-500/10";
+      case "CANCELLED":
+        return "text-red-400 bg-red-500/10";
+      case "COMPLETED":
+        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
+      default:
+        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
     }
   };
 
   const getStatusText = (status: string): string => {
     switch (status) {
-      case 'APPROVED': return 'Aprovada';
-      case 'ACTIVE': return 'Ativa';
-      case 'CANCELLED': return 'Cancelada';
-      case 'COMPLETED': return 'Concluída';
-      default: return 'Desconhecido';
+      case "APPROVED":
+        return "Aprovada";
+      case "ACTIVE":
+        return "Ativa";
+      case "CANCELLED":
+        return "Cancelada";
+      case "COMPLETED":
+        return "Concluída";
+      default:
+        return "Desconhecido";
     }
   };
 
@@ -260,11 +276,15 @@ const AgendamentosPage: React.FC = () => {
               <CalendarIcon className="w-8 h-8 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Agendamentos</h1>
-              <p className="text-slate-600 dark:text-gray-400">Visualize e gerencie todos os agendamentos das salas</p>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                Agendamentos
+              </h1>
+              <p className="text-slate-600 dark:text-gray-400">
+                Visualize e gerencie todos os agendamentos das salas
+              </p>
             </div>
           </div>
-          
+
           <Button onClick={handleCreateReservation} className="px-6 py-3">
             <Plus className="w-5 h-5 mr-2" />
             Nova Reserva
@@ -279,14 +299,14 @@ const AgendamentosPage: React.FC = () => {
               type="text"
               placeholder="Buscar por usuário, sala ou propósito..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={e => setStatusFilter(e.target.value)}
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">Todos os Status</option>
@@ -317,29 +337,33 @@ const AgendamentosPage: React.FC = () => {
             <Clock className="w-5 h-5 text-blue-400" />
             <div>
               <CardTitle className="text-xl">
-                Reservas de {selectedDate.toLocaleDateString('pt-BR', { 
-                  weekday: 'long', 
-                  day: '2-digit', 
-                  month: 'long' 
+                Reservas de{" "}
+                {selectedDate.toLocaleDateString("pt-BR", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long",
                 })}
               </CardTitle>
               <p className="text-slate-600 dark:text-gray-400 text-sm">
-                {getReservationsForDate(selectedDate).length} reserva(s) encontrada(s)
+                {getReservationsForDate(selectedDate).length} reserva(s)
+                encontrada(s)
               </p>
             </div>
           </div>
         </div>
-        
+
         <CardContent className="p-6">
           {getReservationsForDate(selectedDate).length === 0 ? (
             <EmptyState
-              icon={<CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />}
+              icon={
+                <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+              }
               title="Nenhuma reserva neste dia"
               description="Não há agendamentos para a data selecionada."
             />
           ) : (
             <div className="space-y-4">
-              {getReservationsForDate(selectedDate).map((reservation) => (
+              {getReservationsForDate(selectedDate).map(reservation => (
                 <div
                   key={reservation.id}
                   className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
@@ -351,7 +375,10 @@ const AgendamentosPage: React.FC = () => {
                         <Building2 className="w-5 h-5 text-blue-400" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-white">{rooms.find(r => r.id === reservation.roomId)?.name || 'Sala desconhecida'}</h3>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {rooms.find(r => r.id === reservation.roomId)?.name ||
+                            "Sala desconhecida"}
+                        </h3>
                         <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <UserIcon className="w-4 h-4" />
@@ -359,23 +386,31 @@ const AgendamentosPage: React.FC = () => {
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />
-                            {formatDateTime(new Date(reservation.startTime))} - {formatDateTime(new Date(reservation.endTime))}
+                            {formatDateTime(
+                              new Date(reservation.startTime)
+                            )} - {formatDateTime(new Date(reservation.endTime))}
                           </div>
                         </div>
                         {reservation.purpose && (
-                          <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">{reservation.purpose}</p>
+                          <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">
+                            {reservation.purpose}
+                          </p>
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(reservation.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          reservation.status
+                        )}`}
+                      >
                         {getStatusText(reservation.status)}
                       </span>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleReservationClick(reservation);
                         }}
@@ -401,50 +436,77 @@ const AgendamentosPage: React.FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Sala</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Sala
+                </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-slate-900 dark:text-white">{rooms.find(r => r.id === selectedReservation.roomId)?.name || 'Sala desconhecida'}</span>
+                  <span className="text-slate-900 dark:text-white">
+                    {rooms.find(r => r.id === selectedReservation.roomId)
+                      ?.name || "Sala desconhecida"}
+                  </span>
                 </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Usuário</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Usuário
+                </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <UserIcon className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-900 dark:text-white">{selectedReservation.user.name}</span>
+                  <span className="text-slate-900 dark:text-white">
+                    {selectedReservation.user.name}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Início</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Início
+                </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-orange-400" />
-                  <span className="text-slate-900 dark:text-white">{formatDateTime(new Date(selectedReservation.startTime))}</span>
+                  <span className="text-slate-900 dark:text-white">
+                    {formatDateTime(new Date(selectedReservation.startTime))}
+                  </span>
                 </div>
               </div>
-              
+
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Fim</label>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Fim
+                </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-slate-900 dark:text-white">{formatDateTime(new Date(selectedReservation.endTime))}</span>
+                  <span className="text-slate-900 dark:text-white">
+                    {formatDateTime(new Date(selectedReservation.endTime))}
+                  </span>
                 </div>
               </div>
             </div>
 
             {selectedReservation.purpose && (
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Propósito</label>
-                <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">{selectedReservation.purpose}</p>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  Propósito
+                </label>
+                <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
+                  {selectedReservation.purpose}
+                </p>
               </div>
             )}
 
             <div>
-              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Status</label>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedReservation.status)}`}>
+              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                Status
+              </label>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  selectedReservation.status
+                )}`}
+              >
                 {getStatusText(selectedReservation.status)}
               </span>
             </div>
@@ -457,10 +519,13 @@ const AgendamentosPage: React.FC = () => {
               >
                 Fechar
               </Button>
-              {(selectedReservation.status === 'ACTIVE' || selectedReservation.status === 'APPROVED') && (
+              {(selectedReservation.status === "ACTIVE" ||
+                selectedReservation.status === "APPROVED") && (
                 <Button
                   variant="outline"
-                  onClick={() => handleDeleteReservation(selectedReservation.id)}
+                  onClick={() =>
+                    handleDeleteReservation(selectedReservation.id)
+                  }
                   className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />

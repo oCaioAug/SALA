@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
-import React, { useRef, useState, useCallback } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Image as ImageIcon, Upload, X } from "lucide-react";
+import React, { useCallback, useRef, useState } from "react";
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -17,31 +16,34 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageRemove,
   previewUrl,
   itemName,
-  disabled = false
+  disabled = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const validateAndSetImage = useCallback((file: File) => {
-    setError(null);
+  const validateAndSetImage = useCallback(
+    (file: File) => {
+      setError(null);
 
-    // Validar tipo
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Formato não suportado. Use JPG, PNG ou WebP.');
-      return;
-    }
+      // Validar tipo
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        setError("Formato não suportado. Use JPG, PNG ou WebP.");
+        return;
+      }
 
-    // Validar tamanho (15MB)
-    const maxSize = 15 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError('Imagem muito grande. Tamanho máximo: 15MB');
-      return;
-    }
+      // Validar tamanho (15MB)
+      const maxSize = 15 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setError("Imagem muito grande. Tamanho máximo: 15MB");
+        return;
+      }
 
-    onImageSelect(file);
-  }, [onImageSelect]);
+      onImageSelect(file);
+    },
+    [onImageSelect]
+  );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,36 +74,39 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (disabled) return;
 
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       validateAndSetImage(file);
     } else {
-      setError('Por favor, selecione uma imagem válida.');
+      setError("Por favor, selecione uma imagem válida.");
     }
   };
 
-  const handlePaste = useCallback((e: ClipboardEvent) => {
-    if (disabled) return;
+  const handlePaste = useCallback(
+    (e: ClipboardEvent) => {
+      if (disabled) return;
 
-    const items = e.clipboardData?.items;
-    if (!items) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.type.startsWith('image/')) {
-        const file = item.getAsFile();
-        if (file) {
-          validateAndSetImage(file);
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            validateAndSetImage(file);
+          }
+          break;
         }
-        break;
       }
-    }
-  }, [disabled, validateAndSetImage]);
+    },
+    [disabled, validateAndSetImage]
+  );
 
   React.useEffect(() => {
     if (!disabled) {
-      document.addEventListener('paste', handlePaste);
+      document.addEventListener("paste", handlePaste);
       return () => {
-        document.removeEventListener('paste', handlePaste);
+        document.removeEventListener("paste", handlePaste);
       };
     }
   }, [disabled, handlePaste]);
@@ -117,7 +122,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     onImageRemove();
     setError(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -132,7 +137,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           <div className="relative w-full h-48 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border-2 border-slate-300 dark:border-slate-600">
             <img
               src={previewUrl}
-              alt={itemName || 'Preview'}
+              alt={itemName || "Preview"}
               className="w-full h-full object-cover"
             />
             {!disabled && (
@@ -160,11 +165,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             relative w-full h-48 border-2 border-dashed rounded-lg
             flex flex-col items-center justify-center gap-3
             cursor-pointer transition-colors
-            ${isDragging
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-              : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500'
+            ${
+              isDragging
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500"
             }
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}
+            ${
+              disabled
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            }
           `}
         >
           <input
@@ -175,7 +185,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             className="hidden"
             disabled={disabled}
           />
-          
+
           <div className="flex flex-col items-center gap-2">
             <div className="p-3 bg-slate-200 dark:bg-slate-700 rounded-full">
               {isDragging ? (
@@ -186,7 +196,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             </div>
             <div className="text-center">
               <p className="text-sm font-medium text-slate-700 dark:text-gray-300">
-                {isDragging ? 'Solte a imagem aqui' : 'Clique ou arraste uma imagem'}
+                {isDragging
+                  ? "Solte a imagem aqui"
+                  : "Clique ou arraste uma imagem"}
               </p>
               <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                 JPG, PNG ou WebP (máx. 15MB)
@@ -205,4 +217,3 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     </div>
   );
 };
-

@@ -20,7 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Carregar tema do localStorage ou usar dark como padrão
     const savedTheme = localStorage.getItem("theme") as Theme | null;
     const initialTheme = savedTheme || "dark";
-    
+
     // Aplicar tema imediatamente antes do primeiro render
     const root = document.documentElement;
     if (initialTheme === "dark") {
@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove("dark");
     }
-    
+
     setThemeState(initialTheme);
     setMounted(true);
   }, []);
@@ -72,4 +72,3 @@ export function useTheme() {
   }
   return context;
 }
-

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 const UPLOAD_DIR = path.join(

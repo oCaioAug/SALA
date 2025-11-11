@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 
 export interface Toast {
   id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: "success" | "error" | "warning" | "info";
   title: string;
   message?: string;
   duration?: number;
@@ -13,7 +13,7 @@ export interface Toast {
 
 interface ToastContextType {
   toasts: Toast[];
-  addToast: (toast: Omit<Toast, 'id'>) => void;
+  addToast: (toast: Omit<Toast, "id">) => void;
   removeToast: (id: string) => void;
 }
 
@@ -22,18 +22,20 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within a ToastProvider');
+    throw new Error("useToast must be used within a ToastProvider");
   }
   return context;
 };
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
+  const addToast = useCallback((toast: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newToast = { ...toast, id };
-    
+
     setToasts(prev => [...prev, newToast]);
 
     // Auto remove after duration
@@ -55,17 +57,23 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-const ToastContainer: React.FC<{ toasts: Toast[]; onRemove: (id: string) => void }> = ({ toasts, onRemove }) => {
+const ToastContainer: React.FC<{
+  toasts: Toast[];
+  onRemove: (id: string) => void;
+}> = ({ toasts, onRemove }) => {
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
-      {toasts.map((toast) => (
+      {toasts.map(toast => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
     </div>
   );
 };
 
-const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({ toast, onRemove }) => {
+const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
+  toast,
+  onRemove,
+}) => {
   const icons = {
     success: CheckCircle,
     error: AlertCircle,
@@ -74,10 +82,10 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   };
 
   const colors = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    warning: 'bg-yellow-500',
-    info: 'bg-blue-500',
+    success: "bg-green-500",
+    error: "bg-red-500",
+    warning: "bg-yellow-500",
+    info: "bg-blue-500",
   };
 
   const Icon = icons[toast.type];
@@ -88,14 +96,18 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
         <div className={`p-1 rounded-full ${colors[toast.type]}`}>
           <Icon className="w-4 h-4 text-white" />
         </div>
-        
+
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{toast.title}</h4>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+            {toast.title}
+          </h4>
           {toast.message && (
-            <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">{toast.message}</p>
+            <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">
+              {toast.message}
+            </p>
           )}
         </div>
-        
+
         <button
           onClick={() => onRemove(toast.id)}
           className="text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors"

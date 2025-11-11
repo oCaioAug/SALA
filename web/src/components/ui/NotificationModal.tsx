@@ -1,29 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { 
-  Notification, 
-  NotificationType, 
-  NOTIFICATION_TYPE_CONFIG,
-  NotificationTypeType 
-} from "@/lib/types";
-import { 
-  Bell, 
-  Check, 
-  Trash2, 
-  CheckCheck, 
-  CalendarPlus, 
-  CheckCircle, 
-  XCircle, 
-  CalendarX, 
-  AlertTriangle, 
-  Building, 
+import {
+  AlertTriangle,
+  Bell,
+  Building,
+  CalendarPlus,
+  CalendarX,
+  Check,
+  CheckCheck,
+  CheckCircle,
+  Clock,
   Megaphone,
-  Clock
+  Trash2,
+  XCircle,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  Notification,
+  NOTIFICATION_TYPE_CONFIG,
+  NotificationTypeType,
+} from "@/lib/types";
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -48,8 +48,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/notifications?userId=${userId}&limit=50`);
-      
+      const response = await fetch(
+        `/api/notifications?userId=${userId}&limit=50`
+      );
+
       if (!response.ok) {
         throw new Error("Erro ao carregar notificações");
       }
@@ -77,14 +79,12 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       }
 
       // Atualizar estado local
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === notificationId 
-            ? { ...notif, isRead: true }
-            : notif
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.id === notificationId ? { ...notif, isRead: true } : notif
         )
       );
-      
+
       // Notificar mudança
       if (onNotificationChange) {
         onNotificationChange();
@@ -107,8 +107,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       }
 
       // Remover do estado local
-      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
-      
+      setNotifications(prev =>
+        prev.filter(notif => notif.id !== notificationId)
+      );
+
       // Notificar mudança
       if (onNotificationChange) {
         onNotificationChange();
@@ -120,8 +122,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   const markAllAsRead = async () => {
     try {
-      console.log('🔄 Marcando todas como lidas para userId:', userId);
-      
+      console.log("🔄 Marcando todas como lidas para userId:", userId);
+
       const response = await fetch("/api/notifications/mark-all-read", {
         method: "PUT",
         headers: {
@@ -130,29 +132,27 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         body: JSON.stringify({ userId }),
       });
 
-      console.log('📡 Resposta da API:', response.status, response.ok);
+      console.log("📡 Resposta da API:", response.status, response.ok);
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Erro da API:', errorData);
+        console.error("❌ Erro da API:", errorData);
         throw new Error("Erro ao marcar todas como lidas");
       }
 
       const result = await response.json();
-      console.log('✅ Resultado da API:', result);
+      console.log("✅ Resultado da API:", result);
 
       // Atualizar estado local
-      setNotifications(prev => 
-        prev.map(notif => ({ ...notif, isRead: true }))
-      );
-      
-      console.log('🔄 Chamando onNotificationChange...');
+      setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
+
+      console.log("🔄 Chamando onNotificationChange...");
       // Notificar mudança
       if (onNotificationChange) {
         onNotificationChange();
-        console.log('✅ onNotificationChange chamado');
+        console.log("✅ onNotificationChange chamado");
       } else {
-        console.log('❌ onNotificationChange não definido');
+        console.log("❌ onNotificationChange não definido");
       }
     } catch (err) {
       console.error("❌ Erro ao marcar todas como lidas:", err);
@@ -194,7 +194,9 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   const formatDate = (date: string | Date) => {
     const d = new Date(date);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor(
+      (now.getTime() - d.getTime()) / (1000 * 60 * 60)
+    );
 
     if (diffInHours < 1) {
       return "Agora mesmo";
@@ -222,25 +224,38 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-700/50">
         <div className="flex items-center gap-2">
           <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Notificações</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            Notificações
+          </h3>
         </div>
         <button
           onClick={onClose}
           className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600/50"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
-      
+
       {/* Content */}
       <div className="max-h-80 overflow-y-auto">
         {/* Header com ações */}
         <div className="flex items-center justify-between p-4 pb-3 border-b border-slate-200 dark:border-slate-600/50">
           <div className="flex items-center gap-2">
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              {notifications.length} notificação{notifications.length !== 1 ? "ões" : ""}
+              {notifications.length} notificação
+              {notifications.length !== 1 ? "ões" : ""}
               {unreadCount > 0 && (
                 <span className="ml-2 text-blue-600 dark:text-blue-400">
                   ({unreadCount} não lida{unreadCount !== 1 ? "s" : ""})
@@ -248,7 +263,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               )}
             </span>
           </div>
-          
+
           {unreadCount > 0 && (
             <Button
               onClick={markAllAsRead}
@@ -269,23 +284,31 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
           </div>
         ) : error ? (
           <EmptyState
-            icon={<Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />}
+            icon={
+              <Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />
+            }
             title="Erro ao carregar notificações"
             description={error}
           />
         ) : notifications.length === 0 ? (
           <EmptyState
-            icon={<Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />}
+            icon={
+              <Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />
+            }
             title="Nenhuma notificação"
             description="Você não tem notificações no momento"
           />
         ) : (
           <div className="p-2">
-            {notifications.map((notification) => {
-              const IconComponent = getNotificationIcon(notification.type as NotificationTypeType);
-              const color = getNotificationColor(notification.type as NotificationTypeType);
+            {notifications.map(notification => {
+              const IconComponent = getNotificationIcon(
+                notification.type as NotificationTypeType
+              );
+              const color = getNotificationColor(
+                notification.type as NotificationTypeType
+              );
               const colorClasses = getNotificationColorClasses(color);
-              
+
               return (
                 <div
                   key={notification.id}
@@ -296,21 +319,33 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${colorClasses.split(' ')[0]}`}>
-                      <IconComponent className={`w-4 h-4 ${colorClasses.split(' ')[1]}`} />
+                    <div
+                      className={`p-2 rounded-lg ${colorClasses.split(" ")[0]}`}
+                    >
+                      <IconComponent
+                        className={`w-4 h-4 ${colorClasses.split(" ")[1]}`}
+                      />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <h4 className={`font-medium text-sm ${
-                            notification.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"
-                          }`}>
+                          <h4
+                            className={`font-medium text-sm ${
+                              notification.isRead
+                                ? "text-slate-700 dark:text-slate-300"
+                                : "text-slate-900 dark:text-white"
+                            }`}
+                          >
                             {notification.title}
                           </h4>
-                          <p className={`text-xs mt-1 ${
-                            notification.isRead ? "text-slate-600 dark:text-slate-400" : "text-slate-700 dark:text-slate-300"
-                          }`}>
+                          <p
+                            className={`text-xs mt-1 ${
+                              notification.isRead
+                                ? "text-slate-600 dark:text-slate-400"
+                                : "text-slate-700 dark:text-slate-300"
+                            }`}
+                          >
                             {notification.message}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
@@ -320,7 +355,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                             </span>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-1">
                           {!notification.isRead && (
                             <Button
@@ -337,7 +372,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                               )}
                             </Button>
                           )}
-                          
+
                           <Button
                             onClick={() => deleteNotification(notification.id)}
                             variant="ghost"

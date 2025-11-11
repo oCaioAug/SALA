@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/Button";
 import { AlertCircle } from "lucide-react";
+import React from "react";
+
+import { Button } from "@/components/ui/Button";
 
 interface ErrorPageProps {
   error: string;
@@ -24,12 +25,11 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
         <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
           Erro
         </h3>
-        <p className="text-slate-600 dark:text-gray-400 text-sm mb-6">{error}</p>
-        {onRetry && (
-          <Button onClick={onRetry}>{retryLabel}</Button>
-        )}
+        <p className="text-slate-600 dark:text-gray-400 text-sm mb-6">
+          {error}
+        </p>
+        {onRetry && <Button onClick={onRetry}>{retryLabel}</Button>}
       </div>
     </div>
   );
 };
-

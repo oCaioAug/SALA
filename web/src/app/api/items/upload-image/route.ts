@@ -1,24 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { validateImage, generateFilename, processAndSaveImage } from '@/lib/utils/imageProcessor';
+import { NextRequest, NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
+import {
+  generateFilename,
+  processAndSaveImage,
+  validateImage,
+} from "@/lib/utils/imageProcessor";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('image') as File;
-    const itemName = formData.get('itemName') as string;
-    const itemId = formData.get('itemId') as string | null;
+    const file = formData.get("image") as File;
+    const itemName = formData.get("itemName") as string;
+    const itemId = formData.get("itemId") as string | null;
 
     if (!file) {
       return NextResponse.json(
-        { error: 'Nenhuma imagem fornecida' },
+        { error: "Nenhuma imagem fornecida" },
         { status: 400 }
       );
     }
 
     if (!itemName) {
       return NextResponse.json(
-        { error: 'Nome do item é obrigatório' },
+        { error: "Nome do item é obrigatório" },
         { status: 400 }
       );
     }
@@ -26,10 +31,7 @@ export async function POST(request: NextRequest) {
     // Validar imagem
     const validation = validateImage(file);
     if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     // Converter File para Buffer
@@ -40,7 +42,10 @@ export async function POST(request: NextRequest) {
     const filename = generateFilename(itemName);
 
     // Processar e salvar imagem
-    const { originalPath, thumbnailPath } = await processAndSaveImage(buffer, filename);
+    const { originalPath, thumbnailPath } = await processAndSaveImage(
+      buffer,
+      filename
+    );
 
     // Salvar referência no banco de dados
     if (itemId) {
@@ -49,8 +54,8 @@ export async function POST(request: NextRequest) {
         data: {
           itemId,
           filename,
-          path: originalPath
-        }
+          path: originalPath,
+        },
       });
 
       return NextResponse.json({
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
         filename: image.filename,
         path: image.path,
         thumbnailPath,
-        itemId: image.itemId
+        itemId: image.itemId,
       });
     } else {
       // Se não existe item ainda, retornar dados para salvar depois
@@ -66,15 +71,14 @@ export async function POST(request: NextRequest) {
         filename,
         path: originalPath,
         thumbnailPath,
-        temp: true // Indica que é temporário, precisa ser associado a um item depois
+        temp: true, // Indica que é temporário, precisa ser associado a um item depois
       });
     }
   } catch (error) {
-    console.error('Erro ao fazer upload da imagem:', error);
+    console.error("Erro ao fazer upload da imagem:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor ao processar imagem' },
+      { error: "Erro interno do servidor ao processar imagem" },
       { status: 500 }
     );
   }
 }
-

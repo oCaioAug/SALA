@@ -1,10 +1,11 @@
 "use client";
 
-import React, { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import React, { Suspense } from "react";
+
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const AuthErrorContent: React.FC = () => {
   const searchParams = useSearchParams();

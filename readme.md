@@ -5,6 +5,7 @@
 O **SALA** (Sistema de Gerenciamento de Salas) é uma plataforma web moderna desenvolvida para gerenciar salas, laboratórios e espaços em instituições de ensino. O sistema permite que equipes de coordenação acompanhem o uso das salas, gerenciem itens e equipamentos, e controlem reservas de forma eficiente e transparente.
 
 ### 🎯 Objetivos
+
 - **Modernizar** o gerenciamento de salas e laboratórios
 - **Eliminar** conflitos de horários e reservas duplicadas
 - **Otimizar** o uso dos espaços disponíveis
@@ -14,6 +15,7 @@ O **SALA** (Sistema de Gerenciamento de Salas) é uma plataforma web moderna des
 ## 🚀 Tecnologias Utilizadas
 
 ### Frontend & Backend (Aplicação Web)
+
 - **Framework:** Next.js 14.2.15
 - **Linguagem:** TypeScript
 - **Estilização:** Tailwind CSS
@@ -22,11 +24,13 @@ O **SALA** (Sistema de Gerenciamento de Salas) é uma plataforma web moderna des
 - **Estado Global:** React Context + Hooks
 
 ### Banco de Dados & ORM
+
 - **Banco de Dados:** PostgreSQL 15
 - **ORM:** Prisma 6.16.1
 - **Containerização:** Docker & Docker Compose
 
 ### Infraestrutura
+
 - **Containerização:** Docker
 - **Orquestração:** Docker Compose
 - **Ambiente:** Node.js 18 Alpine
@@ -61,6 +65,7 @@ SALA/
 ## ✨ Funcionalidades Implementadas
 
 ### 🏠 Dashboard Principal
+
 - **Visão Geral:** Estatísticas em tempo real das salas
 - **Filtros Avançados:** Busca por nome, status e tipo
 - **Modos de Visualização:** Grid e lista
@@ -68,6 +73,7 @@ SALA/
 - **Notificações:** Sistema de toast para feedback
 
 ### 🏢 Gerenciamento de Salas
+
 - **CRUD Completo:** Criar, visualizar, editar e excluir salas
 - **Status Dinâmico:** Disponível, Ocupada, Reservada, Manutenção
 - **Capacidade:** Controle de lotação máxima
@@ -75,6 +81,7 @@ SALA/
 - **Descrições Detalhadas:** Informações completas sobre cada espaço
 
 ### 📦 Gerenciamento de Itens
+
 - **Inventário Completo:** Controle de todos os equipamentos
 - **Especificações Técnicas:** Detalhes de cada item
 - **Quantidade:** Controle de estoque por item
@@ -82,6 +89,7 @@ SALA/
 - **Busca Inteligente:** Filtros por nome e descrição
 
 ### ⚙️ Configurações do Sistema
+
 - **Perfil do Usuário:** Gestão de informações pessoais
 - **Notificações:** Configuração de alertas
 - **Segurança:** Controle de acesso e permissões
@@ -89,6 +97,7 @@ SALA/
 - **Aparência:** Personalização da interface
 
 ### 🔄 Sistema de Reservas (Em Desenvolvimento)
+
 - **Calendário Integrado:** Visualização de reservas
 - **Aprovação de Solicitações:** Workflow de aprovação
 - **Conflitos de Horário:** Detecção automática
@@ -99,18 +108,20 @@ SALA/
 ### Entidades Principais
 
 #### 👤 Usuário (User)
+
 ```typescript
 {
-  id: string
-  name: string
-  email: string
-  role: 'ADMIN' | 'USER'
-  createdAt: DateTime
-  updatedAt: DateTime
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "USER";
+  createdAt: DateTime;
+  updatedAt: DateTime;
 }
 ```
 
 #### 🏢 Sala (Room)
+
 ```typescript
 {
   id: string
@@ -126,63 +137,71 @@ SALA/
 ```
 
 #### 📦 Item (Item)
+
 ```typescript
 {
-  id: string
-  name: string
-  description: string
-  quantity: number
-  specifications: string
-  roomId: string
-  createdAt: DateTime
-  updatedAt: DateTime
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  specifications: string;
+  roomId: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
 }
 ```
 
 #### 📅 Reserva (Reservation)
+
 ```typescript
 {
-  id: string
-  startTime: DateTime
-  endTime: DateTime
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
-  userId: string
-  roomId: string
-  createdAt: DateTime
-  updatedAt: DateTime
+  id: string;
+  startTime: DateTime;
+  endTime: DateTime;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  userId: string;
+  roomId: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
 }
 ```
 
 ## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
+
 - Docker e Docker Compose instalados
 - Node.js 18+ (para desenvolvimento local)
 - Git
 
 ### 1. Clone o Repositório
+
 ```bash
 git clone <url-do-repositorio>
 cd SALA
 ```
 
 ### 2. Configuração do Ambiente
+
 ```bash
 cd web
 cp env.example .env.local
 ```
 
 ### 3. Executar com Docker (Recomendado)
+
 ```bash
 # Na pasta web/
 docker-compose up --build
 ```
 
 O sistema estará disponível em:
+
 - **Aplicação Web:** http://localhost:3000
 - **Banco de Dados:** localhost:5432
 
 ### 4. Executar Localmente (Desenvolvimento)
+
 ```bash
 # Instalar dependências
 npm install
@@ -222,16 +241,19 @@ npm run db:studio    # Abre Prisma Studio
 O sistema inclui dados de demonstração:
 
 ### 👥 Usuários
+
 - **Admin:** admin@sala.com (Administrador)
 - **Usuário:** user@sala.com (Usuário comum)
 
 ### 🏢 Salas
+
 - Laboratório de Informática A
 - Laboratório de Informática B
 - Sala de Reuniões
 - Auditório Principal
 
 ### 📦 Itens
+
 - Computadores desktop
 - Notebooks
 - Projetores
@@ -241,12 +263,14 @@ O sistema inclui dados de demonstração:
 ## 🎨 Interface e UX
 
 ### Design System
+
 - **Tema:** Dark mode por padrão
 - **Cores:** Paleta de cinzas com acentos em amarelo
 - **Tipografia:** Inter (texto) + JetBrains Mono (código)
 - **Componentes:** Design system consistente e reutilizável
 
 ### Experiência do Usuário
+
 - **Navegação Intuitiva:** Menu lateral com navegação clara
 - **Feedback Visual:** Notificações toast para ações
 - **Estados de Loading:** Indicadores visuais durante carregamento
@@ -256,11 +280,13 @@ O sistema inclui dados de demonstração:
 ## 🔒 Segurança
 
 ### Autenticação
+
 - Sistema de login com validação
 - Controle de sessão
 - Proteção de rotas
 
 ### Autorização
+
 - Roles de usuário (ADMIN/USER)
 - Controle de acesso baseado em permissões
 - Validação de dados no backend
@@ -268,12 +294,14 @@ O sistema inclui dados de demonstração:
 ## 📈 Performance
 
 ### Otimizações Implementadas
+
 - **Lazy Loading:** Carregamento sob demanda
 - **Memoização:** Componentes otimizados com React.memo
 - **Debounce:** Busca otimizada com delay
 - **Paginação:** Carregamento de dados em lotes
 
 ### Monitoramento
+
 - Logs estruturados
 - Métricas de performance
 - Tratamento de erros
@@ -281,11 +309,13 @@ O sistema inclui dados de demonstração:
 ## 🧪 Testes
 
 ### Estratégia de Testes
+
 - **Testes Unitários:** Componentes e funções
 - **Testes de Integração:** APIs e fluxos
 - **Testes E2E:** Cenários completos
 
 ### Executar Testes
+
 ```bash
 npm run test        # Testes unitários
 npm run test:e2e    # Testes end-to-end
@@ -295,12 +325,14 @@ npm run test:coverage # Cobertura de testes
 ## 🚀 Deploy
 
 ### Produção
+
 - **Plataforma:** Vercel (recomendado)
 - **Banco:** PostgreSQL gerenciado
 - **CDN:** Otimização de assets
 - **Monitoramento:** Logs e métricas
 
 ### Configuração de Produção
+
 ```bash
 # Variáveis de ambiente
 DATABASE_URL=postgresql://user:password@host:port/database
@@ -311,6 +343,7 @@ NEXTAUTH_URL=https://your-domain.com
 ## 🤝 Contribuição
 
 ### Como Contribuir
+
 1. Fork o projeto
 2. Crie uma branch para sua feature
 3. Commit suas mudanças
@@ -318,6 +351,7 @@ NEXTAUTH_URL=https://your-domain.com
 5. Abra um Pull Request
 
 ### Padrões de Código
+
 - **TypeScript:** Tipagem estrita
 - **ESLint:** Linting automático
 - **Prettier:** Formatação de código
@@ -326,6 +360,7 @@ NEXTAUTH_URL=https://your-domain.com
 ## 📝 Roadmap
 
 ### Próximas Funcionalidades
+
 - [ ] Sistema de reservas completo
 - [ ] Calendário integrado
 - [ ] Relatórios avançados
@@ -334,6 +369,7 @@ NEXTAUTH_URL=https://your-domain.com
 - [ ] Integração com calendários externos
 
 ### Melhorias Planejadas
+
 - [ ] PWA (Progressive Web App)
 - [ ] Modo offline
 - [ ] Sincronização em tempo real
@@ -343,11 +379,13 @@ NEXTAUTH_URL=https://your-domain.com
 ## 📞 Suporte
 
 ### Documentação
+
 - **API Docs:** `/api/docs` (em desenvolvimento)
 - **Component Library:** Storybook (planejado)
 - **Guia de Contribuição:** CONTRIBUTING.md
 
 ### Contato
+
 - **Issues:** Use o sistema de issues do GitHub
 - **Discussões:** GitHub Discussions
 - **Email:** suporte@sala.com
@@ -359,4 +397,4 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ---
 
 **SALA** - Sistema de Gerenciamento de Salas  
-*Desenvolvido com ❤️ para modernizar a gestão de espaços educacionais*
+_Desenvolvido com ❤️ para modernizar a gestão de espaços educacionais_

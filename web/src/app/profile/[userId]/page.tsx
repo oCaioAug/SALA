@@ -1,29 +1,30 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter, useParams } from "next/navigation";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
-import { Card, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useApp } from "@/lib/hooks/useApp";
 import {
-  User as UserIcon,
-  Mail,
-  Calendar,
-  Edit,
-  Save,
-  X,
-  Shield,
-  Crown,
   ArrowLeft,
+  Calendar,
+  Crown,
+  Edit,
+  Mail,
+  Save,
+  Shield,
+  User as UserIcon,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
+
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Button } from "@/components/ui/Button";
+import { Card, CardTitle } from "@/components/ui/Card";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 interface UserData {
   id: string;
@@ -164,7 +165,7 @@ const UserProfilePage: React.FC = () => {
         throw new Error("Erro ao alterar permissão do usuário");
       }
 
-      setUserData((prev) => (prev ? { ...prev, role: newRole } : null));
+      setUserData(prev => (prev ? { ...prev, role: newRole } : null));
       showSuccess(
         `Usuário agora é ${
           newRole === "ADMIN" ? "administrador" : "usuário comum"
@@ -362,7 +363,7 @@ const UserProfilePage: React.FC = () => {
                             <span className="text-white font-bold text-2xl">
                               {userData.name
                                 ?.split(" ")
-                                .map((n) => n[0])
+                                .map(n => n[0])
                                 .join("") || "U"}
                             </span>
                           </div>
@@ -413,7 +414,7 @@ const UserProfilePage: React.FC = () => {
                           <input
                             type="text"
                             value={editForm.name}
-                            onChange={(e) =>
+                            onChange={e =>
                               setEditForm({ ...editForm, name: e.target.value })
                             }
                             className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -437,7 +438,7 @@ const UserProfilePage: React.FC = () => {
                           <input
                             type="email"
                             value={editForm.email}
-                            onChange={(e) =>
+                            onChange={e =>
                               setEditForm({
                                 ...editForm,
                                 email: e.target.value,

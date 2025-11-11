@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface LoadingPageProps {
@@ -17,4 +18,3 @@ export const LoadingPage: React.FC<LoadingPageProps> = ({
     </div>
   );
 };
-

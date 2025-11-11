@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import React, { Suspense, useState } from "react";
+import { FcGoogle } from "react-icons/fc";
+
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-import { signIn } from "next-auth/react";
-import { FcGoogle } from "react-icons/fc";
 
 const LoginContent: React.FC = () => {
   const router = useRouter();
@@ -55,7 +56,7 @@ const LoginContent: React.FC = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -122,7 +123,7 @@ const LoginContent: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  onChange={e => setRememberMe(e.target.checked)}
                   className="rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500"
                 />
                 Lembrar-me

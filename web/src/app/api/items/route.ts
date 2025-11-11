@@ -1,20 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
 
 // Cache simples em memória
-let itemsCache: any[] | null = null
-let lastCacheTime = 0
-const CACHE_DURATION = 2 * 60 * 1000 // 2 minutos
+let itemsCache: any[] | null = null;
+let lastCacheTime = 0;
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutos
 
 export async function GET() {
   try {
-    const now = Date.now()
-    
+    const now = Date.now();
+
     // Verificar cache
-    if (itemsCache && (now - lastCacheTime) < CACHE_DURATION) {
-      return NextResponse.json(itemsCache)
+    if (itemsCache && now - lastCacheTime < CACHE_DURATION) {
+      return NextResponse.json(itemsCache);
     }
-    
+
     // Consulta otimizada
     const items = await prisma.item.findMany({
       select: {
@@ -31,49 +32,49 @@ export async function GET() {
           select: {
             id: true,
             filename: true,
-            path: true
+            path: true,
           },
           take: 1,
           orderBy: {
-            createdAt: 'desc'
-          }
+            createdAt: "desc",
+          },
         },
         room: {
           select: {
             id: true,
-            name: true
-          }
-        }
+            name: true,
+          },
+        },
       },
       orderBy: {
-        name: 'asc'
-      }
-    })
+        name: "asc",
+      },
+    });
 
     // Atualizar cache
-    itemsCache = items
-    lastCacheTime = now
+    itemsCache = items;
+    lastCacheTime = now;
 
-    return NextResponse.json(items)
+    return NextResponse.json(items);
   } catch (error) {
-    console.error('Erro ao buscar itens:', error)
+    console.error("Erro ao buscar itens:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { name, description, specifications, quantity, icon, roomId } = body
+    const body = await request.json();
+    const { name, description, specifications, quantity, icon, roomId } = body;
 
     if (!name) {
       return NextResponse.json(
-        { error: 'Nome do item é obrigatório' },
+        { error: "Nome do item é obrigatório" },
         { status: 400 }
-      )
+      );
     }
 
     const item = await prisma.item.create({
@@ -83,23 +84,23 @@ export async function POST(request: NextRequest) {
         specifications: specifications || [],
         quantity: quantity ? parseInt(quantity) : 1,
         icon,
-        roomId: roomId || null
+        roomId: roomId || null,
       },
       include: {
-        room: true
-      }
-    })
+        room: true,
+      },
+    });
 
     // Invalidar cache
-    itemsCache = null
-    lastCacheTime = 0
+    itemsCache = null;
+    lastCacheTime = 0;
 
-    return NextResponse.json(item, { status: 201 })
+    return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar item:', error)
+    console.error("Erro ao criar item:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

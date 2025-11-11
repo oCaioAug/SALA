@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useSession, signOut } from "next-auth/react";
-import Image from "next/image";
 import {
   Bell,
+  ChevronDown,
+  LogOut,
+  Moon,
   Search,
   Settings,
-  User as UserIcon,
-  LogOut,
-  ChevronDown,
   Sun,
-  Moon,
+  User as UserIcon,
 } from "lucide-react";
-import { NotificationModal } from "@/components/ui/NotificationModal";
+import Image from "next/image";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useState } from "react";
+
+import { NotificationModal } from "@/components/ui/NotificationModal";
 import { useTheme } from "@/lib/providers/ThemeProvider";
 
 interface HeaderProps {
@@ -96,7 +97,9 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
           <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
             <span className="text-sm">Dashboard</span>
             <ChevronDown className="w-4 h-4 rotate-90" />
-            <span className="text-sm font-medium text-slate-900 dark:text-white">Visão Geral</span>
+            <span className="text-sm font-medium text-slate-900 dark:text-white">
+              Visão Geral
+            </span>
           </div>
         </div>
 

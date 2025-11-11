@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { PageLayout } from "@/components/layout/PageLayout";
-import { LoadingPage } from "@/components/layout/LoadingPage";
-import { ErrorPage } from "@/components/layout/ErrorPage";
-import { Card, CardContent, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
+import React, { useEffect, useState } from "react";
+
 import { ImageUpload } from "@/components/forms/ImageUpload";
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { Modal } from "@/components/ui/Modal";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { Room, User, Item, Image } from "@/lib/types";
+import { Image, Item, Room, User } from "@/lib/types";
 
 const RoomItemsPage: React.FC = () => {
   const params = useParams();
@@ -102,7 +103,7 @@ const RoomItemsPage: React.FC = () => {
         const itemsData = await itemsResponse.json();
         setItems(itemsData);
       } else {
-        setItems((prev) => [...prev, newItem]);
+        setItems(prev => [...prev, newItem]);
       }
 
       setIsAddItemModalOpen(false);
@@ -151,8 +152,8 @@ const RoomItemsPage: React.FC = () => {
         const itemsData = await itemsResponse.json();
         setItems(itemsData);
       } else {
-        setItems((prev) =>
-          prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
+        setItems(prev =>
+          prev.map(item => (item.id === editingItem.id ? updatedItem : item))
         );
       }
 
@@ -174,7 +175,7 @@ const RoomItemsPage: React.FC = () => {
         throw new Error("Erro ao deletar item");
       }
 
-      setItems((prev) => prev.filter((item) => item.id !== itemId));
+      setItems(prev => prev.filter(item => item.id !== itemId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao deletar item");
     }
@@ -432,7 +433,7 @@ const ItemForm: React.FC<{
         name: formData.name,
         description: formData.description || null,
         specifications: formData.specifications
-          ? formData.specifications.split(",").map((s) => s.trim())
+          ? formData.specifications.split(",").map(s => s.trim())
           : [],
         quantity: parseInt(formData.quantity),
         icon: formData.icon || null,
@@ -463,8 +464,8 @@ const ItemForm: React.FC<{
         <input
           type="text"
           value={formData.name}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, name: e.target.value }))
+          onChange={e =>
+            setFormData(prev => ({ ...prev, name: e.target.value }))
           }
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Ex: Computador"
@@ -478,8 +479,8 @@ const ItemForm: React.FC<{
         </label>
         <textarea
           value={formData.description}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, description: e.target.value }))
+          onChange={e =>
+            setFormData(prev => ({ ...prev, description: e.target.value }))
           }
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Descreva o item..."
@@ -494,8 +495,8 @@ const ItemForm: React.FC<{
         <input
           type="text"
           value={formData.specifications}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, specifications: e.target.value }))
+          onChange={e =>
+            setFormData(prev => ({ ...prev, specifications: e.target.value }))
           }
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Ex: Windows 11, 16GB RAM, Core i7"
@@ -517,8 +518,8 @@ const ItemForm: React.FC<{
           <input
             type="number"
             value={formData.quantity}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, quantity: e.target.value }))
+            onChange={e =>
+              setFormData(prev => ({ ...prev, quantity: e.target.value }))
             }
             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             min="1"
@@ -533,8 +534,8 @@ const ItemForm: React.FC<{
           <input
             type="text"
             value={formData.icon}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, icon: e.target.value }))
+            onChange={e =>
+              setFormData(prev => ({ ...prev, icon: e.target.value }))
             }
             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="💻"
@@ -550,8 +551,8 @@ const ItemForm: React.FC<{
           {uploading
             ? "Salvando..."
             : item
-            ? "Atualizar Item"
-            : "Adicionar Item"}
+              ? "Atualizar Item"
+              : "Adicionar Item"}
         </Button>
         <Button
           type="button"

@@ -19,7 +19,7 @@ services:
       start_period: 30s
 
   web:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: sala_web

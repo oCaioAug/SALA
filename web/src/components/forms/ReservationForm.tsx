@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Room, User } from '@/lib/types';
-import { Calendar, Clock, User as UserIcon, Building2, AlertCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  Building2,
+  Calendar,
+  Clock,
+  User as UserIcon,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/Button";
+import { Room, User } from "@/lib/types";
 
 interface ReservationFormProps {
   rooms?: Room[];
@@ -29,14 +35,14 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
   selectedRoomId,
   onSubmit,
   onCancel,
-  loading = false
+  loading = false,
 }) => {
   const [formData, setFormData] = useState({
-    userId: '',
-    roomId: selectedRoomId || '',
-    startTime: '',
-    endTime: '',
-    purpose: ''
+    userId: "",
+    roomId: selectedRoomId || "",
+    startTime: "",
+    endTime: "",
+    purpose: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,17 +53,17 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     if (selectedDate) {
       const today = new Date();
       const isToday = selectedDate.toDateString() === today.toDateString();
-      
+
       if (isToday) {
         // Se for hoje, sugerir horário atual + 1 hora
         const now = new Date();
         const startTime = new Date(now.getTime() + 60 * 60 * 1000); // +1 hora
         const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // +2 horas
-        
+
         setFormData(prev => ({
           ...prev,
           startTime: startTime.toISOString().slice(0, 16),
-          endTime: endTime.toISOString().slice(0, 16)
+          endTime: endTime.toISOString().slice(0, 16),
         }));
       } else {
         // Se for outro dia, sugerir horário padrão
@@ -65,7 +71,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         setFormData(prev => ({
           ...prev,
           startTime: `${dateStr}T09:00`,
-          endTime: `${dateStr}T11:00`
+          endTime: `${dateStr}T11:00`,
         }));
       }
     }
@@ -75,19 +81,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.userId) {
-      newErrors.userId = 'Usuário é obrigatório';
+      newErrors.userId = "Usuário é obrigatório";
     }
 
     if (!formData.roomId) {
-      newErrors.roomId = 'Sala é obrigatória';
+      newErrors.roomId = "Sala é obrigatória";
     }
 
     if (!formData.startTime) {
-      newErrors.startTime = 'Horário de início é obrigatório';
+      newErrors.startTime = "Horário de início é obrigatório";
     }
 
     if (!formData.endTime) {
-      newErrors.endTime = 'Horário de fim é obrigatório';
+      newErrors.endTime = "Horário de fim é obrigatório";
     }
 
     if (formData.startTime && formData.endTime) {
@@ -95,17 +101,18 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       const end = new Date(formData.endTime);
 
       if (start >= end) {
-        newErrors.endTime = 'Horário de fim deve ser posterior ao início';
+        newErrors.endTime = "Horário de fim deve ser posterior ao início";
       }
 
       if (start < new Date()) {
-        newErrors.startTime = 'Horário de início não pode ser no passado';
+        newErrors.startTime = "Horário de início não pode ser no passado";
       }
 
       // Verificar se a duração não é muito longa (máximo 30 dias)
-      const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+      const duration =
+        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
       if (duration > 30) {
-        newErrors.endTime = 'Reserva não pode exceder 30 dias';
+        newErrors.endTime = "Reserva não pode exceder 30 dias";
       }
     }
 
@@ -115,35 +122,39 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       await onSubmit({
         userId: formData.userId,
         roomId: formData.roomId,
         startTime: new Date(formData.startTime).toISOString(),
         endTime: new Date(formData.endTime).toISOString(),
-        purpose: formData.purpose || undefined
+        purpose: formData.purpose || undefined,
       });
     } catch (error) {
-      console.error('Erro ao criar reserva:', error);
+      console.error("Erro ao criar reserva:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Limpar erro quando usuário começar a digitar
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -155,27 +166,29 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       const diffMs = end.getTime() - start.getTime();
       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
       const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
-      
+
       if (diffDays > 1) {
         return `${diffDays} dias`;
       } else {
         return `${diffHours} horas`;
       }
     }
-    return '';
+    return "";
   };
 
   const getAvailableRooms = () => {
-    return rooms.filter(room => room.status === 'LIVRE' || room.status === 'RESERVADO');
+    return rooms.filter(
+      room => room.status === "LIVRE" || room.status === "RESERVADO"
+    );
   };
 
   const formatSelectedDate = () => {
-    if (!selectedDate) return '';
-    return selectedDate.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
+    if (!selectedDate) return "";
+    return selectedDate.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -205,7 +218,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             value={formData.userId}
             onChange={handleInputChange}
             className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.userId ? 'border-red-500' : 'border-gray-600'
+              errors.userId ? "border-red-500" : "border-gray-600"
             }`}
             required
           >
@@ -237,7 +250,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             value={formData.roomId}
             onChange={handleInputChange}
             className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.roomId ? 'border-red-500' : 'border-gray-600'
+              errors.roomId ? "border-red-500" : "border-gray-600"
             }`}
             required
           >
@@ -271,7 +284,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
               value={formData.startTime}
               onChange={handleInputChange}
               className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.startTime ? 'border-red-500' : 'border-gray-600'
+                errors.startTime ? "border-red-500" : "border-gray-600"
               }`}
               required
             />
@@ -296,7 +309,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
               value={formData.endTime}
               onChange={handleInputChange}
               className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.endTime ? 'border-red-500' : 'border-gray-600'
+                errors.endTime ? "border-red-500" : "border-gray-600"
               }`}
               required
             />
@@ -339,12 +352,16 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Informações adicionais */}
       <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-        <h4 className="text-sm font-medium text-gray-300 mb-2">Informações Importantes:</h4>
+        <h4 className="text-sm font-medium text-gray-300 mb-2">
+          Informações Importantes:
+        </h4>
         <ul className="text-xs text-gray-400 space-y-1">
           <li>• Reservas podem ser feitas com até 1 hora de antecedência</li>
           <li>• Duração máxima de 30 dias por reserva</li>
           <li>• Múltiplas salas podem ser reservadas no mesmo dia</li>
-          <li>• A sala será automaticamente marcada como "Reservada"</li>
+          <li>
+            • A sala será automaticamente marcada como &quot;Reservada&quot;
+          </li>
           <li>• Você receberá confirmação por email</li>
         </ul>
       </div>
@@ -356,7 +373,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           className="flex-1"
           disabled={isSubmitting || loading}
         >
-          {isSubmitting ? 'Criando Reserva...' : 'Criar Reserva'}
+          {isSubmitting ? "Criando Reserva..." : "Criar Reserva"}
         </Button>
         <Button
           type="button"

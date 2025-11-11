@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, ReactNode } from "react";
 import { useSession } from "next-auth/react";
+import { ReactNode, useEffect } from "react";
+
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ProtectedRouteProps {

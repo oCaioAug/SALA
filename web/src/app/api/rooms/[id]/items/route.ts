@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -13,26 +14,26 @@ export async function GET(
           select: {
             id: true,
             filename: true,
-            path: true
+            path: true,
           },
           take: 1,
           orderBy: {
-            createdAt: 'desc'
-          }
-        }
+            createdAt: "desc",
+          },
+        },
       },
       orderBy: {
-        name: 'asc'
-      }
-    })
+        name: "asc",
+      },
+    });
 
-    return NextResponse.json(items)
+    return NextResponse.json(items);
   } catch (error) {
-    console.error('Erro ao buscar itens da sala:', error)
+    console.error("Erro ao buscar itens da sala:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -41,14 +42,14 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json()
-    const { name, description, specifications, quantity, icon } = body
+    const body = await request.json();
+    const { name, description, specifications, quantity, icon } = body;
 
     if (!name) {
       return NextResponse.json(
-        { error: 'Nome do item é obrigatório' },
+        { error: "Nome do item é obrigatório" },
         { status: 400 }
-      )
+      );
     }
 
     const item = await prisma.item.create({
@@ -58,16 +59,16 @@ export async function POST(
         specifications: specifications || [],
         quantity: quantity ? parseInt(quantity) : 1,
         icon,
-        roomId: params.id
-      }
-    })
+        roomId: params.id,
+      },
+    });
 
-    return NextResponse.json(item, { status: 201 })
+    return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar item:', error)
+    console.error("Erro ao criar item:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

@@ -479,7 +479,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error("❌ Erro durante o seed:", e);
     console.error("Stack trace:", e.stack);
     process.exit(1);

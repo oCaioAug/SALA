@@ -1,43 +1,41 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { PageLayout } from "@/components/layout/PageLayout";
-import { LoadingPage } from "@/components/layout/LoadingPage";
-import { ErrorPage } from "@/components/layout/ErrorPage";
 import {
-  Card,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useApp } from "@/lib/hooks/useApp";
-import {
-  User as UserIcon,
-  Mail,
-  Calendar,
-  Edit,
-  Save,
-  X,
-  Camera,
-  Shield,
-  Crown,
-  Settings,
   Bell,
+  Calendar,
+  Camera,
+  Crown,
+  Edit,
   Lock,
+  Mail,
+  Save,
+  Settings,
+  Shield,
+  User as UserIcon,
   Users,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
+
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { Button } from "@/components/ui/Button";
+import { Card, CardTitle } from "@/components/ui/Card";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Modal } from "@/components/ui/Modal";
+import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 interface UserData {
   id: string;
   name: string | null;
   email: string;
-  role: 'ADMIN' | 'USER';
+  role: "ADMIN" | "USER";
   createdAt: string;
   updatedAt: string;
   image?: string;
@@ -72,8 +70,10 @@ const ProfilePage: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await fetch(`/api/users/profile?email=${session.user.email}`);
-        
+        const response = await fetch(
+          `/api/users/profile?email=${session.user.email}`
+        );
+
         if (!response.ok) {
           throw new Error("Erro ao carregar dados do usuário");
         }
@@ -120,7 +120,7 @@ const ProfilePage: React.FC = () => {
       const updatedUser = await response.json();
       setUserData(updatedUser);
       setIsEditing(false);
-      
+
       // Atualizar a sessão
       await update({
         name: updatedUser.name,
@@ -214,12 +214,12 @@ const ProfilePage: React.FC = () => {
         <div className="lg:col-span-2">
           <Card variant="elevated" className="p-6">
             <div className="flex items-start justify-between mb-6">
-              <CardTitle className="text-2xl">
-                Informações Pessoais
-              </CardTitle>
+              <CardTitle className="text-2xl">Informações Pessoais</CardTitle>
               <Button
                 variant="outline"
-                onClick={() => isEditing ? handleCancel() : setIsEditing(true)}
+                onClick={() =>
+                  isEditing ? handleCancel() : setIsEditing(true)
+                }
                 disabled={saveLoading}
               >
                 {isEditing ? (
@@ -251,11 +251,14 @@ const ProfilePage: React.FC = () => {
                   ) : (
                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
                       <span className="text-white font-bold text-2xl">
-                        {userData.name?.split(" ").map(n => n[0]).join("") || "U"}
+                        {userData.name
+                          ?.split(" ")
+                          .map(n => n[0])
+                          .join("") || "U"}
                       </span>
                     </div>
                   )}
-                  
+
                   <button
                     onClick={() => setIsImageModalOpen(true)}
                     className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg"
@@ -269,11 +272,13 @@ const ProfilePage: React.FC = () => {
                     {userData.name || "Usuário sem nome"}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      userData.role === "ADMIN"
-                        ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
-                        : "bg-green-500/20 text-green-600 dark:text-green-300 border border-green-500/30"
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        userData.role === "ADMIN"
+                          ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
+                          : "bg-green-500/20 text-green-600 dark:text-green-300 border border-green-500/30"
+                      }`}
+                    >
                       {userData.role === "ADMIN" ? (
                         <>
                           <Crown className="w-4 h-4 inline mr-1" />
@@ -300,7 +305,9 @@ const ProfilePage: React.FC = () => {
                     <input
                       type="text"
                       value={editForm.name}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      onChange={e =>
+                        setEditForm({ ...editForm, name: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="Digite seu nome completo"
                     />
@@ -322,14 +329,18 @@ const ProfilePage: React.FC = () => {
                     <input
                       type="email"
                       value={editForm.email}
-                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      onChange={e =>
+                        setEditForm({ ...editForm, email: e.target.value })
+                      }
                       className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="Digite seu email"
                     />
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                       <Mail className="w-5 h-5 text-slate-500 dark:text-gray-400" />
-                      <span className="text-slate-900 dark:text-white">{userData.email}</span>
+                      <span className="text-slate-900 dark:text-white">
+                        {userData.email}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -342,12 +353,16 @@ const ProfilePage: React.FC = () => {
                     {userData.role === "ADMIN" ? (
                       <>
                         <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <span className="text-purple-600 dark:text-purple-400 font-medium">Administrador</span>
+                        <span className="text-purple-600 dark:text-purple-400 font-medium">
+                          Administrador
+                        </span>
                       </>
                     ) : (
                       <>
                         <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
-                        <span className="text-green-600 dark:text-green-400 font-medium">Usuário</span>
+                        <span className="text-green-600 dark:text-green-400 font-medium">
+                          Usuário
+                        </span>
                       </>
                     )}
                   </div>
@@ -384,15 +399,15 @@ const ProfilePage: React.FC = () => {
         <div className="space-y-6">
           {/* Card de informações da conta */}
           <Card variant="elevated" className="p-6">
-            <CardTitle className="text-lg mb-4">
-              Informações da Conta
-            </CardTitle>
-            
+            <CardTitle className="text-lg mb-4">Informações da Conta</CardTitle>
+
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <Calendar className="w-4 h-4 text-slate-500 dark:text-gray-400" />
                 <div>
-                  <p className="text-slate-600 dark:text-gray-400">Membro desde</p>
+                  <p className="text-slate-600 dark:text-gray-400">
+                    Membro desde
+                  </p>
                   <p className="text-slate-900 dark:text-white font-medium">
                     {formatDate(userData.createdAt)}
                   </p>
@@ -402,7 +417,9 @@ const ProfilePage: React.FC = () => {
               <div className="flex items-center gap-3 text-sm">
                 <Edit className="w-4 h-4 text-slate-500 dark:text-gray-400" />
                 <div>
-                  <p className="text-slate-600 dark:text-gray-400">Última atualização</p>
+                  <p className="text-slate-600 dark:text-gray-400">
+                    Última atualização
+                  </p>
                   <p className="text-slate-900 dark:text-white font-medium">
                     {formatDate(userData.updatedAt)}
                   </p>
@@ -413,10 +430,8 @@ const ProfilePage: React.FC = () => {
 
           {/* Card de configurações */}
           <Card variant="elevated" className="p-6">
-            <CardTitle className="text-lg mb-4">
-              Configurações
-            </CardTitle>
-            
+            <CardTitle className="text-lg mb-4">Configurações</CardTitle>
+
             <div className="space-y-3">
               <button className="w-full flex items-center gap-3 p-3 text-left text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors">
                 <Bell className="w-4 h-4" />
@@ -451,10 +466,7 @@ const ProfilePage: React.FC = () => {
           <p className="text-slate-600 dark:text-gray-400 mb-6">
             A funcionalidade de upload de imagem será implementada em breve.
           </p>
-          <Button
-            variant="outline"
-            onClick={() => setIsImageModalOpen(false)}
-          >
+          <Button variant="outline" onClick={() => setIsImageModalOpen(false)}>
             Fechar
           </Button>
         </div>

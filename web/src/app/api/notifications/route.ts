@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,12 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const limit = searchParams.get("limit");
 
-    console.log("🔔 Buscando notificações com filtros:", { userId, isRead, type, limit });
+    console.log("🔔 Buscando notificações com filtros:", {
+      userId,
+      isRead,
+      type,
+      limit,
+    });
 
     if (!userId) {
       return NextResponse.json(
@@ -23,15 +28,15 @@ export async function GET(request: NextRequest) {
 
     // Buscar usuário por ID ou email
     let user;
-    if (userId.includes('@')) {
+    if (userId.includes("@")) {
       // Se contém @, é um email
       user = await prisma.user.findUnique({
-        where: { email: userId }
+        where: { email: userId },
       });
     } else {
       // Senão, é um ID
       user = await prisma.user.findUnique({
-        where: { id: userId }
+        where: { id: userId },
       });
     }
 
@@ -66,13 +71,18 @@ export async function GET(request: NextRequest) {
       take: limit ? parseInt(limit) : undefined,
     });
 
-    console.log(`✅ Encontradas ${notifications.length} notificações para ${user.email}`);
+    console.log(
+      `✅ Encontradas ${notifications.length} notificações para ${user.email}`
+    );
 
     return NextResponse.json(notifications);
   } catch (error) {
     console.error("❌ Erro ao buscar notificações:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
+      {
+        error: "Erro interno do servidor",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
       { status: 500 }
     );
   }
@@ -96,12 +106,12 @@ export async function POST(request: NextRequest) {
     // Validar se o tipo é válido
     const validTypes = [
       "RESERVATION_CREATED",
-      "RESERVATION_APPROVED", 
+      "RESERVATION_APPROVED",
       "RESERVATION_REJECTED",
       "RESERVATION_CANCELLED",
       "RESERVATION_CONFLICT",
       "ROOM_STATUS_CHANGED",
-      "SYSTEM_ANNOUNCEMENT"
+      "SYSTEM_ANNOUNCEMENT",
     ];
     if (!validTypes.includes(type)) {
       return NextResponse.json(
@@ -129,7 +139,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("❌ Erro ao criar notificação:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
+      {
+        error: "Erro interno do servidor",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
       { status: 500 }
     );
   }

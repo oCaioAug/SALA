@@ -1,31 +1,32 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Room, RoomStatus } from '@/lib/types';
+import React, { useState } from "react";
+
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Room, RoomStatus } from "@/lib/types";
 
 interface RoomFormProps {
   room?: Room;
-  onSubmit: (room: Omit<Room, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (room: Omit<Room, "id" | "createdAt" | "updatedAt">) => void;
   onCancel: () => void;
 }
 
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: room?.name || '',
-    description: room?.description || '',
-    capacity: room?.capacity?.toString() || '',
-    status: (room?.status || 'LIVRE') as RoomStatus
+    name: room?.name || "",
+    description: room?.description || "",
+    capacity: room?.capacity?.toString() || "",
+    status: (room?.status || "LIVRE") as RoomStatus,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validação
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Nome é obrigatório';
-    
+    if (!formData.name.trim()) newErrors.name = "Nome é obrigatório";
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -35,17 +36,21 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
       name: formData.name.trim(),
       description: formData.description.trim(),
       capacity: formData.capacity ? parseInt(formData.capacity) : null,
-      status: formData.status
+      status: formData.status,
     });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Limpar erro quando usuário começar a digitar
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors(prev => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -60,7 +65,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
         error={errors.name}
         required
       />
-      
+
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
           Descrição
@@ -84,7 +89,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
         placeholder="Ex: 30"
         min="1"
       />
-      
+
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
           Status
@@ -100,12 +105,17 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           <option value="RESERVADO">Reservado</option>
         </select>
       </div>
-      
+
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1">
-          {room ? 'Atualizar Sala' : 'Criar Sala'}
+          {room ? "Atualizar Sala" : "Criar Sala"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="flex-1"
+        >
           Cancelar
         </Button>
       </div>

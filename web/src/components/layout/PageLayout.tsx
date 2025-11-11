@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
-import { Sidebar } from "./Sidebar";
-import { Header } from "./Header";
+
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+
+import { Header } from "./Header";
+import { Sidebar } from "./Sidebar";
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -46,4 +48,3 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     </ProtectedRoute>
   );
 };
-

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -15,40 +16,40 @@ export async function GET(
               select: {
                 id: true,
                 filename: true,
-                path: true
+                path: true,
               },
               take: 1,
               orderBy: {
-                createdAt: 'desc'
-              }
-            }
-          }
+                createdAt: "desc",
+              },
+            },
+          },
         },
         reservations: {
           where: {
-            status: 'ACTIVE'
+            status: "ACTIVE",
           },
           include: {
-            user: true
-          }
-        }
-      }
-    })
+            user: true,
+          },
+        },
+      },
+    });
 
     if (!room) {
       return NextResponse.json(
-        { error: 'Sala não encontrada' },
+        { error: "Sala não encontrada" },
         { status: 404 }
-      )
+      );
     }
 
-    return NextResponse.json(room)
+    return NextResponse.json(room);
   } catch (error) {
-    console.error('Erro ao buscar sala:', error)
+    console.error("Erro ao buscar sala:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -57,8 +58,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json()
-    const { name, description, capacity, status } = body
+    const body = await request.json();
+    const { name, description, capacity, status } = body;
 
     const room = await prisma.room.update({
       where: { id: params.id },
@@ -66,7 +67,7 @@ export async function PUT(
         name,
         description,
         capacity: capacity ? parseInt(capacity) : null,
-        status
+        status,
       },
       include: {
         items: {
@@ -75,25 +76,25 @@ export async function PUT(
               select: {
                 id: true,
                 filename: true,
-                path: true
+                path: true,
               },
               take: 1,
               orderBy: {
-                createdAt: 'desc'
-              }
-            }
-          }
-        }
-      }
-    })
+                createdAt: "desc",
+              },
+            },
+          },
+        },
+      },
+    });
 
-    return NextResponse.json(room)
+    return NextResponse.json(room);
   } catch (error) {
-    console.error('Erro ao atualizar sala:', error)
+    console.error("Erro ao atualizar sala:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -103,15 +104,15 @@ export async function DELETE(
 ) {
   try {
     await prisma.room.delete({
-      where: { id: params.id }
-    })
+      where: { id: params.id },
+    });
 
-    return NextResponse.json({ message: 'Sala deletada com sucesso' })
+    return NextResponse.json({ message: "Sala deletada com sucesso" });
   } catch (error) {
-    console.error('Erro ao deletar sala:', error)
+    console.error("Erro ao deletar sala:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

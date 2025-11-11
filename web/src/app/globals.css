@@ -113,50 +113,54 @@
   --sidebar-ring: oklch(0.541 0.281 293.009);
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
-  
+
   /* Container de página unificado */
   .page-container {
     @apply min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300;
   }
-  
+
   /* Scrollbar personalizada - Light mode */
   ::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: oklch(0.95 0.002 286);
   }
-  
+
   ::-webkit-scrollbar-thumb {
     background: oklch(0.75 0.004 286.32);
     border-radius: 9999px;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     background: oklch(0.65 0.004 286.32);
   }
-  
+
   /* Scrollbar personalizada - Dark mode */
   .dark ::-webkit-scrollbar-track {
     background: oklch(0.18 0.005 285.823);
   }
-  
+
   .dark ::-webkit-scrollbar-thumb {
     background: oklch(0.45 0.006 286.033);
   }
-  
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background: oklch(0.55 0.006 286.033);
   }
@@ -167,35 +171,37 @@
   .animate-fadeIn {
     animation: fadeIn 0.3s ease-in-out;
   }
-  
+
   .animate-slideIn {
     animation: slideIn 0.3s ease-out;
   }
-  
+
   .animate-scaleIn {
     animation: scaleIn 0.2s ease-out;
   }
-  
+
   /* Transições suaves para navegação */
   .page-transition {
-    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    transition:
+      opacity 0.2s ease-in-out,
+      transform 0.2s ease-in-out;
   }
-  
+
   .page-transition-enter {
     opacity: 0;
     transform: translateY(10px);
   }
-  
+
   .page-transition-enter-active {
     opacity: 1;
     transform: translateY(0);
   }
-  
+
   .page-transition-exit {
     opacity: 1;
     transform: translateY(0);
   }
-  
+
   .page-transition-exit-active {
     opacity: 0;
     transform: translateY(-10px);

@@ -1,10 +1,16 @@
-import sharp from 'sharp';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from "fs/promises";
+import path from "path";
+import sharp from "sharp";
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'items', 'images');
+const UPLOAD_DIR = path.join(
+  process.cwd(),
+  "public",
+  "uploads",
+  "items",
+  "images"
+);
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const THUMBNAIL_SIZE = 200;
 const JPEG_QUALITY = 85;
 
@@ -16,7 +22,7 @@ export function validateImage(file: File): { valid: boolean; error?: string } {
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return {
       valid: false,
-      error: 'Formato de imagem não suportado. Use JPG, PNG ou WebP.'
+      error: "Formato de imagem não suportado. Use JPG, PNG ou WebP.",
     };
   }
 
@@ -24,7 +30,9 @@ export function validateImage(file: File): { valid: boolean; error?: string } {
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
-      error: `Imagem muito grande. Tamanho máximo: ${MAX_FILE_SIZE / 1024 / 1024}MB`
+      error: `Imagem muito grande. Tamanho máximo: ${
+        MAX_FILE_SIZE / 1024 / 1024
+      }MB`,
     };
   }
 
@@ -37,10 +45,10 @@ export function validateImage(file: File): { valid: boolean; error?: string } {
 export function generateFilename(itemName: string): string {
   // Remove caracteres especiais e espaços, substitui por underscore
   const sanitizedName = itemName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/_+/g, '_')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/[^a-zA-Z0-9]/g, "_")
+    .replace(/_+/g, "_")
     .toLowerCase();
 
   // Gera 4 dígitos aleatórios
@@ -66,22 +74,20 @@ export async function processAndSaveImage(
   const thumbnailPath = path.join(UPLOAD_DIR, thumbnailFilename);
 
   // Processar imagem original (converter para JPG, qualidade 85%)
-  await sharp(buffer)
-    .jpeg({ quality: JPEG_QUALITY })
-    .toFile(originalPath);
+  await sharp(buffer).jpeg({ quality: JPEG_QUALITY }).toFile(originalPath);
 
   // Criar thumbnail 200x200
   await sharp(buffer)
     .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, {
-      fit: 'cover',
-      position: 'center'
+      fit: "cover",
+      position: "center",
     })
     .jpeg({ quality: JPEG_QUALITY })
     .toFile(thumbnailPath);
 
   return {
     originalPath: `/api/uploads/items/images/${originalFilename}`,
-    thumbnailPath: `/api/uploads/items/images/${thumbnailFilename}`
+    thumbnailPath: `/api/uploads/items/images/${thumbnailFilename}`,
   };
 }
 
@@ -97,14 +103,13 @@ export async function deleteImageFiles(filename: string): Promise<void> {
 
   try {
     await fs.unlink(originalPath);
-  } catch (error) {
+  } catch (_error) {
     // Arquivo pode não existir, ignorar erro
   }
 
   try {
     await fs.unlink(thumbnailPath);
-  } catch (error) {
+  } catch (_error) {
     // Arquivo pode não existir, ignorar erro
   }
 }
-

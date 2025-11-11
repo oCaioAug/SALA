@@ -3,16 +3,13 @@
 ## O que fazer no Google Cloud Console
 
 1. **Acesse o Google Cloud Console:**
-
    - Vá para: https://console.cloud.google.com/
    - Selecione seu projeto
 
 2. **Navegue para APIs & Services > Credentials:**
-
    - Clique no seu OAuth 2.0 Client ID
 
 3. **Verifique os Authorized redirect URIs:**
-
    - Deve incluir EXATAMENTE: `http://localhost:3000/api/auth/callback/google`
    - Certifique-se de que não há espaços ou caracteres extras
 

@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
 import {
   Bell,
+  Calendar,
   Check,
   CheckCheck,
-  Filter,
-  Calendar,
-  Clock,
-  Info,
   CheckCircle,
+  Clock,
+  Filter,
+  Info,
   XCircle,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React, { useCallback, useEffect, useState } from "react";
 
 interface Notification {
   id: string;
@@ -80,8 +80,8 @@ const NotificationPage: React.FC = () => {
       });
 
       if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((notif) =>
+        setNotifications(prev =>
+          prev.map(notif =>
             notif.id === notificationId ? { ...notif, isRead: true } : notif
           )
         );
@@ -102,8 +102,8 @@ const NotificationPage: React.FC = () => {
       });
 
       if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((notif) => ({ ...notif, isRead: true }))
+        setNotifications(prev =>
+          prev.map(notif => ({ ...notif, isRead: true }))
         );
       }
     } catch (error) {
@@ -163,7 +163,7 @@ const NotificationPage: React.FC = () => {
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   if (loading) {
     return (
@@ -210,7 +210,7 @@ const NotificationPage: React.FC = () => {
               <Filter className="w-4 h-4 text-gray-500" />
               <select
                 value={filter}
-                onChange={(e) =>
+                onChange={e =>
                   setFilter(e.target.value as "all" | "unread" | "read")
                 }
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -223,7 +223,7 @@ const NotificationPage: React.FC = () => {
 
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={e => setTypeFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">Todos os tipos</option>
@@ -250,7 +250,7 @@ const NotificationPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            notifications.map(notification => (
               <div
                 key={notification.id}
                 className={`p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${

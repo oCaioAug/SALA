@@ -1,16 +1,17 @@
-import React from "react";
-import { useSession } from "next-auth/react";
-import { cn } from "@/lib/utils";
 import {
+  Building2,
+  Calendar,
+  ChevronRight,
+  ClipboardList,
   LayoutDashboard,
   Settings,
-  Building2,
-  ChevronRight,
-  Calendar,
-  ClipboardList,
-  Users,
   User,
+  Users,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React from "react";
+
+import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   currentPage: string;
@@ -110,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             Navegação
           </h2>
           <ul className="space-y-1">
-            {menuItems.map((item) => {
+            {menuItems.map(item => {
               const IconComponent = item.icon;
               return (
                 <li key={item.id}>
@@ -194,7 +195,9 @@ const Sidebar: React.FC<SidebarProps> = ({
               Sistema Online
             </span>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-500">Última atualização: agora</p>
+          <p className="text-xs text-slate-600 dark:text-slate-500">
+            Última atualização: agora
+          </p>
         </div>
       </nav>
     </div>

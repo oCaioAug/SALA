@@ -1,21 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { RoomWithItems } from '@/lib/types'
+import { NextRequest, NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
+import { RoomWithItems } from "@/lib/types";
 
 // Cache simples em memória
-let roomsCache: any[] | null = null
-let lastCacheTime = 0
-const CACHE_DURATION = 2 * 60 * 1000 // 2 minutos
+let roomsCache: any[] | null = null;
+let lastCacheTime = 0;
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutos
 
 export async function GET() {
   try {
-    const now = Date.now()
-    
+    const now = Date.now();
+
     // Verificar cache
-    if (roomsCache && (now - lastCacheTime) < CACHE_DURATION) {
-      return NextResponse.json(roomsCache)
+    if (roomsCache && now - lastCacheTime < CACHE_DURATION) {
+      return NextResponse.json(roomsCache);
     }
-    
+
     // Consulta otimizada - apenas dados essenciais
     const rooms = await prisma.room.findMany({
       select: {
@@ -36,18 +37,18 @@ export async function GET() {
               select: {
                 id: true,
                 filename: true,
-                path: true
+                path: true,
               },
               take: 1,
               orderBy: {
-                createdAt: 'desc'
-              }
-            }
-          }
+                createdAt: "desc",
+              },
+            },
+          },
         },
         reservations: {
           where: {
-            status: 'ACTIVE'
+            status: "ACTIVE",
           },
           select: {
             id: true,
@@ -56,41 +57,41 @@ export async function GET() {
             user: {
               select: {
                 id: true,
-                name: true
-              }
-            }
-          }
-        }
+                name: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
-        name: 'asc'
-      }
-    })
+        name: "asc",
+      },
+    });
 
     // Atualizar cache
-    roomsCache = rooms
-    lastCacheTime = now
+    roomsCache = rooms;
+    lastCacheTime = now;
 
-    return NextResponse.json(rooms)
+    return NextResponse.json(rooms);
   } catch (error) {
-    console.error('Erro ao buscar salas:', error)
+    console.error("Erro ao buscar salas:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { name, description, capacity } = body
+    const body = await request.json();
+    const { name, description, capacity } = body;
 
     if (!name) {
       return NextResponse.json(
-        { error: 'Nome da sala é obrigatório' },
+        { error: "Nome da sala é obrigatório" },
         { status: 400 }
-      )
+      );
     }
 
     const room = await prisma.room.create({
@@ -98,23 +99,23 @@ export async function POST(request: NextRequest) {
         name,
         description,
         capacity: capacity ? parseInt(capacity) : null,
-        status: 'LIVRE'
+        status: "LIVRE",
       },
       include: {
-        items: true
-      }
-    })
+        items: true,
+      },
+    });
 
     // Invalidar cache
-    roomsCache = null
-    lastCacheTime = 0
+    roomsCache = null;
+    lastCacheTime = 0;
 
-    return NextResponse.json(room, { status: 201 })
+    return NextResponse.json(room, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar sala:', error)
+    console.error("Erro ao criar sala:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

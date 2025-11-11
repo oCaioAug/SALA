@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+
 import { notificationService } from "@/lib/notifications";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +10,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
 
-    console.log("🔍 Buscando reservas com filtros:", { roomId, status, userId });
+    console.log("🔍 Buscando reservas com filtros:", {
+      roomId,
+      status,
+      userId,
+    });
 
     const where: any = {};
 
@@ -30,7 +35,7 @@ export async function GET(request: NextRequest) {
     // Se não há filtro de status específico, mostrar apenas reservas ativas/aprovadas
     if (!status) {
       where.status = {
-        in: ['APPROVED', 'ACTIVE']
+        in: ["APPROVED", "ACTIVE"],
       };
     }
 
@@ -51,7 +56,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("❌ Erro ao buscar reservas:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor", details: error instanceof Error ? error.message : "Erro desconhecido" },
+      {
+        error: "Erro interno do servidor",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
       { status: 500 }
     );
   }

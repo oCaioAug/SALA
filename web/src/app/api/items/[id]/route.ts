@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server";
+
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -12,26 +13,26 @@ export async function GET(
         room: true,
         images: {
           orderBy: {
-            createdAt: 'desc'
-          }
-        }
-      }
-    })
+            createdAt: "desc",
+          },
+        },
+      },
+    });
 
     if (!item) {
       return NextResponse.json(
-        { error: 'Item não encontrado' },
+        { error: "Item não encontrado" },
         { status: 404 }
-      )
+      );
     }
 
-    return NextResponse.json(item)
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Erro ao buscar item:', error)
+    console.error("Erro ao buscar item:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -40,8 +41,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json()
-    const { name, description, specifications, quantity, icon, roomId } = body
+    const body = await request.json();
+    const { name, description, specifications, quantity, icon, roomId } = body;
 
     const item = await prisma.item.update({
       where: { id: params.id },
@@ -51,20 +52,20 @@ export async function PUT(
         specifications: specifications || [],
         quantity: quantity ? parseInt(quantity) : 1,
         icon,
-        roomId: roomId || null
+        roomId: roomId || null,
       },
       include: {
-        room: true
-      }
-    })
+        room: true,
+      },
+    });
 
-    return NextResponse.json(item)
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Erro ao atualizar item:', error)
+    console.error("Erro ao atualizar item:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -76,28 +77,28 @@ export async function DELETE(
     // Buscar imagens do item antes de deletar
     const item = await prisma.item.findUnique({
       where: { id: params.id },
-      include: { images: true }
-    })
+      include: { images: true },
+    });
 
     if (item) {
       // Deletar arquivos de imagem
-      const { deleteImageFiles } = await import('@/lib/utils/imageProcessor')
+      const { deleteImageFiles } = await import("@/lib/utils/imageProcessor");
       for (const image of item.images) {
-        await deleteImageFiles(image.filename)
+        await deleteImageFiles(image.filename);
       }
     }
 
     // Deletar item (as imagens serão deletadas automaticamente pelo cascade)
     await prisma.item.delete({
-      where: { id: params.id }
-    })
+      where: { id: params.id },
+    });
 
-    return NextResponse.json({ message: 'Item deletado com sucesso' })
+    return NextResponse.json({ message: "Item deletado com sucesso" });
   } catch (error) {
-    console.error('Erro ao deletar item:', error)
+    console.error("Erro ao deletar item:", error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: "Erro interno do servidor" },
       { status: 500 }
-    )
+    );
   }
 }

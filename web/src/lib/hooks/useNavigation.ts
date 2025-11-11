@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseNavigationProps {
   currentPage: string;
@@ -29,10 +29,10 @@ export const useNavigation = ({
       "/profile",
     ];
 
-    pagesToPrefetch.forEach((page) => {
+    pagesToPrefetch.forEach(page => {
       if (!prefetchedPages.has(page)) {
         router.prefetch(page);
-        setPrefetchedPages((prev) => new Set([...prev, page]));
+        setPrefetchedPages(prev => new Set([...prev, page]));
       }
     });
   }, [router, prefetchedPages]);
@@ -46,7 +46,7 @@ export const useNavigation = ({
       onPageChange?.(page);
 
       // Pequeno delay para feedback visual
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       // Mapear páginas para rotas
       const routeMap: Record<string, string> = {

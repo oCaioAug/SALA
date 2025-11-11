@@ -1,10 +1,13 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+
 import { ToastProvider } from "@/components/ui/Toast";
 import { AppProvider } from "@/lib/hooks/useApp";
-import AuthProvider from "./_providers/auth";
 import { ThemeProvider } from "@/lib/providers/ThemeProvider";
+
+import AuthProvider from "./_providers/auth";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -52,9 +55,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              <AppProvider>
-                {children}
-              </AppProvider>
+              <AppProvider>{children}</AppProvider>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

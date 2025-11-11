@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { notificationService } from "@/lib/notifications";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+import { notificationService } from "@/lib/notifications";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const reservationId = params.id;
 
@@ -53,7 +57,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     try {
       await notificationService.reservationRejected(updatedReservation);
     } catch (notificationError) {
-      console.error("Erro ao criar notificação de rejeição:", notificationError);
+      console.error(
+        "Erro ao criar notificação de rejeição:",
+        notificationError
+      );
       // Não falhar a rejeição por causa da notificação
     }
 

@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { FcGoogle } from 'react-icons/fc';
+import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+import { FcGoogle } from "react-icons/fc";
+
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const LoginPage: React.FC = () => {
   const { data: session, status } = useSession();
@@ -13,15 +14,20 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (session) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [session, router]);
 
   const handleGoogleSignIn = async () => {
     try {
-      if (process.env.NODE_ENV === 'development' && 
-          (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID === 'your-google-client-id')) {
-        alert('Para usar o login com Google, configure as credenciais OAuth no arquivo .env\n\nVeja as instruções no console do navegador.');
+      if (
+        process.env.NODE_ENV === "development" &&
+        (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+          process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID === "your-google-client-id")
+      ) {
+        alert(
+          "Para usar o login com Google, configure as credenciais OAuth no arquivo .env\n\nVeja as instruções no console do navegador."
+        );
         console.log(`
 🔧 CONFIGURAÇÃO DO GOOGLE OAUTH NECESSÁRIA:
 
@@ -38,13 +44,13 @@ const LoginPage: React.FC = () => {
         `);
         return;
       }
-      await signIn('google', { callbackUrl: '/dashboard' });
+      await signIn("google", { callbackUrl: "/dashboard" });
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error("Erro no login:", error);
     }
   };
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -72,7 +78,7 @@ const LoginPage: React.FC = () => {
             <FcGoogle className="w-5 h-5" />
             Entrar com Google
           </Button>
-          
+
           <div className="text-center text-sm text-gray-500">
             Ao fazer login, você concorda com nossos termos de uso
           </div>
