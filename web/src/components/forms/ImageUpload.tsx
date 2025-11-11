@@ -132,19 +132,39 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         Imagem de Referência
       </label>
 
+      {/* Input oculto para seleção de arquivo */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFileSelect}
+        className="hidden"
+        disabled={disabled}
+      />
+
       {previewUrl ? (
         <div className="relative group">
-          <div className="relative w-full h-48 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border-2 border-slate-300 dark:border-slate-600">
+          <div 
+            className="relative w-full h-48 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border-2 border-slate-300 dark:border-slate-600 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
+            onClick={handleClick}
+          >
             <img
               src={previewUrl}
               alt={itemName || "Preview"}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-opacity group-hover:opacity-80"
             />
+            {!disabled && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black bg-opacity-30 pointer-events-none">
+                <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-lg">
+                  <Upload className="w-6 h-6 text-blue-500" />
+                </div>
+              </div>
+            )}
             {!disabled && (
               <button
                 type="button"
                 onClick={handleRemove}
-                className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-auto"
                 aria-label="Remover imagem"
               >
                 <X className="w-4 h-4" />
@@ -152,7 +172,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             )}
           </div>
           <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-            Clique na imagem para alterar
+            Clique na imagem para alterar ou no X para remover
           </p>
         </div>
       ) : (
@@ -177,15 +197,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             }
           `}
         >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={disabled}
-          />
-
           <div className="flex flex-col items-center gap-2">
             <div className="p-3 bg-slate-200 dark:bg-slate-700 rounded-full">
               {isDragging ? (
