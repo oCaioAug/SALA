@@ -1,8 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import { NextRequest, NextResponse } from "next/server";
+import fs from "fs/promises";
+import path from "path";
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'items', 'images');
+const UPLOAD_DIR = path.join(
+  process.cwd(),
+  "public",
+  "uploads",
+  "items",
+  "images"
+);
 
 export async function GET(
   request: NextRequest,
@@ -10,11 +16,15 @@ export async function GET(
 ) {
   try {
     const filename = params.filename;
-    
+
     // Validar nome do arquivo (prevenir path traversal)
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    if (
+      filename.includes("..") ||
+      filename.includes("/") ||
+      filename.includes("\\")
+    ) {
       return NextResponse.json(
-        { error: 'Nome de arquivo inválido' },
+        { error: "Nome de arquivo inválido" },
         { status: 400 }
       );
     }
@@ -26,7 +36,7 @@ export async function GET(
       await fs.access(filePath);
     } catch {
       return NextResponse.json(
-        { error: 'Imagem não encontrada' },
+        { error: "Imagem não encontrada" },
         { status: 404 }
       );
     }
@@ -36,27 +46,26 @@ export async function GET(
 
     // Determinar content-type baseado na extensão
     const ext = path.extname(filename).toLowerCase();
-    let contentType = 'image/jpeg';
-    
-    if (ext === '.png') {
-      contentType = 'image/png';
-    } else if (ext === '.webp') {
-      contentType = 'image/webp';
+    let contentType = "image/jpeg";
+
+    if (ext === ".png") {
+      contentType = "image/png";
+    } else if (ext === ".webp") {
+      contentType = "image/webp";
     }
 
     // Retornar imagem com headers apropriados
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch (error) {
-    console.error('Erro ao servir imagem:', error);
+    console.error("Erro ao servir imagem:", error);
     return NextResponse.json(
-      { error: 'Erro ao carregar imagem' },
+      { error: "Erro ao carregar imagem" },
       { status: 500 }
     );
   }
 }
-
