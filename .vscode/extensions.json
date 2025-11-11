@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "prisma.prisma",
+    "burkeholland.simple-react-snippets",
+    "bradlc.vscode-tailwindcss",
+    "prettier.vscode-prettier",
+    "pkief.material-icon-theme",
+    "dsznajder.es7-react-js-snippets"
+  ]
+}
