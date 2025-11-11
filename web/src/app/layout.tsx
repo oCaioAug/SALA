@@ -37,7 +37,7 @@ export default function RootLayout({
         <meta name="color-scheme" content="dark light" />
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased dark`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <ProductionErrorLogger />
