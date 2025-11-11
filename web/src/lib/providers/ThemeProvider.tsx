@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Só executar no cliente após montagem
     setMounted(true);
-    
+
     // Carregar tema do localStorage de forma segura
     const savedTheme = safeLocalStorage.getItem("theme") as Theme | null;
     const initialTheme = savedTheme || "dark";

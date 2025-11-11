@@ -18,18 +18,32 @@ const nextConfig = {
         hostname: "sala.ocaioaug.com.br",
       },
     ],
+    // Permitir servir imagens da pasta uploads
+    domains: ["localhost"],
   },
   // Configurações para melhorar estabilidade em produção
   experimental: {
     serverComponentsExternalPackages: ["prisma"],
   },
+  // Reescrever URLs para servir uploads
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/avatars/:filename",
+        destination: "/api/uploads/avatars/:filename",
+      },
+    ];
+  },
   // Evitar problemas de hidratação em produção
   swcMinify: true,
   // Configurações específicas para produção
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production" ? {
-      exclude: ["error", "warn"],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? {
+            exclude: ["error", "warn"],
+          }
+        : false,
   },
   // Configurar headers de segurança
   async headers() {

@@ -10,7 +10,7 @@ export const ProductionErrorLogger: React.FC = () => {
     // Capturar erros não tratados
     const handleUnhandledError = (event: ErrorEvent) => {
       const error = event.error;
-      
+
       // Filtrar o erro React #310
       if (error?.message?.includes("Minified React error #310")) {
         console.error("🔍 React Error #310 detectado:", {
@@ -23,7 +23,7 @@ export const ProductionErrorLogger: React.FC = () => {
           timestamp: new Date().toISOString(),
           url: window.location.href,
         });
-        
+
         // Tentar recarregar uma única vez
         if (!sessionStorage.getItem("error-reload-attempted")) {
           sessionStorage.setItem("error-reload-attempted", "true");
@@ -32,9 +32,9 @@ export const ProductionErrorLogger: React.FC = () => {
           }, 1000);
         }
       }
-      
+
       // Filtrar erro de postMessage
-      if (error?.message?.includes("can't access property \"postMessage\"")) {
+      if (error?.message?.includes('can\'t access property "postMessage"')) {
         console.warn("🔍 PostMessage error ignorado:", error.message);
         // Não fazer nada - erro conhecido de extensões do navegador
         event.preventDefault();
@@ -58,7 +58,10 @@ export const ProductionErrorLogger: React.FC = () => {
     // Limpar listeners
     return () => {
       window.removeEventListener("error", handleUnhandledError);
-      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection
+      );
     };
   }, []);
 

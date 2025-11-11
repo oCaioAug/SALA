@@ -9,9 +9,11 @@ const UPLOAD_DIR = path.join(
   "items",
   "images"
 );
+const AVATARS_DIR = path.join(process.cwd(), "public", "uploads", "avatars");
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const THUMBNAIL_SIZE = 200;
+const AVATAR_SIZE = 300;
 const JPEG_QUALITY = 85;
 
 /**
@@ -58,6 +60,46 @@ export function generateFilename(itemName: string): string {
 }
 
 /**
+ * Processa e salva avatar do usuário
+ */
+export async function processAndSaveAvatar(
+  buffer: Buffer,
+  filename: string
+): Promise<{ originalPath: string; thumbnailPath: string }> {
+  // Garantir que o diretório existe
+  await fs.mkdir(AVATARS_DIR, { recursive: true });
+
+  const originalFilename = `avatar_${filename}`;
+  const thumbnailFilename = `avatar_thumb_${filename}`;
+
+  const originalPath = path.join(AVATARS_DIR, originalFilename);
+  const thumbnailPath = path.join(AVATARS_DIR, thumbnailFilename);
+
+  // Processar avatar 300x300 (quadrado para perfil)
+  await sharp(buffer)
+    .resize(AVATAR_SIZE, AVATAR_SIZE, {
+      fit: "cover",
+      position: "center",
+    })
+    .jpeg({ quality: JPEG_QUALITY })
+    .toFile(originalPath);
+
+  // Criar thumbnail 100x100 para uso em listas
+  await sharp(buffer)
+    .resize(100, 100, {
+      fit: "cover",
+      position: "center",
+    })
+    .jpeg({ quality: JPEG_QUALITY })
+    .toFile(thumbnailPath);
+
+  return {
+    originalPath: `/uploads/avatars/${originalFilename}`,
+    thumbnailPath: `/uploads/avatars/${thumbnailFilename}`,
+  };
+}
+
+/**
  * Processa e salva a imagem (converte para JPG, redimensiona, cria thumbnail)
  */
 export async function processAndSaveImage(
@@ -89,6 +131,29 @@ export async function processAndSaveImage(
     originalPath: `/api/uploads/items/images/${originalFilename}`,
     thumbnailPath: `/api/uploads/items/images/${thumbnailFilename}`,
   };
+}
+
+/**
+ * Deleta arquivos de avatar
+ */
+export async function deleteAvatarFiles(filename: string): Promise<void> {
+  const originalFilename = `avatar_${filename}`;
+  const thumbnailFilename = `avatar_thumb_${filename}`;
+
+  const originalPath = path.join(AVATARS_DIR, originalFilename);
+  const thumbnailPath = path.join(AVATARS_DIR, thumbnailFilename);
+
+  try {
+    await fs.unlink(originalPath);
+  } catch (_error) {
+    // Arquivo pode não existir, ignorar erro
+  }
+
+  try {
+    await fs.unlink(thumbnailPath);
+  } catch (_error) {
+    // Arquivo pode não existir, ignorar erro
+  }
 }
 
 /**

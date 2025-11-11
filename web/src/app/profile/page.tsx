@@ -3,7 +3,6 @@
 import {
   Bell,
   Calendar,
-  Camera,
   Crown,
   Edit,
   Lock,
@@ -27,7 +26,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Modal } from "@/components/ui/Modal";
+import { AvatarUpload } from "@/components/forms/AvatarUpload";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
@@ -53,7 +52,6 @@ const ProfilePage: React.FC = () => {
     email: "",
   });
   const [saveLoading, setSaveLoading] = useState(false);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const { showSuccess, showError } = useApp();
 
@@ -94,6 +92,28 @@ const ProfilePage: React.FC = () => {
 
     fetchUserData();
   }, [session?.user?.email, showError]);
+
+  // Função para atualizar avatar
+  const handleAvatarUpdate = async (newAvatarUrl: string | null) => {
+    if (userData) {
+      setUserData({
+        ...userData,
+        image: newAvatarUrl || undefined,
+      });
+
+      // Atualizar a sessão se necessário
+      await update({
+        ...session?.user,
+        image: newAvatarUrl || undefined,
+      });
+
+      showSuccess(
+        newAvatarUrl
+          ? "Avatar atualizado com sucesso!"
+          : "Avatar removido com sucesso!"
+      );
+    }
+  };
 
   // Salvar alterações
   const handleSave = async () => {
@@ -238,40 +258,19 @@ const ProfilePage: React.FC = () => {
 
             <div className="space-y-6">
               {/* Foto do perfil */}
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  {userData.image ? (
-                    <Image
-                      src={userData.image}
-                      alt={userData.name || "Avatar"}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded-2xl object-cover shadow-xl"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-                      <span className="text-white font-bold text-2xl">
-                        {userData.name
-                          ?.split(" ")
-                          .map(n => n[0])
-                          .join("") || "U"}
-                      </span>
-                    </div>
-                  )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <AvatarUpload
+                  currentAvatar={userData.image}
+                  userName={userData.name || "Usuário"}
+                  onAvatarUpdate={handleAvatarUpdate}
+                  disabled={saveLoading}
+                />
 
-                  <button
-                    onClick={() => setIsImageModalOpen(true)}
-                    className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-colors shadow-lg"
-                  >
-                    <Camera className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div>
+                <div className="flex-1">
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
                     {userData.name || "Usuário sem nome"}
                   </h3>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
                         userData.role === "ADMIN"
@@ -292,6 +291,10 @@ const ProfilePage: React.FC = () => {
                       )}
                     </span>
                   </div>
+                  <p className="text-slate-600 dark:text-gray-400 text-sm">
+                    Sua foto será exibida em seu perfil e nas reservas. Escolha
+                    uma imagem que te represente bem.
+                  </p>
                 </div>
               </div>
 
@@ -451,26 +454,6 @@ const ProfilePage: React.FC = () => {
           </Card>
         </div>
       </div>
-
-      {/* Modal para alterar foto */}
-      <Modal
-        isOpen={isImageModalOpen}
-        onClose={() => setIsImageModalOpen(false)}
-        title="Alterar Foto de Perfil"
-      >
-        <div className="text-center py-8">
-          <Camera className="w-16 h-16 text-slate-500 dark:text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-            Funcionalidade em Desenvolvimento
-          </h3>
-          <p className="text-slate-600 dark:text-gray-400 mb-6">
-            A funcionalidade de upload de imagem será implementada em breve.
-          </p>
-          <Button variant="outline" onClick={() => setIsImageModalOpen(false)}>
-            Fechar
-          </Button>
-        </div>
-      </Modal>
     </PageLayout>
   );
 };

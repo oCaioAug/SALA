@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
 
 interface User {
   id: string;
@@ -382,12 +383,11 @@ const UsersPage: React.FC = () => {
                                 className="w-12 h-12 rounded-xl object-cover shadow-lg"
                               />
                             ) : (
-                              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                              <div
+                                className={`w-12 h-12 bg-gradient-to-br ${getUserGradient(user.name)} rounded-xl flex items-center justify-center shadow-lg`}
+                              >
                                 <span className="text-white font-semibold text-lg">
-                                  {user.name
-                                    ?.split(" ")
-                                    .map(n => n[0])
-                                    .join("") || "U"}
+                                  {getUserInitials(user.name)}
                                 </span>
                               </div>
                             )}

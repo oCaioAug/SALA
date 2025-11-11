@@ -23,6 +23,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { AvatarUpload } from "@/components/forms/AvatarUpload";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
@@ -95,6 +96,22 @@ const UserProfilePage: React.FC = () => {
 
     fetchUserData();
   }, [userId, showError, router]);
+
+  // Função para atualizar avatar (apenas admin ou próprio usuário)
+  const handleAvatarUpdate = async (newAvatarUrl: string | null) => {
+    if (userData) {
+      setUserData({
+        ...userData,
+        image: newAvatarUrl || undefined,
+      });
+
+      showSuccess(
+        newAvatarUrl
+          ? "Avatar atualizado com sucesso!"
+          : "Avatar removido com sucesso!"
+      );
+    }
+  };
 
   // Salvar alterações
   const handleSave = async () => {
@@ -348,33 +365,19 @@ const UserProfilePage: React.FC = () => {
 
                   <div className="space-y-6">
                     {/* Foto do perfil */}
-                    <div className="flex items-center gap-6">
-                      <div className="relative">
-                        {userData.image ? (
-                          <Image
-                            src={userData.image}
-                            alt={userData.name || "Avatar"}
-                            width={80}
-                            height={80}
-                            className="w-20 h-20 rounded-2xl object-cover shadow-xl"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
-                            <span className="text-white font-bold text-2xl">
-                              {userData.name
-                                ?.split(" ")
-                                .map(n => n[0])
-                                .join("") || "U"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                      <AvatarUpload
+                        currentAvatar={userData.image}
+                        userName={userData.name || "Usuário"}
+                        onAvatarUpdate={handleAvatarUpdate}
+                        disabled={saveLoading || (!isAdmin && !isOwnProfile)}
+                      />
 
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-xl font-semibold text-white mb-1">
                           {userData.name || "Usuário sem nome"}
                         </h3>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-3">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-medium ${
                               userData.role === "ADMIN"
@@ -401,6 +404,11 @@ const UserProfilePage: React.FC = () => {
                             </span>
                           )}
                         </div>
+                        <p className="text-gray-400 text-sm">
+                          {isOwnProfile
+                            ? "Esta é sua foto de perfil. Será exibida em suas reservas e interações."
+                            : "Foto de perfil do usuário. Pode ser alterada por administradores."}
+                        </p>
                       </div>
                     </div>
 

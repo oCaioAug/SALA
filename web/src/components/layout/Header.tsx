@@ -15,6 +15,7 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import { NotificationModal } from "@/components/ui/NotificationModal";
 import { useTheme } from "@/lib/providers/ThemeProvider";
+import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
 
 interface HeaderProps {
   onNotificationClick?: () => void;
@@ -177,12 +178,11 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
                     className="w-10 h-10 rounded-xl object-cover shadow-lg group-hover:shadow-xl transition-all duration-300"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                  <div
+                    className={`w-10 h-10 bg-gradient-to-br ${getUserGradient(session.user.name)} rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                  >
                     <span className="text-white font-semibold text-sm">
-                      {session.user.name
-                        ?.split(" ")
-                        .map((n: string) => n[0])
-                        .join("") || "A"}
+                      {getUserInitials(session.user.name)}
                     </span>
                   </div>
                 )}
@@ -219,12 +219,11 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
                         className="w-12 h-12 rounded-xl object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                      <div
+                        className={`w-12 h-12 bg-gradient-to-br ${getUserGradient(session.user.name)} rounded-xl flex items-center justify-center`}
+                      >
                         <span className="text-white font-semibold">
-                          {session.user.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("") || "A"}
+                          {getUserInitials(session.user.name)}
                         </span>
                       </div>
                     )}
