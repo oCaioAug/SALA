@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { ToastProvider } from "@/components/ui/Toast";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { AppProvider } from "@/lib/hooks/useApp";
 import { ThemeProvider } from "@/lib/providers/ThemeProvider";
 
@@ -37,13 +38,18 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme') || 'dark';
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
+                  if (typeof window !== 'undefined') {
+                    const theme = localStorage.getItem('theme') || 'dark';
+                    if (theme === 'dark') {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
                   }
-                } catch (e) {}
+                } catch (e) {
+                  // Fallback para modo dark se houver erro
+                  document.documentElement.classList.add('dark');
+                }
               })();
             `,
           }}
@@ -51,14 +57,17 @@ export default function RootLayout({
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        suppressHydrationWarning
       >
-        <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <AppProvider>{children}</AppProvider>
-            </ToastProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <AppProvider>{children}</AppProvider>
+              </ToastProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

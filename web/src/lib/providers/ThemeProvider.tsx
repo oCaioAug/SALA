@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+import { safeLocalStorage } from "@/lib/utils/clientSafe";
+
 type Theme = "dark" | "light";
 
 interface ThemeContextType {
@@ -18,7 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Carregar tema do localStorage ou usar dark como padrão
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
+    const savedTheme = safeLocalStorage.getItem("theme") as Theme | null;
     const initialTheme = savedTheme || "dark";
 
     // Aplicar tema imediatamente antes do primeiro render
@@ -44,7 +46,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem("theme", newTheme);
+    safeLocalStorage.setItem("theme", newTheme);
     applyTheme(newTheme);
   };
 

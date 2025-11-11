@@ -41,8 +41,10 @@ const LoginContent: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Salvar dados do usuário no localStorage
-        localStorage.setItem("user", JSON.stringify(data.user));
+        // Salvar dados do usuário no localStorage apenas no lado do cliente
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
         router.push("/dashboard");
       } else {
         alert(data.error || "Erro no login");
