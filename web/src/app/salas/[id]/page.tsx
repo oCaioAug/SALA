@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 
 import { ImageUpload } from "@/components/forms/ImageUpload";
@@ -27,7 +28,11 @@ import { Item, Room, RoomWithItems } from "@/lib/types";
 const RoomDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const roomId = params.id as string;
+
+  // Verificar se o usuário é admin
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [room, setRoom] = useState<RoomWithItems | null>(null);
@@ -35,6 +40,7 @@ const RoomDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   // Hook de navegação otimizada
   const { navigate, isNavigating } = useNavigation({
@@ -146,6 +152,64 @@ const RoomDetailPage: React.FC = () => {
     }
   };
 
+  // Atualizar item
+  const handleUpdateItem = async (
+    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    imageData?: any
+  ) => {
+    if (!editingItem) return;
+
+    try {
+      // Garantir que o roomId seja mantido
+      const updateData = {
+        ...itemData,
+        roomId: editingItem.roomId || roomId, // Manter a sala atual
+      };
+
+      // Atualizar os dados do item
+      const response = await fetch(`/api/items/${editingItem.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao atualizar item");
+      }
+
+      // Se há nova imagem, fazer upload
+      if (imageData && imageData.hasImage && imageData.imageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("image", imageData.imageFile);
+        uploadFormData.append("itemName", itemData.name);
+        uploadFormData.append("itemId", editingItem.id);
+
+        await fetch("/api/items/upload-image", {
+          method: "POST",
+          body: uploadFormData,
+        });
+      } 
+      // Se a imagem foi removida, deletar da API
+      else if (imageData && imageData.removeImage) {
+        await fetch(`/api/items/${editingItem.id}/remove-image`, {
+          method: "DELETE",
+        });
+      }
+
+      // Recarregar dados da sala
+      const updatedRoomResponse = await fetch(`/api/rooms/${roomId}`);
+      if (updatedRoomResponse.ok) {
+        const updatedRoomData = await updatedRoomResponse.json();
+        setRoom(updatedRoomData);
+      }
+      setEditingItem(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao atualizar item");
+    }
+  };
+
   const handleDeleteItem = async (itemId: string) => {
     if (!confirm("Tem certeza que deseja excluir este item?")) return;
 
@@ -230,21 +294,25 @@ const RoomDetailPage: React.FC = () => {
               <CalendarIcon className="w-4 h-4" />
               Ver Agendamentos
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditModalOpen(true)}
-              className="gap-2"
-            >
-              <Edit className="w-4 h-4" />
-              Editar Sala
-            </Button>
-            <Button
-              onClick={() => setIsAddItemModalOpen(true)}
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Adicionar Item
-            </Button>
+            {isAdmin && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar Sala
+                </Button>
+                <Button
+                  onClick={() => setIsAddItemModalOpen(true)}
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Adicionar Item
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -284,15 +352,20 @@ const RoomDetailPage: React.FC = () => {
               Nenhum item cadastrado
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
-              Comece adicionando itens para esta sala
+              {isAdmin 
+                ? "Comece adicionando itens para esta sala"
+                : "Esta sala ainda não possui itens cadastrados"
+              }
             </p>
-            <Button
-              onClick={() => setIsAddItemModalOpen(true)}
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Adicionar Primeiro Item
-            </Button>
+            {isAdmin && (
+              <Button
+                onClick={() => setIsAddItemModalOpen(true)}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Adicionar Primeiro Item
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -337,14 +410,26 @@ const RoomDetailPage: React.FC = () => {
                           Qtd: {item.quantity}
                         </p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      {isAdmin && (
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingItem(item)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     {item.description && (
@@ -409,31 +494,60 @@ const RoomDetailPage: React.FC = () => {
           onCancel={() => setIsAddItemModalOpen(false)}
         />
       </Modal>
+
+      {/* Modal para editar item */}
+      <Modal
+        isOpen={!!editingItem}
+        onClose={() => setEditingItem(null)}
+        title="Editar Item"
+      >
+        <ItemForm
+          item={editingItem}
+          onSubmit={handleUpdateItem}
+          onCancel={() => setEditingItem(null)}
+        />
+      </Modal>
     </PageLayout>
   );
 };
 
 // Componente temporário para formulário de item
 const ItemForm: React.FC<{
+  item?: Item | null;
   onSubmit: (
     item: Omit<Item, "id" | "createdAt" | "updatedAt">,
     imageData?: any
   ) => void;
   onCancel: () => void;
-}> = ({ onSubmit, onCancel }) => {
+}> = ({ item, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    specifications: "",
-    quantity: "1",
-    icon: "",
+    name: item?.name || "",
+    description: item?.description || "",
+    specifications: item?.specifications?.join(", ") || "",
+    quantity: item?.quantity?.toString() || "1",
+    icon: item?.icon || "",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [imageRemoved, setImageRemoved] = useState(false); // Flag para indicar remoção intencional
+
+  // Para edição, mostrar imagem existente
+  const existingImagePath = (item as any)?.images?.[0]?.path;
+
+  // useEffect para definir preview da imagem existente
+  React.useEffect(() => {
+    if (existingImagePath && !selectedImage) {
+      setImagePreview(existingImagePath.replace(
+        "/api/uploads/items/images/original_",
+        "/api/uploads/items/images/thumb_"
+      ));
+    }
+  }, [existingImagePath, selectedImage]);
 
   const handleImageSelect = (file: File) => {
     setSelectedImage(file);
+    setImageRemoved(false); // Resetar flag de remoção
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -444,6 +558,7 @@ const ItemForm: React.FC<{
   const handleImageRemove = () => {
     setSelectedImage(null);
     setImagePreview(null);
+    setImageRemoved(true); // Marcar que a imagem foi removida intencionalmente
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -466,6 +581,9 @@ const ItemForm: React.FC<{
       // Se há nova imagem selecionada, fazer upload após criar item
       if (selectedImage) {
         onSubmit(itemData, { hasImage: true, imageFile: selectedImage });
+      } else if (imageRemoved) {
+        // Se a imagem foi removida intencionalmente, informar para remover
+        onSubmit(itemData, { hasImage: false, removeImage: true });
       } else {
         onSubmit(itemData);
       }
@@ -570,7 +688,12 @@ const ItemForm: React.FC<{
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1" disabled={uploading}>
-          {uploading ? "Salvando..." : "Adicionar Item"}
+          {uploading 
+            ? "Salvando..." 
+            : item 
+              ? "Atualizar Item" 
+              : "Adicionar Item"
+          }
         </Button>
         <Button
           type="button"
