@@ -6,9 +6,18 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
-      }
-    ]
-  }
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+      },
+      {
+        protocol: "https",
+        hostname: "sala.ocaioaug.com.br",
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;
