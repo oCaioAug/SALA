@@ -44,6 +44,18 @@ export async function PUT(
     const body = await request.json();
     const { name, description, specifications, quantity, icon, roomId } = body;
 
+    // Buscar o item atual para preservar dados existentes se necessário
+    const currentItem = await prisma.item.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!currentItem) {
+      return NextResponse.json(
+        { error: "Item não encontrado" },
+        { status: 404 }
+      );
+    }
+
     const item = await prisma.item.update({
       where: { id: params.id },
       data: {
@@ -52,10 +64,22 @@ export async function PUT(
         specifications: specifications || [],
         quantity: quantity ? parseInt(quantity) : 1,
         icon,
-        roomId: roomId || null,
+        // Só atualiza roomId se for fornecido explicitamente, senão mantém o atual
+        ...(roomId !== undefined && { roomId }),
       },
       include: {
         room: true,
+        images: {
+          select: {
+            id: true,
+            filename: true,
+            path: true,
+          },
+          take: 1,
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 
