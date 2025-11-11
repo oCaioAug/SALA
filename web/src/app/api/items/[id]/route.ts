@@ -9,7 +9,12 @@ export async function GET(
     const item = await prisma.item.findUnique({
       where: { id: params.id },
       include: {
-        room: true
+        room: true,
+        images: {
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       }
     })
 
@@ -68,6 +73,21 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Buscar imagens do item antes de deletar
+    const item = await prisma.item.findUnique({
+      where: { id: params.id },
+      include: { images: true }
+    })
+
+    if (item) {
+      // Deletar arquivos de imagem
+      const { deleteImageFiles } = await import('@/lib/utils/imageProcessor')
+      for (const image of item.images) {
+        await deleteImageFiles(image.filename)
+      }
+    }
+
+    // Deletar item (as imagens serão deletadas automaticamente pelo cascade)
     await prisma.item.delete({
       where: { id: params.id }
     })

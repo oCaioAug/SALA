@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 import { AppProvider } from "@/lib/hooks/useApp";
 import AuthProvider from "./_providers/auth";
+import { ThemeProvider } from "@/lib/providers/ThemeProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -26,17 +27,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'dark';
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-gray-900 text-white`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <ToastProvider>
-            <AppProvider>
-              {children}
-            </AppProvider>
-          </ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <AppProvider>
+                {children}
+              </AppProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -9,7 +9,21 @@ export async function GET(
     const room = await prisma.room.findUnique({
       where: { id: params.id },
       include: {
-        items: true,
+        items: {
+          include: {
+            images: {
+              select: {
+                id: true,
+                filename: true,
+                path: true
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'desc'
+              }
+            }
+          }
+        },
         reservations: {
           where: {
             status: 'ACTIVE'
@@ -55,7 +69,21 @@ export async function PUT(
         status
       },
       include: {
-        items: true
+        items: {
+          include: {
+            images: {
+              select: {
+                id: true,
+                filename: true,
+                path: true
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'desc'
+              }
+            }
+          }
+        }
       }
     })
 

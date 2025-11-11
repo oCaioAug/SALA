@@ -217,16 +217,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-20 right-6 w-80 bg-slate-800 border border-slate-600/50 rounded-xl shadow-2xl z-[9999999] max-h-96 overflow-hidden">
+    <div className="fixed top-20 right-6 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-[9999999] max-h-96 overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-600/50 bg-slate-700/50">
+      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-700/50">
         <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-slate-400" />
-          <h3 className="text-lg font-semibold text-white">Notificações</h3>
+          <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Notificações</h3>
         </div>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-600/50"
+          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600/50"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -237,12 +237,12 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       {/* Content */}
       <div className="max-h-80 overflow-y-auto">
         {/* Header com ações */}
-        <div className="flex items-center justify-between p-4 pb-3 border-b border-slate-600/50">
+        <div className="flex items-center justify-between p-4 pb-3 border-b border-slate-200 dark:border-slate-600/50">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-slate-600 dark:text-slate-400">
               {notifications.length} notificação{notifications.length !== 1 ? "ões" : ""}
               {unreadCount > 0 && (
-                <span className="ml-2 text-blue-400">
+                <span className="ml-2 text-blue-600 dark:text-blue-400">
                   ({unreadCount} não lida{unreadCount !== 1 ? "s" : ""})
                 </span>
               )}
@@ -269,13 +269,13 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
           </div>
         ) : error ? (
           <EmptyState
-            icon={<Bell className="w-8 h-8 text-gray-400" />}
+            icon={<Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />}
             title="Erro ao carregar notificações"
             description={error}
           />
         ) : notifications.length === 0 ? (
           <EmptyState
-            icon={<Bell className="w-8 h-8 text-gray-400" />}
+            icon={<Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />}
             title="Nenhuma notificação"
             description="Você não tem notificações no momento"
           />
@@ -289,10 +289,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               return (
                 <div
                   key={notification.id}
-                  className={`p-3 rounded-lg transition-all duration-200 hover:bg-slate-700/50 ${
+                  className={`p-3 rounded-lg transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 ${
                     notification.isRead
-                      ? "bg-slate-800/30"
-                      : "bg-blue-500/10 border-l-2 border-blue-500"
+                      ? "bg-slate-50/50 dark:bg-slate-800/30"
+                      : "bg-blue-50 dark:bg-blue-500/10 border-l-2 border-blue-500"
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -304,18 +304,18 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <h4 className={`font-medium text-sm ${
-                            notification.isRead ? "text-slate-300" : "text-white"
+                            notification.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"
                           }`}>
                             {notification.title}
                           </h4>
                           <p className={`text-xs mt-1 ${
-                            notification.isRead ? "text-slate-400" : "text-slate-300"
+                            notification.isRead ? "text-slate-600 dark:text-slate-400" : "text-slate-700 dark:text-slate-300"
                           }`}>
                             {notification.message}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            <Clock className="w-3 h-3 text-slate-500" />
-                            <span className="text-xs text-slate-500">
+                            <Clock className="w-3 h-3 text-slate-500 dark:text-slate-500" />
+                            <span className="text-xs text-slate-500 dark:text-slate-500">
                               {formatDate(notification.createdAt)}
                             </span>
                           </div>
@@ -328,7 +328,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                               variant="ghost"
                               size="sm"
                               disabled={markingAsRead === notification.id}
-                              className="text-slate-400 hover:text-green-400 p-1"
+                              className="text-slate-500 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 p-1"
                             >
                               {markingAsRead === notification.id ? (
                                 <LoadingSpinner size="sm" />
@@ -342,7 +342,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                             onClick={() => deleteNotification(notification.id)}
                             variant="ghost"
                             size="sm"
-                            className="text-slate-400 hover:text-red-400 p-1"
+                            className="text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1"
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>

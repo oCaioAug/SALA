@@ -31,7 +31,18 @@ export async function GET() {
             id: true,
             name: true,
             quantity: true,
-            icon: true
+            icon: true,
+            images: {
+              select: {
+                id: true,
+                filename: true,
+                path: true
+              },
+              take: 1,
+              orderBy: {
+                createdAt: 'desc'
+              }
+            }
           }
         },
         reservations: {

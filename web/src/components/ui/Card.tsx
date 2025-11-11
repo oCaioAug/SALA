@@ -10,10 +10,10 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, variant = 'default', hover = false, ...props }, ref) => {
     const variants = {
-      default: 'bg-slate-800/50 border-slate-700/50',
-      elevated: 'bg-slate-800 border-slate-600/50 shadow-2xl',
-      outlined: 'bg-transparent border-2 border-slate-600/50',
-      glass: 'bg-slate-800/30 backdrop-blur-xl border-slate-600/30'
+      default: 'bg-white/80 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50',
+      elevated: 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600/50 shadow-2xl',
+      outlined: 'bg-transparent border-2 border-slate-300 dark:border-slate-600/50',
+      glass: 'bg-white/30 dark:bg-slate-800/30 backdrop-blur-xl border-slate-300/30 dark:border-slate-600/30'
     };
 
     return (
@@ -22,7 +22,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           'rounded-2xl border p-6 shadow-lg transition-all duration-300',
           variants[variant],
-          hover && 'hover:shadow-2xl hover:scale-[1.02] hover:border-slate-500/50',
+          hover && 'hover:shadow-2xl hover:scale-[1.02] hover:border-slate-400 dark:hover:border-slate-500/50',
           className
         )}
         {...props}
@@ -56,7 +56,7 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTML
     return (
       <h3
         ref={ref}
-        className={cn('text-xl font-bold text-white tracking-tight', className)}
+        className={cn('text-xl font-bold text-slate-900 dark:text-white tracking-tight', className)}
         {...props}
       >
         {children}
@@ -72,7 +72,7 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
     return (
       <p
         ref={ref}
-        className={cn('text-slate-400 text-sm leading-relaxed', className)}
+        className={cn('text-slate-600 dark:text-slate-400 text-sm leading-relaxed', className)}
         {...props}
       >
         {children}
@@ -88,7 +88,7 @@ const CardContent = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={cn('text-slate-300', className)}
+        className={cn('text-slate-700 dark:text-slate-300', className)}
         {...props}
       >
         {children}
@@ -104,7 +104,7 @@ const CardFooter = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={cn('flex items-center pt-6 border-t border-slate-700/50', className)}
+        className={cn('flex items-center pt-6 border-t border-slate-200 dark:border-slate-700/50', className)}
         {...props}
       >
         {children}

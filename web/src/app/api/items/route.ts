@@ -27,6 +27,17 @@ export async function GET() {
         roomId: true,
         createdAt: true,
         updatedAt: true,
+        images: {
+          select: {
+            id: true,
+            filename: true,
+            path: true
+          },
+          take: 1,
+          orderBy: {
+            createdAt: 'desc'
+          }
+        },
         room: {
           select: {
             id: true,

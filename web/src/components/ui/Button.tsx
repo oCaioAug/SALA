@@ -12,10 +12,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
     
     const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
-      secondary: 'bg-gray-600 text-white hover:bg-gray-700',
-      outline: 'border border-gray-600 bg-transparent text-gray-300 hover:bg-gray-800',
-      ghost: 'text-gray-300 hover:bg-gray-800 hover:text-white'
+      primary: 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700',
+      secondary: 'bg-slate-200 dark:bg-gray-600 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-gray-700',
+      outline: 'border border-slate-300 dark:border-gray-600 bg-transparent text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-white',
+      ghost: 'text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-white'
     };
     
     const sizes = {

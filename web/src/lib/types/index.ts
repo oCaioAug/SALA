@@ -1,9 +1,13 @@
 // Tipos para o sistema SALA
-import { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus, Notification, NotificationType } from '@prisma/client'
+import { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus, Notification, NotificationType, Image } from '@prisma/client'
 
-export type { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus, Notification, NotificationType }
+export type { User, Room, Item, Reservation, Role, RoomStatus, ReservationStatus, Notification, NotificationType, Image }
 
 // Tipos estendidos para o frontend
+export interface ItemWithImages extends Item {
+  images: Image[]
+}
+
 export interface RoomWithItems {
   id: string
   name: string
@@ -12,7 +16,7 @@ export interface RoomWithItems {
   capacity: number | null
   createdAt: Date
   updatedAt: Date
-  items: Item[]
+  items: ItemWithImages[]
   reservations?: Reservation[]
 }
 

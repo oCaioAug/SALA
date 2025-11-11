@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
+import { PageLayout } from "@/components/layout/PageLayout";
 import {
   Card,
   CardContent,
@@ -149,26 +147,20 @@ const DashboardPage: React.FC = () => {
   });
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-        <Sidebar
-          currentPage={currentPage}
-          onNavigate={navigate}
-          isNavigating={isNavigating}
-        />
-
-        <div className="flex-1 flex flex-col">
-          <Header onNotificationClick={handleNotificationClick} />
-
-          <main className="flex-1 p-6">
+    <PageLayout
+      currentPage={currentPage}
+      onNavigate={navigate}
+      isNavigating={isNavigating}
+      onNotificationClick={handleNotificationClick}
+    >
             {/* Header melhorado */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
                     Visão Geral das Salas
                   </h1>
-                  <p className="text-gray-400">
+                  <p className="text-slate-600 dark:text-gray-400">
                     Gerencie e monitore todas as salas da instituição
                   </p>
                 </div>
@@ -182,7 +174,7 @@ const DashboardPage: React.FC = () => {
               {/* Barra de busca e filtros melhorada */}
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <div className="relative flex-1">
-                  <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Buscar por sala, item ou descrição..."
@@ -190,7 +182,7 @@ const DashboardPage: React.FC = () => {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setSearchTerm(e.target.value)
                     }
-                    className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -200,7 +192,7 @@ const DashboardPage: React.FC = () => {
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                       setStatusFilter(e.target.value)
                     }
-                    className="px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">Todos os Status</option>
                     <option value="LIVRE">Livre</option>
@@ -208,13 +200,13 @@ const DashboardPage: React.FC = () => {
                     <option value="RESERVADO">Reservado</option>
                   </select>
 
-                  <div className="flex bg-gray-800 rounded-lg border border-gray-600">
+                  <div className="flex bg-white dark:bg-gray-800 rounded-lg border border-slate-300 dark:border-gray-600">
                     <button
                       onClick={() => setViewMode("grid")}
                       className={`p-3 rounded-l-lg transition-colors ${
                         viewMode === "grid"
                           ? "bg-blue-600 text-white"
-                          : "text-gray-400 hover:text-white"
+                          : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       <Grid className="w-4 h-4" />
@@ -224,7 +216,7 @@ const DashboardPage: React.FC = () => {
                       className={`p-3 rounded-r-lg transition-colors ${
                         viewMode === "list"
                           ? "bg-blue-600 text-white"
-                          : "text-gray-400 hover:text-white"
+                          : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       <List className="w-4 h-4" />
@@ -241,13 +233,13 @@ const DashboardPage: React.FC = () => {
                       <Building2 className="w-6 h-6 text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-white mb-1">
+                      <p className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
                         {rooms.length}
                       </p>
-                      <p className="text-sm text-slate-400 font-medium">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                         Total de Salas
                       </p>
-                      <div className="w-full bg-slate-700 rounded-full h-1 mt-2">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                         <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-1 rounded-full w-full"></div>
                       </div>
                     </div>
@@ -262,13 +254,13 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-white mb-1">
+                      <p className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
                         {rooms.filter((r: any) => r.status === "LIVRE").length}
                       </p>
-                      <p className="text-sm text-slate-400 font-medium">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                         Disponíveis
                       </p>
-                      <div className="w-full bg-slate-700 rounded-full h-1 mt-2">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                         <div
                           className="bg-gradient-to-r from-green-500 to-emerald-500 h-1 rounded-full transition-all duration-500"
                           style={{
@@ -296,13 +288,13 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-white mb-1">
+                      <p className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
                         {rooms.filter((r: any) => r.status === "EM_USO").length}
                       </p>
-                      <p className="text-sm text-slate-400 font-medium">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                         Em Uso
                       </p>
-                      <div className="w-full bg-slate-700 rounded-full h-1 mt-2">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                         <div
                           className="bg-gradient-to-r from-red-500 to-rose-500 h-1 rounded-full transition-all duration-500"
                           style={{
@@ -330,16 +322,16 @@ const DashboardPage: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <p className="text-3xl font-bold text-white mb-1">
+                      <p className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
                         {
                           rooms.filter((r: any) => r.status === "RESERVADO")
                             .length
                         }
                       </p>
-                      <p className="text-sm text-slate-400 font-medium">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
                         Reservadas
                       </p>
-                      <div className="w-full bg-slate-700 rounded-full h-1 mt-2">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                         <div
                           className="bg-gradient-to-r from-amber-500 to-yellow-500 h-1 rounded-full transition-all duration-500"
                           style={{
@@ -380,10 +372,10 @@ const DashboardPage: React.FC = () => {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
                       Erro ao carregar salas
                     </h3>
-                    <p className="text-gray-400 text-sm mb-6">{error}</p>
+                    <p className="text-slate-600 dark:text-gray-400 text-sm mb-6">{error}</p>
                     <Button onClick={() => window.location.reload()}>
                       Tentar Novamente
                     </Button>
@@ -391,7 +383,7 @@ const DashboardPage: React.FC = () => {
                 </div>
               ) : filteredRooms.length === 0 ? (
                 <EmptyState
-                  icon={<Building2 className="w-8 h-8 text-gray-400" />}
+                  icon={<Building2 className="w-8 h-8 text-slate-500 dark:text-gray-400" />}
                   title={
                     searchTerm || statusFilter !== "all"
                       ? "Nenhuma sala encontrada"
@@ -423,9 +415,9 @@ const DashboardPage: React.FC = () => {
                           <StatusBadge status={room.status} />
                           {room.reservations &&
                             room.reservations.length > 0 && (
-                              <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/20 rounded-full border border-amber-500/30">
-                                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                                <span className="text-xs font-medium text-amber-300">
+                              <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-500/20 rounded-full border border-amber-300 dark:border-amber-500/30">
+                                <div className="w-2 h-2 bg-amber-500 dark:bg-amber-400 rounded-full animate-pulse"></div>
+                                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
                                   Reservada
                                 </span>
                               </div>
@@ -440,8 +432,8 @@ const DashboardPage: React.FC = () => {
                         </CardDescription>
 
                         {room.capacity && (
-                          <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
-                            <div className="w-4 h-4 bg-slate-600 rounded-full flex items-center justify-center">
+                          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
+                            <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
                               <span className="text-xs">👥</span>
                             </div>
                             <span>{room.capacity} pessoas</span>
@@ -452,27 +444,43 @@ const DashboardPage: React.FC = () => {
                       {/* Lista de itens */}
                       <div className="mb-4">
                         <div className="space-y-2">
-                          {room.items.slice(0, 2).map((item: any) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-3 p-2 bg-slate-700/30 rounded-lg group-hover:bg-slate-700/50 transition-colors duration-300"
-                            >
-                              <div className="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center text-sm">
-                                {item.icon || "📦"}
+                          {room.items.slice(0, 2).map((item: any) => {
+                            const itemImage = item.images && item.images.length > 0 
+                              ? item.images[0].path.replace('/api/uploads/items/images/original_', '/api/uploads/items/images/thumb_')
+                              : null;
+                            
+                            return (
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-700/30 rounded-lg group-hover:bg-slate-200 dark:group-hover:bg-slate-700/50 transition-colors duration-300"
+                              >
+                                {itemImage ? (
+                                  <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                    <img
+                                      src={itemImage}
+                                      alt={item.name}
+                                      className="w-full h-full object-contain p-0.5"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
+                                    {item.icon || "📦"}
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                    {item.name}
+                                  </p>
+                                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                                    Qtd: {item.quantity}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">
-                                  {item.name}
-                                </p>
-                                <p className="text-xs text-slate-400">
-                                  Qtd: {item.quantity}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                           {room.items.length > 2 && (
                             <div className="text-center py-2">
-                              <span className="text-xs text-slate-500 bg-slate-700/50 px-3 py-1 rounded-full">
+                              <span className="text-xs text-slate-600 dark:text-slate-500 bg-slate-200 dark:bg-slate-700/50 px-3 py-1 rounded-full">
                                 +{room.items.length - 2} itens adicionais
                               </span>
                             </div>
@@ -481,7 +489,7 @@ const DashboardPage: React.FC = () => {
                       </div>
 
                       {/* Footer com ações */}
-                      <div className="pt-4 border-t border-slate-700/50">
+                      <div className="pt-4 border-t border-slate-200 dark:border-slate-700/50">
                         <Link href={`/salas/${room.id}`} className="w-full">
                           <Button
                             variant="secondary"
@@ -498,7 +506,7 @@ const DashboardPage: React.FC = () => {
                   <Card
                     variant="outlined"
                     hover
-                    className="border-dashed border-2 border-slate-500/50 hover:border-blue-500/50 cursor-pointer group animate-scaleIn flex flex-col items-center justify-center h-full min-h-[300px]"
+                    className="border-dashed border-2 border-slate-300 dark:border-slate-500/50 hover:border-blue-500/50 cursor-pointer group animate-scaleIn flex flex-col items-center justify-center h-full min-h-[300px]"
                     onClick={handleAddRoom}
                   >
                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
@@ -506,15 +514,15 @@ const DashboardPage: React.FC = () => {
                         <Plus className="w-6 h-6 text-white" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
                       Criar Nova Sala
                     </h3>
-                    <p className="text-slate-400 text-sm text-center max-w-48">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm text-center max-w-48">
                       Adicione uma nova sala ao sistema para começar o
                       gerenciamento
                     </p>
-                    <div className="mt-6 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20">
-                      <span className="text-xs font-medium text-blue-400">
+                    <div className="mt-6 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-full border border-blue-200 dark:border-blue-500/20">
+                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                         Clique para começar
                       </span>
                     </div>
@@ -522,22 +530,19 @@ const DashboardPage: React.FC = () => {
                 </div>
               )}
             </PageTransition>
-          </main>
-        </div>
 
-        {/* Modal para criar sala */}
-        <Modal
-          isOpen={isCreateRoomModalOpen}
-          onClose={() => setCreateRoomModalOpen(false)}
-          title="Criar Nova Sala"
-        >
-          <RoomForm
-            onSubmit={handleCreateRoom}
-            onCancel={() => setCreateRoomModalOpen(false)}
-          />
-        </Modal>
-      </div>
-    </ProtectedRoute>
+      {/* Modal para criar sala */}
+      <Modal
+        isOpen={isCreateRoomModalOpen}
+        onClose={() => setCreateRoomModalOpen(false)}
+        title="Criar Nova Sala"
+      >
+        <RoomForm
+          onSubmit={handleCreateRoom}
+          onCancel={() => setCreateRoomModalOpen(false)}
+        />
+      </Modal>
+    </PageLayout>
   );
 };
 

@@ -84,29 +84,29 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <div className="w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 h-full flex flex-col border-r border-slate-700/50 shadow-2xl">
+    <div className="w-72 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 h-full flex flex-col border-r border-slate-200 dark:border-slate-700/50 shadow-2xl transition-colors duration-300">
       {/* Header com logo melhorado */}
-      <div className="p-6 border-b border-slate-700/50">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-700/50">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
               S.A.L.A
             </h1>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
               Sistema de Gerenciamento
             </p>
           </div>
         </div>
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent mt-4"></div>
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-400 dark:via-slate-600 to-transparent mt-4"></div>
       </div>
 
       {/* Navegação melhorada */}
       <nav className="flex-1 px-4 py-6">
         <div className="mb-6">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-3">
+          <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3 px-3">
             Navegação
           </h2>
           <ul className="space-y-1">
@@ -120,8 +120,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                     className={cn(
                       "group w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all duration-300 relative overflow-hidden",
                       item.active
-                        ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white shadow-lg border border-blue-500/30"
-                        : "text-slate-300 hover:bg-slate-700/50 hover:text-white hover:shadow-md",
+                        ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-slate-900 dark:text-white shadow-lg border border-blue-500/30"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white hover:shadow-md",
                       isNavigating &&
                         !item.active &&
                         "opacity-50 cursor-not-allowed",
@@ -142,7 +142,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         "relative z-10 p-2 rounded-lg transition-all duration-300",
                         item.active
                           ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg"
-                          : "bg-slate-700/50 text-slate-400 group-hover:bg-slate-600 group-hover:text-white"
+                          : "bg-slate-200/80 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 group-hover:bg-slate-300 dark:group-hover:bg-slate-600 group-hover:text-slate-900 dark:group-hover:text-white"
                       )}
                     >
                       <IconComponent className="w-4 h-4" />
@@ -157,8 +157,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                         className={cn(
                           "text-xs truncate transition-colors duration-300",
                           item.active
-                            ? "text-blue-200"
-                            : "text-slate-500 group-hover:text-slate-300"
+                            ? "text-blue-600 dark:text-blue-200"
+                            : "text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
                         )}
                       >
                         {item.description}
@@ -172,12 +172,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Loading spinner */}
                     {isNavigating && item.active && (
-                      <div className="relative z-10 ml-auto w-4 h-4 border-2 border-slate-400 border-t-white rounded-full animate-spin"></div>
+                      <div className="relative z-10 ml-auto w-4 h-4 border-2 border-slate-400 dark:border-slate-400 border-t-slate-900 dark:border-t-white rounded-full animate-spin"></div>
                     )}
 
                     {/* Seta de navegação */}
                     {!item.active && (
-                      <ChevronRight className="relative z-10 w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors duration-300" />
+                      <ChevronRight className="relative z-10 w-4 h-4 text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors duration-300" />
                     )}
                   </button>
                 </li>
@@ -187,14 +187,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Status do sistema */}
-        <div className="mt-auto p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+        <div className="mt-auto p-4 bg-slate-200/80 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 transition-colors duration-300">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium text-slate-300">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
               Sistema Online
             </span>
           </div>
-          <p className="text-xs text-slate-500">Última atualização: agora</p>
+          <p className="text-xs text-slate-600 dark:text-slate-500">Última atualização: agora</p>
         </div>
       </nav>
     </div>

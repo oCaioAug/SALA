@@ -8,6 +8,19 @@ export async function GET(
   try {
     const items = await prisma.item.findMany({
       where: { roomId: params.id },
+      include: {
+        images: {
+          select: {
+            id: true,
+            filename: true,
+            path: true
+          },
+          take: 1,
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      },
       orderBy: {
         name: 'asc'
       }

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { ErrorPage } from "@/components/layout/ErrorPage";
 import {
   Card,
   CardContent,
@@ -16,8 +16,9 @@ import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Modal } from "@/components/ui/Modal";
 import { RoomForm } from "@/components/forms/RoomForm";
+import { ImageUpload } from "@/components/forms/ImageUpload";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { Room, RoomWithItems, Item } from "@/lib/types";
+import { Room, RoomWithItems, Item, Image } from "@/lib/types";
 import {
   Edit,
   Plus,
@@ -94,10 +95,11 @@ const RoomDetailPage: React.FC = () => {
   };
 
   const handleAddItem = async (
-    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">
+    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    imageData?: any
   ) => {
     try {
-      const response = await fetch("/api/items", {
+      const response = await fetch("/api/rooms/" + roomId + "/items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,14 +115,36 @@ const RoomDetailPage: React.FC = () => {
       }
 
       const newItem = await response.json();
-      setRoom((prev) =>
-        prev
-          ? {
-              ...prev,
-              items: [...prev.items, newItem],
-            }
-          : null
-      );
+
+      // Se há imagem, fazer upload e associar ao item
+      if (imageData && imageData.hasImage && imageData.imageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', imageData.imageFile);
+        uploadFormData.append('itemName', newItem.name);
+        uploadFormData.append('itemId', newItem.id);
+
+        await fetch('/api/items/upload-image', {
+          method: 'POST',
+          body: uploadFormData
+        });
+      }
+
+      // Recarregar dados da sala para pegar a imagem associada
+      const roomResponse = await fetch(`/api/rooms/${roomId}`);
+      if (roomResponse.ok) {
+        const roomData = await roomResponse.json();
+        setRoom(roomData);
+      } else {
+        setRoom((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: [...prev.items, newItem],
+              }
+            : null
+        );
+      }
+
       setIsAddItemModalOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao adicionar item");
@@ -153,36 +177,26 @@ const RoomDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-xl">Carregando sala...</div>
-      </div>
-    );
+    return <LoadingPage message="Carregando sala..." />;
   }
 
   if (error || !room) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-red-500 text-xl">
-          Erro: {error || "Sala não encontrada"}
-        </div>
-      </div>
+      <ErrorPage
+        error={error || "Sala não encontrada"}
+        onRetry={() => router.push("/dashboard")}
+        retryLabel="Voltar ao Dashboard"
+      />
     );
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-        <Sidebar
-          currentPage={currentPage}
-          onNavigate={navigate}
-          isNavigating={isNavigating}
-        />
-
-        <div className="flex-1 flex flex-col">
-          <Header onNotificationClick={() => {}} />
-
-          <main className="flex-1 p-6">
+    <PageLayout
+      currentPage={currentPage}
+      onNavigate={navigate}
+      isNavigating={isNavigating}
+      onNotificationClick={() => {}}
+    >
             {/* Header da sala */}
             <div className="mb-8">
               <div className="flex items-center gap-4 mb-6">
@@ -196,14 +210,14 @@ const RoomDetailPage: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
                     {room.name}
                   </h1>
                   <div className="flex items-center gap-4">
                     <StatusBadge status={room.status} />
                     {room.capacity && (
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <div className="w-4 h-4 bg-slate-600 rounded-full flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                        <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
                           <span className="text-xs">👥</span>
                         </div>
                         <span>Capacidade: {room.capacity} pessoas</span>
@@ -244,7 +258,7 @@ const RoomDetailPage: React.FC = () => {
             {room.description && (
               <Card className="mb-6">
                 <CardTitle className="text-lg mb-2">Descrição</CardTitle>
-                <p className="text-gray-300">{room.description}</p>
+                <p className="text-slate-700 dark:text-gray-300">{room.description}</p>
               </Card>
             )}
 
@@ -265,14 +279,14 @@ const RoomDetailPage: React.FC = () => {
               </div>
 
               {room.items.length === 0 ? (
-                <div className="text-center py-12 bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-600/50">
-                  <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Package className="w-8 h-8 text-slate-400" />
+                <div className="text-center py-12 bg-slate-100 dark:bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600/50">
+                  <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="w-8 h-8 text-slate-500 dark:text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-white mb-2">
+                  <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
                     Nenhum item cadastrado
                   </h3>
-                  <p className="text-slate-400 mb-6">
+                  <p className="text-slate-600 dark:text-slate-400 mb-6">
                     Comece adicionando itens para esta sala
                   </p>
                   <Button
@@ -285,76 +299,92 @@ const RoomDetailPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {room.items.map((item) => (
-                    <Card
-                      key={item.id}
-                      variant="default"
-                      hover
-                      className="group"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-lg">
-                            {item.icon || "📦"}
+                  {room.items.map((item: any) => {
+                    const itemImage = item.images && item.images.length > 0 
+                      ? item.images[0].path.replace('/api/uploads/items/images/original_', '/api/uploads/items/images/thumb_')
+                      : null;
+                    
+                    return (
+                      <Card
+                        key={item.id}
+                        variant="default"
+                        hover
+                        className="group overflow-hidden"
+                      >
+                        {/* Imagem do item */}
+                        {itemImage ? (
+                          <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                            <img
+                              src={itemImage}
+                              alt={item.name}
+                              className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                            />
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors duration-300">
-                              {item.name}
-                            </h3>
-                            <p className="text-sm text-slate-400">
-                              Qtd: {item.quantity}
+                        ) : (
+                          <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                            <span className="text-4xl">{item.icon || "📦"}</span>
+                          </div>
+                        )}
+                        
+                        <div className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-400 transition-colors duration-300">
+                                {item.name}
+                              </h3>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">
+                                Qtd: {item.quantity}
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+
+                          {item.description && (
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                              {item.description}
                             </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                          )}
 
-                      {item.description && (
-                        <p className="text-sm text-slate-400 mb-3 line-clamp-2">
-                          {item.description}
-                        </p>
-                      )}
-
-                      {item.specifications.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-slate-500">
-                            Especificações:
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {item.specifications
-                              .slice(0, 2)
-                              .map((spec, index) => (
-                                <span
-                                  key={index}
-                                  className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded"
-                                >
-                                  {spec}
-                                </span>
-                              ))}
-                            {item.specifications.length > 2 && (
-                              <span className="text-xs text-slate-500">
-                                +{item.specifications.length - 2} mais
-                              </span>
-                            )}
-                          </div>
+                          {item.specifications && item.specifications.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
+                                Especificações:
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {item.specifications
+                                  .slice(0, 2)
+                                  .map((spec: string, index: number) => (
+                                    <span
+                                      key={index}
+                                      className="text-xs bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-slate-300 px-2 py-1 rounded"
+                                    >
+                                      {spec}
+                                    </span>
+                                  ))}
+                                {item.specifications.length > 2 && (
+                                  <span className="text-xs text-slate-600 dark:text-slate-500">
+                                    +{item.specifications.length - 2} mais
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </Card>
-          </main>
-        </div>
 
-        {/* Modal para editar sala */}
+      {/* Modal para editar sala */}
         <Modal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
@@ -378,14 +408,13 @@ const RoomDetailPage: React.FC = () => {
             onCancel={() => setIsAddItemModalOpen(false)}
           />
         </Modal>
-      </div>
-    </ProtectedRoute>
+    </PageLayout>
   );
 };
 
 // Componente temporário para formulário de item
 const ItemForm: React.FC<{
-  onSubmit: (item: Omit<Item, "id" | "createdAt" | "updatedAt">) => void;
+  onSubmit: (item: Omit<Item, "id" | "createdAt" | "updatedAt">, imageData?: any) => void;
   onCancel: () => void;
 }> = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -395,25 +424,59 @@ const ItemForm: React.FC<{
     quantity: "1",
     icon: "",
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageSelect = (file: File) => {
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageRemove = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      name: formData.name,
-      description: formData.description || null,
-      specifications: formData.specifications
-        ? formData.specifications.split(",").map((s) => s.trim())
-        : [],
-      quantity: parseInt(formData.quantity),
-      icon: formData.icon || null,
-      roomId: null,
-    });
+    setUploading(true);
+
+    try {
+      // Criar item primeiro
+      const itemData = {
+        name: formData.name,
+        description: formData.description || null,
+        specifications: formData.specifications
+          ? formData.specifications.split(",").map((s) => s.trim())
+          : [],
+        quantity: parseInt(formData.quantity),
+        icon: formData.icon || null,
+        roomId: null,
+      };
+
+      // Se há nova imagem selecionada, fazer upload após criar item
+      if (selectedImage) {
+        onSubmit(itemData, { hasImage: true, imageFile: selectedImage });
+      } else {
+        onSubmit(itemData);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar item:', error);
+      alert(error instanceof Error ? error.message : 'Erro ao salvar item');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="text-sm font-medium text-gray-300 mb-2 block">
+        <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
           Nome do Item
         </label>
         <input
@@ -422,14 +485,14 @@ const ItemForm: React.FC<{
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, name: e.target.value }))
           }
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Ex: Computador"
           required
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium text-gray-300 mb-2 block">
+        <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
           Descrição
         </label>
         <textarea
@@ -437,14 +500,14 @@ const ItemForm: React.FC<{
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, description: e.target.value }))
           }
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Descreva o item..."
           rows={3}
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium text-gray-300 mb-2 block">
+        <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
           Especificações (separadas por vírgula)
         </label>
         <input
@@ -453,14 +516,21 @@ const ItemForm: React.FC<{
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, specifications: e.target.value }))
           }
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Ex: Windows 11, 16GB RAM, Core i7"
         />
       </div>
 
+      <ImageUpload
+        onImageSelect={handleImageSelect}
+        onImageRemove={handleImageRemove}
+        previewUrl={imagePreview}
+        itemName={formData.name}
+      />
+
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium text-gray-300 mb-2 block">
+          <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
             Quantidade
           </label>
           <input
@@ -469,14 +539,14 @@ const ItemForm: React.FC<{
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, quantity: e.target.value }))
             }
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             min="1"
             required
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-300 mb-2 block">
+          <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
             Ícone (emoji)
           </label>
           <input
@@ -485,15 +555,18 @@ const ItemForm: React.FC<{
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, icon: e.target.value }))
             }
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="💻"
           />
+          <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
+            Opcional - usado como fallback se não houver imagem
+          </p>
         </div>
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button type="submit" className="flex-1">
-          Adicionar Item
+        <Button type="submit" className="flex-1" disabled={uploading}>
+          {uploading ? 'Salvando...' : 'Adicionar Item'}
         </Button>
         <Button
           type="button"

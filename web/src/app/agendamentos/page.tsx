@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { Header } from '@/components/layout/Header';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { LoadingPage } from '@/components/layout/LoadingPage';
+import { ErrorPage } from '@/components/layout/ErrorPage';
 import { Card, CardContent, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -215,8 +216,8 @@ const AgendamentosPage: React.FC = () => {
       case 'APPROVED': return 'text-green-400 bg-green-500/10';
       case 'ACTIVE': return 'text-blue-400 bg-blue-500/10';
       case 'CANCELLED': return 'text-red-400 bg-red-500/10';
-      case 'COMPLETED': return 'text-gray-400 bg-gray-500/10';
-      default: return 'text-gray-400 bg-gray-500/10';
+      case 'COMPLETED': return 'text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10';
+      default: return 'text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10';
     }
   };
 
@@ -231,178 +232,164 @@ const AgendamentosPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <LoadingPage message="Carregando agendamentos..." />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CalendarIcon className="w-8 h-8 text-red-400" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Erro ao carregar agendamentos</h3>
-          <p className="text-gray-400 text-sm mb-6">{error}</p>
-          <Button onClick={() => window.location.reload()}>
-            Tentar Novamente
-          </Button>
-        </div>
-      </div>
+      <ErrorPage
+        error={error}
+        onRetry={() => window.location.reload()}
+        retryLabel="Tentar Novamente"
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-      <Sidebar currentPage={currentPage} onNavigate={navigate} isNavigating={isNavigating} />
-      
-      <div className="flex-1 flex flex-col">
-        <Header onNotificationClick={() => {}} />
-        
-        <main className="flex-1 p-6">
-          {/* Header da página */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <CalendarIcon className="w-8 h-8 text-blue-400" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">Agendamentos</h1>
-                  <p className="text-gray-400">Visualize e gerencie todos os agendamentos das salas</p>
-                </div>
-              </div>
-              
-              <Button onClick={handleCreateReservation} className="px-6 py-3">
-                <Plus className="w-5 h-5 mr-2" />
-                Nova Reserva
-              </Button>
+    <PageLayout
+      currentPage={currentPage}
+      onNavigate={navigate}
+      isNavigating={isNavigating}
+      onNotificationClick={() => {}}
+    >
+      {/* Header da página */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
+              <CalendarIcon className="w-8 h-8 text-blue-400" />
             </div>
-
-            {/* Filtros e busca */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Buscar por usuário, sala ou propósito..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-              
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Todos os Status</option>
-                <option value="APPROVED">Aprovadas</option>
-                <option value="ACTIVE">Ativas</option>
-                <option value="CANCELLED">Canceladas</option>
-                <option value="COMPLETED">Concluídas</option>
-              </select>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Agendamentos</h1>
+              <p className="text-slate-600 dark:text-gray-400">Visualize e gerencie todos os agendamentos das salas</p>
             </div>
           </div>
+          
+          <Button onClick={handleCreateReservation} className="px-6 py-3">
+            <Plus className="w-5 h-5 mr-2" />
+            Nova Reserva
+          </Button>
+        </div>
 
-          {/* Calendário */}
-          <div className="mb-8">
-            <Calendar
-              reservations={reservations}
-              rooms={rooms}
-              onReservationClick={handleReservationClick}
-              onDateClick={handleDateClick}
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
+        {/* Filtros e busca */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Buscar por usuário, sala ou propósito..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
-          {/* Lista de reservas do dia selecionado */}
-          <Card variant="elevated">
-            <div className="p-6 border-b border-slate-700">
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-blue-400" />
-                <div>
-                  <CardTitle className="text-xl">
-                    Reservas de {selectedDate.toLocaleDateString('pt-BR', { 
-                      weekday: 'long', 
-                      day: '2-digit', 
-                      month: 'long' 
-                    })}
-                  </CardTitle>
-                  <p className="text-gray-400 text-sm">
-                    {getReservationsForDate(selectedDate).length} reserva(s) encontrada(s)
-                  </p>
-                </div>
-              </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">Todos os Status</option>
+            <option value="APPROVED">Aprovadas</option>
+            <option value="ACTIVE">Ativas</option>
+            <option value="CANCELLED">Canceladas</option>
+            <option value="COMPLETED">Concluídas</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Calendário */}
+      <div className="mb-8">
+        <Calendar
+          reservations={reservations}
+          rooms={rooms}
+          onReservationClick={handleReservationClick}
+          onDateClick={handleDateClick}
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+        />
+      </div>
+
+      {/* Lista de reservas do dia selecionado */}
+      <Card variant="elevated">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-blue-400" />
+            <div>
+              <CardTitle className="text-xl">
+                Reservas de {selectedDate.toLocaleDateString('pt-BR', { 
+                  weekday: 'long', 
+                  day: '2-digit', 
+                  month: 'long' 
+                })}
+              </CardTitle>
+              <p className="text-slate-600 dark:text-gray-400 text-sm">
+                {getReservationsForDate(selectedDate).length} reserva(s) encontrada(s)
+              </p>
             </div>
-            
-            <CardContent className="p-6">
-              {getReservationsForDate(selectedDate).length === 0 ? (
-                <EmptyState
-                  icon={<CalendarIcon className="w-8 h-8 text-gray-400" />}
-                  title="Nenhuma reserva neste dia"
-                  description="Não há agendamentos para a data selecionada."
-                />
-              ) : (
-                <div className="space-y-4">
-                  {getReservationsForDate(selectedDate).map((reservation) => (
-                    <div
-                      key={reservation.id}
-                      className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:bg-slate-800/70 transition-colors cursor-pointer"
-                      onClick={() => handleReservationClick(reservation)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-blue-500/20 rounded-lg">
-                            <Building2 className="w-5 h-5 text-blue-400" />
+          </div>
+        </div>
+        
+        <CardContent className="p-6">
+          {getReservationsForDate(selectedDate).length === 0 ? (
+            <EmptyState
+              icon={<CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />}
+              title="Nenhuma reserva neste dia"
+              description="Não há agendamentos para a data selecionada."
+            />
+          ) : (
+            <div className="space-y-4">
+              {getReservationsForDate(selectedDate).map((reservation) => (
+                <div
+                  key={reservation.id}
+                  className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
+                  onClick={() => handleReservationClick(reservation)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-blue-500/20 rounded-lg">
+                        <Building2 className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">{rooms.find(r => r.id === reservation.roomId)?.name || 'Sala desconhecida'}</h3>
+                        <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <UserIcon className="w-4 h-4" />
+                            {reservation.user.name}
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-white">{rooms.find(r => r.id === reservation.roomId)?.name || 'Sala desconhecida'}</h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <UserIcon className="w-4 h-4" />
-                                {reservation.user.name}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {formatDateTime(new Date(reservation.startTime))} - {formatDateTime(new Date(reservation.endTime))}
-                              </div>
-                            </div>
-                            {reservation.purpose && (
-                              <p className="text-sm text-gray-300 mt-1">{reservation.purpose}</p>
-                            )}
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {formatDateTime(new Date(reservation.startTime))} - {formatDateTime(new Date(reservation.endTime))}
                           </div>
                         </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(reservation.status)}`}>
-                            {getStatusText(reservation.status)}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReservationClick(reservation);
-                            }}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        {reservation.purpose && (
+                          <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">{reservation.purpose}</p>
+                        )}
                       </div>
                     </div>
-                  ))}
+                    
+                    <div className="flex items-center gap-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(reservation.status)}`}>
+                        {getStatusText(reservation.status)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReservationClick(reservation);
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Modal de detalhes da reserva */}
       <Modal
@@ -414,55 +401,55 @@ const AgendamentosPage: React.FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">Sala</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Sala</label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-white">{rooms.find(r => r.id === selectedReservation.roomId)?.name || 'Sala desconhecida'}</span>
+                  <span className="text-slate-900 dark:text-white">{rooms.find(r => r.id === selectedReservation.roomId)?.name || 'Sala desconhecida'}</span>
                 </div>
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">Usuário</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Usuário</label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <UserIcon className="w-4 h-4 text-green-400" />
-                  <span className="text-white">{selectedReservation.user.name}</span>
+                  <span className="text-slate-900 dark:text-white">{selectedReservation.user.name}</span>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">Início</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Início</label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-orange-400" />
-                  <span className="text-white">{formatDateTime(new Date(selectedReservation.startTime))}</span>
+                  <span className="text-slate-900 dark:text-white">{formatDateTime(new Date(selectedReservation.startTime))}</span>
                 </div>
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">Fim</label>
-                <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Fim</label>
+                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-white">{formatDateTime(new Date(selectedReservation.endTime))}</span>
+                  <span className="text-slate-900 dark:text-white">{formatDateTime(new Date(selectedReservation.endTime))}</span>
                 </div>
               </div>
             </div>
 
             {selectedReservation.purpose && (
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">Propósito</label>
-                <p className="p-3 bg-slate-800 rounded-lg text-white">{selectedReservation.purpose}</p>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Propósito</label>
+                <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">{selectedReservation.purpose}</p>
               </div>
             )}
 
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">Status</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">Status</label>
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedReservation.status)}`}>
                 {getStatusText(selectedReservation.status)}
               </span>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-slate-700">
+            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
               <Button
                 variant="outline"
                 onClick={() => setIsDetailsModalOpen(false)}
@@ -501,7 +488,7 @@ const AgendamentosPage: React.FC = () => {
           loading={createReservationLoading}
         />
       </Modal>
-    </div>
+    </PageLayout>
   );
 };
 

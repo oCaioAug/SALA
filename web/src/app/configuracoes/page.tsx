@@ -2,9 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useApp } from "@/lib/hooks/useApp";
@@ -85,27 +83,21 @@ const ConfiguracoesPage: React.FC = () => {
   ];
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-        <Sidebar
-          currentPage={currentPage}
-          onNavigate={navigate}
-          isNavigating={isNavigating}
-        />
-
-        <div className="flex-1 flex flex-col">
-          <Header onNotificationClick={handleNotificationClick} />
-
-          <main className="flex-1 p-6">
+    <PageLayout
+      currentPage={currentPage}
+      onNavigate={navigate}
+      isNavigating={isNavigating}
+      onNotificationClick={handleNotificationClick}
+    >
             {/* Header da página */}
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-4">
                 <Settings className="w-8 h-8 text-yellow-500" />
                 <div>
-                  <h1 className="text-3xl font-bold text-white">
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
                     Configurações
                   </h1>
-                  <p className="text-gray-400">
+                  <p className="text-slate-600 dark:text-gray-400">
                     Gerencie as configurações do sistema
                   </p>
                 </div>
@@ -117,7 +109,9 @@ const ConfiguracoesPage: React.FC = () => {
               {configuracoesItems.map((item) => (
                 <Card
                   key={item.id}
-                  className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors cursor-pointer"
+                  variant="elevated"
+                  hover
+                  className="cursor-pointer"
                   onClick={item.action}
                 >
                   <CardContent className="p-6">
@@ -126,10 +120,10 @@ const ConfiguracoesPage: React.FC = () => {
                         {item.icon}
                       </div>
                       <div className="flex-1">
-                        <CardTitle className="text-white text-lg mb-2">
+                        <CardTitle className="text-lg mb-2">
                           {item.title}
                         </CardTitle>
-                        <p className="text-gray-400 text-sm mb-4">
+                        <p className="text-slate-600 dark:text-gray-400 text-sm mb-4">
                           {item.description}
                         </p>
                         <Button
@@ -154,36 +148,33 @@ const ConfiguracoesPage: React.FC = () => {
 
             {/* Informações do sistema */}
             <div className="mt-12">
-              <Card className="bg-gray-800 border-gray-700">
+              <Card variant="elevated">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold text-white mb-4">
+                  <h3 className="text-xl font-semibold mb-4">
                     Informações do Sistema
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-400">Versão:</span>
-                      <span className="text-white ml-2">1.0.0</span>
+                      <span className="text-slate-600 dark:text-gray-400">Versão:</span>
+                      <span className="text-slate-900 dark:text-white ml-2">1.0.0</span>
                     </div>
                     <div>
-                      <span className="text-gray-400">Última atualização:</span>
-                      <span className="text-white ml-2">Hoje</span>
+                      <span className="text-slate-600 dark:text-gray-400">Última atualização:</span>
+                      <span className="text-slate-900 dark:text-white ml-2">Hoje</span>
                     </div>
                     <div>
-                      <span className="text-gray-400">Status do banco:</span>
+                      <span className="text-slate-600 dark:text-gray-400">Status do banco:</span>
                       <span className="text-green-500 ml-2">Conectado</span>
                     </div>
                     <div>
-                      <span className="text-gray-400">Usuário atual:</span>
-                      <span className="text-white ml-2">Sistema</span>
+                      <span className="text-slate-600 dark:text-gray-400">Usuário atual:</span>
+                      <span className="text-slate-900 dark:text-white ml-2">Sistema</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </main>
-        </div>
-      </div>
-    </ProtectedRoute>
+    </PageLayout>
   );
 };
 

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { ErrorPage } from "@/components/layout/ErrorPage";
 import {
   Card,
   CardContent,
@@ -258,7 +258,7 @@ const SolicitacoesPage: React.FC = () => {
       case "REJECTED":
         return "text-red-400 bg-red-500/10";
       default:
-        return "text-gray-400 bg-gray-500/10";
+        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
     }
   };
 
@@ -276,224 +276,203 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <LoadingPage message="Carregando solicitações..." />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ClipboardList className="w-8 h-8 text-red-400" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">
-            Erro ao carregar solicitações
-          </h3>
-          <p className="text-gray-400 text-sm mb-6">{error}</p>
-          <Button onClick={() => window.location.reload()}>
-            Tentar Novamente
-          </Button>
-        </div>
-      </div>
+      <ErrorPage
+        error={error}
+        onRetry={() => window.location.reload()}
+        retryLabel="Tentar Novamente"
+      />
     );
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-        <Sidebar
-          currentPage={currentPage}
-          onNavigate={navigate}
-          isNavigating={isNavigating}
-        />
-
-        <div className="flex-1 flex flex-col">
-          <Header onNotificationClick={() => {}} />
-
-          <main className="flex-1 p-6">
-            {/* Header da página */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl">
-                    <ClipboardList className="w-8 h-8 text-amber-400" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">
-                      Solicitações
-                    </h1>
-                    <p className="text-gray-400">
-                      Aprove ou rejeite solicitações de reserva
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-white">
-                      {solicitacoes.length}
-                    </p>
-                    <p className="text-sm text-gray-400">Pendentes</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Filtros e busca */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="relative flex-1">
-                  <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Buscar por usuário, sala ou propósito..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  />
-                </div>
-
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="PENDING">Pendentes</option>
-                  <option value="all">Todas</option>
-                  <option value="APPROVED">Aprovadas</option>
-                  <option value="REJECTED">Rejeitadas</option>
-                </select>
-              </div>
+    <PageLayout
+      currentPage={currentPage}
+      onNavigate={navigate}
+      isNavigating={isNavigating}
+      onNotificationClick={() => {}}
+    >
+      {/* Header da página */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl">
+              <ClipboardList className="w-8 h-8 text-amber-400" />
             </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                Solicitações
+              </h1>
+              <p className="text-slate-600 dark:text-gray-400">
+                Aprove ou rejeite solicitações de reserva
+              </p>
+            </div>
+          </div>
 
-            {/* Lista de solicitações */}
-            {filteredSolicitacoes.length === 0 ? (
-              <EmptyState
-                icon={<ClipboardList className="w-8 h-8 text-gray-400" />}
-                title="Nenhuma solicitação encontrada"
-                description={
-                  searchTerm || statusFilter !== "PENDING"
-                    ? "Não há solicitações que correspondam aos filtros selecionados."
-                    : "Não há solicitações pendentes no momento."
-                }
-              />
-            ) : (
-              <div className="space-y-4">
-                {filteredSolicitacoes.map((solicitacao) => (
-                  <Card
-                    key={solicitacao.id}
-                    variant="elevated"
-                    hover
-                    className="group"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-amber-500/20 rounded-xl">
-                            <Calendar className="w-6 h-6 text-amber-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-white mb-1">
-                              {rooms.find((r) => r.id === solicitacao.roomId)?.name ||
-                                "Sala desconhecida"}
-                            </h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <UserIcon className="w-4 h-4" />
-                                {solicitacao.user.name}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {formatDateTime(new Date(solicitacao.startTime))} -{" "}
-                                {formatDateTime(new Date(solicitacao.endTime))}
-                              </div>
-                            </div>
-                            {solicitacao.purpose && (
-                              <p className="text-sm text-gray-300 mt-2">
-                                {solicitacao.purpose}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              solicitacao.status
-                            )}`}
-                          >
-                            {getStatusText(solicitacao.status)}
-                          </span>
-
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleSolicitacaoClick(solicitacao)}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-
-                            {solicitacao.status === "PENDING" && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApprove(solicitacao)}
-                                  disabled={actionLoading === solicitacao.id}
-                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                                >
-                                  {actionLoading === solicitacao.id ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <CheckCircle className="w-4 h-4" />
-                                  )}
-                                </Button>
-
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleReject(solicitacao)}
-                                  disabled={actionLoading === solicitacao.id}
-                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                >
-                                  {actionLoading === solicitacao.id ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <XCircle className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </main>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {solicitacoes.length}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-gray-400">Pendentes</p>
+            </div>
+          </div>
         </div>
 
-        {/* Modal de detalhes da solicitação */}
-        <Modal
-          isOpen={isDetailsModalOpen}
-          onClose={() => setIsDetailsModalOpen(false)}
-          title="Detalhes da Solicitação"
-        >
+        {/* Filtros e busca */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Buscar por usuário, sala ou propósito..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="PENDING">Pendentes</option>
+            <option value="all">Todas</option>
+            <option value="APPROVED">Aprovadas</option>
+            <option value="REJECTED">Rejeitadas</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Lista de solicitações */}
+      {filteredSolicitacoes.length === 0 ? (
+        <EmptyState
+          icon={<ClipboardList className="w-8 h-8 text-slate-500 dark:text-gray-400" />}
+          title="Nenhuma solicitação encontrada"
+          description={
+            searchTerm || statusFilter !== "PENDING"
+              ? "Não há solicitações que correspondam aos filtros selecionados."
+              : "Não há solicitações pendentes no momento."
+          }
+        />
+      ) : (
+        <div className="space-y-4">
+          {filteredSolicitacoes.map((solicitacao) => (
+            <Card
+              key={solicitacao.id}
+              variant="elevated"
+              hover
+              className="group"
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-500/20 rounded-xl">
+                      <Calendar className="w-6 h-6 text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                        {rooms.find((r) => r.id === solicitacao.roomId)?.name ||
+                          "Sala desconhecida"}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <UserIcon className="w-4 h-4" />
+                          {solicitacao.user.name}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {formatDateTime(new Date(solicitacao.startTime))} -{" "}
+                          {formatDateTime(new Date(solicitacao.endTime))}
+                        </div>
+                      </div>
+                      {solicitacao.purpose && (
+                        <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
+                          {solicitacao.purpose}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        solicitacao.status
+                      )}`}
+                    >
+                      {getStatusText(solicitacao.status)}
+                    </span>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSolicitacaoClick(solicitacao)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+
+                      {solicitacao.status === "PENDING" && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApprove(solicitacao)}
+                            disabled={actionLoading === solicitacao.id}
+                            className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                          >
+                            {actionLoading === solicitacao.id ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <CheckCircle className="w-4 h-4" />
+                            )}
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReject(solicitacao)}
+                            disabled={actionLoading === solicitacao.id}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          >
+                            {actionLoading === solicitacao.id ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <XCircle className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Modal de detalhes da solicitação */}
+      <Modal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        title="Detalhes da Solicitação"
+      >
           {selectedSolicitacao && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                     Sala
                   </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <Building2 className="w-4 h-4 text-blue-400" />
-                    <span className="text-white">
+                    <span className="text-slate-900 dark:text-white">
                       {rooms.find((r) => r.id === selectedSolicitacao.roomId)
                         ?.name || "Sala desconhecida"}
                     </span>
@@ -501,12 +480,12 @@ const SolicitacoesPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                     Usuário
                   </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <UserIcon className="w-4 h-4 text-green-400" />
-                    <span className="text-white">
+                    <span className="text-slate-900 dark:text-white">
                       {selectedSolicitacao.user.name}
                     </span>
                   </div>
@@ -515,24 +494,24 @@ const SolicitacoesPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                     Início
                   </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <Clock className="w-4 h-4 text-orange-400" />
-                    <span className="text-white">
+                    <span className="text-slate-900 dark:text-white">
                       {formatDateTime(new Date(selectedSolicitacao.startTime))}
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                     Fim
                   </label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
+                  <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <Clock className="w-4 h-4 text-red-400" />
-                    <span className="text-white">
+                    <span className="text-slate-900 dark:text-white">
                       {formatDateTime(new Date(selectedSolicitacao.endTime))}
                     </span>
                   </div>
@@ -541,17 +520,17 @@ const SolicitacoesPage: React.FC = () => {
 
               {selectedSolicitacao.purpose && (
                 <div>
-                  <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                     Propósito
                   </label>
-                  <p className="p-3 bg-slate-800 rounded-lg text-white">
+                  <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
                     {selectedSolicitacao.purpose}
                   </p>
                 </div>
               )}
 
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                   Status
                 </label>
                 <span
@@ -564,7 +543,7 @@ const SolicitacoesPage: React.FC = () => {
               </div>
 
               {selectedSolicitacao.status === "PENDING" && (
-                <div className="flex gap-3 pt-4 border-t border-slate-700">
+                <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button
                     variant="outline"
                     onClick={() => setIsDetailsModalOpen(false)}
@@ -605,15 +584,15 @@ const SolicitacoesPage: React.FC = () => {
               )}
             </div>
           )}
-        </Modal>
+      </Modal>
 
-        {/* Modal de conflito */}
-        <Modal
-          isOpen={isConflictModalOpen}
-          onClose={() => setIsConflictModalOpen(false)}
-          title="Conflito de Horário Detectado"
-          size="lg"
-        >
+      {/* Modal de conflito */}
+      <Modal
+        isOpen={isConflictModalOpen}
+        onClose={() => setIsConflictModalOpen(false)}
+        title="Conflito de Horário Detectado"
+        size="lg"
+      >
           {conflictData && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
@@ -683,8 +662,7 @@ const SolicitacoesPage: React.FC = () => {
             </div>
           )}
         </Modal>
-      </div>
-    </ProtectedRoute>
+    </PageLayout>
   );
 };
 

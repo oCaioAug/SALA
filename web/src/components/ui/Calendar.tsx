@@ -149,13 +149,13 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   return (
-    <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
       {/* Header do Calendário */}
-      <div className="bg-slate-700 px-6 py-4 border-b border-slate-600">
+      <div className="bg-slate-100 dark:bg-slate-700 px-6 py-4 border-b border-slate-200 dark:border-slate-600">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <CalendarIcon className="w-6 h-6 text-blue-400" />
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
           </div>
@@ -192,9 +192,9 @@ const Calendar: React.FC<CalendarProps> = ({
       </div>
 
       {/* Dias da semana */}
-      <div className="grid grid-cols-7 bg-slate-700/50">
+      <div className="grid grid-cols-7 bg-slate-50 dark:bg-slate-700/50">
         {weekDays.map(day => (
-          <div key={day} className="p-3 text-center text-sm font-medium text-slate-300 border-r border-slate-600 last:border-r-0">
+          <div key={day} className="p-3 text-center text-sm font-medium text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-600 last:border-r-0">
             {day}
           </div>
         ))}
@@ -206,11 +206,11 @@ const Calendar: React.FC<CalendarProps> = ({
           <div
             key={index}
             className={`
-              min-h-[120px] p-2 border-r border-b border-slate-600 last:border-r-0 cursor-pointer transition-colors
-              ${day.isCurrentMonth ? 'bg-slate-800' : 'bg-slate-900/50'}
-              ${day.isToday ? 'bg-blue-500/10 border-blue-500/30' : ''}
-              ${day.isSelected ? 'bg-blue-600/20 border-blue-500' : ''}
-              hover:bg-slate-700/50
+              min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-600 last:border-r-0 cursor-pointer transition-colors
+              ${day.isCurrentMonth ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-900/50'}
+              ${day.isToday ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/30' : ''}
+              ${day.isSelected ? 'bg-blue-100 dark:bg-blue-600/20 border-blue-500' : ''}
+              hover:bg-slate-100 dark:hover:bg-slate-700/50
             `}
             onClick={() => handleDayClick(day)}
           >
@@ -219,15 +219,15 @@ const Calendar: React.FC<CalendarProps> = ({
               <div className="relative mb-2">
                 <div className={`
                   text-sm font-medium
-                  ${day.isCurrentMonth ? 'text-white' : 'text-slate-500'}
-                  ${day.isToday ? 'text-blue-400 font-bold' : ''}
-                  ${day.isSelected ? 'text-blue-300' : ''}
+                  ${day.isCurrentMonth ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}
+                  ${day.isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : ''}
+                  ${day.isSelected ? 'text-blue-700 dark:text-blue-300' : ''}
                 `}>
                   {day.date.getDate()}
                 </div>
                 {/* Indicador do dia atual */}
                 {day.isToday && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></div>
                 )}
               </div>
 
@@ -265,7 +265,7 @@ const Calendar: React.FC<CalendarProps> = ({
                 })}
                 
                 {day.reservations.length > 4 && (
-                  <div className="text-xs text-slate-400 text-center py-1 bg-slate-700/30 rounded">
+                  <div className="text-xs text-slate-600 dark:text-slate-400 text-center py-1 bg-slate-100 dark:bg-slate-700/30 rounded">
                     +{day.reservations.length - 4} mais reservas
                   </div>
                 )}
@@ -276,9 +276,9 @@ const Calendar: React.FC<CalendarProps> = ({
       </div>
 
       {/* Legenda */}
-      <div className="bg-slate-700/50 px-6 py-4 border-t border-slate-600">
+      <div className="bg-slate-50 dark:bg-slate-700/50 px-6 py-4 border-t border-slate-200 dark:border-slate-600">
         <div className="flex items-center gap-4 flex-wrap">
-          <span className="text-sm text-slate-300 font-medium">Salas:</span>
+          <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">Salas:</span>
           {rooms.slice(0, 6).map((room, index) => {
             const colors = [
               'bg-blue-500',
@@ -291,12 +291,12 @@ const Calendar: React.FC<CalendarProps> = ({
             return (
               <div key={room.id} className="flex items-center gap-2">
                 <div className={`w-3 h-3 rounded ${colors[index % colors.length]}`}></div>
-                <span className="text-xs text-slate-300">{room.name}</span>
+                <span className="text-xs text-slate-700 dark:text-slate-300">{room.name}</span>
               </div>
             );
           })}
           {rooms.length > 6 && (
-            <span className="text-xs text-slate-400">+{rooms.length - 6} mais</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">+{rooms.length - 6} mais</span>
           )}
         </div>
       </div>

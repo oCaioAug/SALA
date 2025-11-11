@@ -83,22 +83,22 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   const Icon = icons[toast.type];
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-4 min-w-80 max-w-96 animate-in slide-in-from-right-5">
+    <div className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg shadow-lg p-4 min-w-80 max-w-96 animate-in slide-in-from-right-5 transition-colors duration-300">
       <div className="flex items-start gap-3">
         <div className={`p-1 rounded-full ${colors[toast.type]}`}>
           <Icon className="w-4 h-4 text-white" />
         </div>
         
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-white">{toast.title}</h4>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{toast.title}</h4>
           {toast.message && (
-            <p className="text-sm text-gray-300 mt-1">{toast.message}</p>
+            <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">{toast.message}</p>
           )}
         </div>
         
         <button
           onClick={() => onRemove(toast.id)}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
