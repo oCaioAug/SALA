@@ -56,7 +56,38 @@ export function generateFilename(itemName: string): string {
  * Detecta se está rodando na Vercel
  */
 function isVercel(): boolean {
-  return process.env.VERCEL === "1" || process.env.VERCEL_ENV !== undefined;
+  const vercelEnv = process.env.VERCEL === "1";
+  const vercelFlag = process.env.VERCEL_ENV !== undefined;
+  const nodeEnv = process.env.NODE_ENV === "production";
+  const forceCloudinary = process.env.USE_CLOUDINARY === "true";
+
+  console.log("🔍 Environment detection:", {
+    VERCEL: process.env.VERCEL,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    NODE_ENV: process.env.NODE_ENV,
+    USE_CLOUDINARY: process.env.USE_CLOUDINARY,
+    forceCloudinary,
+  });
+
+  // Se tem credenciais do Cloudinary e está em produção, usar Cloudinary
+  const hasCloudinaryCredentials = !!(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
+
+  console.log("☁️ Cloudinary credentials available:", hasCloudinaryCredentials);
+
+  // Usar Cloudinary se:
+  // 1. Estiver na Vercel (VERCEL=1 ou VERCEL_ENV existe)
+  // 2. Ou se USE_CLOUDINARY=true estiver definido
+  // 3. E se as credenciais estiverem disponíveis
+  const shouldUseCloudinary =
+    (vercelEnv || vercelFlag || forceCloudinary) && hasCloudinaryCredentials;
+
+  console.log("🎯 Final decision: useCloudinary =", shouldUseCloudinary);
+
+  return shouldUseCloudinary;
 }
 
 /**
@@ -91,6 +122,17 @@ async function uploadWithCloudinary(
   filename: string,
   folder: string = "sala/items"
 ): Promise<{ originalPath: string; thumbnailPath: string }> {
+  console.log("☁️ Initiating Cloudinary upload...");
+
+  // Verificar credenciais
+  if (
+    !process.env.CLOUDINARY_CLOUD_NAME ||
+    !process.env.CLOUDINARY_API_KEY ||
+    !process.env.CLOUDINARY_API_SECRET
+  ) {
+    throw new Error("Credenciais do Cloudinary não configuradas");
+  }
+
   const { v2: cloudinary } = await import("cloudinary");
 
   // Configurar Cloudinary
@@ -99,6 +141,8 @@ async function uploadWithCloudinary(
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
+
+  console.log(`☁️ Cloudinary config: ${process.env.CLOUDINARY_CLOUD_NAME}`);
 
   const { originalBuffer, thumbnailBuffer } = await processImageBuffers(
     buffer,

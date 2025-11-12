@@ -17,6 +17,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "sala.ocaioaug.com.br",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
     // Permitir servir imagens da pasta uploads
     domains: ["localhost"],
