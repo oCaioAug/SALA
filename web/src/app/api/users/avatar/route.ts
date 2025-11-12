@@ -3,11 +3,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  processAndSaveAvatar,
+  uploadAvatar,
   validateImage,
   generateFilename,
-  deleteAvatarFiles,
-} from "@/lib/utils/imageProcessor";
+} from "@/lib/utils/uploadService";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
     const filename = generateFilename(`avatar-${user.id}`);
 
     // Processar e salvar imagem
-    const { originalPath, thumbnailPath } = await processAndSaveAvatar(
+    const { originalPath, thumbnailPath } = await uploadAvatar(
       buffer,
       filename
     );

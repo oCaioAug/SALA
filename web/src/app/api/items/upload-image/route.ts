@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   generateFilename,
-  processAndSaveImage,
+  uploadImage,
   validateImage,
-} from "@/lib/utils/imageProcessor";
+} from "@/lib/utils/uploadService";
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,10 +42,7 @@ export async function POST(request: NextRequest) {
     const filename = generateFilename(itemName);
 
     // Processar e salvar imagem
-    const { originalPath, thumbnailPath } = await processAndSaveImage(
-      buffer,
-      filename
-    );
+    const { originalPath, thumbnailPath } = await uploadImage(buffer, filename);
 
     // Salvar referência no banco de dados
     if (itemId) {

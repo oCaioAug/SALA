@@ -12,12 +12,9 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     const itemId = params.id;
@@ -25,7 +22,10 @@ export async function DELETE(
     // Verificar se o usuário é admin
     if (session.user.role !== "ADMIN") {
       return NextResponse.json(
-        { error: "Acesso negado. Apenas administradores podem remover imagens de itens." },
+        {
+          error:
+            "Acesso negado. Apenas administradores podem remover imagens de itens.",
+        },
         { status: 403 }
       );
     }
@@ -48,7 +48,10 @@ export async function DELETE(
       try {
         const uploadsDir = join(process.cwd(), "public");
         const originalPath = join(uploadsDir, image.path);
-        const thumbPath = join(uploadsDir, image.path.replace("original_", "thumb_"));
+        const thumbPath = join(
+          uploadsDir,
+          image.path.replace("original_", "thumb_")
+        );
 
         // Tentar deletar os arquivos (não falhar se não existirem)
         try {
@@ -75,7 +78,6 @@ export async function DELETE(
     return NextResponse.json({
       message: "Imagem removida com sucesso",
     });
-    
   } catch (error) {
     console.error("Erro ao remover imagem:", error);
     return NextResponse.json(
