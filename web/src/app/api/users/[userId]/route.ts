@@ -3,16 +3,20 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { verifyAuth } from "@/lib/auth-hybrid";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { userId: string } }
 ) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    // Autenticação híbrida (web + mobile)
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: auth.status || 401 }
+      );
     }
 
     // Buscar o usuário
@@ -36,20 +40,8 @@ export async function GET(
       );
     }
 
-    // Verificar se o usuário pode ver este perfil
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true },
-    });
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "Usuário atual não encontrado" },
-        { status: 404 }
-      );
-    }
-
-    // Pode ver próprio perfil ou ser admin
+    // Verificar permissões
+    const currentUser = auth.user!;
     const canView =
       currentUser.id === params.userId || currentUser.role === "ADMIN";
 
@@ -75,10 +67,13 @@ export async function PATCH(
   { params }: { params: { userId: string } }
 ) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    // Autenticação híbrida (web + mobile)
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: auth.status || 401 }
+      );
     }
 
     const { name, email } = await request.json();
@@ -107,20 +102,8 @@ export async function PATCH(
       );
     }
 
-    // Verificar se o usuário pode alterar este perfil
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true, role: true },
-    });
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "Usuário atual não encontrado" },
-        { status: 404 }
-      );
-    }
-
-    // Verificar permissões: pode editar próprio perfil ou ser admin
+    // Verificar permissões
+    const currentUser = auth.user!;
     const canEdit =
       currentUser.id === params.userId || currentUser.role === "ADMIN";
 
