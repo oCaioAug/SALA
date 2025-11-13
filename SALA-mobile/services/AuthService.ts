@@ -90,6 +90,15 @@ class AuthService {
         picture: apiUser.image || googleUser.photo || undefined,
       };
 
+      console.log("👤 Dados do usuário mapeados:", {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        apiUserImage: apiUser.image,
+        googleUserPhoto: googleUser.photo,
+      });
+
       // Salvar dados do usuário
       await AsyncStorage.setItem("@user", JSON.stringify(user));
 

@@ -9,6 +9,7 @@ import RoomDetailsScreen from "../screens/RoomDetailsScreen";
 import CreateReservationScreen from "../screens/CreateReservationScreen";
 import MyReservationsScreen from "../screens/MyReservationsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import EditProfileScreen from "../screens/EditProfileScreen";
 
 import { RootStackParamList, BottomTabParamList } from "../types";
 
@@ -43,6 +44,37 @@ const RoomsStack = () => {
         name="CreateReservation"
         component={CreateReservationScreen}
         options={{ title: "Nova Reserva" }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+// Stack Navigator para Profile
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: "#3B82F6",
+        },
+        headerTintColor: "#FFFFFF",
+        headerTitleStyle: {
+          fontWeight: "600",
+        },
+      }}
+    >
+      <Stack.Screen
+        name="ProfileMain"
+        component={ProfileScreen}
+        options={{ title: "Meu Perfil" }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{
+          title: "Editar Perfil",
+          headerShown: false, // A tela tem seu próprio header
+        }}
       />
     </Stack.Navigator>
   );
@@ -107,18 +139,10 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStack}
         options={{
           tabBarLabel: "Perfil",
-          headerShown: true,
-          headerTitle: "Meu Perfil",
-          headerStyle: {
-            backgroundColor: "#3B82F6",
-          },
-          headerTintColor: "#FFFFFF",
-          headerTitleStyle: {
-            fontWeight: "600",
-          },
+          headerShown: false, // ProfileStack tem seus próprios headers
         }}
       />
     </Tab.Navigator>

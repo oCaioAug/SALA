@@ -1,6 +1,18 @@
 import axios from "axios";
-import { Room, Reservation, ReservationWithDetails } from "../types";
+import {
+  Room,
+  Reservation,
+  ReservationWithDetails,
+  User,
+  ReservationStatusEnum,
+} from "../types";
 import { API_CONFIG } from "../utils/config";
+
+// Interfaces para API
+export interface ProfileUpdateData {
+  name?: string;
+  email?: string;
+}
 
 // Log da configuração da API para debug
 console.log("API Configuration:", {
@@ -84,6 +96,27 @@ export class ApiService {
     }
   }
 
+  static async getUserById(userId: string): Promise<User> {
+    try {
+      const response = await api.get(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error("Erro ao carregar dados do usuário");
+    }
+  }
+
+  static async updateUser(
+    userId: string,
+    data: ProfileUpdateData
+  ): Promise<User> {
+    try {
+      const response = await api.patch(`/users/${userId}`, data);
+      return response.data;
+    } catch (error) {
+      throw new Error("Erro ao atualizar usuário");
+    }
+  }
+
   // Reservations
   static async getReservations(): Promise<ReservationWithDetails[]> {
     try {
@@ -152,7 +185,8 @@ export class ApiService {
 
       const roomReservations = reservations.filter(
         (reservation) =>
-          reservation.roomId === roomId && reservation.status === "ACTIVE"
+          reservation.roomId === roomId &&
+          reservation.status === ReservationStatusEnum.ACTIVE
       );
 
       console.log("Reservas da sala específica:", roomReservations.length);

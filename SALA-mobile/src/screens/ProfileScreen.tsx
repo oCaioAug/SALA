@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,18 +7,22 @@ import {
   StyleSheet,
   Alert,
   Image,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 import { User } from "../types";
 import { getInitials } from "../utils";
 import { useAuth } from "../context/AuthContext";
+import { ProfileService } from "../services/ProfileService";
 
 const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { user: authUser, signOut } = useAuth();
 
-  // Use authenticated user or fallback to mock data
-  const [user] = useState<User>({
+  // Estados
+  const [user, setUser] = useState<User>({
     id: authUser?.id || "user-mock-id",
     name: authUser?.name || "João Silva",
     email: authUser?.email || "joao.silva@email.com",
@@ -27,12 +31,100 @@ const ProfileScreen: React.FC = () => {
     createdAt: "2024-01-15T10:00:00Z",
     updatedAt: "2024-09-15T14:30:00Z",
   });
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [hasPendingUpdates, setHasPendingUpdates] = useState(false);
+
+  // Carregar perfil no início
+  useEffect(() => {
+    loadProfile();
+    checkPendingUpdates();
+  }, []);
+
+  const loadProfile = async () => {
+    if (!authUser?.id) return;
+
+    setLoading(true);
+    try {
+      const result = await ProfileService.getUserProfile(authUser.id);
+
+      if (result.success && result.user) {
+        console.log("🖼️  Avatar debug:", {
+          userImage: result.user.image,
+          userAvatar: result.user.avatar,
+          authUserPicture: authUser?.picture,
+        });
+
+        // Mapear 'image' da API para 'avatar' do app para consistência
+        const mappedUser = {
+          ...result.user,
+          avatar: result.user.image || result.user.avatar,
+        };
+
+        console.log("🖼️  Avatar final:", mappedUser.avatar);
+        setUser(mappedUser);
+        setIsOffline(result.fromCache || false);
+      } else {
+        console.log("Erro ao carregar perfil:", result.error);
+        // Manter dados do authUser como fallback
+      }
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkPendingUpdates = async () => {
+    try {
+      const pending = await ProfileService.hasPendingUpdates();
+      setHasPendingUpdates(pending);
+    } catch (error) {
+      console.error("Erro ao verificar atualizações pendentes:", error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadProfile();
+    await checkPendingUpdates();
+
+    // Tentar sincronizar atualizações pendentes
+    if (hasPendingUpdates) {
+      await handleSyncPendingUpdates();
+    }
+
+    setRefreshing(false);
+  };
+
+  const handleSyncPendingUpdates = async () => {
+    try {
+      const results = await ProfileService.syncPendingUpdates();
+      const successCount = results.filter((r) => r.success).length;
+
+      if (successCount > 0) {
+        Alert.alert(
+          "Sincronização",
+          `${successCount} atualização(ões) sincronizada(s) com sucesso!`
+        );
+        await loadProfile();
+        await checkPendingUpdates();
+      }
+    } catch (error) {
+      console.error("Erro na sincronização:", error);
+    }
+  };
 
   const handleEditProfile = () => {
-    Alert.alert(
-      "Em Desenvolvimento",
-      "Funcionalidade de edição de perfil em breve!"
-    );
+    console.log("📝 Navegando para EditProfile com user:", {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      image: user.image,
+    });
+    (navigation as any).navigate('EditProfile', { user });
   };
 
   const handleChangePassword = () => {
@@ -128,12 +220,56 @@ const ProfileScreen: React.FC = () => {
   ];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={["#3B82F6"]}
+          tintColor="#3B82F6"
+        />
+      }
+    >
+      {/* Indicador offline/pendências */}
+      {(isOffline || hasPendingUpdates) && (
+        <View style={styles.statusIndicator}>
+          <View style={styles.statusContent}>
+            <Ionicons
+              name={isOffline ? "cloud-offline" : "sync"}
+              size={16}
+              color="#F59E0B"
+            />
+            <Text style={styles.statusText}>
+              {isOffline
+                ? "Modo offline"
+                : hasPendingUpdates
+                ? "Há alterações para sincronizar"
+                : ""}
+            </Text>
+            {hasPendingUpdates && (
+              <TouchableOpacity
+                onPress={handleSyncPendingUpdates}
+                style={styles.syncButton}
+              >
+                <Text style={styles.syncButtonText}>Sincronizar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Profile Header */}
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
           {user.avatar ? (
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+            <Image 
+              source={{ uri: user.avatar }} 
+              style={styles.avatar}
+              onLoad={() => console.log("✅ Avatar Profile carregado:", user.avatar)}
+              onError={(error) => console.error("❌ Erro ao carregar avatar Profile:", error.nativeEvent, "URL:", user.avatar)}
+            />
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
@@ -234,6 +370,35 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 40,
+  },
+  statusIndicator: {
+    backgroundColor: "#FEF3C7",
+    borderBottomWidth: 1,
+    borderBottomColor: "#FDE68A",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  statusContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statusText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#92400E",
+    flex: 1,
+  },
+  syncButton: {
+    backgroundColor: "#3B82F6",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  syncButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
   },
   profileHeader: {
     backgroundColor: "#FFFFFF",
