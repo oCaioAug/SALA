@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
 
+    console.log(" ---> mostrando requisicao de reservas: ", request);
+
     console.log("🔍 Buscando reservas com filtros:", {
       roomId,
       status,
@@ -33,11 +35,11 @@ export async function GET(request: NextRequest) {
     console.log("📋 Query where:", where);
 
     // Se não há filtro de status específico, mostrar apenas reservas ativas/aprovadas
-    if (!status) {
-      where.status = {
-        in: ["APPROVED", "ACTIVE"],
-      };
-    }
+    // if (!status) {
+    //   where.status = {
+    //     in: ["APPROVED", "ACTIVE"],
+    //   };
+    // }
 
     const reservations = await prisma.reservation.findMany({
       where,
@@ -169,6 +171,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const userIsAdmin = userExists.role === "ADMIN";
+
+    // Criar a reserva com status PENDING se o usuário não for admin
     const reservation = await prisma.reservation.create({
       data: {
         userId,
@@ -176,7 +181,7 @@ export async function POST(request: NextRequest) {
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         purpose,
-        status: "PENDING", // Criar como pendente para aprovação
+        status: userIsAdmin ? "APPROVED" : "PENDING", // Criar como pendente para aprovação caso o usuario nao seja admin
       },
       include: {
         user: true,

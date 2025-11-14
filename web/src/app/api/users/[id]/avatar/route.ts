@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   uploadAvatar,
@@ -11,9 +9,12 @@ import { verifyAuth } from "@/lib/auth-hybrid";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Verificar autenticação híbrida (web + mobile)
+    // Verificar autenticação (suporta web e mobile)
     const authResult = await verifyAuth(request);
 
     if (!authResult.success || !authResult.user) {
@@ -23,12 +24,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar o usuário autenticado
-    const user = await prisma.user.findUnique({
-      where: { id: authResult.user.id },
+    // Verificar se o usuário pode alterar este perfil
+    const targetUserId = params.id;
+    if (
+      authResult.user.id !== targetUserId &&
+      authResult.user.role !== "ADMIN"
+    ) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
+    // Verificar se o usuário alvo existe
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
     });
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 }
@@ -46,19 +56,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar imagem
-    const validation = validateImage(file);
+    const validation = await validateImage(file);
     if (!validation.valid) {
-      return NextResponse.json({ error: validation.error }, { status: 400 });
+      return NextResponse.json(
+        { error: validation.error || "Imagem inválida" },
+        { status: 400 }
+      );
     }
 
     // Converter File para Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Gerar nome do arquivo único
-    const filename = generateFilename(`avatar-${user.id}`);
+    // Upload da imagem
+    const filename = generateFilename(`avatar-${targetUser.id}`);
 
-    // Processar e salvar imagem
     const { originalPath, thumbnailPath } = await uploadAvatar(
       buffer,
       filename
@@ -66,28 +77,27 @@ export async function POST(request: NextRequest) {
 
     // Atualizar o usuário com o novo avatar
     const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: { image: originalPath },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
+      where: {
+        id: targetUserId,
       },
+      data: {
+        image: originalPath,
+      },
+    });
+
+    console.log("✅ Avatar atualizado via mobile para usuário:", {
+      userId: targetUserId,
+      originalPath,
+      thumbnailPath,
     });
 
     return NextResponse.json({
       success: true,
-      user: updatedUser,
-      imagePath: originalPath,
-      thumbnailPath,
       message: "Avatar atualizado com sucesso!",
+      user: updatedUser,
     });
   } catch (error) {
-    console.error("Erro ao fazer upload do avatar:", error);
+    console.error("Erro ao fazer upload do avatar via mobile:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }
@@ -95,9 +105,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Verificar autenticação híbrida (web + mobile)
+    // Verificar autenticação (suporta web e mobile)
     const authResult = await verifyAuth(request);
 
     if (!authResult.success || !authResult.user) {
@@ -107,12 +120,21 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Buscar o usuário autenticado
-    const user = await prisma.user.findUnique({
-      where: { id: authResult.user.id },
+    // Verificar se o usuário pode alterar este perfil
+    const targetUserId = params.id;
+    if (
+      authResult.user.id !== targetUserId &&
+      authResult.user.role !== "ADMIN"
+    ) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+    }
+
+    // Verificar se o usuário alvo existe
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
     });
 
-    if (!user) {
+    if (!targetUser) {
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 }
@@ -121,26 +143,23 @@ export async function DELETE(request: NextRequest) {
 
     // Remover o avatar do usuário
     const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: { image: null },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        image: true,
-        createdAt: true,
-        updatedAt: true,
+      where: {
+        id: targetUserId,
+      },
+      data: {
+        image: null,
       },
     });
 
+    console.log("✅ Avatar removido via mobile para usuário:", targetUserId);
+
     return NextResponse.json({
       success: true,
-      user: updatedUser,
       message: "Avatar removido com sucesso!",
+      user: updatedUser,
     });
   } catch (error) {
-    console.error("Erro ao remover avatar:", error);
+    console.error("Erro ao remover avatar via mobile:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }
