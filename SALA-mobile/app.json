@@ -31,7 +31,17 @@
           "webClientId": "199539496823-sgm07ecndbi76o04c4d95ogg381onmdr.apps.googleusercontent.com",
           "iosUrlScheme": "com.googleusercontent.apps.199539496823-nbechbht00i7cv6gc99df5f6p0coq6vp"
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "A aplicação precisa acessar suas fotos para permitir a alteração do avatar.",
+          "cameraPermission": "A aplicação precisa acessar a câmera para permitir a captura de fotos para o avatar.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

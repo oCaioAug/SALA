@@ -34,8 +34,8 @@ export const MOCK_USER = {
 
 // App Configuration
 export const APP_CONFIG = {
-  VERSION: "1.0.0",
-  BUILD: "2024.09.15",
+  VERSION: "1.1.0",
+  BUILD: "2024.11.15",
   NAME: "S.A.L.A.",
   FULL_NAME: "Sistema de Agendamento de Laboratórios e Ambientes",
 };
