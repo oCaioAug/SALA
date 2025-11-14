@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import AuthService, { User } from "../../services/AuthService";
 import { ProfileService } from "../services/ProfileService";
+import { NotificationManager } from "../services/NotificationManager";
 
 interface AuthContextType {
   user: User | null;
@@ -92,12 +93,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = await ProfileService.getAuthToken(userData.email);
       if (token) {
         console.log("✅ Token configurado para ProfileService após login");
+        
+        // Inicializar sistema de notificações
+        try {
+          const notificationManager = NotificationManager.getInstance();
+          await notificationManager.initialize(userData.id);
+          console.log("🔔 Sistema de notificações inicializado");
+        } catch (error) {
+          console.error("❌ Erro ao inicializar notificações:", error);
+        }
       }
     }
   };
 
   const signOut = async () => {
     try {
+      // Finalizar sistema de notificações
+      try {
+        const notificationManager = NotificationManager.getInstance();
+        notificationManager.destroy();
+        console.log("🔔 Sistema de notificações finalizado");
+      } catch (error) {
+        console.error("❌ Erro ao finalizar notificações:", error);
+      }
+
       await authService.signOut();
       await ProfileService.clearCache(); // Limpar cache do ProfileService
       setUser(null);

@@ -31,6 +31,13 @@ export class ProfileService {
   private static token: string | null = null;
 
   /**
+   * Obter token de autenticação atual
+   */
+  static getCurrentToken(): string | null {
+    return this.token;
+  }
+
+  /**
    * Configurar token de autenticação
    */
   static setAuthToken(token: string) {

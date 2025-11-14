@@ -124,7 +124,7 @@ const ProfileScreen: React.FC = () => {
       avatar: user.avatar,
       image: user.image,
     });
-    (navigation as any).navigate('EditProfile', { user });
+    (navigation as any).navigate("EditProfile", { user });
   };
 
   const handleChangePassword = () => {
@@ -135,7 +135,8 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleNotificationSettings = () => {
-    Alert.alert("Em Desenvolvimento", "Configurações de notificação em breve!");
+    console.log("🔔 Navegando para configurações de notificação");
+    (navigation as any).navigate("NotificationSettings");
   };
 
   const handleHelp = () => {
@@ -181,19 +182,27 @@ const ProfileScreen: React.FC = () => {
       onPress: handleEditProfile,
       showArrow: true,
     },
-    {
-      icon: "lock-closed-outline",
-      title: "Alterar Senha",
-      subtitle: "Modificar sua senha de acesso",
-      onPress: handleChangePassword,
-      showArrow: true,
-    },
+    // {
+    //   icon: "lock-closed-outline",
+    //   title: "Alterar Senha",
+    //   subtitle: "Modificar sua senha de acesso",
+    //   onPress: handleChangePassword,
+    //   showArrow: true,
+    // },
     {
       icon: "notifications-outline",
       title: "Notificações",
       subtitle: "Configurar alertas e lembretes",
       onPress: handleNotificationSettings,
       showArrow: true,
+    },
+    {
+      icon: "bug-outline",
+      title: "Debug Notificações",
+      subtitle: "Testar sistema de notificações",
+      onPress: () => (navigation as any).navigate("NotificationDebug"),
+      showArrow: true,
+      isDevelopment: true, // Flag para identificar item de desenvolvimento
     },
     {
       icon: "help-circle-outline",
@@ -264,11 +273,20 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
           {user.avatar ? (
-            <Image 
-              source={{ uri: user.avatar }} 
+            <Image
+              source={{ uri: user.avatar }}
               style={styles.avatar}
-              onLoad={() => console.log("✅ Avatar Profile carregado:", user.avatar)}
-              onError={(error) => console.error("❌ Erro ao carregar avatar Profile:", error.nativeEvent, "URL:", user.avatar)}
+              onLoad={() =>
+                console.log("✅ Avatar Profile carregado:", user.avatar)
+              }
+              onError={(error) =>
+                console.error(
+                  "❌ Erro ao carregar avatar Profile:",
+                  error.nativeEvent,
+                  "URL:",
+                  user.avatar
+                )
+              }
             />
           ) : (
             <View style={styles.avatarPlaceholder}>
@@ -317,6 +335,7 @@ const ProfileScreen: React.FC = () => {
             style={[
               styles.menuItem,
               item.danger && styles.menuItemDanger,
+              item.isDevelopment && styles.menuItemDebug,
               index === menuItems.length - 1 && styles.menuItemLast,
             ]}
             onPress={item.onPress}
@@ -326,12 +345,19 @@ const ProfileScreen: React.FC = () => {
                 style={[
                   styles.menuIconContainer,
                   item.danger && styles.menuIconContainerDanger,
+                  item.isDevelopment && styles.menuIconContainerDebug,
                 ]}
               >
                 <Ionicons
                   name={item.icon as any}
                   size={20}
-                  color={item.danger ? "#EF4444" : "#6B7280"}
+                  color={
+                    item.danger 
+                      ? "#EF4444" 
+                      : item.isDevelopment 
+                        ? "#EF4444" 
+                        : "#6B7280"
+                  }
                 />
               </View>
               <View style={styles.menuTextContainer}>
@@ -339,11 +365,17 @@ const ProfileScreen: React.FC = () => {
                   style={[
                     styles.menuTitle,
                     item.danger && styles.menuTitleDanger,
+                    item.isDevelopment && styles.menuTitleDebug,
                   ]}
                 >
                   {item.title}
                 </Text>
-                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                <Text style={[
+                  styles.menuSubtitle,
+                  item.isDevelopment && styles.menuSubtitleDebug,
+                ]}>
+                  {item.subtitle}
+                </Text>
               </View>
             </View>
 
@@ -543,9 +575,26 @@ const styles = StyleSheet.create({
   menuTitleDanger: {
     color: "#EF4444",
   },
+  menuTitleDebug: {
+    color: "#EF4444",
+    fontWeight: "700",
+  },
   menuSubtitle: {
     fontSize: 13,
     color: "#6B7280",
+  },
+  menuSubtitleDebug: {
+    color: "#DC2626",
+    fontWeight: "500",
+  },
+  menuItemDebug: {
+    backgroundColor: "#FEF2F2",
+    borderLeftWidth: 3,
+    borderLeftColor: "#EF4444",
+  },
+  menuIconContainerDebug: {
+    backgroundColor: "#FEE2E2",
+    borderColor: "#FECACA",
   },
   versionContainer: {
     alignItems: "center",
