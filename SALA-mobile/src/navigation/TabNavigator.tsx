@@ -10,6 +10,8 @@ import CreateReservationScreen from "../screens/CreateReservationScreen";
 import MyReservationsScreen from "../screens/MyReservationsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
+import { NotificationSettingsScreen } from "../screens/NotificationSettingsScreen";
+import { NotificationDebugScreen } from "../screens/NotificationDebugScreen";
 
 import { RootStackParamList, BottomTabParamList } from "../types";
 
@@ -73,6 +75,22 @@ const ProfileStack = () => {
         component={EditProfileScreen}
         options={{
           title: "Editar Perfil",
+          headerShown: false, // A tela tem seu próprio header
+        }}
+      />
+      <Stack.Screen
+        name="NotificationSettings"
+        component={NotificationSettingsScreen}
+        options={{ 
+          title: "Configurações de Notificação",
+          headerShown: false, // A tela tem seu próprio header
+        }}
+      />
+      <Stack.Screen
+        name="NotificationDebug"
+        component={NotificationDebugScreen}
+        options={{ 
+          title: "Debug de Notificações",
           headerShown: false, // A tela tem seu próprio header
         }}
       />

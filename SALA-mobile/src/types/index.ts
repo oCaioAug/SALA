@@ -5,7 +5,8 @@ export interface User {
   name: string;
   email: string;
   role: "USER" | "ADMIN";
-  avatar?: string;
+  avatar?: string; // Para compatibilidade interna do app
+  image?: string; // Para compatibilidade com a API
   createdAt: string;
   updatedAt: string;
 }
@@ -41,11 +42,20 @@ export interface Reservation {
   startTime: string;
   endTime: string;
   purpose: string | null;
-  status: "ACTIVE" | "CANCELLED" | "COMPLETED";
+  status: ReservationStatusEnum;
   createdAt: string;
   updatedAt: string;
   user?: User;
   room?: Room;
+}
+
+export enum ReservationStatusEnum {
+  ACTIVE = "ACTIVE",
+  APPROVED = "APPROVED",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+  PENDING = "PENDING",
+  REJECTED = "REJECTED",
 }
 
 export interface RoomWithItems extends Room {
@@ -65,6 +75,10 @@ export type RootStackParamList = {
   CreateReservation: { roomId: string };
   MyReservations: undefined;
   Profile: undefined;
+  ProfileMain: undefined;
+  EditProfile: { user: User };
+  NotificationSettings: undefined;
+  NotificationDebug: undefined;
 };
 
 export type BottomTabParamList = {
@@ -113,6 +127,21 @@ export const RESERVATION_STATUS_CONFIG = {
     color: "#10B981",
     backgroundColor: "#D1FAE5",
     text: "Ativa",
+  },
+  APPROVED: {
+    color: "#10B981",
+    backgroundColor: "#D1FAE5",
+    text: "Aprovada",
+  },
+  PENDING: {
+    color: "#F59E0B",
+    backgroundColor: "#FEF3C7",
+    text: "Pendente",
+  },
+  REJECTED: {
+    color: "#EF4444",
+    backgroundColor: "#FEE2E2",
+    text: "Rejeitada",
   },
   CANCELLED: {
     color: "#EF4444",
