@@ -1,7 +1,11 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ReservationWithDetails, RESERVATION_STATUS_CONFIG } from "../types";
+import {
+  ReservationWithDetails,
+  RESERVATION_STATUS_CONFIG,
+  ReservationStatusEnum,
+} from "../types";
 import { formatDate, formatTime, formatDateRange } from "../utils";
 
 interface ReservationCardProps {
@@ -15,7 +19,13 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
   onCancel,
   showCancelButton = true,
 }) => {
-  const config = RESERVATION_STATUS_CONFIG[reservation.status];
+  const config = RESERVATION_STATUS_CONFIG[reservation.status] || {
+    color: "#6B7280",
+    backgroundColor: "#F3F4F6",
+    text: reservation.status || "Desconhecido",
+  };
+
+  console.log("🎫 Status da reserva:", reservation.status, "Config:", config);
 
   const handleCancel = () => {
     Alert.alert(
@@ -33,7 +43,9 @@ const ReservationCard: React.FC<ReservationCardProps> = ({
   };
 
   const canCancel =
-    reservation.status === "ACTIVE" &&
+    (reservation.status === ReservationStatusEnum.ACTIVE ||
+      reservation.status === ReservationStatusEnum.APPROVED ||
+      reservation.status === ReservationStatusEnum.PENDING) &&
     new Date(reservation.startTime) > new Date();
 
   return (

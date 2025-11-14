@@ -7,10 +7,15 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { ReservationWithDetails, RESERVATION_STATUS_CONFIG } from "../types";
+import {
+  ReservationWithDetails,
+  RESERVATION_STATUS_CONFIG,
+  ReservationStatusEnum,
+} from "../types";
 import ApiService from "../services/api";
 import ReservationCard from "../components/ReservationCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -29,8 +34,9 @@ const MyReservationsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "ACTIVE" | "CANCELLED" | "COMPLETED"
+    "ALL" | ReservationStatusEnum
   >("ALL");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // User ID from authenticated user or fallback to MOCK_USER
   const userId = user?.id || MOCK_USER.id;
@@ -72,9 +78,18 @@ const MyReservationsScreen: React.FC = () => {
     let filtered = reservations;
 
     if (statusFilter !== "ALL") {
-      filtered = filtered.filter(
-        (reservation) => reservation.status === statusFilter
-      );
+      if (statusFilter === ReservationStatusEnum.ACTIVE) {
+        // Incluir tanto ACTIVE quanto APPROVED como "ativas"
+        filtered = filtered.filter(
+          (reservation) =>
+            reservation.status === ReservationStatusEnum.ACTIVE ||
+            reservation.status === ReservationStatusEnum.APPROVED
+        );
+      } else {
+        filtered = filtered.filter(
+          (reservation) => reservation.status === statusFilter
+        );
+      }
     }
 
     // Sort by start time (newest first)
@@ -108,11 +123,17 @@ const MyReservationsScreen: React.FC = () => {
     switch (filter) {
       case "ALL":
         return "Todas";
-      case "ACTIVE":
+      case ReservationStatusEnum.ACTIVE:
         return "Ativas";
-      case "CANCELLED":
+      case ReservationStatusEnum.APPROVED:
+        return "Aprovadas";
+      case ReservationStatusEnum.PENDING:
+        return "Pendentes";
+      case ReservationStatusEnum.REJECTED:
+        return "Rejeitadas";
+      case ReservationStatusEnum.CANCELLED:
         return "Canceladas";
-      case "COMPLETED":
+      case ReservationStatusEnum.COMPLETED:
         return "Concluídas";
       default:
         return "Todas";
@@ -120,23 +141,76 @@ const MyReservationsScreen: React.FC = () => {
   };
 
   const cycleStatusFilter = () => {
-    const statuses: (typeof statusFilter)[] = [
-      "ALL",
-      "ACTIVE",
-      "CANCELLED",
-      "COMPLETED",
+    setShowDropdown(true);
+  };
+
+  const selectFilter = (filter: typeof statusFilter) => {
+    setStatusFilter(filter);
+    setShowDropdown(false);
+  };
+
+  const getFilterOptions = (): Array<{
+    value: typeof statusFilter;
+    label: string;
+    count: number;
+  }> => {
+    return [
+      { value: "ALL" as const, label: "Todas", count: stats.total },
+      {
+        value: ReservationStatusEnum.ACTIVE,
+        label: "Ativas",
+        count: stats.active,
+      },
+      {
+        value: ReservationStatusEnum.PENDING,
+        label: "Pendentes",
+        count: stats.pending,
+      },
+      {
+        value: ReservationStatusEnum.APPROVED,
+        label: "Aprovadas",
+        count: reservations.filter(
+          (r) => r.status === ReservationStatusEnum.APPROVED
+        ).length,
+      },
+      {
+        value: ReservationStatusEnum.REJECTED,
+        label: "Rejeitadas",
+        count: stats.rejected,
+      },
+      {
+        value: ReservationStatusEnum.CANCELLED,
+        label: "Canceladas",
+        count: stats.cancelled,
+      },
+      {
+        value: ReservationStatusEnum.COMPLETED,
+        label: "Concluídas",
+        count: stats.completed,
+      },
     ];
-    const currentIndex = statuses.indexOf(statusFilter);
-    const nextIndex = (currentIndex + 1) % statuses.length;
-    setStatusFilter(statuses[nextIndex]);
   };
 
   const getStatusStats = () => {
     const stats = {
       total: reservations.length,
-      active: reservations.filter((r) => r.status === "ACTIVE").length,
-      cancelled: reservations.filter((r) => r.status === "CANCELLED").length,
-      completed: reservations.filter((r) => r.status === "COMPLETED").length,
+      active: reservations.filter(
+        (r) =>
+          r.status === ReservationStatusEnum.ACTIVE ||
+          r.status === ReservationStatusEnum.APPROVED
+      ).length,
+      pending: reservations.filter(
+        (r) => r.status === ReservationStatusEnum.PENDING
+      ).length,
+      rejected: reservations.filter(
+        (r) => r.status === ReservationStatusEnum.REJECTED
+      ).length,
+      cancelled: reservations.filter(
+        (r) => r.status === ReservationStatusEnum.CANCELLED
+      ).length,
+      completed: reservations.filter(
+        (r) => r.status === ReservationStatusEnum.COMPLETED
+      ).length,
     };
     return stats;
   };
@@ -150,6 +224,58 @@ const MyReservationsScreen: React.FC = () => {
   const renderReservation = ({ item }: { item: ReservationWithDetails }) => (
     <ReservationCard reservation={item} onCancel={handleCancelReservation} />
   );
+
+  const renderDropdownOption = ({
+    item,
+  }: {
+    item: { value: typeof statusFilter; label: string; count: number };
+  }) => {
+    const isSelected = statusFilter === item.value;
+    const statusConfig =
+      item.value !== "ALL"
+        ? RESERVATION_STATUS_CONFIG[item.value as ReservationStatusEnum]
+        : null;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.dropdownOption,
+          isSelected && styles.dropdownOptionSelected,
+        ]}
+        onPress={() => selectFilter(item.value)}
+      >
+        <View style={styles.dropdownOptionContent}>
+          <View style={styles.dropdownOptionLeft}>
+            {statusConfig && (
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: statusConfig.color },
+                ]}
+              />
+            )}
+            <Text
+              style={[
+                styles.dropdownOptionText,
+                isSelected && styles.dropdownOptionTextSelected,
+              ]}
+            >
+              {item.label}
+            </Text>
+          </View>
+          <View
+            style={[styles.countBadge, isSelected && styles.countBadgeSelected]}
+          >
+            <Text
+              style={[styles.countText, isSelected && styles.countTextSelected]}
+            >
+              {item.count}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -247,6 +373,39 @@ const MyReservationsScreen: React.FC = () => {
           ) : null
         }
       />
+
+      {/* Dropdown Modal */}
+      <Modal
+        visible={showDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowDropdown(false)}
+        >
+          <View style={styles.dropdownContainer}>
+            <View style={styles.dropdownHeader}>
+              <Text style={styles.dropdownTitle}>Filtrar por Status</Text>
+              <TouchableOpacity
+                onPress={() => setShowDropdown(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={getFilterOptions()}
+              keyExtractor={(item) => item.value}
+              renderItem={renderDropdownOption}
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -321,6 +480,99 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  // Modal e Dropdown Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  dropdownContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    width: "100%",
+    maxHeight: 400,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  dropdownHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  closeButton: {
+    padding: 4,
+  },
+  dropdownOption: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F9FAFB",
+  },
+  dropdownOptionSelected: {
+    backgroundColor: "#EBF8FF",
+  },
+  dropdownOptionContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dropdownOptionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 12,
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#374151",
+    flex: 1,
+  },
+  dropdownOptionTextSelected: {
+    color: "#1D4ED8",
+    fontWeight: "600",
+  },
+  countBadge: {
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 24,
+    alignItems: "center",
+  },
+  countBadgeSelected: {
+    backgroundColor: "#DBEAFE",
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#6B7280",
+  },
+  countTextSelected: {
+    color: "#1D4ED8",
   },
 });
 

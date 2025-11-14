@@ -12,7 +12,12 @@ import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 
-import { Room, Item, RootStackParamList } from "../types";
+import {
+  Room,
+  Item,
+  RootStackParamList,
+  ReservationStatusEnum,
+} from "../types";
 import ApiService from "../services/api";
 import StatusBadge from "../components/StatusBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -215,7 +220,7 @@ const RoomDetailsScreen: React.FC = () => {
 
           <View style={styles.reservationsContainer}>
             {room.reservations
-              .filter((r) => r.status === "ACTIVE")
+              .filter((r) => r.status === ReservationStatusEnum.ACTIVE)
               .map((reservation) => (
                 <View key={reservation.id} style={styles.reservationCard}>
                   <View style={styles.reservationHeader}>

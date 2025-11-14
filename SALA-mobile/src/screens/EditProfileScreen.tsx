@@ -16,11 +16,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { RouteProp } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 
 import { useAuth } from "../context/AuthContext";
 import { ProfileService, ProfileUpdateData } from "../services/ProfileService";
 import { User, RootStackParamList } from "../types";
 import { getInitials } from "../utils";
+import { API_CONFIG } from "../utils/config";
 
 type EditProfileScreenRouteProp = RouteProp<RootStackParamList, "EditProfile">;
 
@@ -46,6 +49,7 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Carregar dados mais recentes do perfil
   useEffect(() => {
@@ -65,13 +69,13 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ route }) => {
           userAvatar: result.user.avatar,
           authUserPicture: authUser?.picture,
         });
-        
+
         // Mapear 'image' da API para 'avatar' do app para consistência
         const mappedUser = {
           ...result.user,
           avatar: result.user.image || result.user.avatar || authUser?.picture,
         };
-        
+
         console.log("🖼️  Avatar final EditProfile:", mappedUser.avatar);
         setUser(mappedUser);
         setFormData({
@@ -87,6 +91,164 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ route }) => {
       Alert.alert("Erro", "Erro ao carregar perfil");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Função para selecionar e fazer upload de avatar
+  const handleImagePicker = async () => {
+    try {
+      // Solicitar permissão
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert(
+          "Permissão Negada",
+          "Precisamos de permissão para acessar suas fotos."
+        );
+        return;
+      }
+
+      // Mostrar opções
+      Alert.alert("Selecionar Foto", "Escolha uma opção:", [
+        {
+          text: "Câmera",
+          onPress: () => pickImageFromCamera(),
+        },
+        {
+          text: "Galeria",
+          onPress: () => pickImageFromGallery(),
+        },
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+      ]);
+    } catch (error) {
+      console.error("❌ Erro ao abrir seletor:", error);
+      Alert.alert("Erro", "Não foi possível abrir o seletor de imagens");
+    }
+  };
+
+  const pickImageFromCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert(
+          "Permissão Negada",
+          "Precisamos de permissão para acessar a câmera."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await uploadAvatar(result.assets[0]);
+      }
+    } catch (error) {
+      console.error("❌ Erro na câmera:", error);
+      Alert.alert("Erro", "Não foi possível abrir a câmera");
+    }
+  };
+
+  const pickImageFromGallery = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await uploadAvatar(result.assets[0]);
+      }
+    } catch (error) {
+      console.error("❌ Erro na galeria:", error);
+      Alert.alert("Erro", "Não foi possível abrir a galeria");
+    }
+  };
+
+  const uploadAvatar = async (imageAsset: ImagePicker.ImagePickerAsset) => {
+    setUploadingAvatar(true);
+
+    try {
+      console.log("📤 Iniciando upload do avatar:", imageAsset.uri);
+
+      // Obter token de autenticação
+      const token = await ProfileService.getAuthToken(
+        authUser?.email || user.email
+      );
+
+      if (!token) {
+        throw new Error("Token de autenticação não disponível");
+      }
+
+      // Preparar dados para upload
+      const formData = new FormData();
+      formData.append("avatar", {
+        uri: imageAsset.uri,
+        type: imageAsset.mimeType || "image/jpeg",
+        name: "avatar.jpg",
+      } as any);
+
+      // Fazer upload via API
+      const url = `${API_CONFIG.BASE_URL}/users/avatar`;
+      console.log("🌐 URL do upload:", url);
+      console.log("🔐 Token:", token ? "Presente" : "Ausente");
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      console.log("📡 Response status:", response.status);
+      console.log(
+        "📡 Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
+
+      // Verificar se a resposta é JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const textResponse = await response.text();
+        console.error("❌ Resposta não é JSON:", textResponse);
+        throw new Error(`Resposta inválida do servidor: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Atualizar o avatar no estado local
+        const newAvatarUrl = result.user.image || result.user.avatar;
+        setUser((prev) => ({
+          ...prev,
+          avatar: newAvatarUrl,
+        }));
+
+        Alert.alert("Sucesso", "Avatar atualizado com sucesso!");
+        console.log("✅ Avatar atualizado:", newAvatarUrl);
+      } else {
+        throw new Error(result.message || "Erro ao fazer upload");
+      }
+    } catch (error) {
+      console.error("❌ Erro no upload do avatar:", error);
+      Alert.alert(
+        "Erro",
+        "Não foi possível atualizar o avatar. Tente novamente."
+      );
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -227,11 +389,18 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ route }) => {
         <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
             {user.avatar ? (
-              <Image 
-                source={{ uri: user.avatar }} 
+              <Image
+                source={{ uri: user.avatar }}
                 style={styles.avatar}
                 onLoad={() => console.log("✅ Avatar carregado:", user.avatar)}
-                onError={(error) => console.error("❌ Erro ao carregar avatar:", error.nativeEvent, "URL:", user.avatar)}
+                onError={(error) =>
+                  console.error(
+                    "❌ Erro ao carregar avatar:",
+                    error.nativeEvent,
+                    "URL:",
+                    user.avatar
+                  )
+                }
               />
             ) : (
               <View style={styles.avatarPlaceholder}>
@@ -240,12 +409,29 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ route }) => {
             )}
           </View>
 
-          <TouchableOpacity style={styles.changePhotoButton}>
-            <Text style={styles.changePhotoText}>Alterar foto</Text>
+          <TouchableOpacity
+            style={[
+              styles.changePhotoButton,
+              uploadingAvatar && styles.disabledButton,
+            ]}
+            onPress={handleImagePicker}
+            disabled={uploadingAvatar}
+          >
+            {uploadingAvatar ? (
+              <View style={styles.uploadingContainer}>
+                <ActivityIndicator size="small" color="#3B82F6" />
+                <Text style={styles.changePhotoText}>Enviando...</Text>
+              </View>
+            ) : (
+              <>
+                <Ionicons name="camera" size={16} color="#3B82F6" />
+                <Text style={styles.changePhotoText}>Alterar foto</Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <Text style={styles.photoHint}>
-            Funcionalidade de foto em desenvolvimento
+            Toque para selecionar uma nova foto
           </Text>
         </View>
 
@@ -399,6 +585,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   changePhotoButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
@@ -479,6 +668,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#111827",
     fontWeight: "500",
+  },
+  // Upload styles
+  disabledButton: {
+    opacity: 0.6,
+  },
+  uploadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
 });
 
