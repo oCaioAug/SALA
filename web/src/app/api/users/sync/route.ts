@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar usuário existente pelo email ou Google ID
+    // Buscar usuário existente pelo email (NÃO pelo Google ID como primary key)
     let user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: email }, { id: googleId }],
+        email: email
       },
     });
 
@@ -28,14 +28,13 @@ export async function POST(request: NextRequest) {
         data: {
           name: name,
           image: image,
-          // Manter email existente para não quebrar relações
         },
       });
     } else {
-      // Criar novo usuário
+      // Criar novo usuário com CUID automático (NÃO usar Google ID)
       user = await prisma.user.create({
         data: {
-          id: googleId, // Usar Google ID como ID principal
+          // id será gerado automaticamente como CUID
           email: email,
           name: name,
           image: image,

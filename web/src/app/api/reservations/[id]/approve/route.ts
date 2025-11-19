@@ -54,11 +54,15 @@ export async function POST(
     });
 
     // Criar notificação para o usuário sobre a aprovação
+    console.log(`🔔 Iniciando criação de notificação para aprovação da reserva ${reservationId}`);
+    console.log(`👤 Usuário que receberá notificação: ${updatedReservation.user.email} (ID: ${updatedReservation.userId})`);
+    
     try {
       await notificationService.reservationApproved(updatedReservation);
+      console.log(`✅ Notificação de aprovação criada com sucesso para ${updatedReservation.user.email}`);
     } catch (notificationError) {
       console.error(
-        "Erro ao criar notificação de aprovação:",
+        "❌ Erro ao criar notificação de aprovação:",
         notificationError
       );
       // Não falhar a aprovação por causa da notificação

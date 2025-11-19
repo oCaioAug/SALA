@@ -24,6 +24,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { ReservationWithDetails, Room, User } from "@/lib/types";
 
 const SolicitacoesPage: React.FC = () => {
@@ -43,14 +44,35 @@ const SolicitacoesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("PENDING");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [focusedReservationId, setFocusedReservationId] = useState<
+    string | null
+  >(null);
 
   const { showSuccess, showError, showInfo } = useApp();
+  const { handleNotificationClick: globalNotificationHandler } =
+    useNotificationHandler();
 
   // Hook de navegação otimizada
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
   });
+
+  // Verificar se há uma reserva para focar (vinda de notificação)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const focusReservation = urlParams.get("focusReservation");
+    if (focusReservation) {
+      setFocusedReservationId(focusReservation);
+      // Remover o parâmetro da URL após usar
+      urlParams.delete("focusReservation");
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}?${urlParams.toString()}`
+      );
+    }
+  }, []);
 
   // Carregar dados
   useEffect(() => {
@@ -100,6 +122,20 @@ const SolicitacoesPage: React.FC = () => {
 
     fetchData();
   }, []);
+
+  // Scroll para a reserva focada quando os dados carregarem
+  useEffect(() => {
+    if (focusedReservationId && !loading && solicitacoes.length > 0) {
+      const element = document.getElementById(
+        `solicitacao-${focusedReservationId}`
+      );
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Remover o foco após 3 segundos
+        setTimeout(() => setFocusedReservationId(null), 3000);
+      }
+    }
+  }, [focusedReservationId, loading, solicitacoes]);
 
   const filteredSolicitacoes = solicitacoes.filter(solicitacao => {
     const roomName = rooms.find(r => r.id === solicitacao.roomId)?.name || "";
@@ -301,6 +337,8 @@ const SolicitacoesPage: React.FC = () => {
       onNavigate={navigate}
       isNavigating={isNavigating}
       onNotificationClick={() => {}}
+      onNotificationItemClick={globalNotificationHandler}
+      notificationUpdateTrigger={0}
     >
       {/* Header da página */}
       <div className="mb-8">
@@ -377,7 +415,12 @@ const SolicitacoesPage: React.FC = () => {
               key={solicitacao.id}
               variant="elevated"
               hover
-              className="group"
+              className={`group ${
+                focusedReservationId === solicitacao.id
+                  ? "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/50"
+                  : ""
+              }`}
+              id={`solicitacao-${solicitacao.id}`}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
