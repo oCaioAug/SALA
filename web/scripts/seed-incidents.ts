@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, IncidentCategory } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -26,7 +26,7 @@ async function main() {
           "O computador da estação 3 não está ligando. Parece ser problema na fonte de alimentação.",
         priority: "HIGH" as const,
         status: "REPORTED" as const,
-        category: "HARDWARE",
+        category: IncidentCategory.EQUIPMENT_FAILURE,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         roomId: rooms.length > 0 ? rooms[0].id : null,
         estimatedResolutionTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 dias
@@ -37,7 +37,7 @@ async function main() {
           "O projetor da sala de aula está ligando mas não mostra imagem. Cabo HDMI testado e funcionando.",
         priority: "MEDIUM" as const,
         status: "IN_ANALYSIS" as const,
-        category: "HARDWARE",
+        category: IncidentCategory.EQUIPMENT_FAILURE,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         assignedToId: users.find(u => u.role === "ADMIN")?.id || users[0].id,
         roomId: rooms.length > 1 ? rooms[1].id : null,
@@ -49,7 +49,7 @@ async function main() {
           "O software de simulação precisa ser atualizado para a versão mais recente. Versão atual apresenta bugs críticos.",
         priority: "MEDIUM" as const,
         status: "IN_PROGRESS" as const,
-        category: "SOFTWARE",
+        category: IncidentCategory.SOFTWARE,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         assignedToId: users.find(u => u.role === "ADMIN")?.id || users[0].id,
         roomId: rooms.length > 2 ? rooms[2].id : null,
@@ -61,7 +61,7 @@ async function main() {
           "A conexão de internet está muito lenta e apresentando quedas frequentes. Impacta nas aulas práticas.",
         priority: "CRITICAL" as const,
         status: "REPORTED" as const,
-        category: "NETWORK",
+        category: IncidentCategory.NETWORK,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         roomId: rooms.length > 0 ? rooms[0].id : null,
         estimatedResolutionTime: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 horas
@@ -72,7 +72,7 @@ async function main() {
           "O ar condicionado está fazendo muito ruído, atrapalhando as atividades. Necessária manutenção preventiva.",
         priority: "LOW" as const,
         status: "RESOLVED" as const,
-        category: "MAINTENANCE",
+        category: IncidentCategory.MAINTENANCE,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         assignedToId: users.find(u => u.role === "ADMIN")?.id || users[0].id,
         roomId: rooms.length > 1 ? rooms[1].id : null,
@@ -83,10 +83,10 @@ async function main() {
       {
         title: "Microscópio com lente danificada",
         description:
-          "A lente objetiva de 40x do microscópio está riscada, compromitendo a qualidade das observações.",
+          "A lente objetiva de 40x do microscópio está riscada, comprometendo a qualidade das observações.",
         priority: "HIGH" as const,
         status: "IN_ANALYSIS" as const,
-        category: "HARDWARE",
+        category: IncidentCategory.EQUIPMENT_FAILURE,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         itemId: items.length > 0 ? items[0].id : null,
         estimatedResolutionTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 semana
@@ -97,7 +97,7 @@ async function main() {
           "O extintor de incêndio da sala está com a validade vencida. Necessária substituição imediata.",
         priority: "CRITICAL" as const,
         status: "IN_PROGRESS" as const,
-        category: "SAFETY",
+        category: IncidentCategory.SAFETY,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         assignedToId: users.find(u => u.role === "ADMIN")?.id || users[0].id,
         roomId: rooms.length > 2 ? rooms[2].id : null,
@@ -109,7 +109,7 @@ async function main() {
           "A licença do software de CAD expirou e os alunos não conseguem acessar as funcionalidades principais.",
         priority: "HIGH" as const,
         status: "REPORTED" as const,
-        category: "SOFTWARE",
+        category: IncidentCategory.SOFTWARE,
         reportedById: users[Math.floor(Math.random() * users.length)].id,
         roomId: rooms.length > 0 ? rooms[0].id : null,
         estimatedResolutionTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 dias
