@@ -87,6 +87,7 @@ const ConfiguracoesPage: React.FC = () => {
       onNavigate={navigate}
       isNavigating={isNavigating}
       onNotificationClick={handleNotificationClick}
+      notificationUpdateTrigger={0}
     >
       {/* Header da página */}
       <div className="mb-8">

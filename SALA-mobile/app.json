@@ -49,8 +49,12 @@
     "extra": {
       "googleSignIn": {
         "webClientId": "199539496823-sgm07ecndbi76o04c4d95ogg381onmdr.apps.googleusercontent.com"
+      },
+      "eas": {
+        "projectId": "8c01597d-b32d-4d6e-96aa-3a91b739a7e7"
       }
     },
-    "scheme": "sala"
+    "scheme": "sala",
+    "owner": "ocaioaug"
   }
 }

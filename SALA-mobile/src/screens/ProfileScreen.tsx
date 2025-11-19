@@ -16,6 +16,7 @@ import { User } from "../types";
 import { getInitials } from "../utils";
 import { useAuth } from "../context/AuthContext";
 import { ProfileService } from "../services/ProfileService";
+import { API_CONFIG } from "../utils/config";
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -36,9 +37,18 @@ const ProfileScreen: React.FC = () => {
   const [isOffline, setIsOffline] = useState(false);
   const [hasPendingUpdates, setHasPendingUpdates] = useState(false);
 
+  // Estados para estatísticas de reservas
+  const [reservationStats, setReservationStats] = useState({
+    total: 0,
+    completed: 0,
+    active: 0,
+    loading: true,
+  });
+
   // Carregar perfil no início
   useEffect(() => {
     loadProfile();
+    loadReservationStats();
     checkPendingUpdates();
   }, []);
 
@@ -85,9 +95,57 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
+  const loadReservationStats = async () => {
+    if (!authUser?.id) return;
+
+    setReservationStats(prev => ({ ...prev, loading: true }));
+    
+    try {
+      console.log('📊 Carregando estatísticas de reservas para usuário:', authUser.id);
+      
+      // Fazer requisição para API
+      const response = await fetch(`${API_CONFIG.BASE_URL}/reservations/user/${authUser.id}/stats`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const stats = await response.json();
+        console.log('📊 Estatísticas recebidas:', stats);
+        
+        setReservationStats({
+          total: stats.total || 0,
+          completed: stats.completed || 0,
+          active: stats.active || 0,
+          loading: false,
+        });
+      } else {
+        console.error('Erro ao buscar estatísticas:', response.status);
+        // Manter dados zerados em caso de erro
+        setReservationStats({
+          total: 0,
+          completed: 0,
+          active: 0,
+          loading: false,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas de reservas:', error);
+      setReservationStats({
+        total: 0,
+        completed: 0,
+        active: 0,
+        loading: false,
+      });
+    }
+  };
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadProfile();
+    await loadReservationStats();
     await checkPendingUpdates();
 
     // Tentar sincronizar atualizações pendentes
@@ -310,19 +368,25 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
           <Ionicons name="calendar" size={24} color="#3B82F6" />
-          <Text style={styles.statNumber}>12</Text>
+          <Text style={styles.statNumber}>
+            {reservationStats.loading ? '...' : reservationStats.total}
+          </Text>
           <Text style={styles.statLabel}>Reservas Feitas</Text>
         </View>
 
         <View style={styles.statCard}>
           <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-          <Text style={styles.statNumber}>8</Text>
+          <Text style={styles.statNumber}>
+            {reservationStats.loading ? '...' : reservationStats.completed}
+          </Text>
           <Text style={styles.statLabel}>Concluídas</Text>
         </View>
 
         <View style={styles.statCard}>
           <Ionicons name="time" size={24} color="#F59E0B" />
-          <Text style={styles.statNumber}>2</Text>
+          <Text style={styles.statNumber}>
+            {reservationStats.loading ? '...' : reservationStats.active}
+          </Text>
           <Text style={styles.statLabel}>Ativas</Text>
         </View>
       </View>

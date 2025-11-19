@@ -3,21 +3,26 @@
 import { Building2, Grid, List, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 
 import { RoomForm } from "@/components/forms/RoomForm";
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
-import { PageTransition } from "@/components/ui/PageTransition";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { Room } from "@/lib/types";
 
 const DashboardPage: React.FC = () => {
+  const { data: session } = useSession();
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [rooms, setRooms] = useState<any[]>([]);
@@ -40,9 +45,28 @@ const DashboardPage: React.FC = () => {
     showInfo,
   } = useApp();
 
+  // Hook de navegação
+  const { navigate, isNavigating } = useNavigation({
+    currentPage,
+    onPageChange: setCurrentPage,
+  });
+
+  const { handleNotificationClick: globalNotificationHandler } =
+    useNotificationHandler();
+
+  // Verificar autenticação
+  useEffect(() => {
+    if (!session) {
+      setLoading(false);
+      return;
+    }
+  }, [session]);
+
   // Carregar salas da API com cache
   useEffect(() => {
     const fetchRooms = async () => {
+      if (!session?.user?.email) return;
+
       try {
         setLoading(true);
         setError(null);
@@ -84,8 +108,9 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchRooms();
-  }, []); // Dependências vazias para evitar loops
+  }, [session?.user?.email, roomsCache, lastFetchTime, showError]); // Dependências corretas
 
+  // Funções auxiliares
   const filteredRooms = rooms.filter((room: any) => {
     const matchesSearch =
       room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,10 +123,6 @@ const DashboardPage: React.FC = () => {
 
     return matchesSearch && matchesStatus;
   });
-
-  const handleNotificationClick = () => {
-    console.log("Notificações clicadas");
-  };
 
   const handleAddRoom = () => {
     setCreateRoomModalOpen(true);
@@ -134,35 +155,78 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  // Hook de navegação otimizada
-  const { navigate, isNavigating } = useNavigation({
-    currentPage,
-    onPageChange: setCurrentPage,
-  });
+  // Formatação de data (se necessário)
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Estados de carregamento e erro seguindo o padrão das outras páginas
+  if (loading) {
+    return <LoadingPage message="Carregando dashboard..." />;
+  }
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        onRetry={() => window.location.reload()}
+        retryLabel="Tentar Novamente"
+      />
+    );
+  }
 
   return (
     <PageLayout
       currentPage={currentPage}
       onNavigate={navigate}
       isNavigating={isNavigating}
-      onNotificationClick={handleNotificationClick}
+      onNotificationClick={() => {}}
+      onNotificationItemClick={globalNotificationHandler}
+      notificationUpdateTrigger={0}
     >
-      {/* Header melhorado */}
+      {/* Header da página seguindo o padrão */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Visão Geral das Salas
-            </h1>
-            <p className="text-slate-600 dark:text-gray-400">
-              Gerencie e monitore todas as salas da instituição
-            </p>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
+              <Building2 className="w-8 h-8 text-blue-400" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                Visão Geral das Salas
+              </h1>
+              <p className="text-slate-600 dark:text-gray-400">
+                Gerencie e monitore todas as salas da instituição
+              </p>
+            </div>
           </div>
 
-          <Button onClick={handleAddRoom} className="px-6 py-3">
-            <Plus className="w-5 h-5 mr-2" />
-            Nova Sala
-          </Button>
+          <div className="flex gap-3">
+            {session?.user?.role === "ADMIN" && (
+              <Link href="/users">
+                <Button variant="outline">
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                  </svg>
+                  Usuários
+                </Button>
+              </Link>
+            )}
+            <Button onClick={handleAddRoom}>
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Sala
+            </Button>
+          </div>
         </div>
 
         {/* Barra de busca e filtros melhorada */}
@@ -341,189 +405,159 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <PageTransition isLoading={loading || isNavigating}>
-        {error ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                Erro ao carregar salas
-              </h3>
-              <p className="text-slate-600 dark:text-gray-400 text-sm mb-6">
-                {error}
-              </p>
-              <Button onClick={() => window.location.reload()}>
-                Tentar Novamente
-              </Button>
-            </div>
-          </div>
-        ) : filteredRooms.length === 0 ? (
-          <EmptyState
-            icon={
-              <Building2 className="w-8 h-8 text-slate-500 dark:text-gray-400" />
-            }
-            title={
-              searchTerm || statusFilter !== "all"
-                ? "Nenhuma sala encontrada"
-                : "Nenhuma sala cadastrada"
-            }
-            description={
-              searchTerm || statusFilter !== "all"
-                ? "Tente ajustar os filtros de busca ou status para encontrar salas."
-                : "Comece criando sua primeira sala para gerenciar os espaços da instituição."
-            }
-            action={
-              searchTerm || statusFilter !== "all"
-                ? undefined
-                : { label: "Criar Primeira Sala", onClick: handleAddRoom }
-            }
-          />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredRooms.map((room: any) => (
-              <Card
-                key={room.id}
-                variant="elevated"
-                hover
-                className="group animate-scaleIn"
-              >
-                {/* Header do card */}
-                <div className="mb-4">
-                  <div className="flex items-start justify-between mb-4">
-                    <StatusBadge status={room.status} />
-                    {room.reservations && room.reservations.length > 0 && (
-                      <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-500/20 rounded-full border border-amber-300 dark:border-amber-500/30">
-                        <div className="w-2 h-2 bg-amber-500 dark:bg-amber-400 rounded-full animate-pulse"></div>
-                        <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                          Reservada
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <CardTitle className="text-xl mb-2 group-hover:text-blue-400 transition-colors duration-300">
-                    {room.name}
-                  </CardTitle>
-                  <CardDescription className="mb-4">
-                    {room.description}
-                  </CardDescription>
-
-                  {room.capacity && (
-                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
-                      <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
-                        <span className="text-xs">👥</span>
-                      </div>
-                      <span>{room.capacity} pessoas</span>
+      {/* Conteúdo principal */}
+      {filteredRooms.length === 0 ? (
+        <EmptyState
+          icon={
+            <Building2 className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+          }
+          title={
+            searchTerm || statusFilter !== "all"
+              ? "Nenhuma sala encontrada"
+              : "Nenhuma sala cadastrada"
+          }
+          description={
+            searchTerm || statusFilter !== "all"
+              ? "Tente ajustar os filtros de busca ou status para encontrar salas."
+              : "Comece criando sua primeira sala para gerenciar os espaços da instituição."
+          }
+          action={
+            searchTerm || statusFilter !== "all"
+              ? undefined
+              : { label: "Criar Primeira Sala", onClick: handleAddRoom }
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRooms.map((room: any) => (
+            <Card
+              key={room.id}
+              variant="elevated"
+              hover
+              className="group animate-scaleIn"
+            >
+              {/* Header do card */}
+              <div className="mb-4">
+                <div className="flex items-start justify-between mb-4">
+                  <StatusBadge status={room.status} />
+                  {room.reservations && room.reservations.length > 0 && (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-500/20 rounded-full border border-amber-300 dark:border-amber-500/30">
+                      <div className="w-2 h-2 bg-amber-500 dark:bg-amber-400 rounded-full animate-pulse"></div>
+                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                        Reservada
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* Lista de itens */}
-                <div className="mb-4">
-                  <div className="space-y-2">
-                    {room.items.slice(0, 2).map((item: any) => {
-                      const itemImage =
-                        item.images && item.images.length > 0
-                          ? item.images[0].path.replace(
-                              "/api/uploads/items/images/original_",
-                              "/api/uploads/items/images/thumb_"
-                            )
-                          : null;
+                <CardTitle className="text-xl mb-2 group-hover:text-blue-400 transition-colors duration-300">
+                  {room.name}
+                </CardTitle>
+                <CardDescription className="mb-4">
+                  {room.description}
+                </CardDescription>
 
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-700/30 rounded-lg group-hover:bg-slate-200 dark:group-hover:bg-slate-700/50 transition-colors duration-300"
-                        >
-                          {itemImage ? (
-                            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                              <img
-                                src={itemImage}
-                                alt={item.name}
-                                className="w-full h-full object-contain p-0.5"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
-                              {item.icon || "📦"}
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-                              {item.name}
-                            </p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400">
-                              Qtd: {item.quantity}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {room.items.length > 2 && (
-                      <div className="text-center py-2">
-                        <span className="text-xs text-slate-600 dark:text-slate-500 bg-slate-200 dark:bg-slate-700/50 px-3 py-1 rounded-full">
-                          +{room.items.length - 2} itens adicionais
-                        </span>
-                      </div>
-                    )}
+                {room.capacity && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
+                    <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                      <span className="text-xs">👥</span>
+                    </div>
+                    <span>{room.capacity} pessoas</span>
                   </div>
-                </div>
+                )}
+              </div>
 
-                {/* Footer com ações */}
-                <div className="pt-4 border-t border-slate-200 dark:border-slate-700/50">
-                  <Link href={`/salas/${room.id}`} className="w-full">
-                    <Button
-                      variant="secondary"
-                      className="w-full group-hover:bg-blue-600 group-hover:text-white transition-all duration-300"
-                    >
-                      Ver Detalhes
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            ))}
+              {/* Lista de itens */}
+              <div className="mb-4">
+                <div className="space-y-2">
+                  {room.items.slice(0, 2).map((item: any) => {
+                    const itemImage =
+                      item.images && item.images.length > 0
+                        ? item.images[0].path.replace(
+                            "/api/uploads/items/images/original_",
+                            "/api/uploads/items/images/thumb_"
+                          )
+                        : null;
 
-            {/* Card para criar nova sala */}
-            <Card
-              variant="outlined"
-              hover
-              className="border-dashed border-2 border-slate-300 dark:border-slate-500/50 hover:border-blue-500/50 cursor-pointer group animate-scaleIn flex flex-col items-center justify-center h-full min-h-[300px]"
-              onClick={handleAddRoom}
-            >
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                  <Plus className="w-6 h-6 text-white" />
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-2 bg-slate-100 dark:bg-slate-700/30 rounded-lg group-hover:bg-slate-200 dark:group-hover:bg-slate-700/50 transition-colors duration-300"
+                      >
+                        {itemImage ? (
+                          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <img
+                              src={itemImage}
+                              alt={item.name}
+                              className="w-full h-full object-contain p-0.5"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 bg-slate-200 dark:bg-slate-600 rounded-lg flex items-center justify-center text-sm flex-shrink-0">
+                            {item.icon || "📦"}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            Qtd: {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {room.items.length > 2 && (
+                    <div className="text-center py-2">
+                      <span className="text-xs text-slate-600 dark:text-slate-500 bg-slate-200 dark:bg-slate-700/50 px-3 py-1 rounded-full">
+                        +{room.items.length - 2} itens adicionais
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
-                Criar Nova Sala
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 text-sm text-center max-w-48">
-                Adicione uma nova sala ao sistema para começar o gerenciamento
-              </p>
-              <div className="mt-6 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-full border border-blue-200 dark:border-blue-500/20">
-                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                  Clique para começar
-                </span>
+
+              {/* Footer com ações */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700/50">
+                <Link href={`/salas/${room.id}`} className="w-full">
+                  <Button
+                    variant="secondary"
+                    className="w-full group-hover:bg-blue-600 group-hover:text-white transition-all duration-300"
+                  >
+                    Ver Detalhes
+                  </Button>
+                </Link>
               </div>
             </Card>
-          </div>
-        )}
-      </PageTransition>
+          ))}
+
+          {/* Card para criar nova sala */}
+          <Card
+            variant="outlined"
+            hover
+            className="border-dashed border-2 border-slate-300 dark:border-slate-500/50 hover:border-blue-500/50 cursor-pointer group animate-scaleIn flex flex-col items-center justify-center h-full min-h-[300px]"
+            onClick={handleAddRoom}
+          >
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                <Plus className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
+              Criar Nova Sala
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm text-center max-w-48">
+              Adicione uma nova sala ao sistema para começar o gerenciamento
+            </p>
+            <div className="mt-6 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-full border border-blue-200 dark:border-blue-500/20">
+              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                Clique para começar
+              </span>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Modal para criar sala */}
       <Modal
