@@ -40,21 +40,24 @@ export class NotificationRepository implements INotificationRepository {
       }
 
       // Buscar da API
-      const response = await this.api.get(`/notifications/${userId}`, {
-        params: { limit }
+      console.log(`📡 Buscando notificações para usuário ${userId}`);
+      const response = await this.api.get('/notifications', {
+        params: { 
+          userId: userId,
+          limit: limit 
+        }
       });
 
-      if (response.data.success) {
-        const notifications: NotificationData[] = response.data.notifications;
-        
-        // Salvar no cache
-        await this.cacheNotifications(userId, notifications);
-        
-        console.log(`📱 ${notifications.length} notificações carregadas da API`);
-        return notifications;
-      }
+      console.log('📡 Resposta da API:', response.data);
 
-      return [];
+      // A API web retorna diretamente o array de notificações, não em um wrapper
+      const notifications: NotificationData[] = response.data || [];
+      
+      // Salvar no cache
+      await this.cacheNotifications(userId, notifications);
+      
+      console.log(`📱 ${notifications.length} notificações carregadas da API`);
+      return notifications;
     } catch (error) {
       console.warn('⚠️ Erro ao buscar notificações, usando cache:', error);
       return this.getCachedNotifications(userId);
@@ -66,7 +69,8 @@ export class NotificationRepository implements INotificationRepository {
    */
   async markAsRead(notificationId: string): Promise<void> {
     try {
-      await this.api.patch(`/notifications/${notificationId}/read`);
+      console.log(`📱 Marcando notificação ${notificationId} como lida`);
+      await this.api.put(`/notifications/${notificationId}`);
       
       // Atualizar cache local
       await this.updateNotificationInCache(notificationId, { read: true });

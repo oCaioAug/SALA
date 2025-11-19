@@ -13,6 +13,8 @@ interface PageLayoutProps {
   onNavigate: (page: string) => void;
   isNavigating?: boolean;
   onNotificationClick?: () => void;
+  onNotificationItemClick?: (notification: any) => void;
+  notificationUpdateTrigger?: number;
   showSidebar?: boolean;
   showHeader?: boolean;
 }
@@ -23,6 +25,8 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   onNavigate,
   isNavigating = false,
   onNotificationClick,
+  onNotificationItemClick,
+  notificationUpdateTrigger,
   showSidebar = true,
   showHeader = true,
 }) => {
@@ -39,7 +43,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
         <div className="flex-1 flex flex-col">
           {showHeader && (
-            <Header onNotificationClick={onNotificationClick || (() => {})} />
+            <Header
+              onNotificationClick={onNotificationClick || (() => {})}
+              onNotificationItemClick={onNotificationItemClick}
+              notificationUpdateTrigger={notificationUpdateTrigger}
+            />
           )}
 
           <main className="flex-1 p-6">{children}</main>

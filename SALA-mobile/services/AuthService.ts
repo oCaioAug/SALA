@@ -229,6 +229,115 @@ class AuthService {
       updatedAt: new Date().toISOString(),
     };
   }
+
+  async registerPushToken(token: string, deviceType?: string): Promise<boolean> {
+    try {
+      console.log('🔔 === INICIO registerPushToken ===');
+      console.log('📱 Token recebido:', token);
+      console.log('🔧 Device Type:', deviceType);
+      
+      // Obter dados do usuário atual
+      const user = await this.getCurrentUser();
+      console.log('👤 Usuario atual:', user ? user.id : 'NENHUM');
+      
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return false;
+      }
+
+      const payload = {
+        token,
+        deviceType: deviceType || 'mobile',
+        userId: user.id
+      };
+
+      console.log('� Payload que será enviado:', payload);
+      console.log('🌐 URL da API:', `${API_CONFIG.BASE_URL}/api/push-tokens`);
+
+      const response = await axios.post(
+        `${API_CONFIG.BASE_URL}/api/push-tokens`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: API_CONFIG.TIMEOUT
+        }
+      );
+
+      console.log('📡 Status da resposta:', response.status);
+      console.log('📡 Dados da resposta:', response.data);
+
+      if (response.status === 200 || response.status === 201) {
+        console.log('✅ Push token registrado com sucesso!');
+        return true;
+      }
+
+      console.error('❌ Status inesperado:', response.status);
+      return false;
+    } catch (error) {
+      console.error('❌ === ERRO no registerPushToken ===');
+      
+      if (axios.isAxiosError(error)) {
+        console.error('📡 Erro HTTP:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message,
+          url: error.config?.url
+        });
+      } else {
+        console.error('🚨 Erro genérico:', error);
+      }
+      
+      console.error('❌ === FIM ERRO ===');
+      return false;
+    }
+  }
+
+  async unregisterPushToken(token: string): Promise<boolean> {
+    try {
+      console.log('🚫 Removendo push token do backend...');
+      
+      // Obter dados do usuário atual
+      const user = await this.getCurrentUser();
+      if (!user) {
+        console.error('❌ Usuário não autenticado');
+        return false;
+      }
+
+      const response = await axios.delete(
+        `${API_CONFIG.BASE_URL}/api/push-tokens?token=${encodeURIComponent(token)}`,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: API_CONFIG.TIMEOUT
+        }
+      );
+
+      console.log('📡 Resposta da API:', response.status, response.data);
+
+      if (response.status === 200) {
+        console.log('✅ Push token removido com sucesso');
+        return true;
+      }
+
+      console.error('❌ Falha ao remover push token:', response.status);
+      return false;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('❌ Erro HTTP ao remover push token:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
+      } else {
+        console.error('❌ Erro ao remover push token:', error);
+      }
+      return false;
+    }
+  }
 }
 
 export default AuthService;

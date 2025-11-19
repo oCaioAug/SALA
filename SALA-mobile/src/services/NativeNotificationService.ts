@@ -8,6 +8,7 @@ import {
   NOTIFICATION_CONFIGS,
   NotificationType
 } from '../types/notifications';
+import AuthService from '../../services/AuthService';
 
 /**
  * Service responsável por gerenciar notificações nativas do dispositivo
@@ -232,6 +233,16 @@ export class NativeNotificationService implements INotificationService {
 
       this.expoPushToken = tokenData.data;
       console.log('🔑 Expo Push Token obtido:', this.expoPushToken);
+      
+      // Registrar token automaticamente com o backend
+      try {
+        const authService = AuthService.getInstance();
+        await authService.registerPushToken(this.expoPushToken, 'mobile');
+        console.log('✅ Push token registrado com o backend automaticamente');
+      } catch (registerError) {
+        console.warn('⚠️ Falha ao registrar push token com backend:', registerError);
+        // Não falhar a obtenção do token se o registro falhar
+      }
       
       return this.expoPushToken;
     } catch (error) {

@@ -1,4 +1,5 @@
 import {
+  Bell,
   Building2,
   Calendar,
   ChevronRight,
@@ -7,6 +8,7 @@ import {
   Settings,
   User,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React from "react";
@@ -49,6 +51,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: "Calendário de reservas",
       active: currentPage === "agendamentos",
     },
+    {
+      id: "incidentes",
+      label: "Incidentes",
+      icon: AlertTriangle,
+      description: "Gestão de problemas e manutenções",
+      active: currentPage === "incidentes",
+    },
     // Menu de usuários apenas para administradores
     ...(isAdmin
       ? [
@@ -68,13 +77,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: "Gerenciar perfil",
       active: currentPage === "profile",
     },
-    // {
-    //   id: 'notificacoes',
-    //   label: 'Notificações',
-    //   icon: Bell,
-    //   description: 'Central de notificações',
-    //   active: currentPage === 'notificacoes'
-    // },
+    {
+      id: "notificacoes",
+      label: "Notificações",
+      icon: Bell,
+      description: "Central de notificações",
+      active: currentPage === "notificacoes",
+    },
     {
       id: "configuracoes",
       label: "Configurações",

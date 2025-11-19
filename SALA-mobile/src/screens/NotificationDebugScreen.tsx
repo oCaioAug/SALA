@@ -19,6 +19,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export const NotificationDebugScreen: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [pushToken, setPushToken] = useState<string | null>(null);
+  const [tokenStatus, setTokenStatus] = useState<string>('Não testado');
   
   const notificationManager = NotificationManager.getInstance();
   const nativeService = NativeNotificationService.getInstance();
@@ -73,6 +75,35 @@ export const NotificationDebugScreen: React.FC = () => {
       color: '#6B7280',
     },
   ];
+
+  // Função simples para testar push token
+  const testPushToken = async () => {
+    try {
+      console.log('🔴🔴🔴 TESTE PUSH TOKEN INICIADO 🔴🔴🔴');
+      setLoading(true);
+      setTokenStatus('🔄 Obtendo...');
+      
+      const token = await nativeService.getExpoPushToken();
+      console.log('📱 Token recebido:', token ? 'SIM' : 'NÃO');
+      
+      if (token) {
+        setPushToken(token);
+        setTokenStatus('✅ Token obtido!');
+        Alert.alert('Sucesso!', `Token: ${token.substring(0, 30)}...`);
+        console.log('✅ SUCESSO!');
+      } else {
+        setTokenStatus('❌ Falha ao obter');
+        Alert.alert('Erro', 'Não foi possível obter o token');
+        console.log('❌ FALHA!');
+      }
+    } catch (error) {
+      console.error('🔴 ERRO:', error);
+      setTokenStatus('❌ Erro');
+      Alert.alert('Erro', String(error));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const sendTestNotification = async (testNotification: any) => {
     if (!user?.id) {
@@ -215,6 +246,34 @@ export const NotificationDebugScreen: React.FC = () => {
           <TouchableOpacity style={styles.timedButton} onPress={sendTimedNotification}>
             <Ionicons name="timer-outline" size={24} color="#F59E0B" />
             <Text style={styles.timedButtonText}>Agendar Notificação (10s)</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Teste Push Token */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🔔 Teste Push Token</Text>
+          
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Status: </Text>
+            <Text style={styles.statusValue}>{tokenStatus}</Text>
+          </View>
+          
+          <View style={styles.statusRow}>
+            <Text style={styles.statusLabel}>Token: </Text>
+            <Text style={styles.statusValue}>
+              {pushToken ? `${pushToken.substring(0, 40)}...` : 'Não obtido'}
+            </Text>
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.controlButton, { backgroundColor: '#3B82F6' }]} 
+            onPress={testPushToken}
+            disabled={loading}
+          >
+            <Ionicons name="key-outline" size={24} color="#FFFFFF" />
+            <Text style={[styles.controlButtonText, { color: '#FFFFFF' }]}>
+              {loading ? '⏳ Obtendo...' : '🔑 Testar Push Token'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -404,5 +463,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     fontWeight: '500',
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    padding: 8,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 6,
+  },
+  statusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    minWidth: 60,
+  },
+  statusValue: {
+    fontSize: 14,
+    color: '#6B7280',
+    flex: 1,
   },
 });

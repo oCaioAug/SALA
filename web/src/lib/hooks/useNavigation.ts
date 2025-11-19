@@ -25,6 +25,7 @@ export const useNavigation = ({
       "/agendamentos",
       "/solicitacoes",
       "/notificacoes",
+      "/incidentes",
       "/users",
       "/profile",
     ];
@@ -54,6 +55,7 @@ export const useNavigation = ({
         solicitacoes: "/solicitacoes",
         agendamentos: "/agendamentos",
         notificacoes: "/notificacoes",
+        incidentes: "/incidentes",
         configuracoes: "/configuracoes",
         users: "/users",
         profile: "/profile",

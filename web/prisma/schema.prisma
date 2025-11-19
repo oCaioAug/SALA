@@ -20,6 +20,12 @@ model User {
   notifications Notification[]
   reservations  Reservation[]
   sessions      Session[]
+  pushTokens    PushToken[]
+  
+  // Relacionamentos com incidentes
+  reportedIncidents IncidentStatusHistory[]
+  assignedIncidents Incident[] @relation("AssignedIncidents")
+  incidentsReported Incident[] @relation("ReportedIncidents")
 
   @@map("users")
 }
@@ -34,6 +40,7 @@ model Room {
   updatedAt    DateTime      @updatedAt
   items        Item[]
   reservations Reservation[]
+  incidents    Incident[]
 
   @@map("rooms")
 }
@@ -50,6 +57,7 @@ model Item {
   updatedAt      DateTime @updatedAt
   room           Room?    @relation(fields: [roomId], references: [id])
   images         Image[]
+  incidents      Incident[]
 
   @@map("items")
 }
@@ -95,6 +103,69 @@ model Notification {
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model Incident {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  priority    IncidentPriority @default(MEDIUM)
+  status      IncidentStatus  @default(REPORTED)
+  category    IncidentCategory
+  
+  // Relacionamentos
+  reportedById String
+  reportedBy   User            @relation("ReportedIncidents", fields: [reportedById], references: [id])
+  assignedToId String?
+  assignedTo   User?           @relation("AssignedIncidents", fields: [assignedToId], references: [id])
+  
+  // Localização do incidente
+  roomId       String?
+  room         Room?           @relation(fields: [roomId], references: [id])
+  itemId       String?
+  item         Item?           @relation(fields: [itemId], references: [id])
+  
+  // Metadados
+  estimatedResolutionTime DateTime?
+  actualResolutionTime    DateTime?
+  resolutionNotes        String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Histórico do incidente
+  statusHistory IncidentStatusHistory[]
+  
+  @@map("incidents")
+}
+
+model IncidentStatusHistory {
+  id          String         @id @default(cuid())
+  incidentId  String
+  incident    Incident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  
+  fromStatus  IncidentStatus?
+  toStatus    IncidentStatus
+  notes       String?
+  changedById String
+  changedBy   User           @relation(fields: [changedById], references: [id])
+  
+  createdAt   DateTime       @default(now())
+  
+  @@map("incident_status_history")
+}
+
+model PushToken {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  deviceType String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_tokens")
 }
 
 model Account {
@@ -163,4 +234,34 @@ enum NotificationType {
   RESERVATION_CONFLICT
   ROOM_STATUS_CHANGED
   SYSTEM_ANNOUNCEMENT
+  INCIDENT_CREATED
+  INCIDENT_ASSIGNED
+  INCIDENT_STATUS_CHANGED
+  INCIDENT_RESOLVED
+}
+
+enum IncidentStatus {
+  REPORTED
+  IN_ANALYSIS
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentCategory {
+  EQUIPMENT_FAILURE
+  INFRASTRUCTURE
+  SOFTWARE
+  SAFETY
+  MAINTENANCE
+  ELECTRICAL
+  NETWORK
+  OTHER
 }

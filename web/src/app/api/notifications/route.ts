@@ -30,11 +30,13 @@ export async function GET(request: NextRequest) {
     let user;
     if (userId.includes("@")) {
       // Se contém @, é um email
+      console.log("🔍 Buscando usuário por email:", userId);
       user = await prisma.user.findUnique({
         where: { email: userId },
       });
     } else {
       // Senão, é um ID
+      console.log("🔍 Buscando usuário por ID:", userId);
       user = await prisma.user.findUnique({
         where: { id: userId },
       });
@@ -47,6 +49,8 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    console.log(`✅ Usuário encontrado: ${user.email} (${user.role})`);
 
     const where: any = {
       userId: user.id,
@@ -74,6 +78,16 @@ export async function GET(request: NextRequest) {
     console.log(
       `✅ Encontradas ${notifications.length} notificações para ${user.email}`
     );
+
+    // Log detalhado das notificações
+    if (notifications.length > 0) {
+      console.log("📋 Notificações encontradas:");
+      notifications.forEach((notif, index) => {
+        console.log(
+          `  ${index + 1}. [${notif.type}] ${notif.title} - ${notif.isRead ? "Lida" : "Não lida"} - ${notif.createdAt}`
+        );
+      });
+    }
 
     return NextResponse.json(notifications);
   } catch (error) {

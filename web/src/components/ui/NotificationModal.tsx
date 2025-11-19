@@ -30,6 +30,7 @@ interface NotificationModalProps {
   onClose: () => void;
   userId: string;
   onNotificationChange?: () => void;
+  onNotificationClick?: (notification: Notification) => void;
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -37,6 +38,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   onClose,
   userId,
   onNotificationChange,
+  onNotificationClick,
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -299,7 +301,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
             description="Você não tem notificações no momento"
           />
         ) : (
-          <div className="p-2">
+          <div className="p-2 space-y-3">
             {notifications.map(notification => {
               const IconComponent = getNotificationIcon(
                 notification.type as NotificationTypeType
@@ -312,11 +314,12 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               return (
                 <div
                   key={notification.id}
-                  className={`p-3 rounded-lg transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 ${
+                  className={`p-3 rounded-lg transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer ${
                     notification.isRead
                       ? "bg-slate-50/50 dark:bg-slate-800/30"
                       : "bg-blue-50 dark:bg-blue-500/10 border-l-2 border-blue-500"
                   }`}
+                  onClick={() => onNotificationClick?.(notification)}
                 >
                   <div className="flex items-start gap-3">
                     <div

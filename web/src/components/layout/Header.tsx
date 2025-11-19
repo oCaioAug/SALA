@@ -19,9 +19,15 @@ import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
 
 interface HeaderProps {
   onNotificationClick?: () => void;
+  onNotificationItemClick?: (notification: any) => void;
+  notificationUpdateTrigger?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
+const Header: React.FC<HeaderProps> = ({
+  onNotificationClick,
+  onNotificationItemClick,
+  notificationUpdateTrigger,
+}) => {
   const { data: session } = useSession();
   const { theme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -39,27 +45,44 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
       "🔄 Header: Buscando contador de notificações para:",
       session.user.email
     );
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+
       const response = await fetch(
-        `/api/notifications/count?userId=${session.user.email}`
+        `/api/notifications/count?userId=${session.user.email}`,
+        { signal: controller.signal }
       );
+
+      clearTimeout(timeoutId);
+
       console.log(
         "📡 Header: Resposta do contador:",
         response.status,
         response.ok
       );
+
       if (response.ok) {
         const data = await response.json();
         console.log("✅ Header: Contador atualizado:", data.count);
         setNotificationCount(data.count);
       } else {
         console.error("❌ Header: Erro ao buscar contador:", response.status);
+        // Em caso de erro, manter o valor anterior
       }
     } catch (error) {
-      console.error(
-        "❌ Header: Erro ao buscar contador de notificações:",
-        error
-      );
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn("⏱️ Header: Timeout ao buscar contador de notificações");
+        } else {
+          console.error(
+            "❌ Header: Erro ao buscar contador de notificações:",
+            error
+          );
+        }
+      }
+      // Em caso de erro, não alterar o contador atual
     }
   }, [session?.user?.email]);
 
@@ -67,11 +90,19 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
     if (session?.user?.email) {
       fetchNotificationCount();
 
-      // Atualizar contador a cada 30 segundos
-      const interval = setInterval(fetchNotificationCount, 30000);
+      // Atualizar contador a cada 60 segundos (reduzido de 30s)
+      const interval = setInterval(fetchNotificationCount, 60000);
       return () => clearInterval(interval);
     }
   }, [session?.user?.email, fetchNotificationCount]);
+
+  // Escutar atualizações de notificação vindas da página
+  useEffect(() => {
+    if (notificationUpdateTrigger) {
+      // Re-buscar o contador quando há mudanças
+      fetchNotificationCount();
+    }
+  }, [notificationUpdateTrigger, fetchNotificationCount]);
 
   const handleNotificationClick = () => {
     setIsNotificationModalOpen(true);
@@ -145,6 +176,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationClick }) => {
                 onClose={() => setIsNotificationModalOpen(false)}
                 userId={session.user.email || session.user.id || ""}
                 onNotificationChange={fetchNotificationCount}
+                onNotificationClick={onNotificationItemClick}
               />
             )}
           </div>
