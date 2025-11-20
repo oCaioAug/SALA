@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -9,6 +10,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useApp } from "@/lib/hooks/useApp";
 import {
   Plus,
   Search,
@@ -25,14 +27,27 @@ import {
   Incident,
   IncidentFilters,
   IncidentStats,
-  INCIDENT_STATUS_LABELS,
-  INCIDENT_PRIORITY_LABELS,
-  INCIDENT_CATEGORY_LABELS,
   INCIDENT_CATEGORIES,
 } from "@/types/incidents";
 
 export default function IncidentsPage() {
+  const t = useTranslations("Incidents");
+  const tCommon = useTranslations("Common");
   const { data: session, status } = useSession();
+  const { showSuccess, showError } = useApp();
+
+  // Helper functions para labels traduzidos
+  const getCategoryLabel = (category: string) => {
+    return t(`categoriesLabels.${category}` as any) || category;
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    return t(`prioritiesLabels.${priority}` as any) || priority;
+  };
+
+  const getStatusLabel = (status: string) => {
+    return t(`statusesLabels.${status}` as any) || status;
+  };
   const [currentPage, setCurrentPage] = useState("incidentes");
   const {
     loading,
@@ -132,15 +147,19 @@ export default function IncidentsPage() {
   }, [filters, searchTerm, session]);
 
   const loadIncidents = async () => {
-    const searchFilters = {
-      ...filters,
-      search: searchTerm || undefined,
-    };
+    try {
+      const searchFilters = {
+        ...filters,
+        search: searchTerm || undefined,
+      };
 
-    const response = await getIncidents(searchFilters);
-    if (response) {
-      setIncidents(response.incidents);
-      setPagination(response.pagination);
+      const response = await getIncidents(searchFilters);
+      if (response) {
+        setIncidents(response.incidents);
+        setPagination(response.pagination);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar incidentes:", error);
     }
   };
 
@@ -164,7 +183,7 @@ export default function IncidentsPage() {
   };
 
   const handleDeleteIncident = async (id: string) => {
-    if (!confirm("Tem certeza que deseja deletar este incidente?")) {
+    if (!confirm(t("feedback.deleteConfirm"))) {
       return;
     }
 
@@ -221,22 +240,29 @@ export default function IncidentsPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao atualizar incidente");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || errorData.message || t("feedback.error");
+        throw new Error(errorMessage);
       }
 
-      // Recarregar dados
-      await loadIncidents();
-      await loadStats();
+      // Verificar se a resposta tem dados
+      const updatedIncident = await response.json().catch(() => null);
 
-      // Fechar modal
+      // Recarregar dados para garantir sincronização com o servidor
+      await Promise.all([loadIncidents(), loadStats()]);
+
+      // Fechar modal apenas após recarregar os dados
       setIsEditModalOpen(false);
       setSelectedIncident(null);
+      setEditFormStatus("");
 
-      // Mostrar sucesso (assumindo que existe uma função de toast/notification)
-      console.log("Incidente atualizado com sucesso!");
+      // Mostrar sucesso
+      showSuccess(t("feedback.updateSuccess"));
     } catch (error) {
       console.error("Erro ao atualizar incidente:", error);
-      // Mostrar erro (assumindo que existe uma função de toast/notification)
+      const errorMessage =
+        error instanceof Error ? error.message : t("feedback.error");
+      showError(errorMessage);
     } finally {
       setEditLoading(false);
     }
@@ -290,34 +316,66 @@ export default function IncidentsPage() {
     }
   };
 
+  // Helper para formatar tempo relativo internacionalizado
   const formatRelativeTime = (date: Date) => {
     const now = new Date();
-    const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
-    );
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes}m atrás`;
-    }
-
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours}h atrás`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInDays / 365);
+
+    // Menos de 1 minuto
+    if (diffInSeconds < 60) {
+      return t("time.justNow");
     }
 
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d atrás`;
+    // Menos de 1 hora
+    if (diffInMinutes < 60) {
+      const unit = diffInMinutes === 1 ? t("time.minute") : t("time.minutes");
+      return `${diffInMinutes} ${unit} ${t("time.ago")}`;
+    }
+
+    // Menos de 24 horas
+    if (diffInHours < 24) {
+      const unit = diffInHours === 1 ? t("time.hour") : t("time.hours");
+      return `${diffInHours} ${unit} ${t("time.ago")}`;
+    }
+
+    // Menos de 7 dias
+    if (diffInDays < 7) {
+      const unit = diffInDays === 1 ? t("time.day") : t("time.days");
+      return `${diffInDays} ${unit} ${t("time.ago")}`;
+    }
+
+    // Menos de 30 dias (1 mês)
+    if (diffInDays < 30) {
+      const unit = diffInWeeks === 1 ? t("time.week") : t("time.weeks");
+      return `${diffInWeeks} ${unit} ${t("time.ago")}`;
+    }
+
+    // Menos de 365 dias (1 ano)
+    if (diffInDays < 365) {
+      const unit = diffInMonths === 1 ? t("time.month") : t("time.months");
+      return `${diffInMonths} ${unit} ${t("time.ago")}`;
+    }
+
+    // Mais de 1 ano
+    const unit = diffInYears === 1 ? t("time.year") : t("time.years");
+    return `${diffInYears} ${unit} ${t("time.ago")}`;
   };
 
   // Loading state
   if (status === "loading") {
-    return <LoadingPage message="Carregando incidentes..." />;
+    return <LoadingPage message={t("loading")} />;
   }
 
   // Auth error state
   if (status === "unauthenticated") {
     return (
-      <ErrorPage error="Você precisa estar logado para acessar esta página." />
+      <ErrorPage error={t("feedback.authError")} />
     );
   }
 
@@ -327,9 +385,9 @@ export default function IncidentsPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Gestão de Incidentes</h1>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
             <p className="text-muted-foreground">
-              Gerencie problemas e manutenções em laboratórios e equipamentos
+              {t("description")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -342,11 +400,11 @@ export default function IncidentsPage() {
               disabled={loading}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
+              {t("actions.refresh")}
             </Button>
             <Button onClick={() => setIsCreateModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Reportar Incidente
+              {t("create")}
             </Button>
           </div>
         </div>
@@ -357,7 +415,7 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Ativo</p>
+                  <p className="text-sm text-muted-foreground">{t("stats.totalActive")}</p>
                   <p className="text-2xl font-bold">
                     {stats.overview.activeTotal}
                   </p>
@@ -368,7 +426,7 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Críticos</p>
+                  <p className="text-sm text-muted-foreground">{t("stats.critical")}</p>
                   <p className="text-2xl font-bold text-red-600">
                     {stats.priority.critical}
                   </p>
@@ -379,7 +437,7 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Em Andamento</p>
+                  <p className="text-sm text-muted-foreground">{t("stats.inProgress")}</p>
                   <p className="text-2xl font-bold">
                     {stats.overview.inProgress}
                   </p>
@@ -390,7 +448,7 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Tempo Médio</p>
+                  <p className="text-sm text-muted-foreground">{t("stats.averageTime")}</p>
                   <p className="text-2xl font-bold">
                     {stats.performance.averageResolutionTimeHours}h
                   </p>
@@ -408,7 +466,7 @@ export default function IncidentsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Buscar incidentes por título, descrição ou categoria..."
+                placeholder={t("searchPlaceholder")}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -423,11 +481,11 @@ export default function IncidentsPage() {
                 }
                 className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Todos os Status</option>
-                <option value="REPORTED">Reportado</option>
-                <option value="IN_ANALYSIS">Em Análise</option>
-                <option value="IN_PROGRESS">Em Andamento</option>
-                <option value="RESOLVED">Resolvido</option>
+                <option value="">{t("filters.allStatuses")}</option>
+                <option value="REPORTED">{t("filters.reported")}</option>
+                <option value="IN_ANALYSIS">{t("filters.inAnalysis")}</option>
+                <option value="IN_PROGRESS">{t("filters.inProgress")}</option>
+                <option value="RESOLVED">{t("filters.resolved")}</option>
               </select>
 
               <select
@@ -437,11 +495,11 @@ export default function IncidentsPage() {
                 }
                 className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Todas as Prioridades</option>
-                <option value="CRITICAL">Crítica</option>
-                <option value="HIGH">Alta</option>
-                <option value="MEDIUM">Média</option>
-                <option value="LOW">Baixa</option>
+                <option value="">{t("filters.allPriorities")}</option>
+                <option value="CRITICAL">{t("filters.critical")}</option>
+                <option value="HIGH">{t("filters.high")}</option>
+                <option value="MEDIUM">{t("filters.medium")}</option>
+                <option value="LOW">{t("filters.low")}</option>
               </select>
 
               <select
@@ -451,10 +509,10 @@ export default function IncidentsPage() {
                 }
                 className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Todas as Categorias</option>
+                <option value="">{t("filters.allCategories")}</option>
                 {INCIDENT_CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>
-                    {INCIDENT_CATEGORY_LABELS[cat]}
+                    {getCategoryLabel(cat)}
                   </option>
                 ))}
               </select>
@@ -500,7 +558,7 @@ export default function IncidentsPage() {
             <Card className="p-8 text-center">
               <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                Nenhum incidente encontrado
+                {t("empty.title")}
               </p>
             </Card>
           ) : (
@@ -527,11 +585,7 @@ export default function IncidentsPage() {
                       >
                         {getStatusIcon(incident.status)}
                         <span className="ml-1">
-                          {
-                            INCIDENT_STATUS_LABELS[
-                              incident.status as keyof typeof INCIDENT_STATUS_LABELS
-                            ]
-                          }
+                          {getStatusLabel(incident.status)}
                         </span>
                       </span>
                       <span
@@ -548,11 +602,7 @@ export default function IncidentsPage() {
                         }
                       `}
                       >
-                        {
-                          INCIDENT_PRIORITY_LABELS[
-                            incident.priority as keyof typeof INCIDENT_PRIORITY_LABELS
-                          ]
-                        }
+                        {getPriorityLabel(incident.priority)}
                       </span>
                     </div>
 
@@ -564,30 +614,26 @@ export default function IncidentsPage() {
                     {/* Metadados */}
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>
-                        <strong>Categoria:</strong>{" "}
-                        {
-                          INCIDENT_CATEGORY_LABELS[
-                            incident.category as keyof typeof INCIDENT_CATEGORY_LABELS
-                          ]
-                        }
+                        <strong>{t("form.category")}:</strong>{" "}
+                        {getCategoryLabel(incident.category)}
                       </span>
                       {incident.room && (
                         <span>
-                          <strong>Sala:</strong> {incident.room.name}
+                          <strong>{t("room")}:</strong> {incident.room.name}
                         </span>
                       )}
                       {incident.item && (
                         <span>
-                          <strong>Item:</strong> {incident.item.name}
+                          <strong>{t("item")}:</strong> {incident.item.name}
                         </span>
                       )}
                       <span>
-                        <strong>Reportado por:</strong>{" "}
+                        <strong>{t("reportedBy")}:</strong>{" "}
                         {incident.reportedBy.name}
                       </span>
                       {incident.assignedTo && (
                         <span>
-                          <strong>Atribuído para:</strong>{" "}
+                          <strong>{t("assignedTo")}:</strong>{" "}
                           {incident.assignedTo.name}
                         </span>
                       )}
@@ -669,7 +715,7 @@ export default function IncidentsPage() {
         <Modal
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
-          title="Detalhes do Incidente"
+          title={t("details.title")}
           size="xl"
         >
           {selectedIncident && (
@@ -677,7 +723,7 @@ export default function IncidentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Título
+                    {t("details.titleLabel")}
                   </label>
                   <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
                     {selectedIncident.title}
@@ -685,7 +731,7 @@ export default function IncidentsPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Status
+                    {t("details.status")}
                   </label>
                   <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <span
@@ -702,11 +748,7 @@ export default function IncidentsPage() {
                         }
                       `}
                     >
-                      {
-                        INCIDENT_STATUS_LABELS[
-                          selectedIncident.status as keyof typeof INCIDENT_STATUS_LABELS
-                        ]
-                      }
+                      {getStatusLabel(selectedIncident.status)}
                     </span>
                   </div>
                 </div>
@@ -715,7 +757,7 @@ export default function IncidentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Prioridade
+                    {t("details.priority")}
                   </label>
                   <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <span
@@ -732,31 +774,23 @@ export default function IncidentsPage() {
                         }
                       `}
                     >
-                      {
-                        INCIDENT_PRIORITY_LABELS[
-                          selectedIncident.priority as keyof typeof INCIDENT_PRIORITY_LABELS
-                        ]
-                      }
+                      {getPriorityLabel(selectedIncident.priority)}
                     </span>
                   </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Categoria
+                    {t("details.category")}
                   </label>
                   <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
-                    {
-                      INCIDENT_CATEGORY_LABELS[
-                        selectedIncident.category as keyof typeof INCIDENT_CATEGORY_LABELS
-                      ]
-                    }
+                    {getCategoryLabel(selectedIncident.category)}
                   </p>
                 </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Descrição
+                  {t("details.description")}
                 </label>
                 <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white whitespace-pre-wrap">
                   {selectedIncident.description}
@@ -766,7 +800,7 @@ export default function IncidentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Reportado por
+                    {t("details.reportedBy")}
                   </label>
                   <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     <p className="text-slate-900 dark:text-white font-medium">
@@ -779,7 +813,7 @@ export default function IncidentsPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Atribuído para
+                    {t("details.assignedTo")}
                   </label>
                   <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                     {selectedIncident.assignedTo ? (
@@ -793,7 +827,7 @@ export default function IncidentsPage() {
                       </>
                     ) : (
                       <p className="text-slate-600 dark:text-gray-400">
-                        Não atribuído
+                        {t("details.notAssigned")}
                       </p>
                     )}
                   </div>
@@ -805,7 +839,7 @@ export default function IncidentsPage() {
                   {selectedIncident.room && (
                     <div>
                       <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                        Sala
+                        {t("details.room")}
                       </label>
                       <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <p className="text-slate-900 dark:text-white font-medium">
@@ -820,7 +854,7 @@ export default function IncidentsPage() {
                   {selectedIncident.item && (
                     <div>
                       <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                        Item
+                        {t("details.item")}
                       </label>
                       <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <p className="text-slate-900 dark:text-white font-medium">
@@ -838,7 +872,7 @@ export default function IncidentsPage() {
               {selectedIncident.resolutionNotes && (
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Notas de Resolução
+                    {t("details.resolutionNotes")}
                   </label>
                   <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white whitespace-pre-wrap">
                     {selectedIncident.resolutionNotes}
@@ -852,7 +886,7 @@ export default function IncidentsPage() {
                   onClick={() => setIsDetailsModalOpen(false)}
                   className="flex-1"
                 >
-                  Fechar
+                  {t("actions.close")}
                 </Button>
                 {canEditIncident(selectedIncident) && (
                   <Button
@@ -861,7 +895,7 @@ export default function IncidentsPage() {
                     onClick={() => handleEditIncident(selectedIncident)}
                   >
                     <Edit className="w-4 h-4 mr-2" />
-                    Editar
+                    {t("actions.edit")}
                   </Button>
                 )}
               </div>
@@ -873,7 +907,7 @@ export default function IncidentsPage() {
         <Modal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          title="Editar Incidente"
+          title={t("form.update")}
           size="xl"
         >
           {selectedIncident && (
@@ -886,7 +920,7 @@ export default function IncidentsPage() {
                 
                 // Validar se notas de resolução são obrigatórias quando status é RESOLVED
                 if (status === "RESOLVED" && (!resolutionNotes || resolutionNotes.trim() === "")) {
-                  alert("As notas de resolução são obrigatórias quando o incidente é marcado como resolvido.");
+                  showError(t("form.resolutionNotesRequired"));
                   return;
                 }
 
@@ -904,7 +938,7 @@ export default function IncidentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Título
+                    {t("form.titleLabel")}
                   </label>
                   <input
                     type="text"
@@ -916,7 +950,7 @@ export default function IncidentsPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Status
+                    {t("form.statusLabel")}
                   </label>
                   <select
                     name="status"
@@ -924,10 +958,10 @@ export default function IncidentsPage() {
                     onChange={(e) => setEditFormStatus(e.target.value)}
                     className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="REPORTED">Reportado</option>
-                    <option value="IN_ANALYSIS">Em Análise</option>
-                    <option value="IN_PROGRESS">Em Andamento</option>
-                    <option value="RESOLVED">Resolvido</option>
+                    <option value="REPORTED">{t("filters.reported")}</option>
+                    <option value="IN_ANALYSIS">{t("filters.inAnalysis")}</option>
+                    <option value="IN_PROGRESS">{t("filters.inProgress")}</option>
+                    <option value="RESOLVED">{t("filters.resolved")}</option>
                   </select>
                 </div>
               </div>
@@ -935,24 +969,24 @@ export default function IncidentsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Prioridade
+                    {t("form.priorityLabel")}
                   </label>
                   <select
                     name="priority"
                     defaultValue={selectedIncident.priority}
                     className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="LOW">Baixa</option>
-                    <option value="MEDIUM">Média</option>
-                    <option value="HIGH">Alta</option>
-                    <option value="CRITICAL">Crítica</option>
+                    <option value="LOW">{t("filters.low")}</option>
+                    <option value="MEDIUM">{t("filters.medium")}</option>
+                    <option value="HIGH">{t("filters.high")}</option>
+                    <option value="CRITICAL">{t("filters.critical")}</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Descrição
+                  {t("form.descriptionLabel")}
                 </label>
                 <textarea
                   name="description"
@@ -965,10 +999,10 @@ export default function IncidentsPage() {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Notas de Resolução {editFormStatus === "RESOLVED" && <span className="text-red-500">*</span>}
+                  {t("form.resolutionNotesLabel")} {editFormStatus === "RESOLVED" && <span className="text-red-500">*</span>}
                   {editFormStatus === "RESOLVED" && (
                     <span className="text-xs text-blue-600 dark:text-blue-400 ml-1">
-                      (Obrigatório para incidentes resolvidos)
+                      ({t("form.resolutionNotesRequired")})
                     </span>
                   )}
                 </label>
@@ -977,8 +1011,8 @@ export default function IncidentsPage() {
                   defaultValue={selectedIncident.resolutionNotes || ""}
                   rows={3}
                   placeholder={editFormStatus === "RESOLVED" 
-                    ? "Descreva como o problema foi resolvido..." 
-                    : "Adicione notas sobre a resolução do incidente..."}
+                    ? t("form.resolutionNotesPlaceholder") 
+                    : t("form.resolutionNotesPlaceholder")}
                   className={`w-full p-3 bg-slate-100 dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 ${
                     editFormStatus === "RESOLVED"
                       ? "border-blue-300 dark:border-blue-600 focus:ring-blue-500"
@@ -996,8 +1030,8 @@ export default function IncidentsPage() {
                       </svg>
                     </div>
                     <div className="text-sm text-green-800 dark:text-green-200">
-                      <p className="font-medium">Finalizando incidente</p>
-                      <p>Certifique-se de detalhar a solução aplicada nas notas de resolução para referência futura.</p>
+                      <p className="font-medium">{t("form.finalizingIncident")}</p>
+                      <p>{t("form.finalizingIncidentDescription")}</p>
                     </div>
                   </div>
                 </div>
@@ -1011,10 +1045,10 @@ export default function IncidentsPage() {
                   className="flex-1"
                   disabled={editLoading}
                 >
-                  Cancelar
+                  {t("actions.cancel")}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={editLoading}>
-                  {editLoading ? "Salvando..." : editFormStatus === "RESOLVED" ? "Resolver Incidente" : "Salvar Alterações"}
+                  {editLoading ? t("form.saving") : editFormStatus === "RESOLVED" ? t("form.resolveIncident") : t("form.saveChanges")}
                 </Button>
               </div>
             </form>
@@ -1028,7 +1062,7 @@ export default function IncidentsPage() {
             setIsCreateModalOpen(false);
             setSelectedRoomId("");
           }}
-          title="Reportar Novo Incidente"
+          title={t("form.title")}
           size="xl"
         >
           <form
@@ -1037,7 +1071,7 @@ export default function IncidentsPage() {
               
               // Verificar se o usuário está logado
               if (!session?.user?.id) {
-                alert("Você precisa estar logado para reportar um incidente.");
+                alert(t("feedback.authError"));
                 return;
               }
 
@@ -1057,7 +1091,7 @@ export default function IncidentsPage() {
 
               // Validar que pelo menos uma sala ou item foi selecionado
               if (!finalRoomId && !finalItemId) {
-                alert("Por favor, selecione uma sala ou um item para associar ao incidente.");
+                showError(t("form.warningDescription"));
                 return;
               }
 
@@ -1074,30 +1108,6 @@ export default function IncidentsPage() {
                 itemId: finalItemId,
                 reportedById: session.user.id,
               };
-
-              // Debug log
-              console.log("🐛 Debug - Criação de incidente:", {
-                formData: {
-                  title: formData.get("title"),
-                  description: formData.get("description"),
-                  priority: formData.get("priority"),
-                  category: formData.get("category"),
-                  roomIdRaw: roomIdValue,
-                  itemIdRaw: itemIdValue,
-                },
-                processed: {
-                  roomId: roomId,
-                  itemId: itemId,
-                  finalRoomId: finalRoomId,
-                  finalItemId: finalItemId,
-                },
-                payload: newIncidentData,
-                session: {
-                  userId: session.user.id,
-                  email: session.user.email
-                }
-              });
-
               handleCreateIncident(newIncidentData);
             }}
             className="space-y-6"
@@ -1105,19 +1115,19 @@ export default function IncidentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Título *
+                  {t("form.titleLabel")} *
                 </label>
                 <input
                   type="text"
                   name="title"
                   required
-                  placeholder="Descreva brevemente o problema..."
+                  placeholder={t("form.titlePlaceholder")}
                   className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Prioridade *
+                  {t("form.priorityLabel")} *
                 </label>
                 <select
                   name="priority"
@@ -1125,27 +1135,27 @@ export default function IncidentsPage() {
                   defaultValue="MEDIUM"
                   className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="LOW">Baixa</option>
-                  <option value="MEDIUM">Média</option>
-                  <option value="HIGH">Alta</option>
-                  <option value="CRITICAL">Crítica</option>
+                  <option value="LOW">{t("filters.low")}</option>
+                  <option value="MEDIUM">{t("filters.medium")}</option>
+                  <option value="HIGH">{t("filters.high")}</option>
+                  <option value="CRITICAL">{t("filters.critical")}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                Categoria *
+                {t("form.categoryLabel")} *
               </label>
               <select
                 name="category"
                 required
                 className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Selecione uma categoria</option>
+                <option value="">{t("form.selectCategory")}</option>
                 {INCIDENT_CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>
-                    {INCIDENT_CATEGORY_LABELS[cat]}
+                    {getCategoryLabel(cat)}
                   </option>
                 ))}
               </select>
@@ -1153,13 +1163,13 @@ export default function IncidentsPage() {
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                Descrição *
+                {t("form.descriptionLabel")} *
               </label>
               <textarea
                 name="description"
                 required
                 rows={4}
-                placeholder="Descreva detalhadamente o problema, incluindo quando começou, sintomas e tentativas de resolução..."
+                placeholder={t("form.descriptionPlaceholder")}
                 className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -1167,7 +1177,7 @@ export default function IncidentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Sala <span className="text-sm text-slate-500 dark:text-gray-400">(escolha uma sala OU um item)</span>
+                  {t("form.roomLabel")} <span className="text-sm text-slate-500 dark:text-gray-400">({t("form.selectRoomOrItem")})</span>
                 </label>
                 <select
                   name="roomId"
@@ -1181,7 +1191,7 @@ export default function IncidentsPage() {
                   }}
                   className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">Selecione uma sala...</option>
+                  <option value="">{t("form.selectRoom")}</option>
                   {rooms.map(room => (
                     <option key={room.id} value={room.id}>
                       {room.name} - {room.description}
@@ -1191,10 +1201,10 @@ export default function IncidentsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Item/Equipamento
+                  {t("form.itemLabel")}
                   {selectedRoomId && getFilteredItems().length === 0 && (
                     <span className="text-xs text-amber-600 dark:text-amber-400 ml-1">
-                      - Nenhum item cadastrado nesta sala
+                      - {t("form.noItemRegisteredInThisRoom")}
                     </span>
                   )}
                 </label>
@@ -1205,8 +1215,8 @@ export default function IncidentsPage() {
                 >
                   <option value="">
                     {selectedRoomId && getFilteredItems().length === 0
-                      ? "Nenhum item disponível nesta sala"
-                      : "Nenhum item específico"}
+                      ? t("form.noItemAvailableInThisRoom")
+                      : t("form.noSpecificItem")}
                   </option>
                   {getFilteredItems().map(item => (
                     <option key={item.id} value={item.id}>
@@ -1226,8 +1236,8 @@ export default function IncidentsPage() {
                   </svg>
                 </div>
                 <div className="text-sm text-amber-800 dark:text-amber-200">
-                  <p className="font-medium">⚠️ Localização obrigatória:</p>
-                  <p>Você deve selecionar pelo menos uma <strong>sala</strong> ou um <strong>item específico</strong>. Se selecionar um item, a sala será automaticamente determinada.</p>
+                  <p className="font-medium">{t("form.warning")}:</p>
+                  <p>{t("form.warningDescription")}</p>
                 </div>
               </div>
             </div>
@@ -1248,12 +1258,8 @@ export default function IncidentsPage() {
                   </svg>
                 </div>
                 <div className="text-sm text-blue-800 dark:text-blue-200">
-                  <p className="font-medium">Dica:</p>
-                  <p>
-                    Seja específico na descrição para agilizar a resolução.
-                    Inclua horários, mensagens de erro e passos para reproduzir
-                    o problema.
-                  </p>
+                  <p className="font-medium">{t("form.tip")}:</p>
+                  <p>{t("form.tipDescription")}</p>
                 </div>
               </div>
             </div>
@@ -1266,10 +1272,10 @@ export default function IncidentsPage() {
                 className="flex-1"
                 disabled={createLoading}
               >
-                Cancelar
+                {t("form.cancel")}
               </Button>
               <Button type="submit" className="flex-1" disabled={createLoading}>
-                {createLoading ? "Criando..." : "Reportar Incidente"}
+                {createLoading ? t("form.creating") : t("form.create")}
               </Button>
             </div>
           </form>

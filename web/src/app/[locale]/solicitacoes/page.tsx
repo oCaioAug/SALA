@@ -12,6 +12,7 @@ import {
   User as UserIcon,
   XCircle,
 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -28,6 +29,9 @@ import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { ReservationWithDetails, Room, User } from "@/lib/types";
 
 const SolicitacoesPage: React.FC = () => {
+  const t = useTranslations("Solicitacoes");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale();
   const [currentPage, setCurrentPage] = useState("solicitacoes");
   const [solicitacoes, setSolicitacoes] = useState<ReservationWithDetails[]>(
     []
@@ -206,7 +210,7 @@ const SolicitacoesPage: React.FC = () => {
       await approveSolicitacao(solicitacao.id);
     } catch (error) {
       console.error("Erro ao aprovar solicitação:", error);
-      showError("Erro ao aprovar solicitação");
+      showError(t("feedback.errorApprove"));
     } finally {
       setActionLoading(null);
     }
@@ -218,7 +222,7 @@ const SolicitacoesPage: React.FC = () => {
       await rejectSolicitacao(solicitacao.id);
     } catch (error) {
       console.error("Erro ao rejeitar solicitação:", error);
-      showError("Erro ao rejeitar solicitação");
+      showError(t("feedback.errorReject"));
     } finally {
       setActionLoading(null);
     }
@@ -235,7 +239,7 @@ const SolicitacoesPage: React.FC = () => {
 
     // Atualizar lista
     setSolicitacoes(prev => prev.filter(s => s.id !== solicitacaoId));
-    showSuccess("Solicitação aprovada com sucesso!");
+    showSuccess(t("feedback.successApprove"));
     setIsDetailsModalOpen(false);
   };
 
@@ -250,7 +254,7 @@ const SolicitacoesPage: React.FC = () => {
 
     // Atualizar lista
     setSolicitacoes(prev => prev.filter(s => s.id !== solicitacaoId));
-    showSuccess("Solicitação rejeitada!");
+    showSuccess(t("feedback.successReject"));
     setIsDetailsModalOpen(false);
   };
 
@@ -272,17 +276,20 @@ const SolicitacoesPage: React.FC = () => {
 
       setIsConflictModalOpen(false);
       setConflictData(null);
-      showInfo("Solicitação aprovada! Reservas conflitantes foram canceladas.");
+      showInfo(t("feedback.forceApproveSuccess"));
     } catch (error) {
       console.error("Erro ao aprovar com conflito:", error);
-      showError("Erro ao aprovar solicitação");
+      showError(t("feedback.errorForceApprove"));
     } finally {
       setActionLoading(null);
     }
   };
 
   const formatDateTime = (date: Date): string => {
-    return date.toLocaleString("pt-BR", {
+    // Converter locale do next-intl para formato do Intl
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    
+    return date.toLocaleString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -307,18 +314,18 @@ const SolicitacoesPage: React.FC = () => {
   const getStatusText = (status: string): string => {
     switch (status) {
       case "PENDING":
-        return "Pendente";
+        return t("card.pending");
       case "APPROVED":
-        return "Aprovada";
+        return t("card.approved");
       case "REJECTED":
-        return "Rejeitada";
+        return t("card.rejected");
       default:
-        return "Desconhecido";
+        return t("card.unknown");
     }
   };
 
   if (loading) {
-    return <LoadingPage message="Carregando solicitações..." />;
+    return <LoadingPage message={t("loading")} />;
   }
 
   if (error) {
@@ -326,7 +333,7 @@ const SolicitacoesPage: React.FC = () => {
       <ErrorPage
         error={error}
         onRetry={() => window.location.reload()}
-        retryLabel="Tentar Novamente"
+        retryLabel={tCommon("retry")}
       />
     );
   }
@@ -349,10 +356,10 @@ const SolicitacoesPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                Solicitações
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Aprove ou rejeite solicitações de reserva
+                {t("empty.description")}
               </p>
             </div>
           </div>
@@ -363,7 +370,7 @@ const SolicitacoesPage: React.FC = () => {
                 {solicitacoes.length}
               </p>
               <p className="text-sm text-slate-600 dark:text-gray-400">
-                Pendentes
+                {t("statusFilter.pending")}
               </p>
             </div>
           </div>
@@ -375,7 +382,7 @@ const SolicitacoesPage: React.FC = () => {
             <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Buscar por usuário, sala ou propósito..."
+              placeholder={t("searchPlaceholder")}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -387,10 +394,10 @@ const SolicitacoesPage: React.FC = () => {
             onChange={e => setStatusFilter(e.target.value)}
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="PENDING">Pendentes</option>
-            <option value="all">Todas</option>
-            <option value="APPROVED">Aprovadas</option>
-            <option value="REJECTED">Rejeitadas</option>
+            <option value="PENDING">{t("statusFilter.pending")}</option>
+            <option value="all">{t("statusFilter.all")}</option>
+            <option value="APPROVED">{t("statusFilter.approved")}</option>
+            <option value="REJECTED">{t("statusFilter.rejected")}</option>
           </select>
         </div>
       </div>
@@ -401,12 +408,8 @@ const SolicitacoesPage: React.FC = () => {
           icon={
             <ClipboardList className="w-8 h-8 text-slate-500 dark:text-gray-400" />
           }
-          title="Nenhuma solicitação encontrada"
-          description={
-            searchTerm || statusFilter !== "PENDING"
-              ? "Não há solicitações que correspondam aos filtros selecionados."
-              : "Não há solicitações pendentes no momento."
-          }
+          title={t("empty.title")}
+          description={t("empty.description")}
         />
       ) : (
         <div className="space-y-4">
@@ -515,14 +518,14 @@ const SolicitacoesPage: React.FC = () => {
       <Modal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
-        title="Detalhes da Solicitação"
+        title={t("modal.details")}
       >
         {selectedSolicitacao && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Sala
+                  {t("modal.room")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Building2 className="w-4 h-4 text-blue-400" />
@@ -535,7 +538,7 @@ const SolicitacoesPage: React.FC = () => {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Usuário
+                  {t("modal.user")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <UserIcon className="w-4 h-4 text-green-400" />
@@ -549,7 +552,7 @@ const SolicitacoesPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Início
+                  {t("modal.start")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-orange-400" />
@@ -561,7 +564,7 @@ const SolicitacoesPage: React.FC = () => {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Fim
+                  {t("modal.end")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-red-400" />
@@ -575,7 +578,7 @@ const SolicitacoesPage: React.FC = () => {
             {selectedSolicitacao.purpose && (
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Propósito
+                  {t("modal.purpose")}
                 </label>
                 <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
                   {selectedSolicitacao.purpose}
@@ -584,9 +587,9 @@ const SolicitacoesPage: React.FC = () => {
             )}
 
             <div>
-              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                Status
-              </label>
+                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                  {t("modal.status")}
+                </label>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                   selectedSolicitacao.status
@@ -603,7 +606,7 @@ const SolicitacoesPage: React.FC = () => {
                   onClick={() => setIsDetailsModalOpen(false)}
                   className="flex-1"
                 >
-                  Fechar
+                  {t("modal.close")}
                 </Button>
                 <Button
                   onClick={() => handleApprove(selectedSolicitacao)}
@@ -615,7 +618,7 @@ const SolicitacoesPage: React.FC = () => {
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Aprovar
+                      {t("card.approve")}
                     </>
                   )}
                 </Button>
@@ -630,7 +633,7 @@ const SolicitacoesPage: React.FC = () => {
                   ) : (
                     <>
                       <XCircle className="w-4 h-4 mr-2" />
-                      Rejeitar
+                      {t("card.reject")}
                     </>
                   )}
                 </Button>
@@ -644,7 +647,7 @@ const SolicitacoesPage: React.FC = () => {
       <Modal
         isOpen={isConflictModalOpen}
         onClose={() => setIsConflictModalOpen(false)}
-        title="Conflito de Horário Detectado"
+        title={t("conflict.title")}
         size="lg"
       >
         {conflictData && (
@@ -653,11 +656,10 @@ const SolicitacoesPage: React.FC = () => {
               <AlertTriangle className="w-6 h-6 text-red-400" />
               <div>
                 <h3 className="font-semibold text-red-400">
-                  Conflito Detectado!
+                  {t("conflict.title")}
                 </h3>
                 <p className="text-sm text-gray-300">
-                  Esta sala já está reservada no mesmo horário por outro
-                  usuário.
+                  {t("conflict.message")}
                 </p>
               </div>
             </div>
@@ -697,7 +699,7 @@ const SolicitacoesPage: React.FC = () => {
                 onClick={() => setIsConflictModalOpen(false)}
                 className="flex-1"
               >
-                Cancelar
+                {t("conflict.cancel")}
               </Button>
               <Button
                 onClick={handleForceApprove}
@@ -709,7 +711,7 @@ const SolicitacoesPage: React.FC = () => {
                 ) : (
                   <>
                     <AlertTriangle className="w-4 h-4 mr-2" />
-                    Aprovar Mesmo Assim
+                    {t("conflict.forceApprove")}
                   </>
                 )}
               </Button>

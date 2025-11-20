@@ -7,6 +7,7 @@ import {
   Clock,
   User as UserIcon,
 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -37,6 +38,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
   onCancel,
   loading = false,
 }) => {
+  const t = useTranslations("ReservationForm");
+  const locale = useLocale();
   const [formData, setFormData] = useState({
     userId: "",
     roomId: selectedRoomId || "",
@@ -81,19 +84,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.userId) {
-      newErrors.userId = "Usuário é obrigatório";
+      newErrors.userId = t("errors.userRequired");
     }
 
     if (!formData.roomId) {
-      newErrors.roomId = "Sala é obrigatória";
+      newErrors.roomId = t("errors.roomRequired");
     }
 
     if (!formData.startTime) {
-      newErrors.startTime = "Horário de início é obrigatório";
+      newErrors.startTime = t("errors.startRequired");
     }
 
     if (!formData.endTime) {
-      newErrors.endTime = "Horário de fim é obrigatório";
+      newErrors.endTime = t("errors.endRequired");
     }
 
     if (formData.startTime && formData.endTime) {
@@ -101,18 +104,18 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       const end = new Date(formData.endTime);
 
       if (start >= end) {
-        newErrors.endTime = "Horário de fim deve ser posterior ao início";
+        newErrors.endTime = t("errors.endAfterStart");
       }
 
       if (start < new Date()) {
-        newErrors.startTime = "Horário de início não pode ser no passado";
+        newErrors.startTime = t("errors.startNotPast");
       }
 
       // Verificar se a duração não é muito longa (máximo 30 dias)
       const duration =
         (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
       if (duration > 30) {
-        newErrors.endTime = "Reserva não pode exceder 30 dias";
+        newErrors.endTime = t("errors.maxDuration");
       }
     }
 
@@ -168,9 +171,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
 
       if (diffDays > 1) {
-        return `${diffDays} dias`;
+        return t("duration.days", { count: diffDays });
       } else {
-        return `${diffHours} horas`;
+        return t("duration.hours", { count: diffHours });
       }
     }
     return "";
@@ -184,7 +187,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
   const formatSelectedDate = () => {
     if (!selectedDate) return "";
-    return selectedDate.toLocaleDateString("pt-BR", {
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    return selectedDate.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "2-digit",
       month: "long",
@@ -200,7 +204,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           <div className="flex items-center gap-2 text-blue-400">
             <Calendar className="w-4 h-4" />
             <span className="text-sm font-medium">
-              Agendando para: {formatSelectedDate()}
+              {t("schedulingFor")} {formatSelectedDate()}
             </span>
           </div>
         </div>
@@ -209,7 +213,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Usuário */}
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Usuário *
+          {t("user")} *
         </label>
         <div className="relative">
           <UserIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -222,7 +226,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             }`}
             required
           >
-            <option value="">Selecione um usuário</option>
+            <option value="">{t("selectUser")}</option>
             {users.map(user => (
               <option key={user.id} value={user.id}>
                 {user.name} ({user.email})
@@ -241,7 +245,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Sala */}
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Sala *
+          {t("room")} *
         </label>
         <div className="relative">
           <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -254,7 +258,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             }`}
             required
           >
-            <option value="">Selecione uma sala</option>
+            <option value="">{t("selectRoom")}</option>
             {getAvailableRooms().map(room => (
               <option key={room.id} value={room.id}>
                 {room.name} {room.capacity && `(${room.capacity} pessoas)`}
@@ -274,7 +278,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium text-gray-300 mb-2 block">
-            Início *
+            {t("start")} *
           </label>
           <div className="relative">
             <Clock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -299,7 +303,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
         <div>
           <label className="text-sm font-medium text-gray-300 mb-2 block">
-            Fim *
+            {t("end")} *
           </label>
           <div className="relative">
             <Clock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -329,7 +333,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           <div className="flex items-center gap-2 text-blue-400">
             <Clock className="w-4 h-4" />
             <span className="text-sm font-medium">
-              Duração da reserva: {calculateDuration()}
+              {t("durationLabel")} {calculateDuration()}
             </span>
           </div>
         </div>
@@ -338,13 +342,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Propósito */}
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Propósito da Reserva
+          {t("purpose")}
         </label>
         <textarea
           name="purpose"
           value={formData.purpose}
           onChange={handleInputChange}
-          placeholder="Descreva o propósito da reserva (opcional)"
+          placeholder={t("purposePlaceholder")}
           className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           rows={3}
         />
@@ -353,16 +357,14 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Informações adicionais */}
       <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
         <h4 className="text-sm font-medium text-gray-300 mb-2">
-          Informações Importantes:
+          {t("importantInfo")}
         </h4>
         <ul className="text-xs text-gray-400 space-y-1">
-          <li>• Reservas podem ser feitas com até 1 hora de antecedência</li>
-          <li>• Duração máxima de 30 dias por reserva</li>
-          <li>• Múltiplas salas podem ser reservadas no mesmo dia</li>
-          <li>
-            • A sala será automaticamente marcada como &quot;Reservada&quot;
-          </li>
-          <li>• Você receberá confirmação por email</li>
+          <li>• {t("info1")}</li>
+          <li>• {t("info2")}</li>
+          <li>• {t("info3")}</li>
+          <li>• {t("info4")}</li>
+          <li>• {t("info5")}</li>
         </ul>
       </div>
 
@@ -373,7 +375,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           className="flex-1"
           disabled={isSubmitting || loading}
         >
-          {isSubmitting ? "Criando Reserva..." : "Criar Reserva"}
+          {isSubmitting ? t("creating") : t("create")}
         </Button>
         <Button
           type="button"
@@ -382,7 +384,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           className="flex-1"
           disabled={isSubmitting}
         >
-          Cancelar
+          {t("cancel")}
         </Button>
       </div>
     </form>

@@ -24,8 +24,11 @@ import { Modal } from "@/components/ui/Modal";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { ReservationWithUser, Room, User } from "@/lib/types";
+import { useTranslations, useLocale } from "next-intl";
 
 const AgendamentosPage: React.FC = () => {
+  const t = useTranslations("SchedulesPage");
+  const locale = useLocale();
   const [currentPage, setCurrentPage] = useState("agendamentos");
   const [reservations, setReservations] = useState<ReservationWithUser[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -175,10 +178,10 @@ const AgendamentosPage: React.FC = () => {
       setIsCreateModalOpen(false);
 
       // Mostrar sucesso
-      showSuccess("Reserva criada com sucesso!");
+      showSuccess(t("success.reservationCreated"));
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Erro ao criar reserva";
+        err instanceof Error ? err.message : t("error.reservationCreation");
       showError(errorMessage);
     } finally {
       setCreateReservationLoading(false);
@@ -186,7 +189,7 @@ const AgendamentosPage: React.FC = () => {
   };
 
   const handleDeleteReservation = async (reservationId: string) => {
-    if (!confirm("Tem certeza que deseja cancelar esta reserva?")) return;
+    if (!confirm(t("confirmations.deleteReservation"))) return;
 
     try {
       const response = await fetch(`/api/reservations/${reservationId}`, {
@@ -198,17 +201,20 @@ const AgendamentosPage: React.FC = () => {
       }
 
       setReservations(prev => prev.filter(r => r.id !== reservationId));
-      showSuccess("Reserva cancelada com sucesso!");
+      showSuccess(t("success.reservationCancelled"));
       setIsDetailsModalOpen(false);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Erro ao cancelar reserva";
+        err instanceof Error ? err.message : t("error.reservationCancellation");
       showError(errorMessage);
     }
   };
 
   const formatDateTime = (date: Date): string => {
-    return date.toLocaleString("pt-BR", {
+    // Converter locale do next-intl para formato do Intl
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    
+    return date.toLocaleString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -235,20 +241,20 @@ const AgendamentosPage: React.FC = () => {
   const getStatusText = (status: string): string => {
     switch (status) {
       case "APPROVED":
-        return "Aprovada";
+        return t("statusFilter.approved");
       case "ACTIVE":
-        return "Ativa";
+        return t("statusFilter.active");
       case "CANCELLED":
-        return "Cancelada";
+        return t("statusFilter.cancelled");
       case "COMPLETED":
-        return "Concluída";
+        return t("statusFilter.completed");
       default:
-        return "Desconhecido";
+        return t("statusFilter.unknown");
     }
   };
 
   if (loading) {
-    return <LoadingPage message="Carregando agendamentos..." />;
+    return <LoadingPage message={t("loading")} />;
   }
 
   if (error) {
@@ -256,7 +262,7 @@ const AgendamentosPage: React.FC = () => {
       <ErrorPage
         error={error}
         onRetry={() => window.location.reload()}
-        retryLabel="Tentar Novamente"
+        retryLabel={t("retryLabel")}
       />
     );
   }
@@ -277,17 +283,17 @@ const AgendamentosPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                Agendamentos
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Visualize e gerencie todos os agendamentos das salas
+                {t("description")}
               </p>
             </div>
           </div>
 
           <Button onClick={handleCreateReservation} className="px-6 py-3">
             <Plus className="w-5 h-5 mr-2" />
-            Nova Reserva
+            {t("newReservation")}
           </Button>
         </div>
 
@@ -297,7 +303,7 @@ const AgendamentosPage: React.FC = () => {
             <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Buscar por usuário, sala ou propósito..."
+              placeholder={t("searchPlaceholder")}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -309,11 +315,11 @@ const AgendamentosPage: React.FC = () => {
             onChange={e => setStatusFilter(e.target.value)}
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Todos os Status</option>
-            <option value="APPROVED">Aprovadas</option>
-            <option value="ACTIVE">Ativas</option>
-            <option value="CANCELLED">Canceladas</option>
-            <option value="COMPLETED">Concluídas</option>
+            <option value="all">{t("statusFilter.all")}</option>
+            <option value="APPROVED">{t("statusFilter.approved")}</option>
+            <option value="ACTIVE">{t("statusFilter.active")}</option>
+            <option value="CANCELLED">{t("statusFilter.cancelled")}</option>
+            <option value="COMPLETED">{t("statusFilter.completed")}</option>
           </select>
         </div>
       </div>
@@ -337,16 +343,15 @@ const AgendamentosPage: React.FC = () => {
             <Clock className="w-5 h-5 text-blue-400" />
             <div>
               <CardTitle className="text-xl">
-                Reservas de{" "}
-                {selectedDate.toLocaleDateString("pt-BR", {
+                {t("reservationsOfTheDay")} {" "}
+                {selectedDate.toLocaleDateString(locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale, {
                   weekday: "long",
                   day: "2-digit",
                   month: "long",
                 })}
               </CardTitle>
               <p className="text-slate-600 dark:text-gray-400 text-sm">
-                {getReservationsForDate(selectedDate).length} reserva(s)
-                encontrada(s)
+                {getReservationsForDate(selectedDate).length} {t("reservationsFound")}
               </p>
             </div>
           </div>
@@ -358,8 +363,8 @@ const AgendamentosPage: React.FC = () => {
               icon={
                 <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
               }
-              title="Nenhuma reserva neste dia"
-              description="Não há agendamentos para a data selecionada."
+              title={t("noReservationsForTheDay")}
+              description={t("noReservationsForTheDayDescription")}
             />
           ) : (
             <div className="space-y-4">
@@ -377,7 +382,7 @@ const AgendamentosPage: React.FC = () => {
                       <div>
                         <h3 className="font-semibold text-slate-900 dark:text-white">
                           {rooms.find(r => r.id === reservation.roomId)?.name ||
-                            "Sala desconhecida"}
+                            t("unknownRoom")}
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
                           <div className="flex items-center gap-1">
@@ -430,27 +435,27 @@ const AgendamentosPage: React.FC = () => {
       <Modal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
-        title="Detalhes da Reserva"
+        title={t("modal.details")}
       >
         {selectedReservation && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Sala
+                  {t("room")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Building2 className="w-4 h-4 text-blue-400" />
                   <span className="text-slate-900 dark:text-white">
                     {rooms.find(r => r.id === selectedReservation.roomId)
-                      ?.name || "Sala desconhecida"}
+                      ?.name || t("unknownRoom")}
                   </span>
                 </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Usuário
+                  {t("user")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <UserIcon className="w-4 h-4 text-green-400" />
@@ -464,7 +469,7 @@ const AgendamentosPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Início
+                  {t("start")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-orange-400" />
@@ -476,7 +481,7 @@ const AgendamentosPage: React.FC = () => {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Fim
+                  {t("end")}
                 </label>
                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <Clock className="w-4 h-4 text-red-400" />
@@ -490,7 +495,7 @@ const AgendamentosPage: React.FC = () => {
             {selectedReservation.purpose && (
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  Propósito
+                  {t("purpose")}
                 </label>
                 <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
                   {selectedReservation.purpose}
@@ -500,7 +505,7 @@ const AgendamentosPage: React.FC = () => {
 
             <div>
               <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                Status
+                {t("status")}
               </label>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -517,7 +522,7 @@ const AgendamentosPage: React.FC = () => {
                 onClick={() => setIsDetailsModalOpen(false)}
                 className="flex-1"
               >
-                Fechar
+                {t("close")}
               </Button>
               {(selectedReservation.status === "ACTIVE" ||
                 selectedReservation.status === "APPROVED") && (
@@ -529,7 +534,7 @@ const AgendamentosPage: React.FC = () => {
                   className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Cancelar Reserva
+                  {t("cancelReservation")}
                 </Button>
               )}
             </div>
@@ -541,7 +546,7 @@ const AgendamentosPage: React.FC = () => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Nova Reserva"
+        title={t("modal.create")}
         size="lg"
       >
         <ReservationForm

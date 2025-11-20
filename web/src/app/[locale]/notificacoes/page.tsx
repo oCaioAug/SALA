@@ -11,6 +11,7 @@ import {
   Info,
   XCircle,
 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 
@@ -42,6 +43,9 @@ interface Notification {
 }
 
 const NotificationPage: React.FC = () => {
+  const t = useTranslations("Notifications");
+  const locale = useLocale();
+  const tCommon = useTranslations("Common");
   const { data: session } = useSession();
   const [currentPage, setCurrentPage] = useState("notificacoes");
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -83,7 +87,7 @@ const NotificationPage: React.FC = () => {
 
       const response = await fetch(`/api/notifications?${params}`);
       if (!response.ok) {
-        throw new Error("Erro ao carregar notificações");
+        throw new Error(t("feedback.error"));
       }
 
       const data = await response.json();
@@ -123,7 +127,7 @@ const NotificationPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao marcar notificação como lida");
+        throw new Error(t("feedback.error"));
       }
 
       setNotifications(prev =>
@@ -131,11 +135,11 @@ const NotificationPage: React.FC = () => {
           notif.id === notificationId ? { ...notif, isRead: true } : notif
         )
       );
-      showSuccess("Notificação marcada como lida");
+      showSuccess(t("feedback.markReadSuccess"));
       triggerNotificationUpdate(); // Atualizar contador do header
     } catch (error) {
       console.error("Erro ao marcar como lida:", error);
-      showError("Erro ao marcar notificação como lida");
+      showError(t("feedback.error"));
     }
   };
 
@@ -150,15 +154,15 @@ const NotificationPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao marcar todas as notificações como lidas");
+        throw new Error(t("feedback.error"));
       }
 
       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
-      showSuccess("Todas as notificações foram marcadas como lidas");
+      showSuccess(t("feedback.markAllReadSuccess"));
       triggerNotificationUpdate(); // Atualizar contador do header
     } catch (error) {
       console.error("Erro ao marcar todas como lidas:", error);
-      showError("Erro ao marcar todas as notificações como lidas");
+      showError(t("feedback.error"));
     }
   };
 
@@ -184,19 +188,19 @@ const NotificationPage: React.FC = () => {
   const getNotificationTypeLabel = (type: string) => {
     switch (type) {
       case "SYSTEM_ANNOUNCEMENT":
-        return "Anúncio do Sistema";
+        return t("types.SYSTEM_ANNOUNCEMENT");
       case "RESERVATION_CREATED":
-        return "Nova Reserva";
+        return t("types.RESERVATION_CREATED");
       case "RESERVATION_APPROVED":
-        return "Reserva Aprovada";
+        return t("types.RESERVATION_APPROVED");
       case "RESERVATION_REJECTED":
-        return "Reserva Rejeitada";
+        return t("types.RESERVATION_REJECTED");
       case "RESERVATION_CANCELLED":
-        return "Reserva Cancelada";
+        return t("types.RESERVATION_CANCELLED");
       case "RESERVATION_REMINDER":
-        return "Lembrete de Reserva";
+        return t("types.RESERVATION_REMINDER");
       default:
-        return "Notificação";
+        return t("title");
     }
   };
 
@@ -207,15 +211,17 @@ const NotificationPage: React.FC = () => {
     const diffInHours = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
+    // Converter locale do next-intl para formato do Intl
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
 
     if (diffInHours < 1) {
-      return "Agora há pouco";
+      return t("timeAgo.justNow");
     } else if (diffInHours < 24) {
-      return `${diffInHours}h atrás`;
+      return t("timeAgo.hoursAgo", { count: diffInHours });
     } else if (diffInHours < 48) {
-      return "Ontem";
+      return t("timeAgo.yesterday");
     } else {
-      return date.toLocaleDateString("pt-BR", {
+      return date.toLocaleDateString(intlLocale, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -257,7 +263,7 @@ const NotificationPage: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   if (loading) {
-    return <LoadingPage message="Carregando notificações..." />;
+    return <LoadingPage message={t("loading")} />;
   }
 
   if (error) {
@@ -265,7 +271,7 @@ const NotificationPage: React.FC = () => {
       <ErrorPage
         error={error}
         onRetry={() => fetchNotifications()}
-        retryLabel="Tentar Novamente"
+        retryLabel={tCommon("retry")}
       />
     );
   }
@@ -288,14 +294,18 @@ const NotificationPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                Notificações
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
                 {unreadCount > 0
-                  ? `${unreadCount} não lida${unreadCount > 1 ? "s" : ""} de ${notifications.length} total`
+                  ? t("description.unreadCount", { 
+                      unread: unreadCount, 
+                      total: notifications.length,
+                      plural: unreadCount > 1 ? "s" : ""
+                    })
                   : notifications.length > 0
-                    ? `Todas as ${notifications.length} notificações foram lidas`
-                    : "Nenhuma notificação recebida"}
+                    ? t("description.allRead", { total: notifications.length })
+                    : t("description.none")}
               </p>
             </div>
           </div>
@@ -308,7 +318,7 @@ const NotificationPage: React.FC = () => {
                 fetchNotifications();
               }}
             >
-              🔄 Recarregar
+              {t("actions.reload")}
             </Button>
             {session?.user?.role === "ADMIN" && (
               <>
@@ -336,7 +346,7 @@ const NotificationPage: React.FC = () => {
                     }
                   }}
                 >
-                  🔍 Debug
+                  {t("actions.debug")}
                 </Button>
                 <Button
                   variant="outline"
@@ -352,7 +362,7 @@ const NotificationPage: React.FC = () => {
 
                       if (response.ok) {
                         const result = await response.json();
-                        showSuccess(`✅ ${result.message}`);
+                        showSuccess(t("feedback.testSuccess", { message: result.message }));
                         console.log("🧪 Resultado do teste:", result);
                         // Recarregar notificações
                         setTimeout(() => fetchNotifications(), 1000);
@@ -361,22 +371,22 @@ const NotificationPage: React.FC = () => {
                           .json()
                           .catch(() => ({}));
                         console.error("❌ Erro na resposta:", errorData);
-                        showError("Erro ao criar notificação de teste");
+                        showError(t("feedback.testError"));
                       }
                     } catch (error) {
                       console.error("❌ Erro na requisição:", error);
-                      showError("Erro ao criar notificação de teste");
+                      showError(t("feedback.testError"));
                     }
                   }}
                 >
-                  🧪 Testar Notificação
+                  {t("actions.test")}
                 </Button>
               </>
             )}
             {unreadCount > 0 && (
               <Button onClick={markAllAsRead}>
                 <CheckCheck className="w-4 h-4 mr-2" />
-                Marcar todas como lidas
+                {t("actions.markAllRead")}
               </Button>
             )}
           </div>
@@ -395,7 +405,7 @@ const NotificationPage: React.FC = () => {
                     {notifications.length}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-gray-400">
-                    Total
+                    {t("stats.total")}
                   </p>
                 </div>
               </div>
@@ -413,7 +423,7 @@ const NotificationPage: React.FC = () => {
                     {unreadCount}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-gray-400">
-                    Não lidas
+                    {t("stats.unread")}
                   </p>
                 </div>
               </div>
@@ -429,7 +439,7 @@ const NotificationPage: React.FC = () => {
                     {notifications.filter(n => n.isRead).length}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-gray-400">
-                    Lidas
+                    {t("stats.read")}
                   </p>
                 </div>
               </div>
@@ -468,10 +478,10 @@ const NotificationPage: React.FC = () => {
               }
               className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">Todas as notificações</option>
-              <option value="unread">Não lidas ({unreadCount})</option>
+              <option value="all">{t("filters.all")}</option>
+              <option value="unread">{t("filters.unread")} ({unreadCount})</option>
               <option value="read">
-                Lidas ({notifications.filter(n => n.isRead).length})
+                {t("filters.read")} ({notifications.filter(n => n.isRead).length})
               </option>
             </select>
           </div>
@@ -481,13 +491,13 @@ const NotificationPage: React.FC = () => {
             onChange={e => setTypeFilter(e.target.value)}
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Todos os tipos</option>
-            <option value="SYSTEM_ANNOUNCEMENT">Anúncios do Sistema</option>
-            <option value="RESERVATION_CREATED">Novas Reservas</option>
-            <option value="RESERVATION_APPROVED">Reservas Aprovadas</option>
-            <option value="RESERVATION_REJECTED">Reservas Rejeitadas</option>
-            <option value="RESERVATION_CANCELLED">Reservas Canceladas</option>
-            <option value="RESERVATION_REMINDER">Lembretes</option>
+            <option value="all">{t("types.all")}</option>
+            <option value="SYSTEM_ANNOUNCEMENT">{t("types.SYSTEM_ANNOUNCEMENT")}</option>
+            <option value="RESERVATION_CREATED">{t("types.RESERVATION_CREATED")}</option>
+            <option value="RESERVATION_APPROVED">{t("types.RESERVATION_APPROVED")}</option>
+            <option value="RESERVATION_REJECTED">{t("types.RESERVATION_REJECTED")}</option>
+            <option value="RESERVATION_CANCELLED">{t("types.RESERVATION_CANCELLED")}</option>
+            <option value="RESERVATION_REMINDER">{t("types.RESERVATION_REMINDER")}</option>
           </select>
         </div>
       </div>
@@ -499,22 +509,8 @@ const NotificationPage: React.FC = () => {
             icon={
               <Bell className="w-8 h-8 text-slate-500 dark:text-gray-400" />
             }
-            title={
-              filter === "unread"
-                ? "Nenhuma notificação não lida"
-                : filter === "read"
-                  ? "Nenhuma notificação lida"
-                  : "Nenhuma notificação encontrada"
-            }
-            description={
-              filter === "unread"
-                ? "Parabéns! Você leu todas as suas notificações."
-                : filter === "read"
-                  ? "Ainda não há notificações marcadas como lidas."
-                  : typeFilter !== "all"
-                    ? `Não há notificações do tipo "${getNotificationTypeLabel(typeFilter)}" para exibir.`
-                    : "Você ainda não recebeu nenhuma notificação. Quando houver atualizações importantes, elas aparecerão aqui."
-            }
+            title={t("empty.title")}
+            description={t("empty.description")}
           />
         ) : (
           notifications.map(notification => (

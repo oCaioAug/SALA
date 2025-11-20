@@ -14,7 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
-
+import { useLocale, useTranslations } from "next-intl";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -47,7 +47,8 @@ const UsersPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const { showSuccess, showError } = useApp();
-
+  const t = useTranslations("UsersPage");
+  const locale = useLocale();
   // Hook de navegação
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -78,7 +79,7 @@ const UsersPage: React.FC = () => {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.error || `Erro ${response.status}: ${response.statusText}`
+            errorData.error || `${t("error", { status: response.status, statusText: response.statusText })}`
           );
         }
 
@@ -87,9 +88,9 @@ const UsersPage: React.FC = () => {
       } catch (err) {
         console.error("Erro ao carregar usuários:", err);
         const errorMessage =
-          err instanceof Error ? err.message : "Erro desconhecido";
-        setError(errorMessage);
-        showError(errorMessage);
+          err instanceof Error ? err.message : t("errorUnknown");
+        setError(t("errorUnknown"));
+        showError(t("errorUnknown"));
       } finally {
         setLoading(false);
       }
@@ -131,7 +132,7 @@ const UsersPage: React.FC = () => {
         const errorData = await response.json().catch(() => ({}));
         console.error("❌ Erro na API:", errorData);
         throw new Error(
-          errorData.error || "Erro ao alterar permissão do usuário"
+          errorData.error || t("errorUserPermissionChange")
         );
       }
 
@@ -148,16 +149,16 @@ const UsersPage: React.FC = () => {
       );
 
       showSuccess(
-        `Usuário agora é ${
-          newRole === "ADMIN" ? "administrador" : "usuário comum"
-        }`
+        t("userNowIs", {
+          role: newRole === "ADMIN" ? t("admin") : t("user")
+        })
       );
     } catch (error) {
       console.error("❌ Erro ao alterar role:", error);
       showError(
         error instanceof Error
           ? error.message
-          : "Erro ao alterar permissão do usuário"
+          : t("errorUserPermissionChange")
       );
     } finally {
       setActionLoading(null);
@@ -171,19 +172,20 @@ const UsersPage: React.FC = () => {
       const data = await response.json();
       console.log("🧪 Teste da sessão:", data);
       if (response.ok) {
-        showSuccess("Sessão válida! Verifique o console para detalhes.");
+        showSuccess(t("sessionValid"));
       } else {
-        showError(`Erro na sessão: ${data.error}`);
+        showError(t("sessionError", { error: data.error }));
       }
     } catch (error) {
-      console.error("Erro ao testar sessão:", error);
-      showError("Erro ao testar sessão");
+      showError(t("sessionTestError"));
     }
   };
 
   // Formatação de data
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -198,13 +200,13 @@ const UsersPage: React.FC = () => {
           <div className="text-center">
             <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-white mb-2">
-              Acesso Negado
+              {t("accessDenied")}
             </h2>
             <p className="text-gray-400 mb-6">
-              Você precisa ser administrador para acessar esta página.
+              {t("accessDeniedDescription")}
             </p>
             <Link href="/dashboard">
-              <Button>Voltar ao Dashboard</Button>
+              <Button>{t("backToDashboard")}</Button>
             </Link>
           </div>
         </div>
@@ -234,10 +236,10 @@ const UsersPage: React.FC = () => {
                   </div>
                   <div>
                     <h1 className="text-3xl font-bold text-white mb-2">
-                      Gerenciamento de Usuários
+                      {t("title")}
                     </h1>
                     <p className="text-gray-400">
-                      Visualize e gerencie os usuários do sistema
+                      {t("description")}
                     </p>
                   </div>
                 </div>
@@ -248,13 +250,13 @@ const UsersPage: React.FC = () => {
                     onClick={testSession}
                     className="px-3 py-2 text-sm"
                   >
-                    🧪 Testar Sessão
+                    {t("testSession")}
                   </Button>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-white">
                       {users.length}
                     </p>
-                    <p className="text-sm text-gray-400">Usuários</p>
+                    <p className="text-sm text-gray-400">{t("stats.total")}</p>
                   </div>
                 </div>
               </div>
@@ -265,7 +267,7 @@ const UsersPage: React.FC = () => {
                   <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Buscar por nome ou email..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -277,9 +279,9 @@ const UsersPage: React.FC = () => {
                   onChange={e => setRoleFilter(e.target.value)}
                   className="px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="all">Todas as Funções</option>
-                  <option value="ADMIN">Administradores</option>
-                  <option value="USER">Usuários</option>
+                  <option value="all">{t("filters.allRoles")}</option>
+                  <option value="ADMIN">{t("filters.admin")}</option>
+                  <option value="USER">{t("filters.user")}</option>
                 </select>
               </div>
 
@@ -295,7 +297,7 @@ const UsersPage: React.FC = () => {
                         {users.length}
                       </p>
                       <p className="text-sm text-slate-400 font-medium">
-                        Total de Usuários
+                        {t("stats.total")}
                       </p>
                     </div>
                   </div>
@@ -311,7 +313,7 @@ const UsersPage: React.FC = () => {
                         {users.filter(u => u.role === "ADMIN").length}
                       </p>
                       <p className="text-sm text-slate-400 font-medium">
-                        Administradores
+                        {t("stats.admin")}
                       </p>
                     </div>
                   </div>
@@ -327,7 +329,7 @@ const UsersPage: React.FC = () => {
                         {users.filter(u => u.role === "USER").length}
                       </p>
                       <p className="text-sm text-slate-400 font-medium">
-                        Usuários Comuns
+                        {t("stats.user")}
                       </p>
                     </div>
                   </div>
@@ -347,19 +349,19 @@ const UsersPage: React.FC = () => {
                     <Users className="w-8 h-8 text-red-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
-                    Erro ao carregar usuários
+                    {t("errorLoadingUsers")}
                   </h3>
                   <p className="text-gray-400 text-sm mb-6">{error}</p>
                   <Button onClick={() => window.location.reload()}>
-                    Tentar Novamente
+                    {t("tryAgain")}
                   </Button>
                 </div>
               </div>
             ) : filteredUsers.length === 0 ? (
               <EmptyState
                 icon={<Users className="w-8 h-8 text-gray-400" />}
-                title="Nenhum usuário encontrado"
-                description="Não há usuários que correspondam aos filtros selecionados."
+                title={t("noUsersFound")}
+                description={t("noUsersFoundDescription")}
               />
             ) : (
               <div className="space-y-4">
@@ -403,7 +405,7 @@ const UsersPage: React.FC = () => {
                           <div>
                             <div className="flex items-center gap-3">
                               <h3 className="text-lg font-semibold text-white">
-                                {user.name || "Usuário sem nome"}
+                                {user.name || t("userWithoutName")}
                               </h3>
                               <span
                                 className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -413,8 +415,8 @@ const UsersPage: React.FC = () => {
                                 }`}
                               >
                                 {user.role === "ADMIN"
-                                  ? "Administrador"
-                                  : "Usuário"}
+                                  ? t("adminRole")
+                                  : t("userRole")}
                               </span>
                             </div>
 
@@ -423,10 +425,10 @@ const UsersPage: React.FC = () => {
                                 <Mail className="w-4 h-4" />
                                 {user.email}
                               </div>
-                              <div className="flex items-center gap-1">
+                              {/* <div className="flex items-center gap-1">
                                 <Calendar className="w-4 h-4" />
-                                Criado em {formatDate(user.createdAt)}
-                              </div>
+                                {t("createdAt", { date: formatDate(user.createdAt) })}
+                              </div> */}
                             </div>
                           </div>
                         </div>
@@ -461,7 +463,7 @@ const UsersPage: React.FC = () => {
                               }`}
                               title={
                                 !isAdmin
-                                  ? "Apenas administradores podem alterar permissões"
+                                  ? t("onlyAdminsCanChangePermissions")
                                   : undefined
                               }
                             >
@@ -470,12 +472,12 @@ const UsersPage: React.FC = () => {
                               ) : user.role === "ADMIN" ? (
                                 <>
                                   <UserIcon className="w-4 h-4 mr-2" />
-                                  Remover Admin
+                                  {t("removeAdmin")}
                                 </>
                               ) : (
                                 <>
                                   <Crown className="w-4 h-4 mr-2" />
-                                  Tornar Admin
+                                  {t("makeAdmin")}
                                 </>
                               )}
                             </Button>
@@ -486,7 +488,7 @@ const UsersPage: React.FC = () => {
                             <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/20 rounded-full border border-blue-500/30">
                               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                               <span className="text-xs font-medium text-blue-300">
-                                Você
+                                {t("you")}
                               </span>
                             </div>
                           )}

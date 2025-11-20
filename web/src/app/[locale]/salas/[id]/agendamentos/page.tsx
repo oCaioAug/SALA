@@ -14,6 +14,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { ReservationForm } from "@/components/forms/ReservationForm";
@@ -37,6 +38,7 @@ import { ReservationWithUser, Room, User } from "@/lib/types";
 const RoomSchedulesPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
+  const locale = useLocale();
   const roomId = params.id as string;
 
   const [currentPage, setCurrentPage] = useState("salas");
@@ -200,7 +202,10 @@ const RoomSchedulesPage: React.FC = () => {
   };
 
   const formatDateTime = (date: Date): string => {
-    return date.toLocaleString("pt-BR", {
+    // Converter locale do next-intl para formato do Intl
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    
+    return date.toLocaleString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -210,7 +215,10 @@ const RoomSchedulesPage: React.FC = () => {
   };
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("pt-BR", {
+    // Converter locale do next-intl para formato do Intl
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    
+    return date.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "2-digit",
       month: "long",

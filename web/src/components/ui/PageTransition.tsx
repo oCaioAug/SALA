@@ -36,7 +36,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   if (isLoading || isTransitioning) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        {fallback || <LoadingSpinner size="lg" text="Carregando..." />}
+        {fallback || <LoadingSpinner size="lg" />}
       </div>
     );
   }

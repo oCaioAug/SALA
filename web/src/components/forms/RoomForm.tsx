@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,6 +14,9 @@ interface RoomFormProps {
 }
 
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
+  const t = useTranslations("Dashboard");
+  const tf = useTranslations("Dashboard.form");
+  
   const [formData, setFormData] = useState({
     name: room?.name || "",
     description: room?.description || "",
@@ -25,7 +31,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
 
     // Validação
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Nome é obrigatório";
+    if (!formData.name.trim()) newErrors.name = tf("nameRequired");
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -57,42 +63,42 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Input
-        label="Nome da Sala"
+        label={tf("nameLabel")}
         name="name"
         value={formData.name}
         onChange={handleInputChange}
-        placeholder="Ex: Laboratório de Robótica"
+        placeholder={tf("namePlaceholder")}
         error={errors.name}
         required
       />
 
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Descrição
+          {tf("descriptionLabel")}
         </label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleInputChange}
-          placeholder="Descreva a sala e seus equipamentos..."
+          placeholder={tf("descriptionPlaceholder")}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           rows={3}
         />
       </div>
 
       <Input
-        label="Capacidade"
+        label={tf("capacityLabel")}
         name="capacity"
         type="number"
         value={formData.capacity}
         onChange={handleInputChange}
-        placeholder="Ex: 30"
+        placeholder={tf("capacityPlaceholder")}
         min="1"
       />
 
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Status
+          {tf("statusLabel")}
         </label>
         <select
           name="status"
@@ -100,15 +106,15 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           onChange={handleInputChange}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="LIVRE">Livre</option>
-          <option value="EM_USO">Em Uso</option>
-          <option value="RESERVADO">Reservado</option>
+          <option value="LIVRE">{t("filters.statusFree")}</option>
+          <option value="EM_USO">{t("filters.statusInUse")}</option>
+          <option value="RESERVADO">{t("filters.statusReserved")}</option>
         </select>
       </div>
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1">
-          {room ? "Atualizar Sala" : "Criar Sala"}
+          {room ? tf("submitUpdate") : tf("submitCreate")}
         </Button>
         <Button
           type="button"
@@ -116,7 +122,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           onClick={onCancel}
           className="flex-1"
         >
-          Cancelar
+          {tf("cancel")}
         </Button>
       </div>
     </form>

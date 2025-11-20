@@ -1,10 +1,11 @@
 "use client";
 
 import { Building2, Grid, List, Plus, Search } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl"; // Importação correta
 
 import { RoomForm } from "@/components/forms/RoomForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -13,7 +14,6 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useApp } from "@/lib/hooks/useApp";
@@ -22,6 +22,9 @@ import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { Room } from "@/lib/types";
 
 const DashboardPage: React.FC = () => {
+  // Inicializando o hook de tradução com o namespace 'Dashboard'
+  const t = useTranslations("Dashboard");
+
   const { data: session } = useSession();
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -42,10 +45,8 @@ const DashboardPage: React.FC = () => {
     setLastFetchTime,
     showSuccess,
     showError,
-    showInfo,
   } = useApp();
 
-  // Hook de navegação
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -54,7 +55,6 @@ const DashboardPage: React.FC = () => {
   const { handleNotificationClick: globalNotificationHandler } =
     useNotificationHandler();
 
-  // Verificar autenticação
   useEffect(() => {
     if (!session) {
       setLoading(false);
@@ -62,7 +62,6 @@ const DashboardPage: React.FC = () => {
     }
   }, [session]);
 
-  // Carregar salas da API com cache
   useEffect(() => {
     const fetchRooms = async () => {
       if (!session?.user?.email) return;
@@ -71,9 +70,8 @@ const DashboardPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Verificar se temos dados em cache e se não estão expirados (5 minutos)
         const now = Date.now();
-        const cacheExpiry = 5 * 60 * 1000; // 5 minutos
+        const cacheExpiry = 5 * 60 * 1000;
 
         if (roomsCache.length > 0 && now - lastFetchTime < cacheExpiry) {
           setRooms(roomsCache);
@@ -90,16 +88,13 @@ const DashboardPage: React.FC = () => {
         }
         const data = await response.json();
 
-        // Atualizar cache e estado
         setRooms(data);
         setRoomsCache(data);
         setLastFetchTime(now);
       } catch (err) {
         console.error("Erro ao carregar salas:", err);
         const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Erro desconhecido ao carregar salas";
+          err instanceof Error ? err.message : t("feedback.errorGeneric"); // Tradução de erro genérico
         setError(errorMessage);
         showError(errorMessage);
       } finally {
@@ -108,9 +103,8 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchRooms();
-  }, [session?.user?.email, roomsCache, lastFetchTime, showError]); // Dependências corretas
+  }, [session?.user?.email, roomsCache, lastFetchTime, showError, t]);
 
-  // Funções auxiliares
   const filteredRooms = rooms.filter((room: any) => {
     const matchesSearch =
       room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -141,34 +135,23 @@ const DashboardPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao criar sala");
+        throw new Error(t("feedback.errorCreate")); // Tradução
       }
 
       const newRoom = await response.json();
       setRooms((prev: any[]) => [...prev, newRoom]);
       setCreateRoomModalOpen(false);
-      showSuccess(`Sala "${newRoom.name}" criada com sucesso!`);
+      // Tradução com parâmetro dinâmico
+      showSuccess(t("feedback.successCreate", { name: newRoom.name }));
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Erro ao criar sala";
+        err instanceof Error ? err.message : t("feedback.errorCreate");
       showError(errorMessage);
     }
   };
 
-  // Formatação de data (se necessário)
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  // Estados de carregamento e erro seguindo o padrão das outras páginas
   if (loading) {
-    return <LoadingPage message="Carregando dashboard..." />;
+    return <LoadingPage message={t("feedback.loading")} />;
   }
 
   if (error) {
@@ -176,7 +159,7 @@ const DashboardPage: React.FC = () => {
       <ErrorPage
         error={error}
         onRetry={() => window.location.reload()}
-        retryLabel="Tentar Novamente"
+        retryLabel={t("actions.retry")}
       />
     );
   }
@@ -190,7 +173,7 @@ const DashboardPage: React.FC = () => {
       onNotificationItemClick={globalNotificationHandler}
       notificationUpdateTrigger={0}
     >
-      {/* Header da página seguindo o padrão */}
+      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -199,10 +182,10 @@ const DashboardPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                Visão Geral das Salas
+                {t("header.title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Gerencie e monitore todas as salas da instituição
+                {t("header.description")}
               </p>
             </div>
           </div>
@@ -218,24 +201,24 @@ const DashboardPage: React.FC = () => {
                   >
                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                   </svg>
-                  Usuários
+                  {t("actions.users")}
                 </Button>
               </Link>
             )}
             <Button onClick={handleAddRoom}>
               <Plus className="w-4 h-4 mr-2" />
-              Nova Sala
+              {t("actions.newRoom")}
             </Button>
           </div>
         </div>
 
-        {/* Barra de busca e filtros melhorada */}
+        {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Buscar por sala, item ou descrição..."
+              placeholder={t("filters.searchPlaceholder")}
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setSearchTerm(e.target.value)
@@ -252,10 +235,11 @@ const DashboardPage: React.FC = () => {
               }
               className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">Todos os Status</option>
-              <option value="LIVRE">Livre</option>
-              <option value="EM_USO">Em Uso</option>
-              <option value="RESERVADO">Reservado</option>
+              {/* Values mantidos em caps lock pois devem bater com o backend/enum */}
+              <option value="all">{t("filters.statusAll")}</option>
+              <option value="LIVRE">{t("filters.statusFree")}</option>
+              <option value="EM_USO">{t("filters.statusInUse")}</option>
+              <option value="RESERVADO">{t("filters.statusReserved")}</option>
             </select>
 
             <div className="flex bg-white dark:bg-gray-800 rounded-lg border border-slate-300 dark:border-gray-600">
@@ -283,8 +267,9 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Estatísticas rápidas */}
+        {/* Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Card Total */}
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300">
@@ -295,7 +280,7 @@ const DashboardPage: React.FC = () => {
                   {rooms.length}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                  Total de Salas
+                  {t("stats.total")}
                 </p>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                   <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-1 rounded-full w-full"></div>
@@ -304,6 +289,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
+          {/* Card Disponíveis */}
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300">
@@ -316,7 +302,7 @@ const DashboardPage: React.FC = () => {
                   {rooms.filter((r: any) => r.status === "LIVRE").length}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                  Disponíveis
+                  {t("stats.available")}
                 </p>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                   <div
@@ -337,6 +323,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
+          {/* Card Em Uso */}
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-red-500/20 to-rose-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300">
@@ -349,7 +336,7 @@ const DashboardPage: React.FC = () => {
                   {rooms.filter((r: any) => r.status === "EM_USO").length}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                  Em Uso
+                  {t("stats.inUse")}
                 </p>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                   <div
@@ -370,6 +357,7 @@ const DashboardPage: React.FC = () => {
             </div>
           </Card>
 
+          {/* Card Reservadas */}
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-2xl group-hover:scale-110 transition-transform duration-300">
@@ -382,7 +370,7 @@ const DashboardPage: React.FC = () => {
                   {rooms.filter((r: any) => r.status === "RESERVADO").length}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                  Reservadas
+                  {t("stats.reserved")}
                 </p>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1 mt-2">
                   <div
@@ -405,7 +393,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Conteúdo principal */}
+      {/* Conteúdo Principal */}
       {filteredRooms.length === 0 ? (
         <EmptyState
           icon={
@@ -413,18 +401,18 @@ const DashboardPage: React.FC = () => {
           }
           title={
             searchTerm || statusFilter !== "all"
-              ? "Nenhuma sala encontrada"
-              : "Nenhuma sala cadastrada"
+              ? t("empty.notFoundTitle")
+              : t("empty.noDataTitle")
           }
           description={
             searchTerm || statusFilter !== "all"
-              ? "Tente ajustar os filtros de busca ou status para encontrar salas."
-              : "Comece criando sua primeira sala para gerenciar os espaços da instituição."
+              ? t("empty.notFoundDesc")
+              : t("empty.noDataDesc")
           }
           action={
             searchTerm || statusFilter !== "all"
               ? undefined
-              : { label: "Criar Primeira Sala", onClick: handleAddRoom }
+              : { label: t("empty.createFirst"), onClick: handleAddRoom }
           }
         />
       ) : (
@@ -436,7 +424,7 @@ const DashboardPage: React.FC = () => {
               hover
               className="group animate-scaleIn"
             >
-              {/* Header do card */}
+              {/* Header do Card */}
               <div className="mb-4">
                 <div className="flex items-start justify-between mb-4">
                   <StatusBadge status={room.status} />
@@ -444,7 +432,7 @@ const DashboardPage: React.FC = () => {
                     <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-500/20 rounded-full border border-amber-300 dark:border-amber-500/30">
                       <div className="w-2 h-2 bg-amber-500 dark:bg-amber-400 rounded-full animate-pulse"></div>
                       <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                        Reservada
+                        {t("card.reservedTag")}
                       </span>
                     </div>
                   )}
@@ -462,12 +450,13 @@ const DashboardPage: React.FC = () => {
                     <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
                       <span className="text-xs">👥</span>
                     </div>
-                    <span>{room.capacity} pessoas</span>
+                    {/* Tradução com parametro de quantidade */}
+                    <span>{t("card.people", { count: room.capacity })}</span>
                   </div>
                 )}
               </div>
 
-              {/* Lista de itens */}
+              {/* Lista de Itens */}
               <div className="mb-4">
                 <div className="space-y-2">
                   {room.items.slice(0, 2).map((item: any) => {
@@ -502,7 +491,7 @@ const DashboardPage: React.FC = () => {
                             {item.name}
                           </p>
                           <p className="text-xs text-slate-600 dark:text-slate-400">
-                            Qtd: {item.quantity}
+                            {t("card.quantity", { count: item.quantity })}
                           </p>
                         </div>
                       </div>
@@ -511,28 +500,30 @@ const DashboardPage: React.FC = () => {
                   {room.items.length > 2 && (
                     <div className="text-center py-2">
                       <span className="text-xs text-slate-600 dark:text-slate-500 bg-slate-200 dark:bg-slate-700/50 px-3 py-1 rounded-full">
-                        +{room.items.length - 2} itens adicionais
+                        {t("card.moreItems", {
+                          count: room.items.length - 2,
+                        })}
                       </span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Footer com ações */}
+              {/* Footer */}
               <div className="pt-4 border-t border-slate-200 dark:border-slate-700/50">
                 <Link href={`/salas/${room.id}`} className="w-full">
                   <Button
                     variant="secondary"
                     className="w-full group-hover:bg-blue-600 group-hover:text-white transition-all duration-300"
                   >
-                    Ver Detalhes
+                    {t("actions.viewDetails")}
                   </Button>
                 </Link>
               </div>
             </Card>
           ))}
 
-          {/* Card para criar nova sala */}
+          {/* Card Criar Nova Sala (Fim da Lista) */}
           <Card
             variant="outlined"
             hover
@@ -545,25 +536,25 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
             <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
-              Criar Nova Sala
+              {t("card.createTitle")}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-sm text-center max-w-48">
-              Adicione uma nova sala ao sistema para começar o gerenciamento
+              {t("card.createDescription")}
             </p>
             <div className="mt-6 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-full border border-blue-200 dark:border-blue-500/20">
               <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                Clique para começar
+                {t("actions.clickToStart")}
               </span>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Modal para criar sala */}
+      {/* Modal */}
       <Modal
         isOpen={isCreateRoomModalOpen}
         onClose={() => setCreateRoomModalOpen(false)}
-        title="Criar Nova Sala"
+        title={t("modal.createTitle")}
       >
         <RoomForm
           onSubmit={handleCreateRoom}

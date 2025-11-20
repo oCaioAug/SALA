@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { ImageUpload } from "@/components/forms/ImageUpload";
@@ -29,6 +30,8 @@ const RoomDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const t = useTranslations("RoomDetail");
+  const locale = params.locale as string;
   const roomId = params.id as string;
 
   // Verificar se o usuário é admin
@@ -55,12 +58,12 @@ const RoomDetailPage: React.FC = () => {
         setLoading(true);
         const response = await fetch(`/api/rooms/${roomId}`);
         if (!response.ok) {
-          throw new Error("Sala não encontrada");
+          throw new Error(t("notFound"));
         }
         const data = await response.json();
         setRoom(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro desconhecido");
+        setError(err instanceof Error ? err.message : t("errors.unknown"));
       } finally {
         setLoading(false);
       }
@@ -84,14 +87,14 @@ const RoomDetailPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao atualizar sala");
+        throw new Error(t("errors.updateRoom"));
       }
 
       const updatedRoom = await response.json();
       setRoom(updatedRoom);
       setIsEditModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar sala");
+      setError(err instanceof Error ? err.message : t("errors.updateRoom"));
     }
   };
 
@@ -112,7 +115,7 @@ const RoomDetailPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao adicionar item");
+        throw new Error(t("errors.addItem"));
       }
 
       const newItem = await response.json();
@@ -148,7 +151,7 @@ const RoomDetailPage: React.FC = () => {
 
       setIsAddItemModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao adicionar item");
+      setError(err instanceof Error ? err.message : t("errors.addItem"));
     }
   };
 
@@ -176,7 +179,7 @@ const RoomDetailPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao atualizar item");
+        throw new Error(t("errors.updateItem"));
       }
 
       // Se há nova imagem, fazer upload
@@ -206,12 +209,12 @@ const RoomDetailPage: React.FC = () => {
       }
       setEditingItem(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar item");
+      setError(err instanceof Error ? err.message : t("errors.updateItem"));
     }
   };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm("Tem certeza que deseja excluir este item?")) return;
+    if (!confirm(t("confirmations.deleteItem"))) return;
 
     try {
       const response = await fetch(`/api/items/${itemId}`, {
@@ -219,7 +222,7 @@ const RoomDetailPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao excluir item");
+        throw new Error(t("errors.deleteItem"));
       }
 
       setRoom(prev =>
@@ -231,20 +234,20 @@ const RoomDetailPage: React.FC = () => {
           : null
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao excluir item");
+      setError(err instanceof Error ? err.message : t("errors.deleteItem"));
     }
   };
 
   if (loading) {
-    return <LoadingPage message="Carregando sala..." />;
+    return <LoadingPage message={t("loading")} />;
   }
 
   if (error || !room) {
     return (
       <ErrorPage
-        error={error || "Sala não encontrada"}
-        onRetry={() => router.push("/dashboard")}
-        retryLabel="Voltar ao Dashboard"
+        error={error || t("notFound")}
+        onRetry={() => router.push(`/${locale}/dashboard`)}
+        retryLabel={t("backToDashboard")}
       />
     );
   }
@@ -259,10 +262,10 @@ const RoomDetailPage: React.FC = () => {
       {/* Header da sala */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/dashboard">
+          <Link href={`/${locale}/dashboard`}>
             <Button variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
-              Voltar
+              {t("back")}
             </Button>
           </Link>
         </div>
@@ -279,7 +282,7 @@ const RoomDetailPage: React.FC = () => {
                   <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
                     <span className="text-xs">👥</span>
                   </div>
-                  <span>Capacidade: {room.capacity} pessoas</span>
+                  <span>{t("capacity", { count: room.capacity })}</span>
                 </div>
               )}
             </div>
@@ -288,11 +291,11 @@ const RoomDetailPage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() => router.push(`/salas/${roomId}/agendamentos`)}
+              onClick={() => router.push(`/${locale}/salas/${roomId}/agendamentos`)}
               className="gap-2"
             >
               <CalendarIcon className="w-4 h-4" />
-              Ver Agendamentos
+              {t("viewReservations")}
             </Button>
             {isAdmin && (
               <>
@@ -302,14 +305,14 @@ const RoomDetailPage: React.FC = () => {
                   className="gap-2"
                 >
                   <Edit className="w-4 h-4" />
-                  Editar Sala
+                  {t("editRoom")}
                 </Button>
                 <Button
                   onClick={() => setIsAddItemModalOpen(true)}
                   className="gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  Adicionar Item
+                  {t("addItem")}
                 </Button>
               </>
             )}
@@ -320,7 +323,7 @@ const RoomDetailPage: React.FC = () => {
       {/* Descrição */}
       {room.description && (
         <Card className="mb-6">
-          <CardTitle className="text-lg mb-2">Descrição</CardTitle>
+          <CardTitle className="text-lg mb-2">{t("description")}</CardTitle>
           <p className="text-slate-700 dark:text-gray-300">
             {room.description}
           </p>
@@ -335,9 +338,9 @@ const RoomDetailPage: React.FC = () => {
               <Package className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <CardTitle className="text-xl">Itens da Sala</CardTitle>
+              <CardTitle className="text-xl">{t("roomItems")}</CardTitle>
               <CardDescription>
-                {room.items.length} itens cadastrados
+                {t(room.items.length === 1 ? "itemsRegisteredOne" : "itemsRegistered", { count: room.items.length })}
               </CardDescription>
             </div>
           </div>
@@ -349,12 +352,12 @@ const RoomDetailPage: React.FC = () => {
               <Package className="w-8 h-8 text-slate-500 dark:text-slate-400" />
             </div>
             <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-              Nenhum item cadastrado
+              {t("empty.title")}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
               {isAdmin 
-                ? "Comece adicionando itens para esta sala"
-                : "Esta sala ainda não possui itens cadastrados"
+                ? t("empty.descriptionAdmin")
+                : t("empty.descriptionUser")
               }
             </p>
             {isAdmin && (
@@ -363,7 +366,7 @@ const RoomDetailPage: React.FC = () => {
                 className="gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Adicionar Primeiro Item
+                {t("empty.addFirstItem")}
               </Button>
             )}
           </div>
@@ -407,7 +410,7 @@ const RoomDetailPage: React.FC = () => {
                           {item.name}
                         </h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Qtd: {item.quantity}
+                          {t("item.quantity", { count: item.quantity })}
                         </p>
                       </div>
                       {isAdmin && (
@@ -441,7 +444,7 @@ const RoomDetailPage: React.FC = () => {
                     {item.specifications && item.specifications.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
-                          Especificações:
+                          {t("item.specifications")}
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {item.specifications
@@ -456,7 +459,7 @@ const RoomDetailPage: React.FC = () => {
                             ))}
                           {item.specifications.length > 2 && (
                             <span className="text-xs text-slate-600 dark:text-slate-500">
-                              +{item.specifications.length - 2} mais
+                              {t("item.more", { count: item.specifications.length - 2 })}
                             </span>
                           )}
                         </div>
@@ -474,7 +477,7 @@ const RoomDetailPage: React.FC = () => {
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Editar Sala"
+        title={t("modals.editRoom")}
       >
         <RoomForm
           room={room}
@@ -487,7 +490,7 @@ const RoomDetailPage: React.FC = () => {
       <Modal
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
-        title="Adicionar Item"
+        title={t("modals.addItem")}
       >
         <ItemForm
           onSubmit={handleAddItem}
@@ -499,7 +502,7 @@ const RoomDetailPage: React.FC = () => {
       <Modal
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
-        title="Editar Item"
+        title={t("modals.editItem")}
       >
         <ItemForm
           item={editingItem}
@@ -520,6 +523,7 @@ const ItemForm: React.FC<{
   ) => void;
   onCancel: () => void;
 }> = ({ item, onSubmit, onCancel }) => {
+  const t = useTranslations("RoomDetail");
   const [formData, setFormData] = useState({
     name: item?.name || "",
     description: item?.description || "",
@@ -589,7 +593,7 @@ const ItemForm: React.FC<{
       }
     } catch (error) {
       console.error("Erro ao salvar item:", error);
-      alert(error instanceof Error ? error.message : "Erro ao salvar item");
+      alert(error instanceof Error ? error.message : t("errors.saveItem"));
     } finally {
       setUploading(false);
     }
@@ -599,7 +603,7 @@ const ItemForm: React.FC<{
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-          Nome do Item
+          {t("form.itemName")}
         </label>
         <input
           type="text"
@@ -608,14 +612,14 @@ const ItemForm: React.FC<{
             setFormData(prev => ({ ...prev, name: e.target.value }))
           }
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Ex: Computador"
+          placeholder={t("form.itemNamePlaceholder")}
           required
         />
       </div>
 
       <div>
         <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-          Descrição
+          {t("form.description")}
         </label>
         <textarea
           value={formData.description}
@@ -623,14 +627,14 @@ const ItemForm: React.FC<{
             setFormData(prev => ({ ...prev, description: e.target.value }))
           }
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Descreva o item..."
+          placeholder={t("form.descriptionPlaceholder")}
           rows={3}
         />
       </div>
 
       <div>
         <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-          Especificações (separadas por vírgula)
+          {t("form.specifications")}
         </label>
         <input
           type="text"
@@ -639,7 +643,7 @@ const ItemForm: React.FC<{
             setFormData(prev => ({ ...prev, specifications: e.target.value }))
           }
           className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Ex: Windows 11, 16GB RAM, Core i7"
+          placeholder={t("form.specificationsPlaceholder")}
         />
       </div>
 
@@ -653,7 +657,7 @@ const ItemForm: React.FC<{
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-            Quantidade
+            {t("form.quantity")}
           </label>
           <input
             type="number"
@@ -669,7 +673,7 @@ const ItemForm: React.FC<{
 
         <div>
           <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-            Ícone (emoji)
+            {t("form.icon")}
           </label>
           <input
             type="text"
@@ -678,10 +682,10 @@ const ItemForm: React.FC<{
               setFormData(prev => ({ ...prev, icon: e.target.value }))
             }
             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="💻"
+            placeholder={t("form.iconPlaceholder")}
           />
           <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-            Opcional - usado como fallback se não houver imagem
+            {t("form.iconHint")}
           </p>
         </div>
       </div>
@@ -689,10 +693,10 @@ const ItemForm: React.FC<{
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1" disabled={uploading}>
           {uploading 
-            ? "Salvando..." 
+            ? t("form.saving")
             : item 
-              ? "Atualizar Item" 
-              : "Adicionar Item"
+              ? t("form.updateItem")
+              : t("form.addItem")
           }
         </Button>
         <Button
@@ -701,7 +705,7 @@ const ItemForm: React.FC<{
           onClick={onCancel}
           className="flex-1"
         >
-          Cancelar
+          {t("form.cancel")}
         </Button>
       </div>
     </form>
