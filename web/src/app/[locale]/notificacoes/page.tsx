@@ -44,6 +44,7 @@ interface Notification {
 
 const NotificationPage: React.FC = () => {
   const t = useTranslations("Notifications");
+  const tNotificationService = useTranslations("NotificationService");
   const locale = useLocale();
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
@@ -201,6 +202,132 @@ const NotificationPage: React.FC = () => {
         return t("types.RESERVATION_REMINDER");
       default:
         return t("title");
+    }
+  };
+
+  // Função para traduzir títulos das notificações baseado no tipo
+  const getNotificationTitle = (notification: Notification): string => {
+    switch (notification.type) {
+      case "RESERVATION_CREATED":
+        return tNotificationService("titles.reservationCreated");
+      case "RESERVATION_APPROVED":
+        return tNotificationService("titles.reservationApproved");
+      case "RESERVATION_REJECTED":
+        return tNotificationService("titles.reservationRejected");
+      case "RESERVATION_CANCELLED":
+        return tNotificationService("titles.reservationCancelled");
+      case "SYSTEM_ANNOUNCEMENT":
+      case "RESERVATION_REMINDER":
+      default:
+        // Para outros tipos, usar o título armazenado no banco como fallback
+        return notification.title;
+    }
+  };
+
+  // Função para traduzir mensagens das notificações baseado no tipo
+  const getNotificationMessage = (notification: Notification): string => {
+    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    
+    // Parse dos dados da notificação
+    let notificationData: any = {};
+    if (notification.data) {
+      if (typeof notification.data === "string") {
+        try {
+          notificationData = JSON.parse(notification.data);
+        } catch {
+          notificationData = {};
+        }
+      } else {
+        notificationData = notification.data;
+      }
+    }
+
+    switch (notification.type) {
+      case "RESERVATION_CREATED": {
+        const userName = notificationData.userName || (locale === "pt" ? "Usuário" : "User");
+        const roomName = notificationData.roomName || "";
+        const startTime = notificationData.startTime
+          ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+        const purpose = notificationData.purpose
+          ? tNotificationService("messages.purposePrefix", { purpose: notificationData.purpose })
+          : "";
+
+        // Verificar se o usuário que criou é admin
+        const isAdmin = notificationData.isAdmin || notificationData.userRole === "ADMIN";
+
+        if (isAdmin) {
+          return tNotificationService("messages.reservationCreatedAdmin", {
+            userName,
+            roomName,
+            startTime,
+            purpose,
+          });
+        } else {
+          return tNotificationService("messages.reservationCreatedUser", {
+            userName,
+            roomName,
+            startTime,
+            purpose,
+          });
+        }
+      }
+      case "RESERVATION_APPROVED": {
+        const roomName = notificationData.roomName || "";
+        const startTime = notificationData.startTime
+          ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+
+        return tNotificationService("messages.reservationApproved", {
+          roomName,
+          startTime,
+        });
+      }
+      case "RESERVATION_REJECTED": {
+        const roomName = notificationData.roomName || "";
+        const startTime = notificationData.startTime
+          ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+        const reason = notificationData.reason
+          ? tNotificationService("messages.reasonPrefix", { reason: notificationData.reason })
+          : "";
+
+        return tNotificationService("messages.reservationRejected", {
+          roomName,
+          startTime,
+          reason,
+        });
+      }
+      case "RESERVATION_CANCELLED": {
+        const roomName = notificationData.roomName || "";
+
+        return tNotificationService("messages.reservationCancelled", {
+          roomName,
+        });
+      }
+      case "SYSTEM_ANNOUNCEMENT":
+      case "RESERVATION_REMINDER":
+      default:
+        // Para outros tipos, usar a mensagem armazenada no banco como fallback
+        return notification.message;
     }
   };
 
@@ -540,7 +667,7 @@ const NotificationPage: React.FC = () => {
                         <h3
                           className={`font-semibold ${!notification.isRead ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-gray-300"}`}
                         >
-                          {notification.title}
+                          {getNotificationTitle(notification)}
                         </h3>
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -563,7 +690,7 @@ const NotificationPage: React.FC = () => {
                       </div>
 
                       <p className="text-slate-700 dark:text-gray-300 mb-4 leading-relaxed">
-                        {notification.message}
+                        {getNotificationMessage(notification)}
                       </p>
 
                       <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-gray-400">

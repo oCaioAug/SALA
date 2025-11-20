@@ -287,8 +287,9 @@ const SolicitacoesPage: React.FC = () => {
 
   const formatDateTime = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
-    
+    const intlLocale =
+      locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+
     return date.toLocaleString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
@@ -587,9 +588,9 @@ const SolicitacoesPage: React.FC = () => {
             )}
 
             <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("modal.status")}
-                </label>
+              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                {t("modal.status")}
+              </label>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
                   selectedSolicitacao.status
@@ -658,9 +659,7 @@ const SolicitacoesPage: React.FC = () => {
                 <h3 className="font-semibold text-red-400">
                   {t("conflict.title")}
                 </h3>
-                <p className="text-sm text-gray-300">
-                  {t("conflict.message")}
-                </p>
+                <p className="text-sm text-gray-300">{t("conflict.message")}</p>
               </div>
             </div>
 

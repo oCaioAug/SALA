@@ -72,7 +72,14 @@
     "user": "Usuário",
     "loading": "Carregando...",
     "error": "Erro",
-    "success": "Sucesso"
+    "success": "Sucesso",
+    "warning": "Atenção",
+    "info": "Informação"
+  },
+  "ErrorBoundary": {
+    "title": "Oops! Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Tente recarregar a página.",
+    "retry": "Tentar Novamente"
   },
   "Sidebar": {
     "navigation": "Navegação",
@@ -163,6 +170,65 @@
     "moreReservations": "mais reservas",
     "rooms": "Salas",
     "moreRooms": "mais salas"
+  },
+  "ProfilePage": {
+    "title": "Perfil",
+    "accountInfo": "Informações da Conta",
+    "memberSince": "Membro desde",
+    "lastUpdate": "Última atualização",
+    "titleUser": "Perfil de {name}",
+    "description": "Gerencie suas informações pessoais",
+    "descriptionUser": "Visualize e edite informações de {name}",
+    "loading": "Carregando perfil...",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "Ex: João da Silva",
+    "fullNameRequired": "Nome completo é obrigatório",
+    "fullNameInvalid": "Nome completo inválido",
+    "email": "Email",
+    "emailPlaceholder": "Ex: joao.silva@gmail.com",
+    "emailRequired": "Email é obrigatório",
+    "emailInvalid": "Email inválido",
+    "role": "Papel",
+    "roles": {
+      "admin": "Administrador",
+      "user": "Usuário"
+    },
+    "personalInfo": "Informações Pessoais",
+    "createdAt": "Criado em",
+    "updatedAt": "Atualizado em",
+    "accessDenied": "Acesso Negado",
+    "accessDeniedDescription": "Você não tem permissão para visualizar este perfil.",
+    "backToDashboard": "Voltar ao Dashboard",
+    "userNotFound": "Usuário não encontrado",
+    "userNotFoundDescription": "O usuário solicitado não foi encontrado.",
+    "backToListUsers": "Voltar para a lista de usuários",
+    "avatar": {
+      "updated": "Avatar atualizado com sucesso!",
+      "removed": "Avatar removido com sucesso!"
+    },
+    "save": {
+      "success": "Perfil atualizado com sucesso!",
+      "error": "Erro ao salvar alterações",
+      "loading": "Salvando...",
+      "save": "Salvar Alterações"
+    },
+    "errors": {
+      "userNotFound": "Usuário não encontrado",
+      "userLoadError": "Erro ao carregar dados do usuário",
+      "saveError": "Erro ao salvar alterações",
+      "userRoleChangeError": "Erro ao alterar permissão do usuário"
+    },
+    "actions": {
+      "back": "Voltar",
+      "removeAdmin": "Remover Admin",
+      "makeAdmin": "Tornar Admin",
+      "cancel": "Cancelar",
+      "edit": "Editar"
+    },
+    "ownProfilePictureDescription": "Esta é sua foto de perfil. Será exibida em suas reservas e interações.",
+    "anotherUserProfilePictureDescription": "Foto de perfil do usuário. Pode ser alterada por administradores.",
+    "activityStats": "Estatísticas de Atividade",
+    "activityStatsDescription": "Estatísticas de atividade serão implementadas em breve."
   },
   "ReservationApproval": {
     "loading": "Verificando autenticação...",
@@ -299,6 +365,52 @@
     "status": "Status",
     "close": "Fechar",
     "cancelReservation": "Cancelar Reserva"
+  },
+  "SettingsPage": {
+    "title": "Configurações",
+    "description": "Gerencie as configurações do sistema",
+    "loading": "Carregando configurações...",
+    "searchPlaceholder": "Buscar por configuração...",
+    "statusFilter": {
+      "all": "Todos",
+      "pending": "Pendentes",
+      "approved": "Aprovadas",
+      "rejected": "Rejeitadas"
+    },
+    "items": {
+      "profile": {
+        "id": "profile",
+        "title": "Perfil",
+        "description": "Gerencie suas informações pessoais"
+      },
+      "notifications": {
+        "id": "notifications",
+        "title": "Notificações",
+        "description": "Gerencie suas notificações"
+      },
+      "security": {
+        "id": "security",
+        "title": "Segurança",
+        "description": "Gerencie suas configurações de segurança"
+      },
+      "database": {
+        "id": "database",
+        "title": "Banco de Dados",
+        "description": "Gerencie suas configurações de banco de dados"
+      },
+      "appearance": {
+        "id": "appearance",
+        "title": "Aparência",
+        "description": "Gerencie suas configurações de aparência"
+      }
+    },
+    "empty": {
+      "title": "Nenhuma configuração encontrada",
+      "description": "Não há configurações no momento."
+    },
+    "actions": {
+      "configure": "Configurar"
+    }
   },
   "Solicitacoes": {
     "title": "Solicitações de Reserva",
@@ -721,7 +833,7 @@
     "tryAgain": "Tentar Novamente",
     "errorLoadingUsers": "Erro ao carregar usuários",
     "noUsersFound": "Nenhum usuário encontrado",
-    "noUsersFoundDescription": "Não há usuários que correspondam aos filtros selecionados.",  
+    "noUsersFoundDescription": "Não há usuários que correspondam aos filtros selecionados.",
     "userWithoutName": "Usuário sem nome",
     "adminRole": "Administrador",
     "userRole": "Usuário Comum",
@@ -733,7 +845,7 @@
     "errorUserPermissionChange": "Erro ao alterar permissão do usuário",
     "userNowIs": "Usuário agora é {role}",
     "admin": "administrador",
-    "user": "usuário comum",
+    "userRoleLabel": "usuário comum",
     "accessDenied": "Acesso Negado",
     "accessDeniedDescription": "Você precisa ser administrador para acessar esta página.",
     "createdAt": "Criado em {date}",
@@ -747,5 +859,51 @@
     "loading": "Carregando usuário...",
     "notFound": "Usuário não encontrado",
     "backToUsers": "Voltar para a lista de usuários"
+  },
+  "NotificationModal": {
+    "title": "Notificações",
+    "description": "Visualize e gerencie suas notificações",
+    "markAllAsRead": "Marcar todas como lidas",
+    "markAsRead": "Marcar como lida",
+    "delete": "Excluir",
+    "deleteConfirm": "Tem certeza que deseja excluir esta notificação?",
+    "errors": {
+      "markAsRead": "Erro ao marcar como lida",
+      "delete": "Erro ao deletar notificação",
+      "markAllAsRead": "Erro ao marcar todas como lidas",
+      "load": "Erro ao carregar notificações"
+    },
+    "notifications": {
+      "plural": "{count} notificações",
+      "singular": "{count} notificação",
+      "unread": "{count} não lida",
+      "read": "lidas",
+      "unreadCount": "{unread} não lida{plural} de {total} total",
+      "allRead": "Todas as {total} notificações foram lidas",
+      "none": "Nenhuma notificação recebida"
+    },
+    "actions": {
+      "markAllAsRead": "Marcar todas como lidas",
+      "markAsRead": "Marcar como lida",
+      "delete": "Excluir",
+      "reload": "Recarregar"
+    }
+  },
+  "NotificationService": {
+    "titles": {
+      "reservationCreated": "Nova Solicitação de Reserva",
+      "reservationApproved": "Reserva Aprovada ✅",
+      "reservationRejected": "Reserva Rejeitada ❌",
+      "reservationCancelled": "Reserva Cancelada"
+    },
+    "messages": {
+      "reservationCreatedAdmin": "{userName} reservou a sala \"{roomName}\" para {startTime}.{purpose}",
+      "reservationCreatedUser": "{userName} solicitou reserva da sala \"{roomName}\" para {startTime}.{purpose}",
+      "reservationApproved": "Sua reserva da sala \"{roomName}\" foi aprovada! Data: {startTime}",
+      "reservationRejected": "Sua reserva da sala \"{roomName}\" para {startTime} foi rejeitada.{reason}",
+      "reservationCancelled": "A reserva da sala \"{roomName}\" foi cancelada.",
+      "purposePrefix": " Finalidade: {purpose}",
+      "reasonPrefix": " Motivo: {reason}"
+    }
   }
 }

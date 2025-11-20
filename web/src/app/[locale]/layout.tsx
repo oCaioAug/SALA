@@ -43,7 +43,10 @@ export default async function LocaleLayout({
   // Validar locale
   const validLocales = routing.locales as readonly string[];
   if (!validLocales.includes(locale)) {
-    console.error(`Locale inválido no layout: ${locale}. Locales suportados:`, validLocales);
+    console.error(
+      `Locale inválido no layout: ${locale}. Locales suportados:`,
+      validLocales
+    );
     notFound();
   }
 
@@ -72,20 +75,18 @@ export default async function LocaleLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ProductionErrorLogger />
-        <ErrorBoundary>
-          <ThemeProvider>
-            <AuthProvider>
-              <ToastProvider>
-                <AppProvider>
-                  <NextIntlClientProvider messages={messages}>
-                    {children}
-                  </NextIntlClientProvider>
-                </AppProvider>
-              </ToastProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </ErrorBoundary>
+        <NextIntlClientProvider messages={messages}>
+          <ProductionErrorLogger />
+          <ErrorBoundary>
+            <ThemeProvider>
+              <AuthProvider>
+                <ToastProvider>
+                  <AppProvider>{children}</AppProvider>
+                </ToastProvider>
+              </AuthProvider>
+            </ThemeProvider>
+          </ErrorBoundary>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

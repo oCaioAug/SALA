@@ -72,7 +72,14 @@
     "user": "User",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "ErrorBoundary": {
+    "title": "Oops! Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "retry": "Try Again"
   },
   "Sidebar": {
     "navigation": "Navigation",
@@ -163,6 +170,65 @@
     "moreReservations": "more reservations",
     "rooms": "Rooms",
     "moreRooms": "more rooms"
+  },
+  "ProfilePage": {
+    "title": "My Profile",
+    "accountInfo": "Account Info",
+    "memberSince": "Member since",
+    "lastUpdate": "Last update",
+    "titleUser": "{name}'s Profile",
+    "description": "Manage your personal information",
+    "descriptionUser": "View and edit {name}'s information",
+    "loading": "Loading profile...",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Ex: John Doe",
+    "fullNameRequired": "Full name is required",
+    "fullNameInvalid": "Full name is invalid",
+    "email": "Email",
+    "emailPlaceholder": "Ex: john.doe@example.com",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Email is invalid",
+    "role": "Role",
+    "roles": {
+      "admin": "Administrator",
+      "user": "User"
+    },
+    "personalInfo": "Personal Information",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "accessDenied": "Access Denied",
+    "accessDeniedDescription": "You do not have permission to view this profile.",
+    "backToDashboard": "Back to Dashboard",
+    "userNotFound": "User not found",
+    "userNotFoundDescription": "The user requested was not found.",
+    "backToListUsers": "Back to users list",
+    "avatar": {
+      "updated": "Avatar updated successfully!",
+      "removed": "Avatar removed successfully!"
+    },
+    "save": {
+      "success": "Profile updated successfully!",
+      "error": "Error saving changes",
+      "loading": "Saving...",
+      "save": "Save Changes"
+    },
+    "errors": {
+      "userNotFound": "User not found",
+      "userLoadError": "Error loading user data",
+      "saveError": "Error saving changes",
+      "userRoleChangeError": "Error changing user role"
+    },
+    "actions": {
+      "back": "Back",
+      "removeAdmin": "Remove Admin",
+      "makeAdmin": "Make Admin",
+      "cancel": "Cancel",
+      "edit": "Edit"
+    },
+    "ownProfilePictureDescription": "This is your profile picture. It will be displayed in your reservations and interactions.",
+    "anotherUserProfilePictureDescription": "User profile picture. Can be changed by admins.",
+    "activityStats": "Activity Stats",
+    "activityStatsDescription": "Activity stats will be implemented soon."
   },
   "ReservationApproval": {
     "loading": "Checking authentication...",
@@ -299,6 +365,49 @@
     "status": "Status",
     "close": "Close",
     "cancelReservation": "Cancel Reservation"
+  },
+  "SettingsPage": {
+    "title": "Settings",
+    "description": "Manage system settings",
+    "loading": "Loading settings...",
+    "searchPlaceholder": "Search by setting...",
+    "statusFilter": {
+      "all": "All",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "empty": {
+      "title": "No settings found",
+      "description": "There are no settings at the moment."
+    },
+    "items": {
+      "profile": {
+        "id": "profile",
+        "title": "Profile",
+        "description": "Manage your personal information"
+      },
+      "notifications": {
+        "id": "notifications",
+        "title": "Notifications",
+        "description": "Manage your notifications"
+      },
+      "security": {
+        "id": "security",
+        "title": "Security",
+        "description": "Manage your security settings"
+      },
+      "database": {
+        "id": "database",
+        "title": "Database",
+        "description": "Manage your database settings"
+      },
+      "appearance": {
+        "id": "appearance",
+        "title": "Appearance",
+        "description": "Manage your appearance settings"
+      }
+    }
   },
   "Solicitacoes": {
     "title": "Reservation Requests",
@@ -707,7 +816,7 @@
     "errorUserPermissionChange": "Error changing user permission",
     "userNowIs": "User now is {role} user",
     "admin": "admin",
-    "user": "regular",
+    "userRoleLabel": "regular",
     "adminRole": "Admin",
     "userRole": "Regular User",
     "accessDenied": "Access Denied",
@@ -724,5 +833,51 @@
     "loading": "Loading user...",
     "notFound": "User not found",
     "backToUsers": "Back to users list"
+  },
+  "NotificationModal": {
+    "title": "Notifications",
+    "description": "View and manage your notifications",
+    "markAllAsRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this notification?",
+    "errors": {
+      "markAsRead": "Error marking as read",
+      "delete": "Error deleting notification",
+      "markAllAsRead": "Error marking all as read",
+      "load": "Error loading notifications"
+    },
+    "notifications": {
+      "plural": "{count} notifications",
+      "singular": "{count} notification",
+      "unread": "{count} unread",
+      "read": "read",
+      "unreadCount": "{unread} unread of {total} total",
+      "allRead": "All {total} notifications have been read",
+      "none": "No notifications received"
+    },
+    "actions": {
+      "markAllAsRead": "Mark all as read",
+      "markAsRead": "Mark as read",
+      "delete": "Delete",
+      "reload": "Reload"
+    }
+  },
+  "NotificationService": {
+    "titles": {
+      "reservationCreated": "New Reservation Request",
+      "reservationApproved": "Reservation Approved ✅",
+      "reservationRejected": "Reservation Rejected ❌",
+      "reservationCancelled": "Reservation Cancelled"
+    },
+    "messages": {
+      "reservationCreatedAdmin": "{userName} reserved the room \"{roomName}\" for {startTime}.{purpose}",
+      "reservationCreatedUser": "{userName} requested reservation of room \"{roomName}\" for {startTime}.{purpose}",
+      "reservationApproved": "Your reservation of room \"{roomName}\" has been approved! Date: {startTime}",
+      "reservationRejected": "Your reservation of room \"{roomName}\" for {startTime} was rejected.{reason}",
+      "reservationCancelled": "The reservation of room \"{roomName}\" was cancelled.",
+      "purposePrefix": " Purpose: {purpose}",
+      "reasonPrefix": " Reason: {reason}"
+    }
   }
 }

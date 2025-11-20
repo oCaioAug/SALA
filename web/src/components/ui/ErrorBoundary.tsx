@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -10,6 +11,11 @@ interface ErrorBoundaryState {
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ComponentType<{ error?: Error; resetError?: () => void }>;
+  translations?: {
+    title: string;
+    description: string;
+    retry: string;
+  };
 }
 
 export class ErrorBoundary extends React.Component<
@@ -65,21 +71,28 @@ export class ErrorBoundary extends React.Component<
     }
 
     if (this.state.hasError) {
+      const { translations } = this.props;
+      const title = translations?.title || "Oops! Algo deu errado";
+      const description =
+        translations?.description ||
+        "Ocorreu um erro inesperado. Tente recarregar a página.";
+      const retry = translations?.retry || "Tentar novamente";
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
           <div className="max-w-md w-full space-y-8 p-6">
             <div className="text-center">
               <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-                Oops! Algo deu errado
+                {title}
               </h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Ocorreu um erro inesperado. Tente recarregar a página.
+                {description}
               </p>
               <button
                 onClick={this.resetError}
                 className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Tentar novamente
+                {retry}
               </button>
             </div>
           </div>
@@ -91,4 +104,24 @@ export class ErrorBoundary extends React.Component<
   }
 }
 
-export default ErrorBoundary;
+// Wrapper funcional para usar useTranslations
+const ErrorBoundaryWithTranslations: React.FC<{
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error?: Error; resetError?: () => void }>;
+}> = ({ children, fallback }) => {
+  const t = useTranslations("ErrorBoundary");
+
+  const translations = {
+    title: t("title"),
+    description: t("description"),
+    retry: t("retry"),
+  };
+
+  return (
+    <ErrorBoundary fallback={fallback} translations={translations}>
+      {children}
+    </ErrorBoundary>
+  );
+};
+
+export default ErrorBoundaryWithTranslations;
