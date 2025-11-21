@@ -62,6 +62,111 @@ export async function POST(req: NextRequest) {
 
     // Atualizar status da reserva
     const newStatus = approved ? 'APPROVED' : 'REJECTED'
+    
+    // Se for uma reserva recorrente, atualizar todas as instâncias
+    if (reservation.isRecurring && reservation.recurringTemplateId) {
+      // Buscar todas as reservas com o mesmo recurringTemplateId
+      const allRecurringReservations = await prisma.reservation.findMany({
+        where: {
+          recurringTemplateId: reservation.recurringTemplateId,
+          status: 'PENDING',
+        },
+        include: {
+          room: true,
+          user: true,
+        },
+      })
+
+      // Atualizar todas as reservas recorrentes
+      await prisma.reservation.updateMany({
+        where: {
+          recurringTemplateId: reservation.recurringTemplateId,
+          status: 'PENDING',
+        },
+        data: {
+          status: newStatus,
+        },
+      })
+
+      // Buscar a reserva atualizada para retornar
+      const updatedReservation = await prisma.reservation.findUnique({
+        where: { id: reservationId },
+        include: {
+          room: true,
+          user: true,
+        },
+      })
+
+      if (!updatedReservation) {
+        return NextResponse.json(
+          { error: 'Reserva não encontrada após atualização' },
+          { status: 404 }
+        )
+      }
+
+      // Criar notificação para cada instância (ou uma notificação consolidada)
+      for (const recurringReservation of allRecurringReservations) {
+        await prisma.notification.create({
+          data: {
+            userId: recurringReservation.userId,
+            type: approved ? 'RESERVATION_APPROVED' : 'RESERVATION_REJECTED',
+            title: approved 
+              ? '✅ Reserva Recorrente Aprovada!' 
+              : '❌ Reserva Recorrente Rejeitada',
+            message: approved 
+              ? `Suas reservas recorrentes da ${recurringReservation.room.name} foram aprovadas!`
+              : `Suas reservas recorrentes da ${recurringReservation.room.name} foram rejeitadas${reason ? `. Motivo: ${reason}` : '.'}`,
+            data: {
+              reservationId: recurringReservation.id,
+              roomName: recurringReservation.room.name,
+              startTime: recurringReservation.startTime.toISOString(),
+              endTime: recurringReservation.endTime.toISOString(),
+              reason: reason || null,
+              isRecurring: true,
+              recurringInstances: allRecurringReservations.length,
+            },
+          },
+        })
+      }
+
+      // Enviar notificação push (uma para todas as instâncias)
+      try {
+        if (approved) {
+          await pushNotificationService.sendReservationApprovalNotification(
+            reservation.userId,
+            {
+              roomName: reservation.room.name,
+              startTime: reservation.startTime,
+              endTime: reservation.endTime,
+            }
+          )
+        } else {
+          await pushNotificationService.sendReservationRejectionNotification(
+            reservation.userId,
+            {
+              roomName: reservation.room.name,
+              startTime: reservation.startTime,
+              reason: reason,
+            }
+          )
+        }
+        console.log(`✅ Notificação push enviada para usuário ${reservation.userId}`)
+      } catch (pushError) {
+        console.error('⚠️ Erro ao enviar notificação push:', pushError)
+      }
+
+      return NextResponse.json({
+        id: updatedReservation.id,
+        status: updatedReservation.status,
+        message: approved 
+          ? `Reserva recorrente aprovada! ${allRecurringReservations.length} instâncias foram aprovadas.`
+          : `Reserva recorrente rejeitada! ${allRecurringReservations.length} instâncias foram rejeitadas.`,
+        notification_sent: true,
+        recurringInstances: allRecurringReservations.length,
+      })
+    }
+
+    // Reserva única (não recorrente)
     const updatedReservation = await prisma.reservation.update({
       where: { id: reservationId },
       data: { status: newStatus },

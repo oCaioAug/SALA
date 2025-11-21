@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { useToast } from "@/components/ui/Toast";
+import { useTranslations } from "next-intl";
 
 interface AppContextType {
   // Loading states
@@ -52,6 +53,7 @@ export const useApp = () => {
 export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const tCommon = useTranslations("Common");
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
@@ -65,31 +67,31 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const showSuccess = useCallback(
-    (message: string, title = "Sucesso") => {
+    (message: string, title = tCommon("success")) => {
       addToast({ type: "success", title, message });
     },
-    [addToast]
+    [addToast, tCommon]
   );
 
   const showError = useCallback(
-    (message: string, title = "Erro") => {
+    (message: string, title = tCommon("error")) => {
       addToast({ type: "error", title, message });
     },
-    [addToast]
+    [addToast, tCommon]
   );
 
   const showWarning = useCallback(
-    (message: string, title = "Atenção") => {
+    (message: string, title = tCommon("warning")) => {
       addToast({ type: "warning", title, message });
     },
-    [addToast]
+    [addToast, tCommon]
   );
 
   const showInfo = useCallback(
-    (message: string, title = "Informação") => {
+    (message: string, title = tCommon("info")) => {
       addToast({ type: "info", title, message });
     },
-    [addToast]
+    [addToast, tCommon]
   );
 
   return (

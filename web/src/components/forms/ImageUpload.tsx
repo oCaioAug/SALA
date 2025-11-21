@@ -2,6 +2,7 @@
 
 import { Image as ImageIcon, Upload, X } from "lucide-react";
 import React, { useCallback, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -18,6 +19,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   itemName,
   disabled = false,
 }) => {
+  const t = useTranslations("ImageUpload");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,14 +31,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       // Validar tipo
       const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
       if (!allowedTypes.includes(file.type)) {
-        setError("Formato não suportado. Use JPG, PNG ou WebP.");
+        setError(t("errors.unsupportedFormat"));
         return;
       }
 
       // Validar tamanho (15MB)
       const maxSize = 15 * 1024 * 1024;
       if (file.size > maxSize) {
-        setError("Imagem muito grande. Tamanho máximo: 15MB");
+        setError(t("errors.tooLarge"));
         return;
       }
 
@@ -77,7 +79,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (file && file.type.startsWith("image/")) {
       validateAndSetImage(file);
     } else {
-      setError("Por favor, selecione uma imagem válida.");
+      setError(t("errors.invalidImage"));
     }
   };
 
@@ -129,7 +131,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium text-slate-700 dark:text-gray-300 block">
-        Imagem de Referência
+        {t("label")}
       </label>
 
       {/* Input oculto para seleção de arquivo */}
@@ -150,7 +152,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           >
             <img
               src={previewUrl}
-              alt={itemName || "Preview"}
+              alt={itemName || t("imagePreview")}
               className="w-full h-full object-cover transition-opacity group-hover:opacity-80"
             />
             {!disabled && (
@@ -165,14 +167,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 type="button"
                 onClick={handleRemove}
                 className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-auto"
-                aria-label="Remover imagem"
+                aria-label={t("removeImage")}
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
           <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-            Clique na imagem para alterar ou no X para remover
+            {t("clickToChangeOrRemove")}
           </p>
         </div>
       ) : (
@@ -208,14 +210,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             <div className="text-center">
               <p className="text-sm font-medium text-slate-700 dark:text-gray-300">
                 {isDragging
-                  ? "Solte a imagem aqui"
-                  : "Clique ou arraste uma imagem"}
+                  ? t("dropImageHere")
+                  : t("clickOrDragImage")}
               </p>
               <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-                JPG, PNG ou WebP (máx. 15MB)
+                {t("allowedFormats")}
               </p>
               <p className="text-xs text-slate-400 dark:text-gray-500 mt-1">
-                Ou cole da área de transferência (Ctrl+V)
+                {t("pasteFromClipboard")}
               </p>
             </div>
           </div>
@@ -223,7 +225,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       )}
 
       {error && (
-        <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+        <p className="text-sm text-red-500 dark:text-red-400">{t("errors.error")}</p>
       )}
     </div>
   );

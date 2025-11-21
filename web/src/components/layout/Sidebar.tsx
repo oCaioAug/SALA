@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Bell,
   Building2,
@@ -10,6 +12,7 @@ import {
   Users,
   AlertTriangle,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import React from "react";
 
@@ -26,36 +29,38 @@ const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   isNavigating = false,
 }) => {
+  const t = useTranslations("Sidebar");
+  const tCommon = useTranslations("Common");
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMIN";
 
   const menuItems = [
     {
       id: "dashboard",
-      label: "Visão Geral",
+      label: t("menuItems.dashboard.label"),
       icon: LayoutDashboard,
-      description: "Dashboard principal",
+      description: t("menuItems.dashboard.description"),
       active: currentPage === "dashboard",
     },
     {
       id: "solicitacoes",
-      label: "Solicitações",
+      label: t("menuItems.solicitacoes.label"),
       icon: ClipboardList,
-      description: "Aprovar reservas pendentes",
+      description: t("menuItems.solicitacoes.description"),
       active: currentPage === "solicitacoes",
     },
     {
       id: "agendamentos",
-      label: "Agendamentos",
+      label: t("menuItems.agendamentos.label"),
       icon: Calendar,
-      description: "Calendário de reservas",
+      description: t("menuItems.agendamentos.description"),
       active: currentPage === "agendamentos",
     },
     {
       id: "incidentes",
-      label: "Incidentes",
+      label: t("menuItems.incidentes.label"),
       icon: AlertTriangle,
-      description: "Gestão de problemas e manutenções",
+      description: t("menuItems.incidentes.description"),
       active: currentPage === "incidentes",
     },
     // Menu de usuários apenas para administradores
@@ -63,32 +68,32 @@ const Sidebar: React.FC<SidebarProps> = ({
       ? [
           {
             id: "users",
-            label: "Usuários",
+            label: t("menuItems.users.label"),
             icon: Users,
-            description: "Gerenciar usuários",
+            description: t("menuItems.users.description"),
             active: currentPage === "users",
           },
         ]
       : []),
     {
       id: "profile",
-      label: "Meu Perfil",
+      label: t("menuItems.profile.label"),
       icon: User,
-      description: "Gerenciar perfil",
+      description: t("menuItems.profile.description"),
       active: currentPage === "profile",
     },
     {
       id: "notificacoes",
-      label: "Notificações",
+      label: t("menuItems.notificacoes.label"),
       icon: Bell,
-      description: "Central de notificações",
+      description: t("menuItems.notificacoes.description"),
       active: currentPage === "notificacoes",
     },
     {
       id: "configuracoes",
-      label: "Configurações",
+      label: t("menuItems.configuracoes.label"),
       icon: Settings,
-      description: "Configurações do sistema",
+      description: t("menuItems.configuracoes.description"),
       active: currentPage === "configuracoes",
     },
   ];
@@ -103,10 +108,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              S.A.L.A
+              {tCommon("systemName")}
             </h1>
             <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              Sistema de Gerenciamento
+              {tCommon("systemDescription")}
             </p>
           </div>
         </div>
@@ -117,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <nav className="flex-1 px-4 py-6">
         <div className="mb-6">
           <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3 px-3">
-            Navegação
+            {t("navigation")}
           </h2>
           <ul className="space-y-1">
             {menuItems.map(item => {
@@ -201,11 +206,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-              Sistema Online
+              {tCommon("online")}
             </span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-500">
-            Última atualização: agora
+            {tCommon("lastUpdate")}
           </p>
         </div>
       </nav>

@@ -24,6 +24,8 @@ import {
   NOTIFICATION_TYPE_CONFIG,
   NotificationTypeType,
 } from "@/lib/types";
+import { useTranslations, useLocale } from "next-intl";
+import { getIntlLocale } from "@/lib/utils";
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -40,6 +42,9 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   onNotificationChange,
   onNotificationClick,
 }) => {
+  const t = useTranslations("NotificationModal");
+  const tNotificationService = useTranslations("NotificationService");
+  const locale = useLocale();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +82,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao marcar como lida");
+        throw new Error(t("errors.markAsRead"));
       }
 
       // Atualizar estado local
@@ -105,7 +110,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao deletar notificação");
+        throw new Error(t("errors.delete"));
       }
 
       // Remover do estado local
@@ -139,7 +144,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       if (!response.ok) {
         const errorData = await response.json();
         console.error("❌ Erro da API:", errorData);
-        throw new Error("Erro ao marcar todas como lidas");
+        throw new Error(t("errors.markAllAsRead"));
       }
 
       const result = await response.json();
@@ -179,6 +184,140 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   const getNotificationColor = (type: NotificationTypeType) => {
     const config = NOTIFICATION_TYPE_CONFIG[type];
     return config?.color || "gray";
+  };
+
+  // Função para traduzir títulos das notificações baseado no tipo
+  const getNotificationTitle = (notification: Notification): string => {
+    switch (notification.type) {
+      case "RESERVATION_CREATED":
+        return tNotificationService("titles.reservationCreated");
+      case "RESERVATION_APPROVED":
+        return tNotificationService("titles.reservationApproved");
+      case "RESERVATION_REJECTED":
+        return tNotificationService("titles.reservationRejected");
+      case "RESERVATION_CANCELLED":
+        return tNotificationService("titles.reservationCancelled");
+      case "SYSTEM_ANNOUNCEMENT":
+      case "RESERVATION_CONFLICT":
+      case "ROOM_STATUS_CHANGED":
+      default:
+        // Para outros tipos, usar o título armazenado no banco como fallback
+        return notification.title;
+    }
+  };
+
+  // Função para traduzir mensagens das notificações baseado no tipo
+  const getNotificationMessage = (notification: Notification): string => {
+    const intlLocale = getIntlLocale(locale);
+
+    // Parse dos dados da notificação
+    let notificationData: any = {};
+    if (notification.data) {
+      if (typeof notification.data === "string") {
+        try {
+          notificationData = JSON.parse(notification.data);
+        } catch {
+          notificationData = {};
+        }
+      } else {
+        notificationData = notification.data;
+      }
+    }
+
+    switch (notification.type) {
+      case "RESERVATION_CREATED": {
+        const userName =
+          notificationData.userName || (locale === "pt" ? "Usuário" : "User");
+        const roomName = notificationData.roomName || "";
+        const startTime = notificationData.startTime
+          ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+        const purpose = notificationData.purpose
+          ? tNotificationService("messages.purposePrefix", {
+              purpose: notificationData.purpose,
+            })
+          : "";
+
+        // Verificar se o usuário que criou é admin
+        const isAdmin =
+          notificationData.isAdmin || notificationData.userRole === "ADMIN";
+
+        if (isAdmin) {
+          return tNotificationService("messages.reservationCreatedAdmin", {
+            userName,
+            roomName,
+            startTime,
+            purpose,
+          });
+        } else {
+          return tNotificationService("messages.reservationCreatedUser", {
+            userName,
+            roomName,
+            startTime,
+            purpose,
+          });
+        }
+      }
+      case "RESERVATION_APPROVED": {
+        const roomName = notificationData.roomName || "";
+        const startTime = notificationData.startTime
+          ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+
+        return tNotificationService("messages.reservationApproved", {
+          roomName,
+          startTime,
+        });
+      }
+      case "RESERVATION_REJECTED": {
+        const roomName = notificationData.roomName || "";
+        const startTime = notificationData.startTime
+          ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "";
+        const reason = notificationData.reason
+          ? tNotificationService("messages.reasonPrefix", {
+              reason: notificationData.reason,
+            })
+          : "";
+
+        return tNotificationService("messages.reservationRejected", {
+          roomName,
+          startTime,
+          reason,
+        });
+      }
+      case "RESERVATION_CANCELLED": {
+        const roomName = notificationData.roomName || "";
+
+        return tNotificationService("messages.reservationCancelled", {
+          roomName,
+        });
+      }
+      case "SYSTEM_ANNOUNCEMENT":
+      case "RESERVATION_CONFLICT":
+      case "ROOM_STATUS_CHANGED":
+      default:
+        // Para outros tipos, usar a mensagem armazenada no banco como fallback
+        return notification.message;
+    }
   };
 
   const getNotificationColorClasses = (color: string) => {
@@ -227,7 +366,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         <div className="flex items-center gap-2">
           <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Notificações
+            {t("title")}
           </h3>
         </div>
         <button
@@ -256,11 +395,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         <div className="flex items-center justify-between p-4 pb-3 border-b border-slate-200 dark:border-slate-600/50">
           <div className="flex items-center gap-2">
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              {notifications.length} notificação
-              {notifications.length !== 1 ? "ões" : ""}
+              {t("notifications.plural", {
+                count: notifications.length,
+              })}
               {unreadCount > 0 && (
                 <span className="ml-2 text-blue-600 dark:text-blue-400">
-                  ({unreadCount} não lida{unreadCount !== 1 ? "s" : ""})
+                  (
+                  {t("notifications.unread", {
+                    count: unreadCount,
+                  })}{" "}
+                  {t("notifications.plural", { count: "" })})
                 </span>
               )}
             </span>
@@ -274,7 +418,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               className="text-xs"
             >
               <CheckCheck className="w-4 h-4 mr-1" />
-              Marcar todas como lidas
+              {t("actions.markAllAsRead")}
             </Button>
           )}
         </div>
@@ -289,7 +433,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
             icon={
               <Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />
             }
-            title="Erro ao carregar notificações"
+            title={t("errors.load")}
             description={error}
           />
         ) : notifications.length === 0 ? (
@@ -297,8 +441,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
             icon={
               <Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />
             }
-            title="Nenhuma notificação"
-            description="Você não tem notificações no momento"
+            title={t("notifications.none")}
+            description={t("notifications.noneDescription")}
           />
         ) : (
           <div className="p-2 space-y-3">
@@ -340,7 +484,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                                 : "text-slate-900 dark:text-white"
                             }`}
                           >
-                            {notification.title}
+                            {getNotificationTitle(notification)}
                           </h4>
                           <p
                             className={`text-xs mt-1 ${
@@ -349,7 +493,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                                 : "text-slate-700 dark:text-slate-300"
                             }`}
                           >
-                            {notification.message}
+                            {getNotificationMessage(notification)}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <Clock className="w-3 h-3 text-slate-500 dark:text-slate-500" />

@@ -1,0 +1,925 @@
+{
+  "Dashboard": {
+    "header": {
+      "title": "Aperçu des Salles",
+      "description": "Gérez et surveillez toutes les salles de l'institution"
+    },
+    "actions": {
+      "users": "Utilisateurs",
+      "newRoom": "Nouvelle Salle",
+      "createRoom": "Créer Salle",
+      "viewDetails": "Voir Détails",
+      "clickToStart": "Cliquer pour commencer",
+      "retry": "Réessayer"
+    },
+    "filters": {
+      "searchPlaceholder": "Rechercher salle, équipement ou description...",
+      "statusAll": "Tous les statuts",
+      "statusFree": "Disponible",
+      "statusInUse": "En cours d'utilisation",
+      "statusReserved": "Réservé"
+    },
+    "stats": {
+      "total": "Total des Salles",
+      "available": "Disponibles",
+      "inUse": "En Usage",
+      "reserved": "Réservées"
+    },
+    "card": {
+      "reservedTag": "Réservée",
+      "people": "{count} personnes",
+      "quantity": "Qté : {count}",
+      "moreItems": "+{count} autres articles",
+      "createTitle": "Créer Nouvelle Salle",
+      "createDescription": "Ajoutez une nouvelle salle au système pour commencer la gestion"
+    },
+    "empty": {
+      "notFoundTitle": "Aucune salle trouvée",
+      "notFoundDesc": "Essayez d'ajuster les filtres de recherche ou le statut.",
+      "noDataTitle": "Aucune salle enregistrée",
+      "noDataDesc": "Commencez par créer votre première salle pour gérer les espaces.",
+      "createFirst": "Créer Première Salle"
+    },
+    "feedback": {
+      "loading": "Chargement du tableau de bord...",
+      "successCreate": "Salle \"{name}\" créée avec succès !",
+      "errorCreate": "Erreur lors de la création de la salle",
+      "errorGeneric": "Erreur inconnue lors du chargement des salles",
+      "errorTitle": "Erreur"
+    },
+    "modal": {
+      "createTitle": "Créer Nouvelle Salle"
+    },
+    "form": {
+      "nameLabel": "Nom de la Salle",
+      "namePlaceholder": "Ex : Laboratoire de Robotique",
+      "nameRequired": "Le nom est requis",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Décrivez la salle et son équipement...",
+      "capacityLabel": "Capacité",
+      "capacityPlaceholder": "Ex : 30",
+      "statusLabel": "Statut",
+      "submitCreate": "Créer Salle",
+      "submitUpdate": "Mettre à jour Salle",
+      "cancel": "Annuler"
+    }
+  },
+  "Common": {
+    "systemName": "S.A.L.A",
+    "systemDescription": "Système de Gestion",
+    "online": "Système en ligne",
+    "lastUpdate": "Dernière mise à jour : maintenant",
+    "user": "Utilisateur",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Avertissement",
+    "info": "Information"
+  },
+  "ErrorBoundary": {
+    "title": "Oups ! Une erreur est survenue",
+    "description": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+    "retry": "Réessayer"
+  },
+  "Sidebar": {
+    "navigation": "Navigation",
+    "menuItems": {
+      "dashboard": {
+        "label": "Vue d'ensemble",
+        "description": "Tableau de bord principal"
+      },
+      "solicitacoes": {
+        "label": "Demandes",
+        "description": "Approuver les réservations en attente"
+      },
+      "agendamentos": {
+        "label": "Planning",
+        "description": "Calendrier des réservations"
+      },
+      "incidentes": {
+        "label": "Incidents",
+        "description": "Gestion des problèmes et maintenance"
+      },
+      "users": {
+        "label": "Utilisateurs",
+        "description": "Gérer les utilisateurs"
+      },
+      "profile": {
+        "label": "Mon Profil",
+        "description": "Gérer le profil"
+      },
+      "notificacoes": {
+        "label": "Notifications",
+        "description": "Centre de notifications"
+      },
+      "configuracoes": {
+        "label": "Paramètres",
+        "description": "Paramètres du système"
+      }
+    }
+  },
+  "Header": {
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "overview": "Vue d'ensemble"
+    },
+    "search": {
+      "placeholder": "Rechercher salles, équipements, utilisateurs..."
+    },
+    "userMenu": {
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "logout": "Déconnexion",
+      "ariaLabel": "Changer de thème"
+    }
+  },
+  "LanguageSwitcher": {
+    "changeLanguage": "Changer de langue",
+    "portuguese": "Português",
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français",
+    "japanese": "日本語"
+  },
+  "LoadingPage": {
+    "loading": "Chargement..."
+  },
+  "Calendar": {
+    "monthNames": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    },
+    "weekDays": {
+      "sunday": "Dimanche",
+      "monday": "Lundi",
+      "tuesday": "Mardi",
+      "wednesday": "Mercredi",
+      "thursday": "Jeudi",
+      "friday": "Vendredi",
+      "saturday": "Samedi"
+    },
+    "today": "Aujourd'hui",
+    "multipleDaysReservation": "Réservation sur plusieurs jours",
+    "moreReservations": "autres réservations",
+    "rooms": "Salles",
+    "moreRooms": "autres salles"
+  },
+  "ProfilePage": {
+    "title": "Mon Profil",
+    "accountInfo": "Infos du Compte",
+    "memberSince": "Membre depuis",
+    "lastUpdate": "Dernière mise à jour",
+    "titleUser": "Profil de {name}",
+    "description": "Gérez vos informations personnelles",
+    "descriptionUser": "Voir et modifier les informations de {name}",
+    "loading": "Chargement du profil...",
+    "fullName": "Nom Complet",
+    "fullNamePlaceholder": "Ex : Jean Dupont",
+    "fullNameRequired": "Le nom complet est requis",
+    "fullNameInvalid": "Le nom complet est invalide",
+    "email": "E-mail",
+    "emailPlaceholder": "Ex : jean.dupont@exemple.com",
+    "emailRequired": "L'e-mail est requis",
+    "emailInvalid": "L'e-mail est invalide",
+    "role": "Rôle",
+    "roles": {
+      "admin": "Administrateur",
+      "user": "Utilisateur"
+    },
+    "personalInfo": "Informations Personnelles",
+    "createdAt": "Créé le",
+    "updatedAt": "Mis à jour le",
+    "accessDenied": "Accès Refusé",
+    "accessDeniedDescription": "Vous n'avez pas la permission de voir ce profil.",
+    "backToDashboard": "Retour au Tableau de bord",
+    "userNotFound": "Utilisateur non trouvé",
+    "userNotFoundDescription": "L'utilisateur demandé n'a pas été trouvé.",
+    "backToListUsers": "Retour à la liste des utilisateurs",
+    "avatar": {
+      "updated": "Avatar mis à jour avec succès !",
+      "removed": "Avatar supprimé avec succès !"
+    },
+    "save": {
+      "success": "Profil mis à jour avec succès !",
+      "error": "Erreur lors de l'enregistrement",
+      "loading": "Enregistrement...",
+      "save": "Enregistrer les modifications"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "notifications": "Notifications",
+      "security": "Sécurité",
+      "preferences": "Préférences"
+    },
+    "errors": {
+      "userNotFound": "Utilisateur non trouvé",
+      "userLoadError": "Erreur lors du chargement des données",
+      "saveError": "Erreur lors de l'enregistrement",
+      "userRoleChangeError": "Erreur lors du changement de rôle"
+    },
+    "actions": {
+      "back": "Retour",
+      "removeAdmin": "Retirer Admin",
+      "makeAdmin": "Nommer Admin",
+      "manageUsers": "Gérer les Utilisateurs",
+      "cancel": "Annuler",
+      "edit": "Modifier"
+    },
+    "ownProfilePictureDescription": "Ceci est votre photo de profil. Elle sera affichée dans vos réservations et interactions.",
+    "anotherUserProfilePictureDescription": "Photo de profil de l'utilisateur. Peut être modifiée par les administrateurs.",
+    "activityStats": "Statistiques d'Activité",
+    "activityStatsDescription": "Les statistiques d'activité seront bientôt disponibles."
+  },
+  "ReservationApproval": {
+    "loading": "Vérification de l'authentification...",
+    "loadingReservations": "Chargement des réservations en attente...",
+    "restricted": {
+      "title": "Accès Restreint",
+      "message": "Vous devez être authentifié comme administrateur pour accéder à cette page.",
+      "login": "Connexion"
+    },
+    "denied": {
+      "title": "Accès Refusé",
+      "message": "Seuls les administrateurs peuvent approuver les réservations."
+    },
+    "title": "Approbation des Réservations",
+    "noPending": "Aucune réservation en attente",
+    "noPendingDesc": "Toutes les demandes de réservation ont été traitées.",
+    "actions": {
+      "refresh": "Actualiser la Liste",
+      "debug": "Débogage",
+      "testPush": "Test Push 🔔"
+    },
+    "card": {
+      "pending": "En attente",
+      "requester": "Demandeur",
+      "start": "Début",
+      "end": "Fin",
+      "purpose": "Objet",
+      "notInformed": "Non renseigné",
+      "approve": "✅ Approuver",
+      "reject": "❌ Rejeter",
+      "rejectReason": "Motif du rejet (optionnel) :"
+    },
+    "table": {
+      "user": "Utilisateur",
+      "room": "Salle",
+      "date": "Date",
+      "time": "Heure",
+      "purpose": "Objet",
+      "status": "Statut",
+      "actions": "Actions",
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "viewDetails": "Voir Détails"
+    },
+    "feedback": {
+      "approving": "Approbation en cours...",
+      "rejecting": "Rejet en cours...",
+      "successApprove": "Réservation approuvée !",
+      "successReject": "Réservation rejetée !",
+      "error": "Erreur lors du traitement",
+      "errorInternal": "Erreur interne lors de l'approbation",
+      "testPushPrompt": "Entrez l'ID utilisateur pour le test push :",
+      "testPushTitle": "Test Notification Push",
+      "testPushBody": "Ceci est une notification de test du système SALA !",
+      "errorTestPush": "Erreur interne lors du test push"
+    }
+  },
+  "ReservationForm": {
+    "schedulingFor": "Réservation pour :",
+    "user": "Utilisateur",
+    "selectUser": "Sélectionner un utilisateur",
+    "room": "Salle",
+    "selectRoom": "Sélectionner une salle",
+    "start": "Début",
+    "end": "Fin",
+    "durationLabel": "Durée de la réservation :",
+    "purpose": "Objet de la Réservation",
+    "purposePlaceholder": "Décrivez l'objet de la réservation (optionnel)",
+    "importantInfo": "Informations Importantes :",
+    "info1": "Les réservations peuvent être faites jusqu'à 1 heure à l'avance",
+    "info2": "Durée maximale de 30 jours par réservation",
+    "info3": "Plusieurs salles peuvent être réservées le même jour",
+    "info4": "La salle sera automatiquement marquée comme \"Réservée\"",
+    "info5": "Vous recevrez une confirmation par e-mail",
+    "create": "Créer Réservation",
+    "creating": "Création en cours...",
+    "cancel": "Annuler",
+    "errors": {
+      "userRequired": "L'utilisateur est requis",
+      "roomRequired": "La salle est requise",
+      "startRequired": "L'heure de début est requise",
+      "endRequired": "L'heure de fin est requise",
+      "endAfterStart": "L'heure de fin doit être après l'heure de début",
+      "startNotPast": "L'heure de début ne peut pas être dans le passé",
+      "maxDuration": "La réservation ne peut pas dépasser 30 jours",
+      "recurringEndDateRequired": "La date de fin de récurrence est requise",
+      "recurringEndDateAfterStart": "La date de fin doit être postérieure à la date de début",
+      "recurringDaysRequired": "Sélectionnez au moins un jour de la semaine"
+    },
+    "duration": {
+      "days": "{count} jours",
+      "hours": "{count} heures"
+    },
+    "recurring": "Réservation Récurrente",
+    "recurringPattern": "Modèle de Récurrence",
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "recurringDays": "Jours de la Semaine",
+    "sunday": "Dim",
+    "monday": "Lun",
+    "tuesday": "Mar",
+    "wednesday": "Mer",
+    "thursday": "Jeu",
+    "friday": "Ven",
+    "saturday": "Sam",
+    "recurringEndDate": "Date de Fin"
+  },
+  "SchedulesPage": {
+    "confirmations": {
+      "deleteReservation": "Êtes-vous sûr de vouloir supprimer cette réservation ?"
+    },
+    "description": "Voir et gérer tous les horaires des salles",
+    "title": "Plannings",
+    "loading": "Chargement des plannings...",
+    "searchPlaceholder": "Rechercher par salle, utilisateur ou objet...",
+    "newReservation": "Nouvelle Réservation",
+    "statusFilter": {
+      "all": "Tous",
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "rejected": "Rejetée",
+      "active": "Active",
+      "cancelled": "Annulée",
+      "completed": "Terminée",
+      "unknown": "Inconnu"
+    },
+    "modal": {
+      "details": "Détails de la Réservation",
+      "create": "Nouvelle Réservation"
+    },
+    "success": {
+      "reservationCreated": "Réservation créée avec succès !",
+      "reservationCancelled": "Réservation annulée avec succès !"
+    },
+    "error": {
+      "reservationCreation": "Erreur lors de la création",
+      "reservationCancellation": "Erreur lors de l'annulation"
+    },
+    "retryLabel": "Réessayer",
+    "reservationsOfTheDay": "Réservations du",
+    "reservationsFound": "réservations trouvées",
+    "noReservationsForTheDay": "Aucune réservation pour ce jour",
+    "noReservationsForTheDayDescription": "Il n'y a pas de réservation pour la date sélectionnée.",
+    "unknownRoom": "Salle inconnue",
+    "room": "Salle",
+    "user": "Utilisateur",
+    "start": "Début",
+    "end": "Fin",
+    "purpose": "Objet",
+    "status": "Statut",
+    "close": "Fermer",
+    "cancelReservation": "Annuler Réservation"
+  },
+  "SettingsPage": {
+    "title": "Paramètres",
+    "description": "Gérer les paramètres du système",
+    "loading": "Chargement des paramètres...",
+    "searchPlaceholder": "Rechercher un paramètre...",
+    "systemInfo": "Informations Système",
+    "version": "Version",
+    "lastUpdate": "Dernière Mise à jour",
+    "databaseStatus": "Statut Base de Données",
+    "currentUser": "Utilisateur Actuel",
+    "today": "Aujourd'hui",
+    "connected": "Connecté",
+    "system": "Système",
+    "actions": {
+      "configure": "Configurer"
+    },
+    "statusFilter": {
+      "all": "Tous",
+      "pending": "En attente",
+      "approved": "Approuvé",
+      "rejected": "Rejeté"
+    },
+    "empty": {
+      "title": "Aucun paramètre trouvé",
+      "description": "Il n'y a aucun paramètre pour le moment."
+    },
+    "items": {
+      "showInfo": "Cette fonctionnalité sera bientôt disponible",
+      "profile": {
+        "id": "profile",
+        "title": "Profil",
+        "description": "Gérez vos informations personnelles"
+      },
+      "notifications": {
+        "id": "notifications",
+        "title": "Notifications",
+        "description": "Gérez vos notifications"
+      },
+      "security": {
+        "id": "security",
+        "title": "Sécurité",
+        "description": "Gérez vos paramètres de sécurité"
+      },
+      "database": {
+        "id": "database",
+        "title": "Base de Données",
+        "description": "Gérez les paramètres de la base de données"
+      },
+      "appearance": {
+        "id": "appearance",
+        "title": "Apparence",
+        "description": "Gérez les paramètres d'apparence"
+      }
+    }
+  },
+  "Solicitacoes": {
+    "title": "Demandes de Réservation",
+    "loading": "Chargement des demandes...",
+    "searchPlaceholder": "Rechercher par salle, utilisateur ou objet...",
+    "statusFilter": {
+      "all": "Toutes",
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "rejected": "Rejetée"
+    },
+    "empty": {
+      "title": "Aucune demande trouvée",
+      "description": "Il n'y a aucune demande de réservation pour le moment."
+    },
+    "card": {
+      "viewDetails": "Voir Détails",
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "rejected": "Rejetée",
+      "unknown": "Inconnu"
+    },
+    "modal": {
+      "details": "Détails de la Demande",
+      "user": "Utilisateur",
+      "room": "Salle",
+      "start": "Début",
+      "end": "Fin",
+      "purpose": "Objet",
+      "status": "Statut",
+      "createdAt": "Créée le",
+      "close": "Fermer"
+    },
+    "conflict": {
+      "title": "Conflit de Réservation",
+      "message": "Cette demande entre en conflit avec les réservations suivantes :",
+      "forceApprove": "Approuver quand même",
+      "cancel": "Annuler"
+    },
+    "feedback": {
+      "successApprove": "Demande approuvée avec succès !",
+      "successReject": "Demande rejetée !",
+      "errorApprove": "Erreur lors de l'approbation",
+      "errorReject": "Erreur lors du rejet",
+      "forceApproveSuccess": "Demande approuvée ! Les réservations en conflit ont été annulées.",
+      "errorForceApprove": "Erreur lors de l'approbation forcée"
+    },
+    "recurring": "Récurrente",
+    "recurringInfo": "Il s'agit d'une réservation récurrente. L'approbation/le rejet affectera toutes les instances.",
+    "rejectReasonRecurring": "Raison du rejet (affectera toutes les instances) :"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "loading": "Chargement des notifications...",
+    "empty": {
+      "title": "Aucune notification",
+      "description": "Vous n'avez aucune notification pour le moment."
+    },
+    "filters": {
+      "all": "Toutes",
+      "unread": "Non lues",
+      "read": "Lues"
+    },
+    "types": {
+      "all": "Tous les types",
+      "SYSTEM_ANNOUNCEMENT": "Annonce Système",
+      "RESERVATION_CREATED": "Réservation Créée",
+      "RESERVATION_APPROVED": "Réservation Approuvée",
+      "RESERVATION_REJECTED": "Réservation Rejetée",
+      "RESERVATION_CANCELLED": "Réservation Annulée",
+      "RESERVATION_REMINDER": "Rappel de Réservation"
+    },
+    "actions": {
+      "markAllRead": "Tout marquer comme lu",
+      "markRead": "Marquer comme lu",
+      "markUnread": "Marcar comme non lu",
+      "delete": "Supprimer",
+      "reload": "🔄 Recharger",
+      "debug": "🔍 Debug",
+      "test": "🧪 Test Notification"
+    },
+    "stats": {
+      "total": "Total",
+      "unread": "Non lues",
+      "read": "Lues"
+    },
+    "description": {
+      "unreadCount": "{unread} non lues sur {total}",
+      "allRead": "Toutes les {total} notifications ont été lues",
+      "none": "Aucune notification reçue"
+    },
+    "timeAgo": {
+      "justNow": "À l'instant",
+      "hoursAgo": "il y a {count}h",
+      "yesterday": "Hier"
+    },
+    "feedback": {
+      "markAllReadSuccess": "Toutes les notifications marquées comme lues",
+      "markReadSuccess": "Notification marquée comme lue",
+      "deleteSuccess": "Notification supprimée",
+      "error": "Erreur lors du traitement",
+      "debugSuccess": "📊 {count} notifications trouvées en base (voir console)",
+      "debugError": "Erreur de debug",
+      "testSuccess": "✅ {message}",
+      "testError": "Erreur lors du test"
+    }
+  },
+  "Incidents": {
+    "title": "Gestion des Incidents",
+    "description": "Gérez les problèmes et la maintenance des laboratoires et équipements",
+    "loading": "Chargement des incidents...",
+    "time": {
+      "ago": "il y a",
+      "justNow": "À l'instant",
+      "minutes": "minutes",
+      "minute": "minute",
+      "hours": "heures",
+      "hour": "heure",
+      "days": "jours",
+      "day": "jour",
+      "weeks": "semaines",
+      "week": "semaine",
+      "months": "mois",
+      "month": "mois",
+      "years": "ans",
+      "year": "an"
+    },
+    "categoriesLabels": {
+      "EQUIPMENT_FAILURE": "Panne Équipement",
+      "INFRASTRUCTURE": "Infrastructure",
+      "SOFTWARE": "Logiciel",
+      "SAFETY": "Sécurité",
+      "MAINTENANCE": "Maintenance",
+      "ELECTRICAL": "Électrique",
+      "NETWORK": "Réseau",
+      "OTHER": "Autre"
+    },
+    "prioritiesLabels": {
+      "LOW": "Basse",
+      "MEDIUM": "Moyenne",
+      "HIGH": "Haute",
+      "CRITICAL": "Critique"
+    },
+    "statusesLabels": {
+      "REPORTED": "Signalé",
+      "IN_ANALYSIS": "En Analyse",
+      "IN_PROGRESS": "En Cours",
+      "RESOLVED": "Résolu"
+    },
+    "create": "Signaler Incident",
+    "update": "Mettre à jour",
+    "searchPlaceholder": "Rechercher par titre, description ou catégorie...",
+    "empty": {
+      "title": "Aucun incident trouvé",
+      "description": "Il n'y a aucun incident enregistré pour le moment."
+    },
+    "details": {
+      "title": "Détails de l'Incident",
+      "titleLabel": "Titre",
+      "description": "Description",
+      "category": "Catégorie",
+      "priority": "Priorité",
+      "statusLabel": "Statut",
+      "status": "Statut",
+      "room": "Salle",
+      "item": "Équipement",
+      "assignee": "Assigné à",
+      "reportedBy": "Signalé par",
+      "assignedTo": "Assigné à",
+      "notAssigned": "Non assigné",
+      "resolutionNotes": "Notes de Résolution"
+    },
+    "stats": {
+      "total": "Total",
+      "totalActive": "Total Actifs",
+      "open": "Ouverts",
+      "critical": "Critiques",
+      "inProgress": "En Cours",
+      "resolved": "Résolus",
+      "averageTime": "Temps Moyen"
+    },
+    "filters": {
+      "all": "Tous",
+      "allStatuses": "Tous les Statuts",
+      "allPriorities": "Toutes les Priorités",
+      "allCategories": "Toutes les Catégories",
+      "open": "Ouvert",
+      "inProgress": "En Cours",
+      "resolved": "Résolu",
+      "reported": "Signalé",
+      "inAnalysis": "En Analyse",
+      "critical": "Critique",
+      "high": "Haute",
+      "medium": "Moyenne",
+      "low": "Basse"
+    },
+    "form": {
+      "creating": "Création en cours...",
+      "create": "Créer Incident",
+      "title": "Signaler Nouvel Incident",
+      "titleLabel": "Titre",
+      "titlePlaceholder": "Ex : Équipement cassé",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Décrivez l'incident...",
+      "categoryLabel": "Catégorie",
+      "priorityLabel": "Priorité",
+      "statusLabel": "Statut",
+      "roomLabel": "Salle",
+      "itemLabel": "Équipement",
+      "assigneeLabel": "Assigné à",
+      "selectRoom": "Sélectionner une salle",
+      "selectItem": "Sélectionner un équipement",
+      "selectAssignee": "Sélectionner un responsable",
+      "selectCategory": "Sélectionner une catégorie",
+      "selectRoomOrItem": "choisissez une salle OU un équipement",
+      "noItemRegisteredInThisRoom": "Aucun équipement enregistré dans cette salle",
+      "noItemAvailableInThisRoom": "Aucun équipement disponible dans cette salle",
+      "noSpecificItem": "Aucun équipement spécifique",
+      "resolutionNotesLabel": "Notes de Résolution",
+      "resolutionNotesPlaceholder": "Décrivez comment le problème a été résolu...",
+      "resolutionNotesRequired": "Requis pour les incidents résolus",
+      "finalizingIncident": "Finalisation de l'incident",
+      "finalizingIncidentDescription": "Assurez-vous de détailler la solution appliquée dans les notes de résolution.",
+      "resolveIncident": "Résoudre Incident",
+      "saveChanges": "Enregistrer",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer",
+      "submit": "Créer",
+      "update": "Mettre à jour",
+      "cancel": "Annuler",
+      "category": "Catégorie",
+      "warning": "⚠️ Lieu requis",
+      "warningDescription": "Vous devez sélectionner au moins une salle ou un équipement spécifique.",
+      "tip": "Conseil",
+      "tipDescription": "Soyez précis dans la description pour accélérer la résolution."
+    },
+    "actions": {
+      "view": "Voir Détails",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "refresh": "Actualiser",
+      "close": "Fermer",
+      "cancel": "Annuler"
+    },
+    "feedback": {
+      "createSuccess": "Incident créé avec succès !",
+      "updateSuccess": "Incident mis à jour avec succès !",
+      "deleteSuccess": "Incident supprimé avec succès !",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet incident ?",
+      "error": "Erreur lors du traitement",
+      "authError": "Vous devez être connecté pour accéder à cette page."
+    },
+    "room": "Salle",
+    "item": "Équipement",
+    "reportedBy": "Signalé par",
+    "assignedTo": "Assigné à"
+  },
+  "ImageUpload": {
+    "label": "Image de Référence",
+    "uploading": "Téléchargement...",
+    "change": "Changer",
+    "upload": "Télécharger",
+    "removing": "Suppression...",
+    "errors": {
+      "invalidImage": "Veuillez sélectionner une image valide.",
+      "unsupportedFormat": "Format non supporté. Utilisez JPG, PNG ou WebP.",
+      "tooLarge": "Image trop grande. Taille max : 15Mo."
+    },
+    "imagePreview": "Aperçu de l'image",
+    "removeImage": "Supprimer Image",
+    "clickToChangeOrRemove": "Cliquez sur l'image pour changer ou sur la X pour supprimer",
+    "allowedFormats": "JPG, PNG ou WebP (max. 15Mo)",
+    "pasteFromClipboard": "Ou collez depuis le presse-papiers (Ctrl+V)",
+    "clickOrDragImage": "Cliquez ou glissez une image",
+    "dropImageHere": "Déposez l'image ici",
+    "success": {
+      "imageUploaded": "Image téléchargée avec succès !",
+      "imageRemoved": "Image supprimée avec succès !"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "S.A.L.A",
+      "subtitle": "Système de Gestion de Salles",
+      "email": "E-mail",
+      "emailPlaceholder": "votre@email.com",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié",
+      "login": "Connexion",
+      "loginWithGoogle": "Connexion avec Google",
+      "loading": "Connexion...",
+      "error": "Erreur de connexion",
+      "connectionError": "Erreur de connexion. Veuillez réessayer.",
+      "authError": "Erreur d'authentification :",
+      "callbackError": "Erreur callback Google.",
+      "noAccount": "Pas de compte ?",
+      "createAccount": "Créer un compte"
+    }
+  },
+  "RoomDetail": {
+    "loading": "Chargement de la salle...",
+    "notFound": "Salle non trouvée",
+    "backToDashboard": "Retour au Tableau de bord",
+    "back": "Retour",
+    "capacity": "Capacité : {count} personnes",
+    "viewReservations": "Voir Réservations",
+    "editRoom": "Modifier Salle",
+    "addItem": "Ajouter Équipement",
+    "description": "Description",
+    "roomItems": "Équipements de la Salle",
+    "itemsRegistered": "{count} équipements enregistrés",
+    "itemsRegisteredOne": "{count} équipement enregistré",
+    "empty": {
+      "title": "Aucun équipement enregistré",
+      "descriptionAdmin": "Commencez par ajouter des équipements à cette salle",
+      "descriptionUser": "Cette salle n'a pas encore d'équipement enregistré",
+      "addFirstItem": "Ajouter Premier Équipement"
+    },
+    "item": {
+      "quantity": "Qté : {count}",
+      "specifications": "Spécifications :",
+      "more": "+{count} autres"
+    },
+    "modals": {
+      "editRoom": "Modifier Salle",
+      "addItem": "Ajouter Équipement",
+      "editItem": "Modifier Équipement"
+    },
+    "form": {
+      "itemName": "Nom de l'Équipement",
+      "itemNamePlaceholder": "Ex : Ordinateur",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez l'équipement...",
+      "specifications": "Spécifications (séparées par virgules)",
+      "specificationsPlaceholder": "Ex : Windows 11, 16Go RAM, Core i7",
+      "quantity": "Quantité",
+      "icon": "Icône (emoji)",
+      "iconPlaceholder": "💻",
+      "iconHint": "Optionnel - utilisé si pas d'image",
+      "saving": "Enregistrement...",
+      "updateItem": "Mettre à jour",
+      "addItem": "Ajouter",
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "updateRoom": "Erreur mise à jour salle",
+      "addItem": "Erreur ajout équipement",
+      "updateItem": "Erreur mise à jour équipement",
+      "deleteItem": "Erreur suppression équipement",
+      "saveItem": "Erreur sauvegarde équipement",
+      "unknown": "Erreur inconnue"
+    },
+    "confirmations": {
+      "deleteItem": "Êtes-vous sûr de vouloir supprimer cet équipement ?"
+    }
+  },
+  "UsersPage": {
+    "title": "Gestion des Utilisateurs",
+    "description": "Voir et gérer tous les utilisateurs du système",
+    "loading": "Chargement des utilisateurs...",
+    "searchPlaceholder": "Rechercher par nom, email ou statut...",
+    "create": "Créer Utilisateur",
+    "edit": "Modifier Utilisateur",
+    "delete": "Supprimer Utilisateur",
+    "filters": {
+      "all": "Tous",
+      "admin": "Admin",
+      "user": "Utilisateur",
+      "allStatuses": "Tous les Statuts",
+      "allRoles": "Tous les Rôles",
+      "allPermissions": "Toutes les Permissions",
+      "allGroups": "Tous les Groupes",
+      "allLocations": "Tous les Lieux",
+      "allDevices": "Tous les Appareils"
+    },
+    "stats": {
+      "total": "Total Utilisateurs",
+      "totalActive": "Total Actifs",
+      "totalInactive": "Total Inactifs",
+      "totalPending": "Total En Attente",
+      "totalRejected": "Total Rejetés",
+      "totalApproved": "Total Approuvés",
+      "admin": "Admin(s)",
+      "user": "Utilisateur(s) Standard"
+    },
+    "user": {
+      "name": "Nom",
+      "email": "E-mail",
+      "role": "Rôle",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "testSession": "🧪 Test Session",
+    "users": "Utilisateurs",
+    "tryAgain": "Réessayer",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "noUsersFoundDescription": "Aucun utilisateur ne correspond aux filtres.",
+    "userWithoutName": "Utilisateur sans nom",
+    "sessionValid": "Session valide ! Voir console.",
+    "sessionError": "Erreur de session : {error}",
+    "sessionTestError": "Erreur test session",
+    "error": "Erreur {status} : {statusText}",
+    "errorUnknown": "Erreur inconnue",
+    "errorLoadingUsers": "Erreur chargement utilisateurs",
+    "errorUserPermissionChange": "Erreur changement permission",
+    "userNowIs": "L'utilisateur est maintenant {role}",
+    "admin": "admin",
+    "userRoleLabel": "standard",
+    "adminRole": "Administrateur",
+    "userRole": "Utilisateur Standard",
+    "accessDenied": "Accès Refusé",
+    "accessDeniedDescription": "Vous devez être administrateur pour accéder à cette page.",
+    "backToDashboard": "Retour au Tableau de bord",
+    "createdAt": "Créé le {date}",
+    "onlyAdminsCanChangePermissions": "Seuls les admins peuvent changer les permissions",
+    "removeAdmin": "Retirer Admin",
+    "makeAdmin": "Nommer Admin",
+    "you": "Vous"
+  },
+  "UserDetail": {
+    "title": "Détails Utilisateur",
+    "loading": "Chargement utilisateur...",
+    "notFound": "Utilisateur non trouvé",
+    "backToUsers": "Retour à la liste"
+  },
+  "NotificationModal": {
+    "title": "Notifications",
+    "description": "Voir et gérer vos notifications",
+    "markAllAsRead": "Tout marquer comme lu",
+    "markAsRead": "Marquer comme lu",
+    "delete": "Supprimer",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette notification ?",
+    "errors": {
+      "markAsRead": "Erreur marquage lu",
+      "delete": "Erreur suppression",
+      "markAllAsRead": "Erreur tout marquer lu",
+      "load": "Erreur chargement"
+    },
+    "notifications": {
+      "plural": "{count} notifications",
+      "singular": "{count} notification",
+      "unread": "{count} non lues",
+      "read": "lues",
+      "unreadCount": "{unread} non lues sur {total}",
+      "allRead": "Toutes les {total} notifications lues",
+      "none": "Aucune notification"
+    },
+    "actions": {
+      "markAllAsRead": "Tout marquer lu",
+      "markAsRead": "Marquer lu",
+      "delete": "Supprimer",
+      "reload": "Recharger"
+    }
+  },
+  "NotificationService": {
+    "titles": {
+      "reservationCreated": "Nouvelle Demande de Réservation",
+      "reservationApproved": "Réservation Approuvée ✅",
+      "reservationRejected": "Réservation Rejetée ❌",
+      "reservationCancelled": "Réservation Annulée"
+    },
+    "messages": {
+      "reservationCreatedAdmin": "{userName} a réservé la salle \"{roomName}\" pour {startTime}.{purpose}",
+      "reservationCreatedUser": "{userName} a demandé la réservation de la salle \"{roomName}\" pour {startTime}.{purpose}",
+      "reservationApproved": "Votre réservation de la salle \"{roomName}\" a été approuvée ! Date : {startTime}",
+      "reservationRejected": "Votre réservation de la salle \"{roomName}\" pour {startTime} a été rejetée.{reason}",
+      "reservationCancelled": "La réservation de la salle \"{roomName}\" a été annulée.",
+      "purposePrefix": " Objet : {purpose}",
+      "reasonPrefix": " Motif : {reason}"
+    }
+  }
+}

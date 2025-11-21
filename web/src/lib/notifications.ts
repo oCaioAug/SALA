@@ -1,5 +1,7 @@
 import { NotificationType } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
+import { getIntlLocale } from "@/lib/utils";
 
 // Função utilitária para criar notificações diretamente no banco
 export async function createNotification(
@@ -36,11 +38,19 @@ export async function createNotification(
 // Funções específicas para diferentes tipos de notificações
 export const notificationService = {
   // Notificação quando uma nova reserva é criada
-  async reservationCreated(reservation: any) {
+  async reservationCreated(reservation: any, locale: string = "pt") {
     try {
-      const title = "Nova Solicitação de Reserva";
+      const t = await getTranslations({
+        locale,
+        namespace: "NotificationService",
+      });
+
+      const title = t("titles.reservationCreated");
       const startDate = new Date(reservation.startTime);
-      const startTime = startDate.toLocaleString("pt-BR", {
+
+      // Converter locale para formato do Intl
+      const intlLocale = getIntlLocale(locale);
+      const startTime = startDate.toLocaleString(intlLocale, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -49,12 +59,27 @@ export const notificationService = {
       });
 
       const userIsAdmin = reservation.user.role === "ADMIN";
+      const userName =
+        reservation.user.name || (locale === "pt" ? "Usuário" : "User");
+      const purposeText = reservation.purpose
+        ? t("messages.purposePrefix", { purpose: reservation.purpose })
+        : "";
 
       let message: string;
       if (userIsAdmin) {
-        message = `${reservation.user.name || "Usuário"} reservou a sala "${reservation.room.name}" para ${startTime}. ${reservation.purpose ? `Finalidade: ${reservation.purpose}` : ""}`;
+        message = t("messages.reservationCreatedAdmin", {
+          userName,
+          roomName: reservation.room.name,
+          startTime,
+          purpose: purposeText,
+        });
       } else {
-        message = `${reservation.user.name || "Usuário"} solicitou reserva da sala "${reservation.room.name}" para ${startTime}. ${reservation.purpose ? `Finalidade: ${reservation.purpose}` : ""}`;
+        message = t("messages.reservationCreatedUser", {
+          userName,
+          roomName: reservation.room.name,
+          startTime,
+          purpose: purposeText,
+        });
       }
 
       // Buscar todos os usuários administradores
@@ -76,6 +101,8 @@ export const notificationService = {
             roomName: reservation.room.name,
             userId: reservation.userId,
             userName: reservation.user.name,
+            userRole: reservation.user.role,
+            isAdmin: userIsAdmin,
             startTime: reservation.startTime,
             endTime: reservation.endTime,
             purpose: reservation.purpose,
@@ -94,15 +121,27 @@ export const notificationService = {
   },
 
   // Notificação quando uma reserva é aprovada
-  async reservationApproved(reservation: any) {
+  async reservationApproved(reservation: any, locale: string = "pt") {
     try {
-      console.log(`🔔 Criando notificação de aprovação para reserva ${reservation.id}`);
-      console.log(`👤 Usuário: ${reservation.user.email} (ID: ${reservation.userId})`);
+      console.log(
+        `🔔 Criando notificação de aprovação para reserva ${reservation.id}`
+      );
+      console.log(
+        `👤 Usuário: ${reservation.user.email} (ID: ${reservation.userId})`
+      );
       console.log(`🏢 Sala: ${reservation.room.name}`);
-      
-      const title = "Reserva Aprovada ✅";
+
+      const t = await getTranslations({
+        locale,
+        namespace: "NotificationService",
+      });
+
+      const title = t("titles.reservationApproved");
+
+      // Converter locale para formato do Intl
+      const intlLocale = getIntlLocale(locale);
       const startTime = new Date(reservation.startTime).toLocaleString(
-        "pt-BR",
+        intlLocale,
         {
           day: "2-digit",
           month: "2-digit",
@@ -112,7 +151,10 @@ export const notificationService = {
         }
       );
 
-      const message = `Sua reserva da sala "${reservation.room.name}" foi aprovada! Data: ${startTime}`;
+      const message = t("messages.reservationApproved", {
+        roomName: reservation.room.name,
+        startTime,
+      });
 
       console.log(`📝 Dados da notificação: ${title} - ${message}`);
 
@@ -129,7 +171,7 @@ export const notificationService = {
           endTime: reservation.endTime,
         }
       );
-      
+
       console.log(`✅ Notificação criada com sucesso: ID ${notification.id}`);
       return notification;
     } catch (error) {
@@ -139,11 +181,23 @@ export const notificationService = {
   },
 
   // Notificação quando uma reserva é rejeitada
-  async reservationRejected(reservation: any, reason?: string) {
+  async reservationRejected(
+    reservation: any,
+    reason?: string,
+    locale: string = "pt"
+  ) {
     try {
-      const title = "Reserva Rejeitada ❌";
+      const t = await getTranslations({
+        locale,
+        namespace: "NotificationService",
+      });
+
+      const title = t("titles.reservationRejected");
+
+      // Converter locale para formato do Intl
+      const intlLocale = getIntlLocale(locale);
       const startTime = new Date(reservation.startTime).toLocaleString(
-        "pt-BR",
+        intlLocale,
         {
           day: "2-digit",
           month: "2-digit",
@@ -153,10 +207,13 @@ export const notificationService = {
         }
       );
 
-      let message = `Sua reserva da sala "${reservation.room.name}" para ${startTime} foi rejeitada.`;
-      if (reason) {
-        message += ` Motivo: ${reason}`;
-      }
+      const reasonText = reason ? t("messages.reasonPrefix", { reason }) : "";
+
+      const message = t("messages.reservationRejected", {
+        roomName: reservation.room.name,
+        startTime,
+        reason: reasonText,
+      });
 
       await createNotification(
         reservation.userId,
@@ -179,10 +236,17 @@ export const notificationService = {
   },
 
   // Notificação quando uma reserva é cancelada
-  async reservationCancelled(reservation: any) {
+  async reservationCancelled(reservation: any, locale: string = "pt") {
     try {
-      const title = "Reserva Cancelada";
-      const message = `A reserva da sala "${reservation.room.name}" foi cancelada.`;
+      const t = await getTranslations({
+        locale,
+        namespace: "NotificationService",
+      });
+
+      const title = t("titles.reservationCancelled");
+      const message = t("messages.reservationCancelled", {
+        roomName: reservation.room.name,
+      });
 
       await createNotification(
         reservation.userId,

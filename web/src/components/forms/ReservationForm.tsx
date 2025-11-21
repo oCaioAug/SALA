@@ -7,10 +7,12 @@ import {
   Clock,
   User as UserIcon,
 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Room, User } from "@/lib/types";
+import { getIntlLocale } from "@/lib/utils";
 
 interface ReservationFormProps {
   rooms?: Room[];
@@ -23,6 +25,10 @@ interface ReservationFormProps {
     startTime: string;
     endTime: string;
     purpose?: string;
+    isRecurring?: boolean;
+    recurringPattern?: "DAILY" | "WEEKLY" | "MONTHLY";
+    recurringDaysOfWeek?: number[];
+    recurringEndDate?: string;
   }) => void;
   onCancel: () => void;
   loading?: boolean;
@@ -37,12 +43,18 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
   onCancel,
   loading = false,
 }) => {
+  const t = useTranslations("ReservationForm");
+  const locale = useLocale();
   const [formData, setFormData] = useState({
     userId: "",
     roomId: selectedRoomId || "",
     startTime: "",
     endTime: "",
     purpose: "",
+    isRecurring: false,
+    recurringPattern: "WEEKLY" as "DAILY" | "WEEKLY" | "MONTHLY",
+    recurringDaysOfWeek: [] as number[],
+    recurringEndDate: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -81,19 +93,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.userId) {
-      newErrors.userId = "Usuário é obrigatório";
+      newErrors.userId = t("errors.userRequired");
     }
 
     if (!formData.roomId) {
-      newErrors.roomId = "Sala é obrigatória";
+      newErrors.roomId = t("errors.roomRequired");
     }
 
     if (!formData.startTime) {
-      newErrors.startTime = "Horário de início é obrigatório";
+      newErrors.startTime = t("errors.startRequired");
     }
 
     if (!formData.endTime) {
-      newErrors.endTime = "Horário de fim é obrigatório";
+      newErrors.endTime = t("errors.endRequired");
     }
 
     if (formData.startTime && formData.endTime) {
@@ -101,18 +113,35 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       const end = new Date(formData.endTime);
 
       if (start >= end) {
-        newErrors.endTime = "Horário de fim deve ser posterior ao início";
+        newErrors.endTime = t("errors.endAfterStart");
       }
 
       if (start < new Date()) {
-        newErrors.startTime = "Horário de início não pode ser no passado";
+        newErrors.startTime = t("errors.startNotPast");
       }
 
       // Verificar se a duração não é muito longa (máximo 30 dias)
       const duration =
         (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
       if (duration > 30) {
-        newErrors.endTime = "Reserva não pode exceder 30 dias";
+        newErrors.endTime = t("errors.maxDuration");
+      }
+    }
+
+    // Validação para recorrência
+    if (formData.isRecurring) {
+      if (!formData.recurringEndDate) {
+        newErrors.recurringEndDate = t("errors.recurringEndDateRequired");
+      } else {
+        const endDate = new Date(formData.recurringEndDate);
+        const startDate = new Date(formData.startTime);
+        if (endDate <= startDate) {
+          newErrors.recurringEndDate = t("errors.recurringEndDateAfterStart");
+        }
+      }
+
+      if (formData.recurringPattern === "WEEKLY" && formData.recurringDaysOfWeek.length === 0) {
+        newErrors.recurringDaysOfWeek = t("errors.recurringDaysRequired");
       }
     }
 
@@ -130,13 +159,22 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      await onSubmit({
+      const reservationData: any = {
         userId: formData.userId,
         roomId: formData.roomId,
         startTime: new Date(formData.startTime).toISOString(),
         endTime: new Date(formData.endTime).toISOString(),
         purpose: formData.purpose || undefined,
-      });
+      };
+
+      if (formData.isRecurring) {
+        reservationData.isRecurring = true;
+        reservationData.recurringPattern = formData.recurringPattern;
+        reservationData.recurringDaysOfWeek = formData.recurringDaysOfWeek;
+        reservationData.recurringEndDate = new Date(formData.recurringEndDate).toISOString();
+      }
+
+      await onSubmit(reservationData);
     } catch (error) {
       console.error("Erro ao criar reserva:", error);
     } finally {
@@ -168,9 +206,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
 
       if (diffDays > 1) {
-        return `${diffDays} dias`;
+        return t("duration.days", { count: diffDays });
       } else {
-        return `${diffHours} horas`;
+        return t("duration.hours", { count: diffHours });
       }
     }
     return "";
@@ -184,7 +222,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
   const formatSelectedDate = () => {
     if (!selectedDate) return "";
-    return selectedDate.toLocaleDateString("pt-BR", {
+    const intlLocale = getIntlLocale(locale);
+    return selectedDate.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "2-digit",
       month: "long",
@@ -200,7 +239,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           <div className="flex items-center gap-2 text-blue-400">
             <Calendar className="w-4 h-4" />
             <span className="text-sm font-medium">
-              Agendando para: {formatSelectedDate()}
+              {t("schedulingFor")} {formatSelectedDate()}
             </span>
           </div>
         </div>
@@ -209,7 +248,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Usuário */}
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Usuário *
+          {t("user")} *
         </label>
         <div className="relative">
           <UserIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -222,7 +261,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             }`}
             required
           >
-            <option value="">Selecione um usuário</option>
+            <option value="">{t("selectUser")}</option>
             {users.map(user => (
               <option key={user.id} value={user.id}>
                 {user.name} ({user.email})
@@ -241,7 +280,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Sala */}
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Sala *
+          {t("room")} *
         </label>
         <div className="relative">
           <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -254,7 +293,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             }`}
             required
           >
-            <option value="">Selecione uma sala</option>
+            <option value="">{t("selectRoom")}</option>
             {getAvailableRooms().map(room => (
               <option key={room.id} value={room.id}>
                 {room.name} {room.capacity && `(${room.capacity} pessoas)`}
@@ -274,7 +313,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="text-sm font-medium text-gray-300 mb-2 block">
-            Início *
+            {t("start")} *
           </label>
           <div className="relative">
             <Clock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -299,7 +338,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
         <div>
           <label className="text-sm font-medium text-gray-300 mb-2 block">
-            Fim *
+            {t("end")} *
           </label>
           <div className="relative">
             <Clock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -329,7 +368,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           <div className="flex items-center gap-2 text-blue-400">
             <Clock className="w-4 h-4" />
             <span className="text-sm font-medium">
-              Duração da reserva: {calculateDuration()}
+              {t("durationLabel")} {calculateDuration()}
             </span>
           </div>
         </div>
@@ -338,31 +377,140 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Propósito */}
       <div>
         <label className="text-sm font-medium text-gray-300 mb-2 block">
-          Propósito da Reserva
+          {t("purpose")}
         </label>
         <textarea
           name="purpose"
           value={formData.purpose}
           onChange={handleInputChange}
-          placeholder="Descreva o propósito da reserva (opcional)"
+          placeholder={t("purposePlaceholder")}
           className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           rows={3}
         />
       </div>
 
+      {/* Recorrência */}
+      <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+        <div className="flex items-center gap-3 mb-4">
+          <input
+            type="checkbox"
+            id="isRecurring"
+            checked={formData.isRecurring}
+            onChange={(e) => {
+              setFormData(prev => ({
+                ...prev,
+                isRecurring: e.target.checked,
+                recurringDaysOfWeek: e.target.checked ? [new Date(formData.startTime || new Date()).getDay()] : [],
+              }));
+            }}
+            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="isRecurring" className="text-sm font-medium text-gray-300 cursor-pointer">
+            {t("recurring") || "Reserva Recorrente"}
+          </label>
+        </div>
+
+        {formData.isRecurring && (
+          <div className="space-y-4 mt-4">
+            {/* Padrão de recorrência */}
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                {t("recurringPattern") || "Padrão de Recorrência"} *
+              </label>
+              <select
+                name="recurringPattern"
+                value={formData.recurringPattern}
+                onChange={handleInputChange}
+                className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="DAILY">{t("daily") || "Diário"}</option>
+                <option value="WEEKLY">{t("weekly") || "Semanal"}</option>
+                <option value="MONTHLY">{t("monthly") || "Mensal"}</option>
+              </select>
+            </div>
+
+            {/* Dias da semana (apenas para padrão semanal) */}
+            {formData.recurringPattern === "WEEKLY" && (
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  {t("recurringDays") || "Dias da Semana"} *
+                </label>
+                <div className="grid grid-cols-7 gap-2">
+                  {[
+                    { value: 0, label: t("sunday") || "Dom" },
+                    { value: 1, label: t("monday") || "Seg" },
+                    { value: 2, label: t("tuesday") || "Ter" },
+                    { value: 3, label: t("wednesday") || "Qua" },
+                    { value: 4, label: t("thursday") || "Qui" },
+                    { value: 5, label: t("friday") || "Sex" },
+                    { value: 6, label: t("saturday") || "Sáb" },
+                  ].map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() => {
+                        const newDays = formData.recurringDaysOfWeek.includes(day.value)
+                          ? formData.recurringDaysOfWeek.filter(d => d !== day.value)
+                          : [...formData.recurringDaysOfWeek, day.value];
+                        setFormData(prev => ({ ...prev, recurringDaysOfWeek: newDays }));
+                      }}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        formData.recurringDaysOfWeek.includes(day.value)
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
+                {errors.recurringDaysOfWeek && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.recurringDaysOfWeek}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Data final */}
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                {t("recurringEndDate") || "Data Final"} *
+              </label>
+              <input
+                type="date"
+                name="recurringEndDate"
+                value={formData.recurringEndDate}
+                onChange={handleInputChange}
+                min={formData.startTime ? formData.startTime.split("T")[0] : undefined}
+                className={`w-full px-3 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.recurringEndDate ? "border-red-500" : "border-gray-600"
+                }`}
+                required={formData.isRecurring}
+              />
+              {errors.recurringEndDate && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.recurringEndDate}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Informações adicionais */}
       <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
         <h4 className="text-sm font-medium text-gray-300 mb-2">
-          Informações Importantes:
+          {t("importantInfo")}
         </h4>
         <ul className="text-xs text-gray-400 space-y-1">
-          <li>• Reservas podem ser feitas com até 1 hora de antecedência</li>
-          <li>• Duração máxima de 30 dias por reserva</li>
-          <li>• Múltiplas salas podem ser reservadas no mesmo dia</li>
-          <li>
-            • A sala será automaticamente marcada como &quot;Reservada&quot;
-          </li>
-          <li>• Você receberá confirmação por email</li>
+          <li>• {t("info1")}</li>
+          <li>• {t("info2")}</li>
+          <li>• {t("info3")}</li>
+          <li>• {t("info4")}</li>
+          <li>• {t("info5")}</li>
         </ul>
       </div>
 
@@ -373,7 +521,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           className="flex-1"
           disabled={isSubmitting || loading}
         >
-          {isSubmitting ? "Criando Reserva..." : "Criar Reserva"}
+          {isSubmitting ? t("creating") : t("create")}
         </Button>
         <Button
           type="button"
@@ -382,7 +530,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           className="flex-1"
           disabled={isSubmitting}
         >
-          Cancelar
+          {t("cancel")}
         </Button>
       </div>
     </form>

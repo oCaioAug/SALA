@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "next-intl";
 
 import { RoomStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -9,22 +12,24 @@ interface StatusBadgeProps {
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
+  const t = useTranslations("Dashboard.filters");
+  
   const statusConfig = {
     LIVRE: {
       dotColor: "bg-green-500",
-      text: "Livre",
+      text: t("statusFree"),
       textColor: "text-green-700 dark:text-green-300",
       bgColor: "bg-green-50 dark:bg-green-500/20",
     },
     EM_USO: {
       dotColor: "bg-red-500",
-      text: "Em Uso",
+      text: t("statusInUse"),
       textColor: "text-red-700 dark:text-red-300",
       bgColor: "bg-red-50 dark:bg-red-500/20",
     },
     RESERVADO: {
       dotColor: "bg-yellow-500",
-      text: "Reservado",
+      text: t("statusReserved"),
       textColor: "text-yellow-700 dark:text-yellow-300",
       bgColor: "bg-yellow-50 dark:bg-yellow-500/20",
     },

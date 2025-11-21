@@ -11,6 +11,8 @@ import React, { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { ReservationWithUser, Room } from "@/lib/types";
+import { useTranslations, useLocale } from "next-intl";
+import { getIntlLocale } from "@/lib/utils";
 
 interface CalendarProps {
   reservations: ReservationWithUser[];
@@ -41,25 +43,27 @@ const Calendar: React.FC<CalendarProps> = ({
   selectedDate = new Date(),
   onDateSelect,
 }) => {
+  const t = useTranslations("Calendar");
+  const locale = useLocale();
   const [currentDate, setCurrentDate] = useState(selectedDate);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const monthNames = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
+    t("monthNames.january"),
+    t("monthNames.february"),
+    t("monthNames.march"),
+    t("monthNames.april"),
+    t("monthNames.may"),
+    t("monthNames.june"),
+    t("monthNames.july"),
+    t("monthNames.august"),
+    t("monthNames.september"),
+    t("monthNames.october"),
+    t("monthNames.november"),
+    t("monthNames.december"),
   ];
 
-  const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const weekDays = [t("weekDays.sunday"), t("weekDays.monday"), t("weekDays.tuesday"), t("weekDays.wednesday"), t("weekDays.thursday"), t("weekDays.friday"), t("weekDays.saturday")];
 
   const navigateMonth = (direction: "prev" | "next") => {
     setCurrentDate(prev => {
@@ -100,7 +104,9 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString("pt-BR", {
+    const intlLocale = getIntlLocale(locale);
+
+    return date.toLocaleTimeString(intlLocale, {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -192,7 +198,7 @@ const Calendar: React.FC<CalendarProps> = ({
               onClick={goToToday}
               className="px-3"
             >
-              Hoje
+              {t("today")}
             </Button>
 
             <Button
@@ -292,12 +298,12 @@ const Calendar: React.FC<CalendarProps> = ({
                         e.stopPropagation();
                         onReservationClick?.(reservation);
                       }}
-                      title={`${room?.name || "Sala desconhecida"} - ${
+                      title={`${room?.name || t("unknownRoom")} - ${
                         reservation.user.name
-                      }${isMultiDay ? " (Reserva de múltiplos dias)" : ""}`}
+                      }${isMultiDay ? ` (${t("multipleDaysReservation")})` : ""}`}
                     >
                       <div className="truncate font-medium">
-                        {room?.name || "Sala"}
+                        {room?.name || t("room")}
                         {isMultiDay && " 📅"}
                       </div>
                       <div className="flex items-center gap-1 text-xs opacity-90">
@@ -312,7 +318,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
                 {day.reservations.length > 4 && (
                   <div className="text-xs text-slate-600 dark:text-slate-400 text-center py-1 bg-slate-100 dark:bg-slate-700/30 rounded">
-                    +{day.reservations.length - 4} mais reservas
+                    +{day.reservations.length - 4} {t("moreReservations")}
                   </div>
                 )}
               </div>
@@ -325,7 +331,7 @@ const Calendar: React.FC<CalendarProps> = ({
       <div className="bg-slate-50 dark:bg-slate-700/50 px-6 py-4 border-t border-slate-200 dark:border-slate-600">
         <div className="flex items-center gap-4 flex-wrap">
           <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
-            Salas:
+            {t("rooms")}:
           </span>
           {rooms.slice(0, 6).map((room, index) => {
             const colors = [
@@ -349,7 +355,7 @@ const Calendar: React.FC<CalendarProps> = ({
           })}
           {rooms.length > 6 && (
             <span className="text-xs text-slate-600 dark:text-slate-400">
-              +{rooms.length - 6} mais
+              +{rooms.length - 6} {t("moreRooms")}
             </span>
           )}
         </div>

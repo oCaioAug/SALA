@@ -1,0 +1,948 @@
+{
+  "Dashboard": {
+    "header": {
+      "title": "Visão Geral das Salas",
+      "description": "Gerencie e monitore todas as salas da instituição"
+    },
+    "actions": {
+      "users": "Usuários",
+      "newRoom": "Nova Sala",
+      "createRoom": "Criar Sala",
+      "viewDetails": "Ver Detalhes",
+      "clickToStart": "Clique para começar",
+      "retry": "Tentar Novamente"
+    },
+    "filters": {
+      "searchPlaceholder": "Buscar por sala, item ou descrição...",
+      "statusAll": "Todos os Status",
+      "statusFree": "Livre",
+      "statusInUse": "Em Uso",
+      "statusReserved": "Reservado"
+    },
+    "stats": {
+      "total": "Total de Salas",
+      "available": "Disponíveis",
+      "inUse": "Em Uso",
+      "reserved": "Reservadas"
+    },
+    "card": {
+      "reservedTag": "Reservada",
+      "people": "{count} pessoas",
+      "quantity": "Qtd: {count}",
+      "moreItems": "+{count} itens adicionais",
+      "createTitle": "Criar Nova Sala",
+      "createDescription": "Adicione uma nova sala ao sistema para começar o gerenciamento"
+    },
+    "empty": {
+      "notFoundTitle": "Nenhuma sala encontrada",
+      "notFoundDesc": "Tente ajustar os filtros de busca ou status para encontrar salas.",
+      "noDataTitle": "Nenhuma sala cadastrada",
+      "noDataDesc": "Comece criando sua primeira sala para gerenciar os espaços da instituição.",
+      "createFirst": "Criar Primeira Sala"
+    },
+    "feedback": {
+      "loading": "Carregando dashboard...",
+      "successCreate": "Sala \"{name}\" criada com sucesso!",
+      "errorCreate": "Erro ao criar sala",
+      "errorGeneric": "Erro desconhecido ao carregar salas",
+      "errorTitle": "Erro"
+    },
+    "modal": {
+      "createTitle": "Criar Nova Sala"
+    },
+    "form": {
+      "nameLabel": "Nome da Sala",
+      "namePlaceholder": "Ex: Laboratório de Robótica",
+      "nameRequired": "Nome é obrigatório",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descreva a sala e seus equipamentos...",
+      "capacityLabel": "Capacidade",
+      "capacityPlaceholder": "Ex: 30",
+      "statusLabel": "Status",
+      "submitCreate": "Criar Sala",
+      "submitUpdate": "Atualizar Sala",
+      "cancel": "Cancelar"
+    }
+  },
+  "Common": {
+    "systemName": "S.A.L.A",
+    "systemDescription": "Sistema de Gerenciamento",
+    "online": "Sistema Online",
+    "lastUpdate": "Última atualização: agora",
+    "user": "Usuário",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Atenção",
+    "info": "Informação"
+  },
+  "ErrorBoundary": {
+    "title": "Oops! Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Tente recarregar a página.",
+    "retry": "Tentar Novamente"
+  },
+  "Sidebar": {
+    "navigation": "Navegação",
+    "menuItems": {
+      "dashboard": {
+        "label": "Visão Geral",
+        "description": "Dashboard principal"
+      },
+      "solicitacoes": {
+        "label": "Solicitações",
+        "description": "Aprovar reservas pendentes"
+      },
+      "agendamentos": {
+        "label": "Agendamentos",
+        "description": "Calendário de reservas"
+      },
+      "incidentes": {
+        "label": "Incidentes",
+        "description": "Gestão de problemas e manutenções"
+      },
+      "users": {
+        "label": "Usuários",
+        "description": "Gerenciar usuários"
+      },
+      "profile": {
+        "label": "Meu Perfil",
+        "description": "Gerenciar perfil"
+      },
+      "notificacoes": {
+        "label": "Notificações",
+        "description": "Central de notificações"
+      },
+      "configuracoes": {
+        "label": "Configurações",
+        "description": "Configurações do sistema"
+      }
+    }
+  },
+  "Header": {
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "overview": "Visão Geral"
+    },
+    "search": {
+      "placeholder": "Buscar salas, itens, usuários..."
+    },
+    "userMenu": {
+      "profile": "Perfil",
+      "settings": "Configurações",
+      "logout": "Sair",
+      "ariaLabel": "Alternar tema"
+    }
+  },
+  "LanguageSwitcher": {
+    "changeLanguage": "Alterar idioma",
+    "portuguese": "Português",
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français",
+    "japanese": "日本語"
+  },
+  "LoadingPage": {
+    "loading": "Carregando..."
+  },
+  "Calendar": {
+    "monthNames": {
+      "january": "Janeiro",
+      "february": "Fevereiro",
+      "march": "Março",
+      "april": "Abril",
+      "may": "Maio",
+      "june": "Junho",
+      "july": "Julho",
+      "august": "Agosto",
+      "september": "Setembro",
+      "october": "Outubro",
+      "november": "Novembro",
+      "december": "Dezembro"
+    },
+    "weekDays": {
+      "sunday": "Domingo",
+      "monday": "Segunda-feira",
+      "tuesday": "Terça-feira",
+      "wednesday": "Quarta-feira",
+      "thursday": "Quinta-feira",
+      "friday": "Sexta-feira",
+      "saturday": "Sábado"
+    },
+    "today": "Hoje",
+    "multipleDaysReservation": "Reserva de múltiplos dias",
+    "moreReservations": "mais reservas",
+    "rooms": "Salas",
+    "moreRooms": "mais salas"
+  },
+  "ProfilePage": {
+    "title": "Perfil",
+    "accountInfo": "Informações da Conta",
+    "memberSince": "Membro desde",
+    "lastUpdate": "Última atualização",
+    "titleUser": "Perfil de {name}",
+    "description": "Gerencie suas informações pessoais",
+    "descriptionUser": "Visualize e edite informações de {name}",
+    "loading": "Carregando perfil...",
+    "fullName": "Nome Completo",
+    "fullNamePlaceholder": "Ex: João da Silva",
+    "fullNameRequired": "Nome completo é obrigatório",
+    "fullNameInvalid": "Nome completo inválido",
+    "email": "Email",
+    "emailPlaceholder": "Ex: joao.silva@gmail.com",
+    "emailRequired": "Email é obrigatório",
+    "emailInvalid": "Email inválido",
+    "role": "Papel",
+    "roles": {
+      "admin": "Administrador",
+      "user": "Usuário"
+    },
+    "personalInfo": "Informações Pessoais",
+    "createdAt": "Criado em",
+    "updatedAt": "Atualizado em",
+    "accessDenied": "Acesso Negado",
+    "accessDeniedDescription": "Você não tem permissão para visualizar este perfil.",
+    "backToDashboard": "Voltar ao Dashboard",
+    "userNotFound": "Usuário não encontrado",
+    "userNotFoundDescription": "O usuário solicitado não foi encontrado.",
+    "backToListUsers": "Voltar para a lista de usuários",
+    "avatar": {
+      "updated": "Avatar atualizado com sucesso!",
+      "removed": "Avatar removido com sucesso!"
+    },
+    "save": {
+      "success": "Perfil atualizado com sucesso!",
+      "error": "Erro ao salvar alterações",
+      "loading": "Salvando...",
+      "save": "Salvar Alterações"
+    },
+    "settings": {
+      "title": "Configurações",
+      "notifications": "Notificações",
+      "security": "Segurança",
+      "preferences": "Preferências"
+    },
+    "errors": {
+      "userNotFound": "Usuário não encontrado",
+      "userLoadError": "Erro ao carregar dados do usuário",
+      "saveError": "Erro ao salvar alterações",
+      "userRoleChangeError": "Erro ao alterar permissão do usuário"
+    },
+    "actions": {
+      "back": "Voltar",
+      "removeAdmin": "Remover Admin",
+      "makeAdmin": "Tornar Admin",
+      "manageUsers": "Gerenciar Usuários",
+      "cancel": "Cancelar",
+      "edit": "Editar"
+    },
+    "ownProfilePictureDescription": "Esta é sua foto de perfil. Será exibida em suas reservas e interações.",
+    "anotherUserProfilePictureDescription": "Foto de perfil do usuário. Pode ser alterada por administradores.",
+    "activityStats": "Estatísticas de Atividade",
+    "activityStatsDescription": "Estatísticas de atividade serão implementadas em breve."
+  },
+  "ReservationApproval": {
+    "loading": "Verificando autenticação...",
+    "loadingReservations": "Carregando reservas pendentes...",
+    "restricted": {
+      "title": "Acesso Restrito",
+      "message": "Você precisa estar autenticado como administrador para acessar esta página.",
+      "login": "Fazer Login"
+    },
+    "denied": {
+      "title": "Acesso Negado",
+      "message": "Apenas administradores podem aprovar reservas."
+    },
+    "title": "Aprovação de Reservas",
+    "noPending": "Nenhuma reserva pendente",
+    "noPendingDesc": "Todas as solicitações de reserva foram processadas.",
+    "actions": {
+      "refresh": "Atualizar Lista",
+      "debug": "Debug",
+      "testPush": "Testar Push 🔔"
+    },
+    "card": {
+      "pending": "Pendente",
+      "requester": "Solicitante",
+      "start": "Início",
+      "end": "Fim",
+      "purpose": "Finalidade",
+      "notInformed": "Não informado",
+      "approve": "✅ Aprovar",
+      "reject": "❌ Rejeitar",
+      "rejectReason": "Motivo da rejeição (opcional):"
+    },
+    "table": {
+      "user": "Usuário",
+      "room": "Sala",
+      "date": "Data",
+      "time": "Horário",
+      "purpose": "Finalidade",
+      "status": "Status",
+      "actions": "Ações",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "viewDetails": "Ver Detalhes"
+    },
+    "feedback": {
+      "approving": "Aprovando...",
+      "rejecting": "Rejeitando...",
+      "successApprove": "Reserva aprovada!",
+      "successReject": "Reserva rejeitada!",
+      "error": "Erro ao processar reserva",
+      "errorInternal": "Erro interno ao processar aprovação",
+      "testPushPrompt": "Digite o ID do usuário para testar o push:",
+      "testPushTitle": "Teste Push Notification",
+      "testPushBody": "Esta é uma notificação de teste do sistema SALA!",
+      "errorTestPush": "Erro interno ao testar push notification"
+    }
+  },
+  "ReservationForm": {
+    "schedulingFor": "Agendando para:",
+    "user": "Usuário",
+    "selectUser": "Selecione um usuário",
+    "room": "Sala",
+    "selectRoom": "Selecione uma sala",
+    "start": "Início",
+    "end": "Fim",
+    "durationLabel": "Duração da reserva:",
+    "purpose": "Propósito da Reserva",
+    "purposePlaceholder": "Descreva o propósito da reserva (opcional)",
+    "importantInfo": "Informações Importantes:",
+    "info1": "Reservas podem ser feitas com até 1 hora de antecedência",
+    "info2": "Duração máxima de 30 dias por reserva",
+    "info3": "Múltiplas salas podem ser reservadas no mesmo dia",
+    "info4": "A sala será automaticamente marcada como \"Reservada\"",
+    "info5": "Você receberá confirmação por email",
+    "create": "Criar Reserva",
+    "creating": "Criando Reserva...",
+    "cancel": "Cancelar",
+    "errors": {
+      "userRequired": "Usuário é obrigatório",
+      "roomRequired": "Sala é obrigatória",
+      "startRequired": "Horário de início é obrigatório",
+      "endRequired": "Horário de fim é obrigatório",
+      "endAfterStart": "Horário de fim deve ser posterior ao início",
+      "startNotPast": "Horário de início não pode ser no passado",
+      "maxDuration": "Reserva não pode exceder 30 dias",
+      "recurringEndDateRequired": "Data final da recorrência é obrigatória",
+      "recurringEndDateAfterStart": "Data final deve ser posterior à data inicial",
+      "recurringDaysRequired": "Selecione pelo menos um dia da semana"
+    },
+    "duration": {
+      "days": "{count} dias",
+      "hours": "{count} horas"
+    },
+    "recurring": "Reserva Recorrente",
+    "recurringPattern": "Padrão de Recorrência",
+    "daily": "Diário",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "recurringDays": "Dias da Semana",
+    "sunday": "Dom",
+    "monday": "Seg",
+    "tuesday": "Ter",
+    "wednesday": "Qua",
+    "thursday": "Qui",
+    "friday": "Sex",
+    "saturday": "Sáb",
+    "recurringEndDate": "Data Final"
+  },
+  "SchedulesPage": {
+    "title": "Agendamentos",
+    "loading": "Carregando agendamentos...",
+    "searchPlaceholder": "Buscar por sala, usuário ou propósito...",
+    "description": "Visualize e gerencie todos os agendamentos das salas",
+    "newReservation": "Nova Reserva",
+    "statusFilter": {
+      "all": "Todos",
+      "pending": "Pendentes",
+      "approved": "Aprovadas",
+      "rejected": "Rejeitadas",
+      "active": "Ativas",
+      "cancelled": "Canceladas",
+      "completed": "Concluídas",
+      "unknown": "Desconhecido"
+    },
+    "modal": {
+      "details": "Detalhes da Reserva",
+      "create": "Nova Reserva"
+    },
+    "success": {
+      "reservationCreated": "Reserva criada com sucesso!",
+      "reservationCancelled": "Reserva cancelada com sucesso!"
+    },
+    "confirmations": {
+      "deleteReservation": "Tem certeza que deseja cancelar esta reserva?"
+    },
+    "error": {
+      "reservationCreation": "Erro ao criar reserva",
+      "reservationCancellation": "Erro ao cancelar reserva"
+    },
+    "retryLabel": "Tentar Novamente",
+    "reservationsOfTheDay": "Reservas de",
+    "reservationsFound": "reservas encontrada(s)",
+    "noReservationsForTheDay": "Nenhuma reserva neste dia",
+    "noReservationsForTheDayDescription": "Não há reservas para o dia selecionado.",
+    "unknownRoom": "Sala desconhecida",
+    "room": "Sala",
+    "user": "Usuário",
+    "start": "Início",
+    "end": "Fim",
+    "purpose": "Propósito",
+    "status": "Status",
+    "close": "Fechar",
+    "cancelReservation": "Cancelar Reserva"
+  },
+  "SettingsPage": {
+    "title": "Configurações",
+    "description": "Gerencie as configurações do sistema",
+    "loading": "Carregando configurações...",
+    "searchPlaceholder": "Buscar por configuração...",
+    "statusFilter": {
+      "all": "Todos",
+      "pending": "Pendentes",
+      "approved": "Aprovadas",
+      "rejected": "Rejeitadas"
+    },
+    "systemInfo": "Informações do Sistema",
+    "version": "Versão",
+    "lastUpdate": "Última atualização",
+    "databaseStatus": "Status do Banco",
+    "currentUser": "Usuário atual",
+    "today": "Hoje",
+    "connected": "Conectado",
+    "system": "Sistema",
+    "items": {
+      "showInfo": "Esta funcionalidade será implementada em breve",
+      "profile": {
+        "id": "profile",
+        "title": "Perfil",
+        "description": "Gerencie suas informações pessoais"
+      },
+      "notifications": {
+        "id": "notifications",
+        "title": "Notificações",
+        "description": "Gerencie suas notificações"
+      },
+      "security": {
+        "id": "security",
+        "title": "Segurança",
+        "description": "Gerencie suas configurações de segurança"
+      },
+      "database": {
+        "id": "database",
+        "title": "Banco de Dados",
+        "description": "Gerencie suas configurações de banco de dados"
+      },
+      "appearance": {
+        "id": "appearance",
+        "title": "Aparência",
+        "description": "Gerencie suas configurações de aparência"
+      }
+    },
+    "empty": {
+      "title": "Nenhuma configuração encontrada",
+      "description": "Não há configurações no momento."
+    },
+    "actions": {
+      "configure": "Configurar"
+    }
+  },
+  "Solicitacoes": {
+    "title": "Solicitações de Reserva",
+    "loading": "Carregando solicitações...",
+    "searchPlaceholder": "Buscar por sala, usuário ou propósito...",
+    "statusFilter": {
+      "all": "Todos",
+      "pending": "Pendentes",
+      "approved": "Aprovadas",
+      "rejected": "Rejeitadas"
+    },
+    "empty": {
+      "title": "Nenhuma solicitação encontrada",
+      "description": "Não há solicitações de reserva no momento."
+    },
+    "card": {
+      "viewDetails": "Ver Detalhes",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "pending": "Pendente",
+      "approved": "Aprovada",
+      "rejected": "Rejeitada",
+      "unknown": "Desconhecido"
+    },
+    "modal": {
+      "details": "Detalhes da Solicitação",
+      "user": "Usuário",
+      "room": "Sala",
+      "start": "Início",
+      "end": "Fim",
+      "purpose": "Propósito",
+      "status": "Status",
+      "createdAt": "Criada em",
+      "close": "Fechar"
+    },
+    "conflict": {
+      "title": "Conflito de Reserva",
+      "message": "Esta solicitação conflita com as seguintes reservas:",
+      "forceApprove": "Aprovar Mesmo Assim",
+      "cancel": "Cancelar"
+    },
+    "feedback": {
+      "successApprove": "Solicitação aprovada com sucesso!",
+      "successReject": "Solicitação rejeitada!",
+      "errorApprove": "Erro ao aprovar solicitação",
+      "errorReject": "Erro ao rejeitar solicitação",
+      "forceApproveSuccess": "Solicitação aprovada! Reservas conflitantes foram canceladas.",
+      "errorForceApprove": "Erro ao aprovar solicitação"
+    },
+    "recurring": "Recorrente",
+    "recurringInfo": "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias.",
+    "rejectReasonRecurring": "Motivo da rejeição (afetará todas as instâncias):"
+  },
+  "Notifications": {
+    "title": "Notificações",
+    "loading": "Carregando notificações...",
+    "empty": {
+      "title": "Nenhuma notificação",
+      "description": "Você não tem notificações no momento."
+    },
+    "filters": {
+      "all": "Todas",
+      "unread": "Não lidas",
+      "read": "Lidas"
+    },
+    "types": {
+      "all": "Todos os tipos",
+      "SYSTEM_ANNOUNCEMENT": "Anúncio do Sistema",
+      "RESERVATION_CREATED": "Reserva Criada",
+      "RESERVATION_APPROVED": "Reserva Aprovada",
+      "RESERVATION_REJECTED": "Reserva Rejeitada",
+      "RESERVATION_CANCELLED": "Reserva Cancelada",
+      "RESERVATION_REMINDER": "Lembrete de Reserva"
+    },
+    "actions": {
+      "markAllRead": "Marcar todas como lidas",
+      "markRead": "Marcar como lida",
+      "markUnread": "Marcar como não lida",
+      "delete": "Excluir",
+      "reload": "🔄 Recarregar",
+      "debug": "🔍 Debug",
+      "test": "🧪 Testar Notificação"
+    },
+    "stats": {
+      "total": "Total",
+      "unread": "Não lidas",
+      "read": "Lidas"
+    },
+    "description": {
+      "unreadCount": "{unread} não lida{plural} de {total} total",
+      "allRead": "Todas as {total} notificações foram lidas",
+      "none": "Nenhuma notificação recebida"
+    },
+    "timeAgo": {
+      "justNow": "Agora há pouco",
+      "hoursAgo": "{count}h atrás",
+      "yesterday": "Ontem"
+    },
+    "feedback": {
+      "markAllReadSuccess": "Todas as notificações foram marcadas como lidas",
+      "markReadSuccess": "Notificação marcada como lida",
+      "deleteSuccess": "Notificação excluída",
+      "error": "Erro ao processar notificação",
+      "debugSuccess": "📊 {count} notificações encontradas no banco (veja o console)",
+      "debugError": "Erro ao buscar debug",
+      "testSuccess": "✅ {message}",
+      "testError": "Erro ao criar notificação de teste"
+    }
+  },
+  "Incidents": {
+    "title": "Gestão de Incidentes",
+    "description": "Gerencie problemas e manutenções em laboratórios e equipamentos",
+    "loading": "Carregando incidentes...",
+    "time": {
+      "ago": "atrás",
+      "justNow": "Agora há pouco",
+      "minutes": "minutos",
+      "minute": "minuto",
+      "hours": "horas",
+      "hour": "hora",
+      "days": "dias",
+      "day": "dia",
+      "weeks": "semanas",
+      "week": "semana",
+      "months": "meses",
+      "month": "mês",
+      "years": "anos",
+      "year": "ano"
+    },
+    "categoriesLabels": {
+      "EQUIPMENT_FAILURE": "Falha de Equipamento",
+      "INFRASTRUCTURE": "Infraestrutura",
+      "SOFTWARE": "Software",
+      "SAFETY": "Segurança",
+      "MAINTENANCE": "Manutenção",
+      "ELECTRICAL": "Elétrico",
+      "NETWORK": "Rede",
+      "OTHER": "Outro"
+    },
+    "create": "Reportar Incidente",
+    "update": "Atualizar",
+    "searchPlaceholder": "Buscar incidentes por título, descrição ou categoria...",
+    "empty": {
+      "title": "Nenhum incidente encontrado",
+      "description": "Não há incidentes registrados no momento."
+    },
+    "details": {
+      "title": "Detalhes do Incidente",
+      "titleLabel": "Título",
+      "description": "Descrição",
+      "category": "Categoria",
+      "priority": "Prioridade",
+      "status": "Status",
+      "room": "Sala",
+      "item": "Item",
+      "assignee": "Responsável",
+      "reportedBy": "Reportado por",
+      "assignedTo": "Atribuído para",
+      "notAssigned": "Não atribuído",
+      "resolutionNotes": "Notas de Resolução"
+    },
+    "prioritiesLabels": {
+      "LOW": "Baixa",
+      "MEDIUM": "Média",
+      "HIGH": "Alta",
+      "CRITICAL": "Crítica"
+    },
+    "statusesLabels": {
+      "REPORTED": "Reportado",
+      "IN_ANALYSIS": "Em Análise",
+      "IN_PROGRESS": "Em Andamento",
+      "RESOLVED": "Resolvido"
+    },
+    "stats": {
+      "total": "Total",
+      "totalActive": "Total Ativo",
+      "open": "Abertos",
+      "critical": "Críticos",
+      "inProgress": "Em Andamento",
+      "resolved": "Resolvidos",
+      "averageTime": "Tempo Médio"
+    },
+    "filters": {
+      "all": "Todos",
+      "allStatuses": "Todos os Status",
+      "allPriorities": "Todas as Prioridades",
+      "allCategories": "Todas as Categorias",
+      "open": "Abertos",
+      "inProgress": "Em Progresso",
+      "resolved": "Resolvidos",
+      "reported": "Reportado",
+      "inAnalysis": "Em Análise",
+      "critical": "Crítica",
+      "high": "Alta",
+      "medium": "Média",
+      "low": "Baixa"
+    },
+    "form": {
+      "creating": "Criando incidente...",
+      "create": "Criar Incidente",
+      "title": "Reportar Novo Incidente",
+      "titleLabel": "Título",
+      "titlePlaceholder": "Ex: Equipamento quebrado",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descreva o incidente...",
+      "categoryLabel": "Categoria",
+      "category": "Categoria",
+      "priorityLabel": "Prioridade",
+      "statusLabel": "Status",
+      "roomLabel": "Sala",
+      "itemLabel": "Item",
+      "assigneeLabel": "Responsável",
+      "selectRoom": "Selecione uma sala",
+      "selectItem": "Selecione um item",
+      "selectAssignee": "Selecione um responsável",
+      "selectCategory": "Selecione uma categoria",
+      "selectRoomOrItem": "escolha uma sala OU um item",
+      "noItemRegisteredInThisRoom": "Nenhum item cadastrado nesta sala",
+      "noItemAvailableInThisRoom": "Nenhum item disponível nesta sala",
+      "noSpecificItem": "Nenhum item específico",
+      "resolutionNotesLabel": "Notas de Resolução",
+      "resolutionNotesPlaceholder": "Descreva como o problema foi resolvido...",
+      "resolutionNotesRequired": "Obrigatório para incidentes resolvidos",
+      "finalizingIncident": "Finalizando incidente",
+      "finalizingIncidentDescription": "Certifique-se de detalhar a solução aplicada nas notas de resolução para referência futura.",
+      "resolveIncident": "Resolver Incidente",
+      "saveChanges": "Salvar Alterações",
+      "saving": "Salvando...",
+      "save": "Salvar",
+      "submit": "Criar",
+      "update": "Atualizar",
+      "cancel": "Cancelar",
+      "warning": "⚠️ Localização obrigatória",
+      "warningDescription": "Você deve selecionar pelo menos uma sala ou um item específico. Se selecionar um item, a sala será automaticamente determinada.",
+      "tip": "Dica",
+      "tipDescription": "Seja específico na descrição para agilizar a resolução, inclua horários, mensagens de erro e passos para reproduzir o problema."
+    },
+    "actions": {
+      "view": "Ver Detalhes",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "refresh": "Atualizar",
+      "close": "Fechar",
+      "cancel": "Cancelar"
+    },
+    "feedback": {
+      "createSuccess": "Incidente criado com sucesso!",
+      "updateSuccess": "Incidente atualizado com sucesso!",
+      "deleteSuccess": "Incidente excluído com sucesso!",
+      "deleteConfirm": "Tem certeza que deseja deletar este incidente?",
+      "error": "Erro ao processar incidente",
+      "authError": "Você precisa estar logado para acessar esta página."
+    },
+    "room": "Sala",
+    "item": "Item",
+    "reportedBy": "Reportado por",
+    "assignedTo": "Atribuído para"
+  },
+  "ImageUpload": {
+    "label": "Imagem de Referência",
+    "errors": {
+      "invalidImage": "Por favor, selecione uma imagem válida.",
+      "unsupportedFormat": "Formato não suportado. Use JPG, PNG ou WebP.",
+      "tooLarge": "Imagem muito grande. Tamanho máximo: 15MB."
+    },
+    "imagePreview": "Visualização da Imagem",
+    "removeImage": "Remover Imagem",
+    "clickToChangeOrRemove": "Clique na imagem para alterar ou no X para remover",
+    "allowedFormats": "JPG, PNG ou WebP (máx. 15MB)",
+    "pasteFromClipboard": "Ou cole da área de transferência (Ctrl+V)",
+    "clickOrDragImage": "Clique ou arraste uma imagem",
+    "dropImageHere": "Solte a imagem aqui",
+    "success": {
+      "imageUploaded": "Imagem enviada com sucesso!",
+      "imageRemoved": "Imagem removida com sucesso!"
+    }
+  },
+  "Auth": {
+    "login": {
+      "title": "S.A.L.A",
+      "subtitle": "Sistema de Gerenciamento de Salas",
+      "email": "Email",
+      "emailPlaceholder": "seu@email.com",
+      "password": "Senha",
+      "passwordPlaceholder": "Digite sua senha",
+      "rememberMe": "Lembrar-me",
+      "forgotPassword": "Esqueci minha senha",
+      "login": "Entrar",
+      "loginWithGoogle": "Entrar com Google",
+      "loading": "Entrando...",
+      "error": "Erro no login",
+      "connectionError": "Erro de conexão. Tente novamente.",
+      "authError": "Erro de autenticação:",
+      "callbackError": "Erro no callback do Google. Verifique as configurações do OAuth.",
+      "noAccount": "Não tem uma conta?",
+      "createAccount": "Crie uma agora"
+    }
+  },
+  "RoomDetail": {
+    "loading": "Carregando sala...",
+    "notFound": "Sala não encontrada",
+    "backToDashboard": "Voltar ao Dashboard",
+    "back": "Voltar",
+    "capacity": "Capacidade: {count} pessoas",
+    "viewReservations": "Ver Agendamentos",
+    "editRoom": "Editar Sala",
+    "addItem": "Adicionar Item",
+    "description": "Descrição",
+    "roomItems": "Itens da Sala",
+    "itemsRegistered": "{count} itens cadastrados",
+    "itemsRegisteredOne": "{count} item cadastrado",
+    "empty": {
+      "title": "Nenhum item cadastrado",
+      "descriptionAdmin": "Comece adicionando itens para esta sala",
+      "descriptionUser": "Esta sala ainda não possui itens cadastrados",
+      "addFirstItem": "Adicionar Primeiro Item"
+    },
+    "item": {
+      "quantity": "Qtd: {count}",
+      "specifications": "Especificações:",
+      "more": "+{count} mais"
+    },
+    "modals": {
+      "editRoom": "Editar Sala",
+      "addItem": "Adicionar Item",
+      "editItem": "Editar Item"
+    },
+    "form": {
+      "itemName": "Nome do Item",
+      "itemNamePlaceholder": "Ex: Computador",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Descreva o item...",
+      "specifications": "Especificações (separadas por vírgula)",
+      "specificationsPlaceholder": "Ex: Windows 11, 16GB RAM, Core i7",
+      "quantity": "Quantidade",
+      "icon": "Ícone (emoji)",
+      "iconPlaceholder": "💻",
+      "iconHint": "Opcional - usado como fallback se não houver imagem",
+      "saving": "Salvando...",
+      "updateItem": "Atualizar Item",
+      "addItem": "Adicionar Item",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "updateRoom": "Erro ao atualizar sala",
+      "addItem": "Erro ao adicionar item",
+      "updateItem": "Erro ao atualizar item",
+      "deleteItem": "Erro ao excluir item",
+      "saveItem": "Erro ao salvar item",
+      "unknown": "Erro desconhecido"
+    },
+    "confirmations": {
+      "deleteItem": "Tem certeza que deseja excluir este item?"
+    }
+  },
+  "UsersPage": {
+    "title": "Gestão de Usuários",
+    "description": "Visualize e gerencie os usuários do sistema",
+    "loading": "Carregando usuários...",
+    "searchPlaceholder": "Buscar usuários por nome, email ou status...",
+    "create": "Criar Usuário",
+    "edit": "Editar Usuário",
+    "delete": "Excluir Usuário",
+    "filters": {
+      "all": "Todos",
+      "admin": "Administradores",
+      "user": "Usuários",
+      "allStatuses": "Todos os Status",
+      "allRoles": "Todas as Funções",
+      "allPermissions": "Todas as Permissões",
+      "allGroups": "Todos os Grupos",
+      "allLocations": "Todas as Localizações",
+      "allDevices": "Todos os Dispositivos"
+    },
+    "stats": {
+      "total": "Total de Usuários",
+      "totalActive": "Total Ativo",
+      "totalInactive": "Total Inativo",
+      "totalPending": "Total Pendente",
+      "totalRejected": "Total Rejeitado",
+      "totalApproved": "Total Aprovado",
+      "admin": "Administrador(es)",
+      "user": "Usuário(s) Comum(s)"
+    },
+    "actions": {
+      "view": "Ver Detalhes",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "refresh": "Atualizar",
+      "close": "Fechar",
+      "cancel": "Cancelar"
+    },
+    "feedback": {
+      "createSuccess": "Usuário criado com sucesso!",
+      "updateSuccess": "Usuário atualizado com sucesso!",
+      "deleteSuccess": "Usuário excluído com sucesso!",
+      "deleteConfirm": "Tem certeza que deseja deletar este usuário?",
+      "error": "Erro ao processar usuário",
+      "authError": "Você precisa estar logado para acessar esta página."
+    },
+    "user": {
+      "name": "Nome",
+      "email": "Email",
+      "status": "Status",
+      "role": "Função",
+      "permissions": "Permissões",
+      "groups": "Grupos",
+      "locations": "Localizações",
+      "devices": "Dispositivos"
+    },
+    "modals": {
+      "createUser": "Criar Usuário",
+      "editUser": "Editar Usuário",
+      "deleteUser": "Excluir Usuário"
+    },
+    "form": {
+      "name": "Nome",
+      "namePlaceholder": "Ex: João da Silva",
+      "email": "Email"
+    },
+    "testSession": "🧪 Testar Sessão",
+    "users": "Usuários",
+    "tryAgain": "Tentar Novamente",
+    "errorLoadingUsers": "Erro ao carregar usuários",
+    "noUsersFound": "Nenhum usuário encontrado",
+    "noUsersFoundDescription": "Não há usuários que correspondam aos filtros selecionados.",
+    "userWithoutName": "Usuário sem nome",
+    "adminRole": "Administrador",
+    "userRole": "Usuário Comum",
+    "sessionValid": "Sessão válida! Verifique o console para detalhes.",
+    "sessionError": "Erro na sessão: {error}",
+    "sessionTestError": "Erro ao testar sessão",
+    "error": "Erro {status}: {statusText}",
+    "errorUnknown": "Erro desconhecido",
+    "errorUserPermissionChange": "Erro ao alterar permissão do usuário",
+    "userNowIs": "Usuário agora é {role}",
+    "admin": "administrador",
+    "userRoleLabel": "usuário comum",
+    "accessDenied": "Acesso Negado",
+    "accessDeniedDescription": "Você precisa ser administrador para acessar esta página.",
+    "createdAt": "Criado em {date}",
+    "onlyAdminsCanChangePermissions": "Apenas administradores podem alterar permissões",
+    "removeAdmin": "Remover Admin",
+    "makeAdmin": "Tornar Admin",
+    "you": "Você"
+  },
+  "UserDetail": {
+    "title": "Detalhes do Usuário",
+    "loading": "Carregando usuário...",
+    "notFound": "Usuário não encontrado",
+    "backToUsers": "Voltar para a lista de usuários"
+  },
+  "NotificationModal": {
+    "title": "Notificações",
+    "description": "Visualize e gerencie suas notificações",
+    "markAllAsRead": "Marcar todas como lidas",
+    "markAsRead": "Marcar como lida",
+    "delete": "Excluir",
+    "deleteConfirm": "Tem certeza que deseja excluir esta notificação?",
+    "errors": {
+      "markAsRead": "Erro ao marcar como lida",
+      "delete": "Erro ao deletar notificação",
+      "markAllAsRead": "Erro ao marcar todas como lidas",
+      "load": "Erro ao carregar notificações"
+    },
+    "notifications": {
+      "plural": "{count} notificações",
+      "singular": "{count} notificação",
+      "unread": "{count} não lida",
+      "read": "lidas",
+      "unreadCount": "{unread} não lida{plural} de {total} total",
+      "allRead": "Todas as {total} notificações foram lidas",
+      "none": "Nenhuma notificação recebida"
+    },
+    "actions": {
+      "markAllAsRead": "Marcar todas como lidas",
+      "markAsRead": "Marcar como lida",
+      "delete": "Excluir",
+      "reload": "Recarregar"
+    }
+  },
+  "NotificationService": {
+    "titles": {
+      "reservationCreated": "Nova Solicitação de Reserva",
+      "reservationApproved": "Reserva Aprovada ✅",
+      "reservationRejected": "Reserva Rejeitada ❌",
+      "reservationCancelled": "Reserva Cancelada"
+    },
+    "messages": {
+      "reservationCreatedAdmin": "{userName} reservou a sala \"{roomName}\" para {startTime}.{purpose}",
+      "reservationCreatedUser": "{userName} solicitou reserva da sala \"{roomName}\" para {startTime}.{purpose}",
+      "reservationApproved": "Sua reserva da sala \"{roomName}\" foi aprovada! Data: {startTime}",
+      "reservationRejected": "Sua reserva da sala \"{roomName}\" para {startTime} foi rejeitada.{reason}",
+      "reservationCancelled": "A reserva da sala \"{roomName}\" foi cancelada.",
+      "purposePrefix": " Finalidade: {purpose}",
+      "reasonPrefix": " Motivo: {reason}"
+    }
+  }
+}
