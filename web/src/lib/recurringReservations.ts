@@ -122,10 +122,13 @@ export async function generateRecurringReservations(
   let parentId: string | null = null;
 
   for (const reservationData of reservations) {
-    const created = await prisma.reservation.create({
+    const created: { id: string } = await prisma.reservation.create({
       data: {
         ...reservationData,
         parentReservationId: parentId, // Primeira será null, as outras apontam para a primeira
+      },
+      select: {
+        id: true,
       },
     });
 
@@ -166,7 +169,7 @@ export function generateRecurringDates(
   recurringEndDate: Date
 ): Array<{ startTime: Date; endTime: Date }> {
   const occurrences: Array<{ startTime: Date; endTime: Date }> = [];
-  
+
   const startDate = new Date(startTime);
   const endDate = new Date(endTime);
   const duration = endDate.getTime() - startDate.getTime();
@@ -228,7 +231,8 @@ export async function checkRecurringConflicts(
   roomId: string,
   reservations: Array<{ startTime: Date; endTime: Date }>
 ): Promise<Array<{ startTime: Date; endTime: Date; conflict: any }>> {
-  const conflicts: Array<{ startTime: Date; endTime: Date; conflict: any }> = [];
+  const conflicts: Array<{ startTime: Date; endTime: Date; conflict: any }> =
+    [];
 
   for (const reservation of reservations) {
     const conflict = await prisma.reservation.findFirst({
@@ -292,4 +296,3 @@ export async function checkRecurringConflicts(
 
   return conflicts;
 }
-
