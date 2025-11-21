@@ -136,7 +136,10 @@
   "LanguageSwitcher": {
     "changeLanguage": "Change language",
     "portuguese": "Português",
-    "english": "English"
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français",
+    "japanese": "日本語"
   },
   "LoadingPage": {
     "loading": "Loading..."
@@ -212,6 +215,12 @@
       "loading": "Saving...",
       "save": "Save Changes"
     },
+    "settings": {
+      "title": "Settings",
+      "notifications": "Notifications",
+      "security": "Security",
+      "preferences": "Preferences"
+    },
     "errors": {
       "userNotFound": "User not found",
       "userLoadError": "Error loading user data",
@@ -222,6 +231,7 @@
       "back": "Back",
       "removeAdmin": "Remove Admin",
       "makeAdmin": "Make Admin",
+      "manageUsers": "Manage Users",
       "cancel": "Cancel",
       "edit": "Edit"
     },
@@ -313,12 +323,29 @@
       "endRequired": "End time is required",
       "endAfterStart": "End time must be after start time",
       "startNotPast": "Start time cannot be in the past",
-      "maxDuration": "Reservation cannot exceed 30 days"
+      "maxDuration": "Reservation cannot exceed 30 days",
+      "recurringEndDateRequired": "Recurring end date is required",
+      "recurringEndDateAfterStart": "End date must be after start date",
+      "recurringDaysRequired": "Select at least one day of the week"
     },
     "duration": {
       "days": "{count} days",
       "hours": "{count} hours"
-    }
+    },
+    "recurring": "Recurring Reservation",
+    "recurringPattern": "Recurrence Pattern",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "recurringDays": "Days of the Week",
+    "sunday": "Sun",
+    "monday": "Mon",
+    "tuesday": "Tue",
+    "wednesday": "Wed",
+    "thursday": "Thu",
+    "friday": "Fri",
+    "saturday": "Sat",
+    "recurringEndDate": "End Date"
   },
   "SchedulesPage": {
     "confirmations": {
@@ -371,6 +398,17 @@
     "description": "Manage system settings",
     "loading": "Loading settings...",
     "searchPlaceholder": "Search by setting...",
+    "systemInfo": "System Information",
+    "version": "Version",
+    "lastUpdate": "Last Update",
+    "databaseStatus": "Database Status",
+    "currentUser": "Current User",
+    "today": "Today",
+    "connected": "Connected",
+    "system": "System",
+    "actions": {
+      "configure": "Configure"
+    },
     "statusFilter": {
       "all": "All",
       "pending": "Pending",
@@ -382,6 +420,7 @@
       "description": "There are no settings at the moment."
     },
     "items": {
+      "showInfo": "This feature will be implemented soon",
       "profile": {
         "id": "profile",
         "title": "Profile",
@@ -456,7 +495,10 @@
       "errorReject": "Error rejecting request",
       "forceApproveSuccess": "Request approved! Conflicting reservations were cancelled.",
       "errorForceApprove": "Error approving request"
-    }
+    },
+    "recurring": "Recurring",
+    "recurringInfo": "This is a recurring reservation. Approving/rejecting will affect all instances.",
+    "rejectReasonRecurring": "Rejection reason (will affect all instances):"
   },
   "Notifications": {
     "title": "Notifications",

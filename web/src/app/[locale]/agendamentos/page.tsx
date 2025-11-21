@@ -25,6 +25,7 @@ import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { ReservationWithUser, Room, User } from "@/lib/types";
 import { useTranslations, useLocale } from "next-intl";
+import { getIntlLocale } from "@/lib/utils";
 
 const AgendamentosPage: React.FC = () => {
   const t = useTranslations("SchedulesPage");
@@ -169,16 +170,21 @@ const AgendamentosPage: React.FC = () => {
         throw new Error(errorData.error || "Erro ao criar reserva");
       }
 
-      const newReservation = await response.json();
+      const responseData = await response.json();
 
-      // Atualizar lista de reservas
-      setReservations(prev => [newReservation, ...prev]);
+      // Se for reserva recorrente, adicionar todas as instâncias
+      if (responseData.isRecurring && responseData.reservations) {
+        console.log(`✅ Adicionando ${responseData.reservations.length} reservas recorrentes ao estado`);
+        setReservations(prev => [...responseData.reservations, ...prev]);
+        showSuccess(t("success.reservationCreated") + ` (${responseData.reservations.length} ${t("recurringInstances") || "instâncias"})`);
+      } else {
+        // Reserva única
+        setReservations(prev => [responseData, ...prev]);
+        showSuccess(t("success.reservationCreated"));
+      }
 
       // Fechar modal
       setIsCreateModalOpen(false);
-
-      // Mostrar sucesso
-      showSuccess(t("success.reservationCreated"));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : t("error.reservationCreation");
@@ -212,7 +218,7 @@ const AgendamentosPage: React.FC = () => {
 
   const formatDateTime = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
     
     return date.toLocaleString(intlLocale, {
       day: "2-digit",
@@ -344,7 +350,7 @@ const AgendamentosPage: React.FC = () => {
             <div>
               <CardTitle className="text-xl">
                 {t("reservationsOfTheDay")} {" "}
-                {selectedDate.toLocaleDateString(locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale, {
+                {selectedDate.toLocaleDateString(getIntlLocale(locale), {
                   weekday: "long",
                   day: "2-digit",
                   month: "long",

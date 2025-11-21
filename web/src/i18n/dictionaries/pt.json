@@ -136,7 +136,10 @@
   "LanguageSwitcher": {
     "changeLanguage": "Alterar idioma",
     "portuguese": "Português",
-    "english": "English"
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français",
+    "japanese": "日本語"
   },
   "LoadingPage": {
     "loading": "Carregando..."
@@ -212,6 +215,12 @@
       "loading": "Salvando...",
       "save": "Salvar Alterações"
     },
+    "settings": {
+      "title": "Configurações",
+      "notifications": "Notificações",
+      "security": "Segurança",
+      "preferences": "Preferências"
+    },
     "errors": {
       "userNotFound": "Usuário não encontrado",
       "userLoadError": "Erro ao carregar dados do usuário",
@@ -222,6 +231,7 @@
       "back": "Voltar",
       "removeAdmin": "Remover Admin",
       "makeAdmin": "Tornar Admin",
+      "manageUsers": "Gerenciar Usuários",
       "cancel": "Cancelar",
       "edit": "Editar"
     },
@@ -313,12 +323,29 @@
       "endRequired": "Horário de fim é obrigatório",
       "endAfterStart": "Horário de fim deve ser posterior ao início",
       "startNotPast": "Horário de início não pode ser no passado",
-      "maxDuration": "Reserva não pode exceder 30 dias"
+      "maxDuration": "Reserva não pode exceder 30 dias",
+      "recurringEndDateRequired": "Data final da recorrência é obrigatória",
+      "recurringEndDateAfterStart": "Data final deve ser posterior à data inicial",
+      "recurringDaysRequired": "Selecione pelo menos um dia da semana"
     },
     "duration": {
       "days": "{count} dias",
       "hours": "{count} horas"
-    }
+    },
+    "recurring": "Reserva Recorrente",
+    "recurringPattern": "Padrão de Recorrência",
+    "daily": "Diário",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "recurringDays": "Dias da Semana",
+    "sunday": "Dom",
+    "monday": "Seg",
+    "tuesday": "Ter",
+    "wednesday": "Qua",
+    "thursday": "Qui",
+    "friday": "Sex",
+    "saturday": "Sáb",
+    "recurringEndDate": "Data Final"
   },
   "SchedulesPage": {
     "title": "Agendamentos",
@@ -377,7 +404,16 @@
       "approved": "Aprovadas",
       "rejected": "Rejeitadas"
     },
+    "systemInfo": "Informações do Sistema",
+    "version": "Versão",
+    "lastUpdate": "Última atualização",
+    "databaseStatus": "Status do Banco",
+    "currentUser": "Usuário atual",
+    "today": "Hoje",
+    "connected": "Conectado",
+    "system": "Sistema",
     "items": {
+      "showInfo": "Esta funcionalidade será implementada em breve",
       "profile": {
         "id": "profile",
         "title": "Perfil",
@@ -459,7 +495,10 @@
       "errorReject": "Erro ao rejeitar solicitação",
       "forceApproveSuccess": "Solicitação aprovada! Reservas conflitantes foram canceladas.",
       "errorForceApprove": "Erro ao aprovar solicitação"
-    }
+    },
+    "recurring": "Recorrente",
+    "recurringInfo": "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias.",
+    "rejectReasonRecurring": "Motivo da rejeição (afetará todas as instâncias):"
   },
   "Notifications": {
     "title": "Notificações",

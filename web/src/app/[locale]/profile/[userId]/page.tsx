@@ -27,6 +27,7 @@ import { AvatarUpload } from "@/components/forms/AvatarUpload";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useTranslations, useLocale } from "next-intl";
+import { getIntlLocale } from "@/lib/utils";
 
 interface UserData {
   id: string;
@@ -196,8 +197,7 @@ const UserProfilePage: React.FC = () => {
 
   // Formatação de data
   const formatDate = (dateString: string) => {
-    const intlLocale =
-      locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
 
     return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "2-digit",

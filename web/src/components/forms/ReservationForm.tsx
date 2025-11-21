@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Room, User } from "@/lib/types";
+import { getIntlLocale } from "@/lib/utils";
 
 interface ReservationFormProps {
   rooms?: Room[];
@@ -24,6 +25,10 @@ interface ReservationFormProps {
     startTime: string;
     endTime: string;
     purpose?: string;
+    isRecurring?: boolean;
+    recurringPattern?: "DAILY" | "WEEKLY" | "MONTHLY";
+    recurringDaysOfWeek?: number[];
+    recurringEndDate?: string;
   }) => void;
   onCancel: () => void;
   loading?: boolean;
@@ -46,6 +51,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     startTime: "",
     endTime: "",
     purpose: "",
+    isRecurring: false,
+    recurringPattern: "WEEKLY" as "DAILY" | "WEEKLY" | "MONTHLY",
+    recurringDaysOfWeek: [] as number[],
+    recurringEndDate: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,6 +128,23 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       }
     }
 
+    // Validação para recorrência
+    if (formData.isRecurring) {
+      if (!formData.recurringEndDate) {
+        newErrors.recurringEndDate = t("errors.recurringEndDateRequired");
+      } else {
+        const endDate = new Date(formData.recurringEndDate);
+        const startDate = new Date(formData.startTime);
+        if (endDate <= startDate) {
+          newErrors.recurringEndDate = t("errors.recurringEndDateAfterStart");
+        }
+      }
+
+      if (formData.recurringPattern === "WEEKLY" && formData.recurringDaysOfWeek.length === 0) {
+        newErrors.recurringDaysOfWeek = t("errors.recurringDaysRequired");
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -133,13 +159,22 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      await onSubmit({
+      const reservationData: any = {
         userId: formData.userId,
         roomId: formData.roomId,
         startTime: new Date(formData.startTime).toISOString(),
         endTime: new Date(formData.endTime).toISOString(),
         purpose: formData.purpose || undefined,
-      });
+      };
+
+      if (formData.isRecurring) {
+        reservationData.isRecurring = true;
+        reservationData.recurringPattern = formData.recurringPattern;
+        reservationData.recurringDaysOfWeek = formData.recurringDaysOfWeek;
+        reservationData.recurringEndDate = new Date(formData.recurringEndDate).toISOString();
+      }
+
+      await onSubmit(reservationData);
     } catch (error) {
       console.error("Erro ao criar reserva:", error);
     } finally {
@@ -187,7 +222,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
   const formatSelectedDate = () => {
     if (!selectedDate) return "";
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
     return selectedDate.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "2-digit",
@@ -352,6 +387,117 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           rows={3}
         />
+      </div>
+
+      {/* Recorrência */}
+      <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+        <div className="flex items-center gap-3 mb-4">
+          <input
+            type="checkbox"
+            id="isRecurring"
+            checked={formData.isRecurring}
+            onChange={(e) => {
+              setFormData(prev => ({
+                ...prev,
+                isRecurring: e.target.checked,
+                recurringDaysOfWeek: e.target.checked ? [new Date(formData.startTime || new Date()).getDay()] : [],
+              }));
+            }}
+            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="isRecurring" className="text-sm font-medium text-gray-300 cursor-pointer">
+            {t("recurring") || "Reserva Recorrente"}
+          </label>
+        </div>
+
+        {formData.isRecurring && (
+          <div className="space-y-4 mt-4">
+            {/* Padrão de recorrência */}
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                {t("recurringPattern") || "Padrão de Recorrência"} *
+              </label>
+              <select
+                name="recurringPattern"
+                value={formData.recurringPattern}
+                onChange={handleInputChange}
+                className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="DAILY">{t("daily") || "Diário"}</option>
+                <option value="WEEKLY">{t("weekly") || "Semanal"}</option>
+                <option value="MONTHLY">{t("monthly") || "Mensal"}</option>
+              </select>
+            </div>
+
+            {/* Dias da semana (apenas para padrão semanal) */}
+            {formData.recurringPattern === "WEEKLY" && (
+              <div>
+                <label className="text-sm font-medium text-gray-300 mb-2 block">
+                  {t("recurringDays") || "Dias da Semana"} *
+                </label>
+                <div className="grid grid-cols-7 gap-2">
+                  {[
+                    { value: 0, label: t("sunday") || "Dom" },
+                    { value: 1, label: t("monday") || "Seg" },
+                    { value: 2, label: t("tuesday") || "Ter" },
+                    { value: 3, label: t("wednesday") || "Qua" },
+                    { value: 4, label: t("thursday") || "Qui" },
+                    { value: 5, label: t("friday") || "Sex" },
+                    { value: 6, label: t("saturday") || "Sáb" },
+                  ].map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() => {
+                        const newDays = formData.recurringDaysOfWeek.includes(day.value)
+                          ? formData.recurringDaysOfWeek.filter(d => d !== day.value)
+                          : [...formData.recurringDaysOfWeek, day.value];
+                        setFormData(prev => ({ ...prev, recurringDaysOfWeek: newDays }));
+                      }}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        formData.recurringDaysOfWeek.includes(day.value)
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  ))}
+                </div>
+                {errors.recurringDaysOfWeek && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.recurringDaysOfWeek}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Data final */}
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                {t("recurringEndDate") || "Data Final"} *
+              </label>
+              <input
+                type="date"
+                name="recurringEndDate"
+                value={formData.recurringEndDate}
+                onChange={handleInputChange}
+                min={formData.startTime ? formData.startTime.split("T")[0] : undefined}
+                className={`w-full px-3 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.recurringEndDate ? "border-red-500" : "border-gray-600"
+                }`}
+                required={formData.isRecurring}
+              />
+              {errors.recurringEndDate && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.recurringEndDate}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Informações adicionais */}

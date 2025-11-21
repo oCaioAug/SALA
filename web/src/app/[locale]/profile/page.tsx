@@ -28,7 +28,9 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { AvatarUpload } from "@/components/forms/AvatarUpload";
 import { useApp } from "@/lib/hooks/useApp";
+import { getIntlLocale } from "@/lib/utils";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useTranslations, useLocale } from "next-intl";
 
 interface UserData {
   id: string;
@@ -41,6 +43,8 @@ interface UserData {
 }
 
 const ProfilePage: React.FC = () => {
+  const t = useTranslations("ProfilePage");
+  const locale = useLocale();
   const { data: session, update } = useSession();
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState("profile");
@@ -73,7 +77,7 @@ const ProfilePage: React.FC = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Erro ao carregar dados do usuário");
+          throw new Error(t("errors.userLoadError"));
         }
 
         const data = await response.json();
@@ -84,7 +88,7 @@ const ProfilePage: React.FC = () => {
         });
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
-        showError("Erro ao carregar dados do usuário");
+        showError(t("errors.userLoadError"));
       } finally {
         setLoading(false);
       }
@@ -107,11 +111,7 @@ const ProfilePage: React.FC = () => {
         image: newAvatarUrl || undefined,
       });
 
-      showSuccess(
-        newAvatarUrl
-          ? "Avatar atualizado com sucesso!"
-          : "Avatar removido com sucesso!"
-      );
+      showSuccess(newAvatarUrl ? t("avatar.updated") : t("avatar.removed"));
     }
   };
 
@@ -134,7 +134,7 @@ const ProfilePage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao salvar alterações");
+        throw new Error(t("errors.saveError"));
       }
 
       const updatedUser = await response.json();
@@ -147,10 +147,10 @@ const ProfilePage: React.FC = () => {
         email: updatedUser.email,
       });
 
-      showSuccess("Perfil atualizado com sucesso!");
+      showSuccess(t("save.success"));
     } catch (error) {
       console.error("Erro ao salvar:", error);
-      showError("Erro ao salvar alterações");
+      showError(t("errors.saveError"));
     } finally {
       setSaveLoading(false);
     }
@@ -169,7 +169,9 @@ const ProfilePage: React.FC = () => {
 
   // Formatação de data
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
+    const intlLocale = getIntlLocale(locale);
+
+    return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -179,15 +181,15 @@ const ProfilePage: React.FC = () => {
   };
 
   if (loading) {
-    return <LoadingPage message="Carregando perfil..." />;
+    return <LoadingPage message={t("loading")} />;
   }
 
   if (!userData) {
     return (
       <ErrorPage
-        error="Não foi possível carregar os dados do usuário."
+        error={t("errors.userLoadError")}
         onRetry={() => router.push("/dashboard")}
-        retryLabel="Voltar ao Dashboard"
+        retryLabel={t("actions.backToDashboard")}
       />
     );
   }
@@ -208,10 +210,10 @@ const ProfilePage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                Meu Perfil
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Gerencie suas informações pessoais
+                {t("description")}
               </p>
             </div>
           </div>
@@ -221,7 +223,7 @@ const ProfilePage: React.FC = () => {
               <Link href="/users">
                 <Button variant="outline">
                   <Users className="w-4 h-4 mr-2" />
-                  Gerenciar Usuários
+                  {t("actions.manageUsers")}
                 </Button>
               </Link>
             )}
@@ -234,7 +236,7 @@ const ProfilePage: React.FC = () => {
         <div className="lg:col-span-2">
           <Card variant="elevated" className="p-6">
             <div className="flex items-start justify-between mb-6">
-              <CardTitle className="text-2xl">Informações Pessoais</CardTitle>
+              <CardTitle className="text-2xl">{t("personalInfo")}</CardTitle>
               <Button
                 variant="outline"
                 onClick={() =>
@@ -245,12 +247,12 @@ const ProfilePage: React.FC = () => {
                 {isEditing ? (
                   <>
                     <X className="w-4 h-4 mr-2" />
-                    Cancelar
+                    {t("actions.cancel")}
                   </>
                 ) : (
                   <>
                     <Edit className="w-4 h-4 mr-2" />
-                    Editar
+                    {t("actions.edit")}
                   </>
                 )}
               </Button>
@@ -261,14 +263,14 @@ const ProfilePage: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <AvatarUpload
                   currentAvatar={userData.image}
-                  userName={userData.name || "Usuário"}
+                  userName={userData.name || t("userWithoutName")}
                   onAvatarUpdate={handleAvatarUpdate}
                   disabled={saveLoading}
                 />
 
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
-                    {userData.name || "Usuário sem nome"}
+                    {userData.name || t("userWithoutName")}
                   </h3>
                   <div className="flex items-center gap-2 mb-3">
                     <span
@@ -281,19 +283,18 @@ const ProfilePage: React.FC = () => {
                       {userData.role === "ADMIN" ? (
                         <>
                           <Crown className="w-4 h-4 inline mr-1" />
-                          Administrador
+                          {t("roles.admin")}
                         </>
                       ) : (
                         <>
                           <UserIcon className="w-4 h-4 inline mr-1" />
-                          Usuário
+                          {t("roles.user")}
                         </>
                       )}
                     </span>
                   </div>
                   <p className="text-slate-600 dark:text-gray-400 text-sm">
-                    Sua foto será exibida em seu perfil e nas reservas. Escolha
-                    uma imagem que te represente bem.
+                    {t("ownProfilePictureDescription")}
                   </p>
                 </div>
               </div>
@@ -302,7 +303,7 @@ const ProfilePage: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Nome Completo
+                    {t("fullName")}
                   </label>
                   {isEditing ? (
                     <input
@@ -312,13 +313,13 @@ const ProfilePage: React.FC = () => {
                         setEditForm({ ...editForm, name: e.target.value })
                       }
                       className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="Digite seu nome completo"
+                      placeholder={t("fullNamePlaceholder")}
                     />
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                       <UserIcon className="w-5 h-5 text-slate-500 dark:text-gray-400" />
                       <span className="text-slate-900 dark:text-white">
-                        {userData.name || "Nome não informado"}
+                        {userData.name || t("userWithoutName")}
                       </span>
                     </div>
                   )}
@@ -326,7 +327,7 @@ const ProfilePage: React.FC = () => {
 
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Email
+                    {t("email")}
                   </label>
                   {isEditing ? (
                     <input
@@ -336,7 +337,7 @@ const ProfilePage: React.FC = () => {
                         setEditForm({ ...editForm, email: e.target.value })
                       }
                       className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="Digite seu email"
+                      placeholder={t("emailPlaceholder")}
                     />
                   ) : (
                     <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
@@ -350,21 +351,21 @@ const ProfilePage: React.FC = () => {
 
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Função
+                    {t("role")}
                   </label>
                   <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                     {userData.role === "ADMIN" ? (
                       <>
                         <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                         <span className="text-purple-600 dark:text-purple-400 font-medium">
-                          Administrador
+                          {t("roles.admin")}
                         </span>
                       </>
                     ) : (
                       <>
                         <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
                         <span className="text-green-600 dark:text-green-400 font-medium">
-                          Usuário
+                          {t("roles.user")}
                         </span>
                       </>
                     )}
@@ -383,12 +384,12 @@ const ProfilePage: React.FC = () => {
                     {saveLoading ? (
                       <>
                         <LoadingSpinner size="sm" />
-                        Salvando...
+                        {t("save.loading")}
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Salvar Alterações
+                        {t("save.save")}
                       </>
                     )}
                   </Button>
@@ -402,14 +403,14 @@ const ProfilePage: React.FC = () => {
         <div className="space-y-6">
           {/* Card de informações da conta */}
           <Card variant="elevated" className="p-6">
-            <CardTitle className="text-lg mb-4">Informações da Conta</CardTitle>
+            <CardTitle className="text-lg mb-4">{t("accountInfo")}</CardTitle>
 
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-sm">
                 <Calendar className="w-4 h-4 text-slate-500 dark:text-gray-400" />
                 <div>
                   <p className="text-slate-600 dark:text-gray-400">
-                    Membro desde
+                    {t("memberSince")}
                   </p>
                   <p className="text-slate-900 dark:text-white font-medium">
                     {formatDate(userData.createdAt)}
@@ -421,7 +422,7 @@ const ProfilePage: React.FC = () => {
                 <Edit className="w-4 h-4 text-slate-500 dark:text-gray-400" />
                 <div>
                   <p className="text-slate-600 dark:text-gray-400">
-                    Última atualização
+                    {t("lastUpdate")}
                   </p>
                   <p className="text-slate-900 dark:text-white font-medium">
                     {formatDate(userData.updatedAt)}
@@ -433,22 +434,24 @@ const ProfilePage: React.FC = () => {
 
           {/* Card de configurações */}
           <Card variant="elevated" className="p-6">
-            <CardTitle className="text-lg mb-4">Configurações</CardTitle>
+            <CardTitle className="text-lg mb-4">
+              {t("settings.title")}
+            </CardTitle>
 
             <div className="space-y-3">
               <button className="w-full flex items-center gap-3 p-3 text-left text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors">
                 <Bell className="w-4 h-4" />
-                <span>Notificações</span>
+                <span>{t("settings.notifications")}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 text-left text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors">
                 <Lock className="w-4 h-4" />
-                <span>Segurança</span>
+                <span>{t("settings.security")}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 text-left text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors">
                 <Settings className="w-4 h-4" />
-                <span>Preferências</span>
+                <span>{t("settings.preferences")}</span>
               </button>
             </div>
           </Card>

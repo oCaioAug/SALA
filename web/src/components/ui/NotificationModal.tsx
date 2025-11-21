@@ -25,6 +25,7 @@ import {
   NotificationTypeType,
 } from "@/lib/types";
 import { useTranslations, useLocale } from "next-intl";
+import { getIntlLocale } from "@/lib/utils";
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -207,8 +208,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   // Função para traduzir mensagens das notificações baseado no tipo
   const getNotificationMessage = (notification: Notification): string => {
-    const intlLocale =
-      locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
 
     // Parse dos dados da notificação
     let notificationData: any = {};

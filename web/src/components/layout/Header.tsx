@@ -19,6 +19,7 @@ import { Link } from "@/navigation";
 import { NotificationModal } from "@/components/ui/NotificationModal";
 import { useTheme } from "@/lib/providers/ThemeProvider";
 import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface HeaderProps {
   onNotificationClick?: () => void;
@@ -185,6 +186,9 @@ const Header: React.FC<HeaderProps> = ({
               />
             )}
           </div>
+
+          {/* Seletor de idioma */}
+          <LanguageSwitcher />
 
           {/* Toggle de tema */}
           <button

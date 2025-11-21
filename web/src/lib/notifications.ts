@@ -1,6 +1,7 @@
 import { NotificationType } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
+import { getIntlLocale } from "@/lib/utils";
 
 // Função utilitária para criar notificações diretamente no banco
 export async function createNotification(
@@ -48,8 +49,7 @@ export const notificationService = {
       const startDate = new Date(reservation.startTime);
 
       // Converter locale para formato do Intl
-      const intlLocale =
-        locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+      const intlLocale = getIntlLocale(locale);
       const startTime = startDate.toLocaleString(intlLocale, {
         day: "2-digit",
         month: "2-digit",
@@ -139,8 +139,7 @@ export const notificationService = {
       const title = t("titles.reservationApproved");
 
       // Converter locale para formato do Intl
-      const intlLocale =
-        locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+      const intlLocale = getIntlLocale(locale);
       const startTime = new Date(reservation.startTime).toLocaleString(
         intlLocale,
         {
@@ -196,8 +195,7 @@ export const notificationService = {
       const title = t("titles.reservationRejected");
 
       // Converter locale para formato do Intl
-      const intlLocale =
-        locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+      const intlLocale = getIntlLocale(locale);
       const startTime = new Date(reservation.startTime).toLocaleString(
         intlLocale,
         {

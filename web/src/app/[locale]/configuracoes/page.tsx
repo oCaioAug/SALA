@@ -16,8 +16,11 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useLocale, useTranslations } from "next-intl";
 
 const ConfiguracoesPage: React.FC = () => {
+  const t = useTranslations("SettingsPage");
+  const locale = useLocale();
   const [currentPage, setCurrentPage] = useState("configuracoes");
   const { showInfo } = useApp();
 
@@ -34,49 +37,42 @@ const ConfiguracoesPage: React.FC = () => {
   const configuracoesItems = [
     {
       id: "perfil",
-      title: "Perfil do Usuário",
-      description: "Gerencie suas informações pessoais e preferências",
+      title: t("items.profile.title"),
+      description: t("items.profile.description"),
       icon: <UserIcon className="w-6 h-6" />,
-      action: () =>
-        showInfo("Configurações de perfil serão implementadas em breve"),
+      action: () => showInfo(t("items.showInfo")),
       url: "/profile",
     },
     {
       id: "notificacoes",
-      title: "Notificações",
-      description: "Configure como e quando receber notificações",
+      title: t("items.notifications.title"),
+      description: t("items.notifications.description"),
       icon: <Bell className="w-6 h-6" />,
-      action: () =>
-        showInfo("Configurações de notificações serão implementadas em breve"),
+      action: () => showInfo(t("items.showInfo")),
       url: "/notifications",
     },
     {
       id: "seguranca",
-      title: "Segurança",
-      description: "Gerencie senhas e configurações de segurança",
+      title: t("items.security.title"),
+      description: t("items.security.description"),
       icon: <Shield className="w-6 h-6" />,
-      action: () =>
-        showInfo("Configurações de segurança serão implementadas em breve"),
+      action: () => showInfo(t("items.showInfo")),
       url: "/security",
     },
     {
       id: "banco-dados",
-      title: "Banco de Dados",
-      description: "Configurações do banco de dados e backup",
+      title: t("items.database.title"),
+      description: t("items.database.description"),
       icon: <Database className="w-6 h-6" />,
-      action: () =>
-        showInfo(
-          "Configurações de banco de dados serão implementadas em breve"
-        ),
+      action: () => showInfo(t("items.showInfo")),
       url: "/database",
     },
     {
       id: "aparencia",
-      title: "Aparência",
-      description: "Personalize o tema e visual da aplicação",
+      title: t("items.appearance.title"),
+      description: t("items.appearance.description"),
       icon: <Palette className="w-6 h-6" />,
-      action: () =>
-        showInfo("Configurações de aparência serão implementadas em breve"),
+      action: () => showInfo(t("items.showInfo")),
       url: "/appearance",
     },
   ];
@@ -95,10 +91,10 @@ const ConfiguracoesPage: React.FC = () => {
           <Settings className="w-8 h-8 text-yellow-500" />
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Configurações
+              {t("title")}
             </h1>
             <p className="text-slate-600 dark:text-gray-400">
-              Gerencie as configurações do sistema
+              {t("description")}
             </p>
           </div>
         </div>
@@ -134,7 +130,7 @@ const ConfiguracoesPage: React.FC = () => {
                     }}
                   >
                     <Link href={item.url} className="w-full">
-                      Configurar
+                      {t("actions.configure")}
                     </Link>
                   </Button>
                 </div>
@@ -148,13 +144,11 @@ const ConfiguracoesPage: React.FC = () => {
       <div className="mt-12">
         <Card variant="elevated">
           <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">
-              Informações do Sistema
-            </h3>
+            <h3 className="text-xl font-semibold mb-4">{t("systemInfo")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-slate-600 dark:text-gray-400">
-                  Versão:
+                  {t("version")}:
                 </span>
                 <span className="text-slate-900 dark:text-white ml-2">
                   1.0.0
@@ -162,24 +156,24 @@ const ConfiguracoesPage: React.FC = () => {
               </div>
               <div>
                 <span className="text-slate-600 dark:text-gray-400">
-                  Última atualização:
+                  {t("lastUpdate")}:
                 </span>
                 <span className="text-slate-900 dark:text-white ml-2">
-                  Hoje
+                  {t("today")}
                 </span>
               </div>
               <div>
                 <span className="text-slate-600 dark:text-gray-400">
-                  Status do banco:
+                  {t("databaseStatus")}:
                 </span>
-                <span className="text-green-500 ml-2">Conectado</span>
+                <span className="text-green-500 ml-2">{t("connected")}</span>
               </div>
               <div>
                 <span className="text-slate-600 dark:text-gray-400">
-                  Usuário atual:
+                  {t("currentUser")}:
                 </span>
                 <span className="text-slate-900 dark:text-white ml-2">
-                  Sistema
+                  {t("system")}
                 </span>
               </div>
             </div>

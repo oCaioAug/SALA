@@ -27,6 +27,7 @@ import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { ReservationWithDetails, Room, User } from "@/lib/types";
+import { getIntlLocale } from "@/lib/utils";
 
 const SolicitacoesPage: React.FC = () => {
   const t = useTranslations("Solicitacoes");
@@ -110,7 +111,33 @@ const SolicitacoesPage: React.FC = () => {
           usersResponse?.ok ? usersResponse.json() : Promise.resolve([]),
         ]);
 
-        setSolicitacoes(solicitacoesData);
+        // Agrupar reservas recorrentes para mostrar apenas uma por template
+        const groupedRecurring = new Map<string, ReservationWithDetails[]>();
+        const uniqueReservations: ReservationWithDetails[] = [];
+
+        solicitacoesData.forEach((reservation: ReservationWithDetails) => {
+          if (reservation.isRecurring && reservation.recurringTemplateId) {
+            const templateId = reservation.recurringTemplateId;
+            if (!groupedRecurring.has(templateId)) {
+              groupedRecurring.set(templateId, []);
+            }
+            groupedRecurring.get(templateId)!.push(reservation);
+          } else {
+            uniqueReservations.push(reservation);
+          }
+        });
+
+        // Adicionar apenas a primeira reserva de cada template recorrente
+        groupedRecurring.forEach((reservations) => {
+          if (reservations.length > 0) {
+            // Adicionar informação sobre quantas instâncias existem
+            const firstReservation = reservations[0];
+            (firstReservation as any).recurringInstancesCount = reservations.length;
+            uniqueReservations.push(firstReservation);
+          }
+        });
+
+        setSolicitacoes(uniqueReservations);
         setRooms(roomsData);
         setUsers(usersData || []);
       } catch (err) {
@@ -219,7 +246,13 @@ const SolicitacoesPage: React.FC = () => {
   const handleReject = async (solicitacao: ReservationWithDetails) => {
     try {
       setActionLoading(solicitacao.id);
-      await rejectSolicitacao(solicitacao.id);
+      const reason = solicitacao.isRecurring 
+        ? prompt(t("rejectReasonRecurring") || "Motivo da rejeição (afetará todas as instâncias):")
+        : prompt(t("rejectReason") || "Motivo da rejeição:");
+      
+      if (reason === null) return; // Usuário cancelou
+      
+      await rejectSolicitacao(solicitacao.id, reason);
     } catch (error) {
       console.error("Erro ao rejeitar solicitação:", error);
       showError(t("feedback.errorReject"));
@@ -229,32 +262,81 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   const approveSolicitacao = async (solicitacaoId: string) => {
-    const response = await fetch(`/api/reservations/${solicitacaoId}/approve`, {
+    const response = await fetch("/api/reservations/approve", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        reservationId: solicitacaoId,
+        approved: true,
+      }),
     });
 
     if (!response.ok) {
-      throw new Error("Erro ao aprovar solicitação");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao aprovar solicitação");
     }
 
-    // Atualizar lista
-    setSolicitacoes(prev => prev.filter(s => s.id !== solicitacaoId));
-    showSuccess(t("feedback.successApprove"));
+    const data = await response.json();
+
+    // Remover todas as reservas relacionadas (se for recorrente, remove todas as instâncias)
+    setSolicitacoes(prev => {
+      const solicitacao = prev.find(s => s.id === solicitacaoId);
+      if (solicitacao?.isRecurring && solicitacao?.recurringTemplateId) {
+        // Remover todas as reservas com o mesmo template
+        return prev.filter(
+          s => s.recurringTemplateId !== solicitacao.recurringTemplateId
+        );
+      }
+      return prev.filter(s => s.id !== solicitacaoId);
+    });
+
+    showSuccess(
+      data.message || t("feedback.successApprove") + 
+      (data.recurringInstances ? ` (${data.recurringInstances} instâncias)` : "")
+    );
     setIsDetailsModalOpen(false);
   };
 
-  const rejectSolicitacao = async (solicitacaoId: string) => {
-    const response = await fetch(`/api/reservations/${solicitacaoId}/reject`, {
+  const rejectSolicitacao = async (solicitacaoId: string, reason?: string) => {
+    const response = await fetch("/api/reservations/approve", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        reservationId: solicitacaoId,
+        approved: false,
+        reason: reason || undefined,
+      }),
     });
 
     if (!response.ok) {
-      throw new Error("Erro ao rejeitar solicitação");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao rejeitar solicitação");
     }
 
-    // Atualizar lista
-    setSolicitacoes(prev => prev.filter(s => s.id !== solicitacaoId));
-    showSuccess(t("feedback.successReject"));
+    const data = await response.json();
+
+    // Remover todas as reservas relacionadas (se for recorrente, remove todas as instâncias)
+    setSolicitacoes(prev => {
+      const solicitacao = prev.find(s => s.id === solicitacaoId);
+      if (solicitacao?.isRecurring && solicitacao?.recurringTemplateId) {
+        // Remover todas as reservas com o mesmo template
+        return prev.filter(
+          s => s.recurringTemplateId !== solicitacao.recurringTemplateId
+        );
+      }
+      return prev.filter(s => s.id !== solicitacaoId);
+    });
+
+    showSuccess(
+      data.message || t("feedback.successReject") + 
+      (data.recurringInstances ? ` (${data.recurringInstances} instâncias)` : "")
+    );
     setIsDetailsModalOpen(false);
   };
 
@@ -287,8 +369,7 @@ const SolicitacoesPage: React.FC = () => {
 
   const formatDateTime = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
-    const intlLocale =
-      locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
 
     return date.toLocaleString(intlLocale, {
       day: "2-digit",
@@ -449,6 +530,11 @@ const SolicitacoesPage: React.FC = () => {
                           )} - {formatDateTime(new Date(solicitacao.endTime))}
                         </div>
                       </div>
+                      {solicitacao.isRecurring && solicitacao.recurringTemplateId && (
+                        <p className="text-xs text-blue-400 mt-1">
+                          {t("recurringInfo") || "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
+                        </p>
+                      )}
                       {solicitacao.purpose && (
                         <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
                           {solicitacao.purpose}

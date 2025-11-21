@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
+import { getIntlLocale } from "@/lib/utils";
 
 interface Notification {
   id: string;
@@ -226,7 +227,7 @@ const NotificationPage: React.FC = () => {
 
   // Função para traduzir mensagens das notificações baseado no tipo
   const getNotificationMessage = (notification: Notification): string => {
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
     
     // Parse dos dados da notificação
     let notificationData: any = {};
@@ -339,7 +340,7 @@ const NotificationPage: React.FC = () => {
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
     // Converter locale do next-intl para formato do Intl
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
 
     if (diffInHours < 1) {
       return t("timeAgo.justNow");

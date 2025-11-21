@@ -25,6 +25,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
+import { getIntlLocale } from "@/lib/utils";
 
 interface User {
   id: string;
@@ -79,7 +80,8 @@ const UsersPage: React.FC = () => {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            errorData.error || `${t("error", { status: response.status, statusText: response.statusText })}`
+            errorData.error ||
+              `${t("error", { status: response.status, statusText: response.statusText })}`
           );
         }
 
@@ -131,9 +133,7 @@ const UsersPage: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("❌ Erro na API:", errorData);
-        throw new Error(
-          errorData.error || t("errorUserPermissionChange")
-        );
+        throw new Error(errorData.error || t("errorUserPermissionChange"));
       }
 
       const result = await response.json();
@@ -150,15 +150,13 @@ const UsersPage: React.FC = () => {
 
       showSuccess(
         t("userNowIs", {
-          role: newRole === "ADMIN" ? t("admin") : t("user")
+          role: newRole === "ADMIN" ? t("admin") : t("user"),
         })
       );
     } catch (error) {
       console.error("❌ Erro ao alterar role:", error);
       showError(
-        error instanceof Error
-          ? error.message
-          : t("errorUserPermissionChange")
+        error instanceof Error ? error.message : t("errorUserPermissionChange")
       );
     } finally {
       setActionLoading(null);
@@ -183,7 +181,7 @@ const UsersPage: React.FC = () => {
 
   // Formatação de data
   const formatDate = (dateString: string) => {
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
 
     return new Date(dateString).toLocaleDateString(intlLocale, {
       day: "2-digit",
@@ -202,9 +200,7 @@ const UsersPage: React.FC = () => {
             <h2 className="text-2xl font-semibold text-white mb-2">
               {t("accessDenied")}
             </h2>
-            <p className="text-gray-400 mb-6">
-              {t("accessDeniedDescription")}
-            </p>
+            <p className="text-gray-400 mb-6">{t("accessDeniedDescription")}</p>
             <Link href="/dashboard">
               <Button>{t("backToDashboard")}</Button>
             </Link>
@@ -238,9 +234,7 @@ const UsersPage: React.FC = () => {
                     <h1 className="text-3xl font-bold text-white mb-2">
                       {t("title")}
                     </h1>
-                    <p className="text-gray-400">
-                      {t("description")}
-                    </p>
+                    <p className="text-gray-400">{t("description")}</p>
                   </div>
                 </div>
 

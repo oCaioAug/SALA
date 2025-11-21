@@ -12,6 +12,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ReservationWithUser, Room } from "@/lib/types";
 import { useTranslations, useLocale } from "next-intl";
+import { getIntlLocale } from "@/lib/utils";
 
 interface CalendarProps {
   reservations: ReservationWithUser[];
@@ -103,7 +104,7 @@ const Calendar: React.FC<CalendarProps> = ({
   };
 
   const formatTime = (date: Date): string => {
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
 
     return date.toLocaleTimeString(intlLocale, {
       hour: "2-digit",

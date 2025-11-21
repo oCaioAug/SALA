@@ -75,17 +75,30 @@ model Image {
 }
 
 model Reservation {
-  id        String            @id @default(cuid())
-  userId    String
-  roomId    String
-  startTime DateTime
-  endTime   DateTime
-  purpose   String?
-  status    ReservationStatus @default(PENDING)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  room      Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String            @id @default(cuid())
+  userId              String
+  roomId              String
+  startTime           DateTime
+  endTime             DateTime
+  purpose             String?
+  status              ReservationStatus @default(PENDING)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  
+  // Campos de recorrência
+  isRecurring         Boolean           @default(false)
+  recurringPattern    RecurringPattern?
+  recurringDaysOfWeek Int[]             @default([]) // 0=domingo, 1=segunda, ..., 6=sábado
+  recurringEndDate    DateTime?
+  parentReservationId String?           // ID da reserva pai (template de recorrência)
+  recurringTemplateId String?           // ID do template de recorrência (mesmo para todas as instâncias)
+  
+  room                Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relacionamento para reservas filhas (instâncias geradas)
+  childReservations   Reservation[]     @relation("RecurringReservations")
+  parentReservation   Reservation?      @relation("RecurringReservations", fields: [parentReservationId], references: [id], onDelete: Cascade)
 
   @@map("reservations")
 }
@@ -264,4 +277,10 @@ enum IncidentCategory {
   ELECTRICAL
   NETWORK
   OTHER
+}
+
+enum RecurringPattern {
+  DAILY
+  WEEKLY
+  MONTHLY
 }

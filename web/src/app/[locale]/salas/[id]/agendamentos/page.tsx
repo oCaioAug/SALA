@@ -33,6 +33,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { getIntlLocale } from "@/lib/utils";
 import { ReservationWithUser, Room, User } from "@/lib/types";
 
 const RoomSchedulesPage: React.FC = () => {
@@ -160,10 +161,15 @@ const RoomSchedulesPage: React.FC = () => {
         throw new Error(errorData.error || "Erro ao criar reserva");
       }
 
-      const newReservation = await response.json();
+      const responseData = await response.json();
 
-      // Atualizar lista de reservas
-      setReservations(prev => [newReservation, ...prev]);
+      // Se for reserva recorrente, adicionar todas as instâncias
+      if (responseData.isRecurring && responseData.reservations) {
+        setReservations(prev => [...responseData.reservations, ...prev]);
+      } else {
+        // Reserva única
+        setReservations(prev => [responseData, ...prev]);
+      }
 
       // Fechar modal
       setIsCreateModalOpen(false);
@@ -203,7 +209,7 @@ const RoomSchedulesPage: React.FC = () => {
 
   const formatDateTime = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
     
     return date.toLocaleString(intlLocale, {
       day: "2-digit",
@@ -216,7 +222,7 @@ const RoomSchedulesPage: React.FC = () => {
 
   const formatDate = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
-    const intlLocale = locale === "pt" ? "pt-BR" : locale === "en" ? "en-US" : locale;
+    const intlLocale = getIntlLocale(locale);
     
     return date.toLocaleDateString(intlLocale, {
       weekday: "long",
