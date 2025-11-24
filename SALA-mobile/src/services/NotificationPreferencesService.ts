@@ -31,6 +31,7 @@ export class NotificationPreferencesService implements INotificationPreferencesS
    */
   async getPreferences(userId: string): Promise<NotificationPreferences> {
     try {
+      console.log(`📋 Buscando preferências para userId: ${userId}`);
       // Tentar buscar da API primeiro
       const response = await this.api.get(`/notifications/preferences/${userId}`);
       
@@ -40,15 +41,25 @@ export class NotificationPreferencesService implements INotificationPreferencesS
         // Salvar no cache local
         await this.cachePreferences(userId, preferences);
         
-        console.log('📱 Preferências carregadas da API');
+        console.log('✅ Preferências carregadas da API:', {
+          reminderEnabled: preferences.reminderEnabled,
+          reminderMinutes: preferences.reminderMinutes,
+        });
         return preferences;
       }
 
       // Fallback para cache local
+      console.log('⚠️ Resposta da API sem sucesso, usando cache local');
       return this.getCachedPreferences(userId);
-    } catch (error) {
-      console.warn('⚠️ Erro ao buscar preferências da API, usando cache local:', error);
-      return this.getCachedPreferences(userId);
+    } catch (error: any) {
+      console.warn('⚠️ Erro ao buscar preferências da API, usando cache local:', error?.message || error);
+      const cached = await this.getCachedPreferences(userId);
+      console.log('📋 Preferências do cache:', {
+        reminderEnabled: cached.reminderEnabled,
+        reminderMinutes: cached.reminderMinutes,
+        source: 'cache',
+      });
+      return cached;
     }
   }
 
@@ -173,14 +184,27 @@ export class NotificationPreferencesService implements INotificationPreferencesS
       const cached = await AsyncStorage.getItem(cacheKey);
       
       if (cached) {
-        return JSON.parse(cached);
+        const preferences = JSON.parse(cached);
+        console.log('📋 Preferências encontradas no cache:', {
+          reminderEnabled: preferences.reminderEnabled,
+          reminderMinutes: preferences.reminderMinutes,
+        });
+        return preferences;
       }
 
       // Retornar preferências padrão se não houver cache
-      return this.getDefaultPreferences(userId);
+      console.log('📋 Nenhum cache encontrado, usando preferências padrão');
+      const defaultPrefs = this.getDefaultPreferences(userId);
+      console.log('📋 Preferências padrão:', {
+        reminderEnabled: defaultPrefs.reminderEnabled,
+        reminderMinutes: defaultPrefs.reminderMinutes,
+      });
+      return defaultPrefs;
     } catch (error) {
       console.error('❌ Erro ao ler cache de preferências:', error);
-      return this.getDefaultPreferences(userId);
+      const defaultPrefs = this.getDefaultPreferences(userId);
+      console.log('📋 Usando preferências padrão devido a erro no cache');
+      return defaultPrefs;
     }
   }
 

@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
       "RESERVATION_REJECTED",
       "RESERVATION_CANCELLED",
       "RESERVATION_CONFLICT",
+      "RESERVATION_REMINDER", // Adicionado para suportar lembretes do mobile
       "ROOM_STATUS_CHANGED",
       "SYSTEM_ANNOUNCEMENT",
     ];

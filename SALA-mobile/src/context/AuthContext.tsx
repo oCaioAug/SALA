@@ -67,8 +67,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 avatar: profileResult.user.image, // Mapear 'image' do banco para 'avatar' do app
               };
               setUser(updatedUser);
+              
+              // Inicializar sistema de notificações
+              try {
+                const notificationManager = NotificationManager.getInstance();
+                await notificationManager.initialize(updatedUser.id);
+                console.log("🔔 Sistema de notificações inicializado no initializeAuth");
+              } catch (error) {
+                console.error("❌ Erro ao inicializar notificações no initializeAuth:", error);
+              }
             } else {
               setUser(currentUser);
+              
+              // Inicializar sistema de notificações mesmo sem perfil da API
+              try {
+                const notificationManager = NotificationManager.getInstance();
+                await notificationManager.initialize(currentUser.id);
+                console.log("🔔 Sistema de notificações inicializado no initializeAuth (sem perfil API)");
+              } catch (error) {
+                console.error("❌ Erro ao inicializar notificações no initializeAuth:", error);
+              }
             }
           } else {
             console.log("⚠️  Falha ao obter token para ProfileService");

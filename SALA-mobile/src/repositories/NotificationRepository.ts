@@ -226,11 +226,35 @@ export class NotificationRepository implements INotificationRepository {
    */
   async createNotification(request: CreateNotificationRequest): Promise<NotificationData | null> {
     try {
-      const response = await this.api.post('/notifications', request);
+      // O backend espera 'message' mas o mobile envia 'body'
+      // Converter para o formato esperado pela API
+      const apiRequest = {
+        userId: request.userId,
+        type: request.type,
+        title: request.title,
+        message: request.body, // Converter 'body' para 'message'
+        data: request.data,
+        reservationId: request.reservationId,
+      };
       
-      if (response.data.success) {
-        const notification: NotificationData = response.data.notification;
-        console.log('✅ Notificação criada:', notification.id);
+      const response = await this.api.post('/notifications', apiRequest);
+      
+      // O backend retorna o objeto notification diretamente (não em { success, notification })
+      if (response.data && (response.data.id || response.data.success)) {
+        const backendNotification = response.data.notification || response.data;
+        const notification: NotificationData = {
+          id: backendNotification.id || response.data.id,
+          userId: request.userId,
+          type: request.type,
+          title: request.title,
+          body: backendNotification.message || backendNotification.body || request.body,
+          data: request.data || backendNotification.data,
+          read: backendNotification.read || false,
+          createdAt: backendNotification.createdAt || new Date().toISOString(),
+          reservationId: request.reservationId || backendNotification.reservationId,
+        };
+        
+        console.log('✅ Notificação criada no backend:', notification.id);
         
         // Adicionar ao cache local
         await this.addToCache(request.userId, notification);
@@ -239,10 +263,19 @@ export class NotificationRepository implements INotificationRepository {
       }
       
       return null;
-    } catch (error) {
-      console.error('❌ Erro ao criar notificação:', error);
+    } catch (error: any) {
+      // Erros ao criar notificação no backend não são críticos
+      // A notificação será criada localmente como fallback
+      const status = error?.response?.status;
+      if (status === 400) {
+        console.log('ℹ️  Backend não aceita este tipo de notificação (esperado para lembretes)');
+      } else if (status === 500) {
+        console.log('ℹ️  Erro no servidor ao criar notificação (não crítico)');
+      } else {
+        console.log('ℹ️  Erro ao criar notificação no backend (não crítico):', error?.message || 'Erro desconhecido');
+      }
       
-      // Em caso de erro de rede, criar localmente
+      // Em caso de erro, criar localmente (não crítico)
       const localNotification: NotificationData = {
         id: `local-${Date.now()}`,
         userId: request.userId,

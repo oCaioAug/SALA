@@ -38,6 +38,12 @@ export class NotificationManager {
    */
   async initialize(userId: string): Promise<boolean> {
     try {
+      // Evitar inicialização múltipla
+      if (this.isInitialized && this.currentUserId === userId) {
+        console.log('ℹ️  Sistema de notificações já inicializado para este usuário');
+        return true;
+      }
+      
       console.log('🚀 Inicializando sistema de notificações...');
       
       this.currentUserId = userId;
@@ -63,11 +69,22 @@ export class NotificationManager {
       this.setupNotificationListeners();
 
       // Carregar preferências do usuário
+      console.log('📋 Carregando preferências de notificação...');
       const preferences = await this.preferencesService.getPreferences(userId);
+      console.log('📋 Preferências carregadas:', {
+        reminderEnabled: preferences.reminderEnabled,
+        reminderMinutes: preferences.reminderMinutes,
+        statusChanges: preferences.statusChanges,
+      });
       
       // Iniciar monitoramento se habilitado
       if (preferences.statusChanges || preferences.reminderEnabled) {
+        console.log('▶️ Iniciando monitoramento com preferências:', preferences);
         this.startMonitoring(preferences);
+      } else {
+        console.log('⏸️ Monitoramento não iniciado: preferências desabilitadas');
+        console.log('   - reminderEnabled:', preferences.reminderEnabled);
+        console.log('   - statusChanges:', preferences.statusChanges);
       }
 
       this.isInitialized = true;
@@ -83,10 +100,18 @@ export class NotificationManager {
    * Configurar listeners de notificação
    */
   private setupNotificationListeners(): void {
+    // Remover listeners anteriores se existirem
+    if (this.removeNotificationListeners) {
+      console.log('🔄 Removendo listeners anteriores de notificação');
+      this.removeNotificationListeners();
+    }
+    
+    // Registrar novos listeners
     this.removeNotificationListeners = this.nativeService.addNotificationListeners(
       this.handleNotificationReceived.bind(this),
       this.handleNotificationResponse.bind(this)
     );
+    console.log('✅ Listeners de notificação configurados');
   }
 
   /**
@@ -139,21 +164,40 @@ export class NotificationManager {
    * Iniciar monitoramento baseado nas preferências
    */
   private startMonitoring(preferences: NotificationPreferences): void {
-    if (!this.currentUserId) return;
+    if (!this.currentUserId) {
+      console.error('❌ Não é possível iniciar monitoramento: userId não definido');
+      return;
+    }
+
+    console.log('🔍 Iniciando monitoramento...');
+    console.log('   - UserId:', this.currentUserId);
+    console.log('   - Preferências:', {
+      reminderEnabled: preferences.reminderEnabled,
+      reminderMinutes: preferences.reminderMinutes,
+      statusChanges: preferences.statusChanges,
+    });
 
     // Monitoramento de mudanças de status
     if (preferences.statusChanges) {
       this.monitorService.startMonitoring(this.currentUserId, 5); // Verificar a cada 5 minutos
-      console.log('🔍 Monitoramento de status iniciado');
+      console.log('✅ Monitoramento de status iniciado');
+    } else {
+      console.log('⏭️  Monitoramento de status não iniciado (desabilitado)');
     }
 
     // Agendamento de lembretes
     if (preferences.reminderEnabled) {
+      console.log(`⏰ Iniciando agendamento de lembretes (${preferences.reminderMinutes} minutos antes)...`);
       this.monitorService.scheduleReservationReminders(
         this.currentUserId, 
         preferences.reminderMinutes
-      );
-      console.log(`⏰ Lembretes agendados para ${preferences.reminderMinutes} minutos`);
+      ).then(() => {
+        console.log(`✅ Agendamento de lembretes concluído`);
+      }).catch((error) => {
+        console.error('❌ Erro ao agendar lembretes:', error);
+      });
+    } else {
+      console.log('⏭️  Agendamento de lembretes não iniciado (desabilitado)');
     }
   }
 
@@ -163,6 +207,28 @@ export class NotificationManager {
   stopMonitoring(): void {
     this.monitorService.stopMonitoring();
     console.log('🛑 Monitoramento parado');
+  }
+
+  /**
+   * Reagendar lembretes de reservas (útil após criar nova reserva)
+   */
+  async rescheduleReminders(): Promise<void> {
+    if (!this.currentUserId || !this.preferencesService) {
+      return;
+    }
+
+    try {
+      const preferences = await this.preferencesService.getPreferences(this.currentUserId);
+      if (preferences.reminderEnabled) {
+        await this.monitorService.scheduleReservationReminders(
+          this.currentUserId,
+          preferences.reminderMinutes
+        );
+        console.log('✅ Lembretes reagendados');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao reagendar lembretes:', error);
+    }
   }
 
   /**

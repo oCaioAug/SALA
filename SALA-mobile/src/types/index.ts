@@ -23,6 +23,12 @@ export interface Room {
   reservations?: Reservation[];
 }
 
+export interface ItemImage {
+  id: string;
+  filename: string;
+  path: string;
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -33,6 +39,7 @@ export interface Item {
   roomId: string | null;
   createdAt: string;
   updatedAt: string;
+  images?: ItemImage[];
 }
 
 export interface Reservation {
@@ -57,6 +64,8 @@ export enum ReservationStatusEnum {
   PENDING = "PENDING",
   REJECTED = "REJECTED",
 }
+
+export type RecurringPattern = "DAILY" | "WEEKLY" | "MONTHLY";
 
 export interface RoomWithItems extends Room {
   items: Item[];

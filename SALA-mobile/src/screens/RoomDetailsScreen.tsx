@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   RefreshControl,
+  Image,
 } from "react-native";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -22,6 +23,7 @@ import ApiService from "../services/api";
 import StatusBadge from "../components/StatusBadge";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { formatDate, formatTime } from "../utils";
+import { API_CONFIG } from "../utils/config";
 
 type RoomDetailsRouteProp = RouteProp<RootStackParamList, "RoomDetails">;
 type RoomDetailsNavigationProp = StackNavigationProp<
@@ -173,42 +175,70 @@ const RoomDetailsScreen: React.FC = () => {
           </Text>
 
           <View style={styles.itemsContainer}>
-            {items.map((item) => (
-              <View key={item.id} style={styles.itemCard}>
-                <View style={styles.itemHeader}>
-                  <View style={styles.itemIconContainer}>
-                    <Ionicons
-                      name={(item.icon as any) || "cube"}
-                      size={20}
-                      color="#3B82F6"
-                    />
-                  </View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-                    <Text style={styles.itemQuantity}>
-                      Quantidade: {item.quantity}
-                    </Text>
-                  </View>
-                </View>
+            {items.map((item) => {
+              // Get first image if available
+              const itemImage =
+                item.images && item.images.length > 0 ? item.images[0] : null;
+              // Build image URL - use thumbnail if available, otherwise original
+              const imagePath = itemImage
+                ? itemImage.path.replace(
+                    "/api/uploads/items/images/original_",
+                    "/api/uploads/items/images/thumb_"
+                  )
+                : null;
+              // Construct full URL - remove /api from BASE_URL and add image path
+              const baseUrl = API_CONFIG.BASE_URL.replace("/api", "");
+              const fullImageUrl = imagePath ? `${baseUrl}${imagePath}` : null;
 
-                {item.description && (
-                  <Text style={styles.itemDescription}>{item.description}</Text>
-                )}
-
-                {item.specifications && item.specifications.length > 0 && (
-                  <View style={styles.specificationsContainer}>
-                    <Text style={styles.specificationsTitle}>
-                      Especificações:
-                    </Text>
-                    {item.specifications.map((spec, index) => (
-                      <Text key={index} style={styles.specification}>
-                        • {spec}
+              return (
+                <View key={item.id} style={styles.itemCard}>
+                  <View style={styles.itemHeader}>
+                    {fullImageUrl ? (
+                      <View style={styles.itemImageContainer}>
+                        <Image
+                          source={{ uri: fullImageUrl }}
+                          style={styles.itemImage}
+                          resizeMode="cover"
+                        />
+                      </View>
+                    ) : (
+                      <View style={styles.itemIconContainer}>
+                        <Ionicons
+                          name={(item.icon as any) || "cube"}
+                          size={20}
+                          color="#3B82F6"
+                        />
+                      </View>
+                    )}
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemName}>{item.name}</Text>
+                      <Text style={styles.itemQuantity}>
+                        Quantidade: {item.quantity}
                       </Text>
-                    ))}
+                    </View>
                   </View>
-                )}
-              </View>
-            ))}
+
+                  {item.description && (
+                    <Text style={styles.itemDescription}>
+                      {item.description}
+                    </Text>
+                  )}
+
+                  {item.specifications && item.specifications.length > 0 && (
+                    <View style={styles.specificationsContainer}>
+                      <Text style={styles.specificationsTitle}>
+                        Especificações:
+                      </Text>
+                      {item.specifications.map((spec, index) => (
+                        <Text key={index} style={styles.specification}>
+                          • {spec}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
           </View>
         </View>
       )}
@@ -349,6 +379,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+  },
+  itemImageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#F3F4F6",
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  itemImage: {
+    width: "100%",
+    height: "100%",
   },
   itemInfo: {
     flex: 1,

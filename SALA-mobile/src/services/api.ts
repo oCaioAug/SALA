@@ -7,6 +7,7 @@ import {
   ReservationStatusEnum,
 } from "../types";
 import { API_CONFIG } from "../utils/config";
+import { ProfileService } from "./ProfileService";
 
 // Interfaces para API
 export interface ProfileUpdateData {
@@ -27,6 +28,27 @@ const api = axios.create({
   },
   timeout: API_CONFIG.TIMEOUT,
 });
+
+// Interceptor para adicionar token de autenticação
+api.interceptors.request.use(
+  (config) => {
+    // Buscar token do ProfileService
+    const token = ProfileService.getCurrentToken();
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log("🔑 Token de autenticação adicionado à requisição");
+    } else {
+      console.warn("⚠️  Nenhum token de autenticação encontrado para:", config.url);
+    }
+    
+    console.log(`📡 Requisição: ${config.method?.toUpperCase()} ${config.url}`);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Interceptor para tratamento de erros
 api.interceptors.response.use(
@@ -132,11 +154,26 @@ export class ApiService {
   ): Promise<ReservationWithDetails[]> {
     try {
       console.log("🔍 Buscando reservas para userId:", userId);
+      console.log("🔗 URL completa:", `${API_CONFIG.BASE_URL}/reservations?userId=${userId}`);
+      
       const response = await api.get(`/reservations?userId=${userId}`);
       console.log("📡 Resposta da API getUserReservations:", response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Erro na API getUserReservations:", error);
+      
+      // Log detalhado do erro
+      if (error.response) {
+        console.error("   - Status:", error.response.status);
+        console.error("   - Data:", error.response.data);
+      } else if (error.request) {
+        console.error("   - Sem resposta do servidor");
+        console.error("   - URL tentada:", `${API_CONFIG.BASE_URL}/reservations?userId=${userId}`);
+        console.error("   - Verifique se o backend está rodando e acessível");
+      } else {
+        console.error("   - Erro ao configurar requisição:", error.message);
+      }
+      
       throw new Error("Erro ao carregar reservas do usuário");
     }
   }
@@ -147,7 +184,11 @@ export class ApiService {
     startTime: string;
     endTime: string;
     purpose?: string;
-  }): Promise<Reservation> {
+    isRecurring?: boolean;
+    recurringPattern?: "DAILY" | "WEEKLY" | "MONTHLY";
+    recurringDaysOfWeek?: number[];
+    recurringEndDate?: string;
+  }): Promise<Reservation | { reservations: Reservation[]; isRecurring: boolean; recurringInstances: number; parentReservation: Reservation }> {
     try {
       const response = await api.post("/reservations", reservationData);
       return response.data;
@@ -155,7 +196,8 @@ export class ApiService {
       if (error.response?.status === 409) {
         throw new Error("Sala não disponível no horário selecionado");
       }
-      throw new Error("Erro ao criar reserva");
+      const errorMessage = error.response?.data?.error || "Erro ao criar reserva";
+      throw new Error(errorMessage);
     }
   }
 

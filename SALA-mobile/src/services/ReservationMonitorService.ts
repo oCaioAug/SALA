@@ -2,6 +2,7 @@ import { ReservationStatusEnum } from '../types';
 import { NotificationRepository } from '../repositories/NotificationRepository';
 import { NativeNotificationService } from './NativeNotificationService';
 import { NotificationType, CreateNotificationRequest, NotificationData } from '../types/notifications';
+import ApiService from './api';
 
 /**
  * Interface para dados de reserva simplificados
@@ -163,61 +164,186 @@ export class ReservationMonitorService {
     reminderMinutes: number = 30
   ): Promise<void> {
     try {
+      console.log(`🔄 Iniciando agendamento de lembretes...`);
+      console.log(`   - UserId: ${userId}`);
+      console.log(`   - Minutos antes: ${reminderMinutes}`);
+      
+      // Cancelar lembretes antigos antes de agendar novos
+      console.log(`🗑️  Cancelando lembretes antigos...`);
+      await this.cancelAllReminders();
+      
+      console.log(`📡 Buscando reservas do usuário...`);
       const reservations = await this.fetchUserReservations(userId);
-      const upcomingReservations = reservations.filter(r => 
-        r.status === ReservationStatusEnum.APPROVED || r.status === ReservationStatusEnum.ACTIVE
-      );
+      console.log(`   - Total de reservas encontradas: ${reservations.length}`);
+      
+      const upcomingReservations = reservations.filter(r => {
+        const startTime = new Date(r.startTime);
+        const now = new Date();
+        const reminderTime = new Date(startTime.getTime() - (reminderMinutes * 60 * 1000));
+        
+        // Filtrar apenas reservas futuras, aprovadas/ativas e cujo lembrete ainda não passou
+        const isValid = (
+          (r.status === ReservationStatusEnum.APPROVED || r.status === ReservationStatusEnum.ACTIVE) &&
+          startTime > now &&
+          reminderTime > now
+        );
+        
+        if (!isValid) {
+          console.log(`   - Reserva ${r.id} filtrada: status=${r.status}, startTime=${startTime.toLocaleString()}, reminderTime=${reminderTime.toLocaleString()}`);
+        }
+        
+        return isValid;
+      });
 
-      for (const reservation of upcomingReservations) {
-        await this.scheduleReminderForReservation(reservation, reminderMinutes);
+      console.log(`📅 Encontradas ${upcomingReservations.length} reservas válidas para agendar lembretes`);
+
+      if (upcomingReservations.length === 0) {
+        console.log('ℹ️  Nenhuma reserva futura encontrada para agendar lembretes.');
+        console.log('   - Verifique se há reservas aprovadas com data/hora futura');
+        console.log('   - Lembretes só são agendados se o horário do lembrete ainda não passou');
       }
 
-      console.log(`⏰ ${upcomingReservations.length} lembretes agendados`);
+      let scheduledCount = 0;
+      const scheduledNotifications: Array<{ id: string; date: Date; room: string }> = [];
+      
+      for (const reservation of upcomingReservations) {
+        const notificationId = await this.scheduleReminderForReservation(reservation, reminderMinutes);
+        if (notificationId) {
+          scheduledCount++;
+          const startTime = new Date(reservation.startTime);
+          const reminderTime = new Date(startTime.getTime() - (reminderMinutes * 60 * 1000));
+          scheduledNotifications.push({
+            id: notificationId,
+            date: reminderTime,
+            room: reservation.roomName,
+          });
+        }
+      }
+
+      console.log(`✅ Processo concluído: ${scheduledCount} lembretes processados`);
+      
+      // Mostrar resumo das notificações agendadas
+      if (scheduledCount > 0) {
+        console.log(`\n📋 RESUMO DAS NOTIFICAÇÕES AGENDADAS:`);
+        scheduledNotifications
+          .sort((a, b) => a.date.getTime() - b.date.getTime())
+          .forEach((notif, index) => {
+            const now = new Date();
+            const timeUntil = Math.floor((notif.date.getTime() - now.getTime()) / 1000 / 60); // minutos
+            const timeStr = timeUntil < 60 
+              ? `em ${timeUntil} minuto(s)`
+              : timeUntil < 1440
+              ? `em ${Math.floor(timeUntil / 60)} hora(s)`
+              : `em ${Math.floor(timeUntil / 1440)} dia(s)`;
+            
+            console.log(`   ${index + 1}. Sala: ${notif.room}`);
+            console.log(`      ⏰ Será exibida: ${notif.date.toLocaleString('pt-BR')} (${timeStr})`);
+          });
+        
+        // Listar todas as notificações agendadas para debug
+        const allScheduled = await this.nativeNotificationService.getAllScheduledNotifications();
+        console.log(`\n📋 Verificação: ${allScheduled.length} notificações agendadas no sistema nativo`);
+      }
     } catch (error) {
       console.error('❌ Erro ao agendar lembretes:', error);
+      if (error instanceof Error) {
+        console.error('   - Mensagem:', error.message);
+        console.error('   - Stack:', error.stack);
+      }
     }
   }
 
   /**
    * Agendar lembrete para uma reserva específica
+   * @returns ID da notificação agendada ou null se não foi possível agendar
    */
   private async scheduleReminderForReservation(
     reservation: ReservationData,
     reminderMinutes: number
-  ): Promise<void> {
+  ): Promise<string | null> {
     try {
       const startTime = new Date(reservation.startTime);
       const reminderTime = new Date(startTime.getTime() - (reminderMinutes * 60 * 1000));
+      const now = new Date();
+
+      console.log(`📅 Processando reserva ${reservation.id}:`);
+      console.log(`   - Início: ${startTime.toLocaleString()}`);
+      console.log(`   - Lembrete: ${reminderTime.toLocaleString()}`);
+      console.log(`   - Agora: ${now.toLocaleString()}`);
 
       // Só agendar se o lembrete for no futuro
-      if (reminderTime > new Date()) {
-        const notificationRequest: CreateNotificationRequest = {
-          userId: this.currentUserId!,
-          type: NotificationType.RESERVATION_REMINDER,
-          title: `Lembrete: Reserva em ${reminderMinutes} minutos`,
-          body: `Sua reserva na sala ${reservation.roomName} começará às ${startTime.toLocaleTimeString()}`,
-          data: {
-            reservationId: reservation.id,
-            roomName: reservation.roomName,
-            startTime: reservation.startTime,
-            reminderMinutes,
-          },
-          reservationId: reservation.id,
-        };
+      if (reminderTime <= now) {
+        console.log(`⏭️  Pulando reserva ${reservation.id}: lembrete já passou`);
+        return null;
+      }
 
-        // Criar notificação via repositório
+      // Criar objeto de notificação diretamente (sem depender do repositório)
+      const notification: NotificationData = {
+        id: `reminder-${reservation.id}-${Date.now()}`,
+        userId: this.currentUserId!,
+        type: NotificationType.RESERVATION_REMINDER,
+        title: `Lembrete: Reserva em ${reminderMinutes} minutos`,
+        body: `Sua reserva na sala ${reservation.roomName} começará às ${startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
+        data: {
+          reservationId: reservation.id,
+          roomName: reservation.roomName,
+          startTime: reservation.startTime,
+          reminderMinutes,
+        },
+        read: false,
+        createdAt: new Date().toISOString(),
+        reservationId: reservation.id,
+      };
+
+      // Agendar notificação nativa diretamente
+      const notificationId = await this.nativeNotificationService.scheduleTimedNotification(
+        notification,
+        reminderTime
+      );
+
+      if (notificationId) {
+        console.log(`✅ Lembrete agendado com sucesso! ID: ${notificationId}`);
+        console.log(`   - Reserva: ${reservation.id}`);
+        console.log(`   - Sala: ${reservation.roomName}`);
+        console.log(`   - Horário do lembrete: ${reminderTime.toLocaleString()}`);
+        
+        // Tentar criar notificação no backend (opcional, não bloqueia)
+        // Nota: Lembretes são agendados localmente, não precisam ser salvos no backend
+        // O backend pode não suportar RESERVATION_REMINDER, então silenciosamente ignoramos erros
         if (this.notificationRepo) {
-          const notification = await this.notificationRepo.createNotification(notificationRequest);
-          
-          if (notification) {
-            // Agendar notificação nativa
-            await this.nativeNotificationService.scheduleTimedNotification(notification, reminderTime);
-            console.log(`⏰ Lembrete agendado para reserva ${reservation.id} às ${reminderTime.toLocaleString()}`);
+          try {
+            const notificationRequest: CreateNotificationRequest = {
+              userId: this.currentUserId!,
+              type: NotificationType.RESERVATION_REMINDER,
+              title: notification.title,
+              body: notification.body,
+              data: notification.data,
+              reservationId: reservation.id,
+            };
+            await this.notificationRepo.createNotification(notificationRequest);
+            console.log('✅ Notificação de lembrete salva no backend');
+          } catch (backendError: any) {
+            // Erros 400/500 ao criar notificação no backend não são críticos
+            // As notificações nativas já foram agendadas com sucesso localmente
+            const status = backendError?.response?.status;
+            if (status === 400) {
+              console.log('ℹ️  Backend não suporta notificações de lembrete (esperado). Notificação nativa agendada com sucesso.');
+            } else if (status === 500) {
+              console.log('ℹ️  Erro no servidor ao salvar notificação (não crítico). Notificação nativa agendada com sucesso.');
+            } else {
+              console.log('ℹ️  Falha ao criar notificação no backend (não crítico). Notificação nativa agendada com sucesso.');
+            }
           }
         }
+        
+        return notificationId;
+      } else {
+        console.error(`❌ Falha ao agendar notificação nativa para reserva ${reservation.id}`);
+        return null;
       }
     } catch (error) {
-      console.error('❌ Erro ao agendar lembrete:', error);
+      console.error(`❌ Erro ao agendar lembrete para reserva ${reservation.id}:`, error);
+      return null;
     }
   }
 
@@ -239,19 +365,25 @@ export class ReservationMonitorService {
 
   /**
    * Buscar reservas do usuário via API
-   * Esta é uma implementação mock - substitua pela chamada real da API
    */
   private async fetchUserReservations(userId: string): Promise<ReservationData[]> {
     try {
-      // TODO: Implementar chamada real para a API
-      // Por enquanto, retornar array vazio para evitar erros
       console.log(`📡 Buscando reservas para usuário ${userId}...`);
       
-      // Exemplo de implementação:
-      // const response = await api.get(`/reservations?userId=${userId}`);
-      // return response.data;
+      // Buscar reservas do usuário via API
+      const reservations = await ApiService.getUserReservations(userId);
       
-      return [];
+      // Mapear para o formato ReservationData
+      const mappedReservations: ReservationData[] = reservations.map((reservation) => ({
+        id: reservation.id,
+        status: reservation.status,
+        startTime: reservation.startTime,
+        roomName: reservation.room?.name || 'Sala desconhecida',
+        userName: reservation.user?.name || 'Usuário desconhecido',
+      }));
+      
+      console.log(`✅ ${mappedReservations.length} reservas encontradas para o usuário`);
+      return mappedReservations;
     } catch (error) {
       console.error('❌ Erro ao buscar reservas:', error);
       return [];
