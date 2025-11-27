@@ -88,6 +88,8 @@ export type RootStackParamList = {
   EditProfile: { user: User };
   NotificationSettings: undefined;
   NotificationDebug: undefined;
+  ReportIncident: { roomId?: string; itemId?: string };
+  MyIncidents: undefined;
 };
 
 export type BottomTabParamList = {
@@ -163,3 +165,99 @@ export const RESERVATION_STATUS_CONFIG = {
     text: "Concluída",
   },
 } as const;
+
+// Tipos de Incidentes
+export type IncidentPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type IncidentStatus = "REPORTED" | "IN_ANALYSIS" | "IN_PROGRESS" | "RESOLVED" | "CANCELLED";
+export type IncidentCategory =
+  | "EQUIPMENT_FAILURE"
+  | "INFRASTRUCTURE"
+  | "SOFTWARE"
+  | "SAFETY"
+  | "MAINTENANCE"
+  | "ELECTRICAL"
+  | "NETWORK"
+  | "OTHER";
+
+export interface Incident {
+  id: string;
+  title: string;
+  description: string;
+  priority: IncidentPriority;
+  status: IncidentStatus;
+  category: IncidentCategory;
+  reportedById: string;
+  assignedToId: string | null;
+  roomId: string | null;
+  itemId: string | null;
+  estimatedResolutionTime: string | null;
+  actualResolutionTime: string | null;
+  resolutionNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  reportedBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  assignedTo?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+  room?: {
+    id: string;
+    name: string;
+    status: string;
+  } | null;
+  item?: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
+}
+
+export interface CreateIncidentRequest {
+  title: string;
+  description: string;
+  priority: IncidentPriority;
+  category: IncidentCategory;
+  roomId?: string;
+  itemId?: string;
+  estimatedResolutionTime?: string;
+}
+
+export const INCIDENT_PRIORITY_LABELS: Record<IncidentPriority, string> = {
+  LOW: "Baixa",
+  MEDIUM: "Média",
+  HIGH: "Alta",
+  CRITICAL: "Crítica",
+};
+
+export const INCIDENT_STATUS_LABELS: Record<IncidentStatus, string> = {
+  REPORTED: "Reportado",
+  IN_ANALYSIS: "Em Análise",
+  IN_PROGRESS: "Em Andamento",
+  RESOLVED: "Resolvido",
+  CANCELLED: "Cancelado",
+};
+
+export const INCIDENT_CATEGORY_LABELS: Record<IncidentCategory, string> = {
+  EQUIPMENT_FAILURE: "Falha de Equipamento",
+  INFRASTRUCTURE: "Infraestrutura",
+  SOFTWARE: "Software",
+  SAFETY: "Segurança",
+  MAINTENANCE: "Manutenção",
+  ELECTRICAL: "Elétrico",
+  NETWORK: "Rede",
+  OTHER: "Outros",
+};
+
+export const INCIDENT_PRIORITY_COLORS: Record<IncidentPriority, { color: string; backgroundColor: string }> = {
+  LOW: { color: "#6B7280", backgroundColor: "#F3F4F6" },
+  MEDIUM: { color: "#F59E0B", backgroundColor: "#FEF3C7" },
+  HIGH: { color: "#EF4444", backgroundColor: "#FEE2E2" },
+  CRITICAL: { color: "#DC2626", backgroundColor: "#FEE2E2" },
+};

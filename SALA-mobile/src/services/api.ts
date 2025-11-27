@@ -5,6 +5,8 @@ import {
   ReservationWithDetails,
   User,
   ReservationStatusEnum,
+  Incident,
+  CreateIncidentRequest,
 } from "../types";
 import { API_CONFIG } from "../utils/config";
 import { ProfileService } from "./ProfileService";
@@ -311,6 +313,40 @@ export class ApiService {
     } catch (error) {
       console.error("Erro de conectividade:", error);
       return false;
+    }
+  }
+
+  // Incidents
+  static async createIncident(
+    incidentData: CreateIncidentRequest & { reportedById: string }
+  ): Promise<Incident> {
+    try {
+      console.log("📝 Criando incidente:", incidentData);
+      const response = await api.post("/incidents", incidentData);
+      console.log("✅ Incidente criado com sucesso:", response.data.id);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Erro ao criar incidente:", error);
+      const errorMessage =
+        error.response?.data?.error || "Erro ao criar incidente";
+      throw new Error(errorMessage);
+    }
+  }
+
+  static async getUserIncidents(userId: string): Promise<Incident[]> {
+    try {
+      console.log("🔍 Buscando incidentes do usuário:", userId);
+      const response = await api.get(`/incidents?reportedById=${userId}`);
+      console.log("📡 Resposta da API getUserIncidents:", response.data);
+      
+      // A API retorna { incidents: [...], pagination: {...} }
+      if (response.data.incidents) {
+        return response.data.incidents;
+      }
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Erro ao buscar incidentes:", error);
+      throw new Error("Erro ao carregar incidentes do usuário");
     }
   }
 }

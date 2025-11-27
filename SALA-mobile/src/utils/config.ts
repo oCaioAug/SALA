@@ -7,7 +7,7 @@ import * as Device from "expo-device";
 // Exemplo: 192.168.1.100 ou 192.168.0.100
 // Você pode configurar via variável de ambiente EXPO_PUBLIC_API_HOST
 // ou alterar diretamente aqui
-const LOCAL_IP = process.env.EXPO_PUBLIC_API_HOST || "192.168.1.50"; // IP local da máquina (descoberto automaticamente)
+const LOCAL_IP = process.env.EXPO_PUBLIC_API_HOST || "172.18.23.69"; // IP local da máquina (descoberto automaticamente)
 
 // Função para determinar a URL base da API baseada na plataforma
 const getApiBaseUrl = () => {

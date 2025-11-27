@@ -12,6 +12,8 @@ import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
 import { NotificationSettingsScreen } from "../screens/NotificationSettingsScreen";
 import { NotificationDebugScreen } from "../screens/NotificationDebugScreen";
+import ReportIncidentScreen from "../screens/ReportIncidentScreen";
+import MyIncidentsScreen from "../screens/MyIncidentsScreen";
 
 import { RootStackParamList, BottomTabParamList } from "../types";
 
@@ -47,6 +49,22 @@ const RoomsStack = () => {
         component={CreateReservationScreen}
         options={{ title: "Nova Reserva" }}
       />
+      <Stack.Screen
+        name="ReportIncident"
+        component={ReportIncidentScreen}
+        options={{ 
+          title: "Reportar Incidente",
+          headerShown: false, // A tela tem seu próprio header
+        }}
+      />
+      <Stack.Screen
+        name="MyIncidents"
+        component={MyIncidentsScreen}
+        options={{ 
+          title: "Meus Incidentes",
+          headerShown: false, // A tela tem seu próprio header
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -75,6 +93,14 @@ const ProfileStack = () => {
         component={EditProfileScreen}
         options={{
           title: "Editar Perfil",
+          headerShown: false, // A tela tem seu próprio header
+        }}
+      />
+      <Stack.Screen
+        name="MyIncidents"
+        component={MyIncidentsScreen}
+        options={{ 
+          title: "Meus Incidentes",
           headerShown: false, // A tela tem seu próprio header
         }}
       />

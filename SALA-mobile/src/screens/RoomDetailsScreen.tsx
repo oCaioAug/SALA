@@ -74,6 +74,10 @@ const RoomDetailsScreen: React.FC = () => {
     navigation.navigate("CreateReservation", { roomId });
   };
 
+  const handleReportIncident = () => {
+    navigation.navigate("ReportIncident", { roomId });
+  };
+
   if (loading) {
     return <LoadingSpinner message="Carregando detalhes..." />;
   }
@@ -274,7 +278,7 @@ const RoomDetailsScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Reserve Button */}
+      {/* Action Buttons */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.reserveButton}
@@ -287,6 +291,18 @@ const RoomDetailsScreen: React.FC = () => {
             style={styles.buttonIcon}
           />
           <Text style={styles.reserveButtonText}>Reservar Sala</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.reportButton}
+          onPress={handleReportIncident}
+        >
+          <Ionicons
+            name="warning"
+            size={20}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.reportButtonText}>Reportar Incidente</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -467,6 +483,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
+    gap: 12,
   },
   reserveButton: {
     backgroundColor: "#3B82F6",
@@ -480,10 +497,24 @@ const styles = StyleSheet.create({
   reserveButtonDisabled: {
     backgroundColor: "#9CA3AF",
   },
+  reportButton: {
+    backgroundColor: "#EF4444",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
   buttonIcon: {
     marginRight: 4,
   },
   reserveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  reportButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",

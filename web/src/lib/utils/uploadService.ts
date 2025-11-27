@@ -256,16 +256,27 @@ export async function uploadImage(
 
 /**
  * Upload de avatar (similar ao de item mas com tamanhos diferentes)
+ * Sempre usa Cloudinary se as credenciais estiverem disponíveis
  */
 export async function uploadAvatar(
   buffer: Buffer,
   filename: string
 ): Promise<{ originalPath: string; thumbnailPath: string }> {
-  if (isVercel()) {
-    console.log("🌐 Uploading avatar to Vercel using Cloudinary");
+  // Verificar se as credenciais do Cloudinary estão disponíveis
+  const hasCloudinaryCredentials = !!(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
+
+  if (hasCloudinaryCredentials) {
+    console.log("☁️ Uploading avatar to Cloudinary");
     return uploadWithCloudinary(buffer, filename, "sala/avatars");
   } else {
-    // Usar filesystem para desenvolvimento local
+    // Fallback para filesystem se Cloudinary não estiver configurado
+    console.log(
+      "💻 Uploading avatar locally using filesystem (Cloudinary não configurado)"
+    );
     const fs = await import("fs/promises");
     const path = await import("path");
 

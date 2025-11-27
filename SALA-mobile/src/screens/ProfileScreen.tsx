@@ -232,12 +232,23 @@ const ProfileScreen: React.FC = () => {
     ]);
   };
 
+  const handleMyIncidents = () => {
+    (navigation as any).navigate("MyIncidents");
+  };
+
   const menuItems = [
     {
       icon: "person-outline",
       title: "Editar Perfil",
       subtitle: "Alterar informações pessoais",
       onPress: handleEditProfile,
+      showArrow: true,
+    },
+    {
+      icon: "warning-outline",
+      title: "Meus Incidentes",
+      subtitle: "Visualizar incidentes reportados",
+      onPress: handleMyIncidents,
       showArrow: true,
     },
     // {

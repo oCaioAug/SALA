@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 import { IncidentStatus, IncidentPriority } from "@prisma/client";
 
@@ -10,9 +11,13 @@ export const dynamic = "force-dynamic";
 // GET /api/incidents - Listar incidentes com filtros
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    // Verificar autenticação híbrida (web + mobile)
+    const authResult = await verifyAuth(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: authResult.error || "Não autorizado" },
+        { status: authResult.status || 401 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -20,6 +25,7 @@ export async function GET(request: NextRequest) {
     const priority = searchParams.get("priority");
     const category = searchParams.get("category");
     const assignedToId = searchParams.get("assignedToId");
+    const reportedById = searchParams.get("reportedById");
     const roomId = searchParams.get("roomId");
     const itemId = searchParams.get("itemId");
     const page = parseInt(searchParams.get("page") || "1");
@@ -30,6 +36,7 @@ export async function GET(request: NextRequest) {
       priority,
       category,
       assignedToId,
+      reportedById,
       roomId,
       itemId,
       page,
@@ -52,6 +59,10 @@ export async function GET(request: NextRequest) {
 
     if (assignedToId) {
       where.assignedToId = assignedToId;
+    }
+
+    if (reportedById) {
+      where.reportedById = reportedById;
     }
 
     if (roomId) {
@@ -128,9 +139,13 @@ export async function GET(request: NextRequest) {
 // POST /api/incidents - Criar novo incidente
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    // Verificar autenticação híbrida (web + mobile)
+    const authResult = await verifyAuth(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: authResult.error || "Não autorizado" },
+        { status: authResult.status || 401 }
+      );
     }
 
     const body = await request.json();

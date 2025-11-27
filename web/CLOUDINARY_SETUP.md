@@ -4,8 +4,9 @@
 
 A Vercel não permite escrever arquivos no sistema de arquivos das funções serverless. Para resolver isso, implementamos uma solução híbrida que usa:
 
-- **Desenvolvimento Local**: Sistema de arquivos (`public/uploads/`)
+- **Desenvolvimento Local**: Sistema de arquivos (`public/uploads/`) para itens
 - **Produção (Vercel)**: Cloudinary para hospedagem de imagens
+- **Avatares**: Sempre usa Cloudinary quando as credenciais estiverem disponíveis (desenvolvimento e produção)
 
 ## Setup do Cloudinary
 
@@ -52,20 +53,21 @@ function isVercel(): boolean {
 }
 ```
 
-### Upload Local (Desenvolvimento)
+### Upload de Itens
+
+- **Local (Desenvolvimento)**: Sistema de arquivos (`public/uploads/items/images/`)
+- **Produção (Vercel)**: Cloudinary (`sala/items/`)
+
+### Upload de Avatares
+
+- **Sempre usa Cloudinary** quando as credenciais estiverem disponíveis (desenvolvimento e produção)
+- **Fallback**: Sistema de arquivos local se Cloudinary não estiver configurado
 
 ```typescript
-// Salva em: public/uploads/items/images/
-// Serve via: /api/uploads/items/images/[filename]
-```
-
-### Upload Cloudinary (Produção)
-
-```typescript
-// Organização:
+// Organização no Cloudinary:
 // - Itens: sala/items/filename.jpg
 // - Avatares: sala/avatars/filename.jpg
-// - Thumbnails: sala/items/thumb_filename.jpg
+// - Thumbnails: sala/items/thumb_filename.jpg ou sala/avatars/thumb_filename.jpg
 ```
 
 ## Estrutura de Pastas no Cloudinary
@@ -116,7 +118,12 @@ https://res.cloudinary.com/your-cloud/image/upload/v1699123456/sala/items/comput
 O sistema inclui logs para facilitar o debug:
 
 ```
-🌐 Uploading to Vercel using Cloudinary
-💻 Uploading locally using filesystem
-🌐 Uploading avatar to Vercel using Cloudinary
+🌐 Uploading to Vercel using Cloudinary (itens)
+💻 Uploading locally using filesystem (itens)
+☁️ Uploading avatar to Cloudinary (sempre que credenciais disponíveis)
+💻 Uploading avatar locally using filesystem (Cloudinary não configurado)
 ```
+
+## Nota Importante
+
+**Para upload de avatares funcionar corretamente**, especialmente no mobile, é necessário configurar as credenciais do Cloudinary no arquivo `.env` local, mesmo em desenvolvimento. Isso garante que os avatares sejam sempre salvos no Cloudinary e possam ser acessados de qualquer lugar.
