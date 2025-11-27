@@ -498,7 +498,8 @@
     },
     "recurring": "Recurring",
     "recurringInfo": "This is a recurring reservation. Approving/rejecting will affect all instances.",
-    "rejectReasonRecurring": "Rejection reason (will affect all instances):"
+    "rejectReasonRecurring": "Rejection reason (will affect all instances):",
+    "rejectReason": "Rejection reason:"
   },
   "Notifications": {
     "title": "Notifications",

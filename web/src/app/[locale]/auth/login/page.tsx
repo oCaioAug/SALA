@@ -95,13 +95,11 @@ const LoginContent: React.FC = () => {
           {urlError && (
             <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm">
               <strong>{t("authError")}</strong>{" "}
-              {urlError === "Callback"
-                ? t("callbackError")
-                : urlError}
+              {urlError === "Callback" ? t("callbackError") : urlError}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6 mb-3">
+          {/* <form onSubmit={handleSubmit} className="space-y-6 mb-3">
             <Input
               label={t("email")}
               type="email"
@@ -144,7 +142,7 @@ const LoginContent: React.FC = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? t("loading") : t("login")}
             </Button>
-          </form>
+          </form> */}
 
           <div className="space-y-3">
             <Button
@@ -156,14 +154,14 @@ const LoginContent: React.FC = () => {
               {t("loginWithGoogle")}
             </Button>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <p className="text-sm text-gray-400">
                 {t("noAccount")}{" "}
                 <button className="text-blue-400 hover:text-blue-300 transition-colors">
                   {t("createAccount")}
                 </button>
               </p>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>

@@ -498,7 +498,8 @@
     },
     "recurring": "Recorrente",
     "recurringInfo": "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias.",
-    "rejectReasonRecurring": "Motivo da rejeição (afetará todas as instâncias):"
+    "rejectReasonRecurring": "Motivo da rejeição (afetará todas as instâncias):",
+    "rejectReason": "Motivo da rejeição:"
   },
   "Notifications": {
     "title": "Notificações",
