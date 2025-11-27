@@ -498,7 +498,8 @@
     },
     "recurring": "Récurrente",
     "recurringInfo": "Il s'agit d'une réservation récurrente. L'approbation/le rejet affectera toutes les instances.",
-    "rejectReasonRecurring": "Raison du rejet (affectera toutes les instances) :"
+    "rejectReasonRecurring": "Raison du rejet (affectera toutes les instances) :",
+    "rejectReason": "Raison du rejet :"
   },
   "Notifications": {
     "title": "Notifications",

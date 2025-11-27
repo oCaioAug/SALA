@@ -174,9 +174,14 @@ const AgendamentosPage: React.FC = () => {
 
       // Se for reserva recorrente, adicionar todas as instâncias
       if (responseData.isRecurring && responseData.reservations) {
-        console.log(`✅ Adicionando ${responseData.reservations.length} reservas recorrentes ao estado`);
+        console.log(
+          `✅ Adicionando ${responseData.reservations.length} reservas recorrentes ao estado`
+        );
         setReservations(prev => [...responseData.reservations, ...prev]);
-        showSuccess(t("success.reservationCreated") + ` (${responseData.reservations.length} ${t("recurringInstances") || "instâncias"})`);
+        showSuccess(
+          t("success.reservationCreated") +
+            ` (${responseData.reservations.length} ${t("recurringInstances") || "instâncias"})`
+        );
       } else {
         // Reserva única
         setReservations(prev => [responseData, ...prev]);
@@ -219,7 +224,7 @@ const AgendamentosPage: React.FC = () => {
   const formatDateTime = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
     const intlLocale = getIntlLocale(locale);
-    
+
     return date.toLocaleString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
@@ -231,6 +236,8 @@ const AgendamentosPage: React.FC = () => {
 
   const getStatusColor = (status: string): string => {
     switch (status) {
+      case "PENDING":
+        return "text-yellow-400 bg-yellow-500/10";
       case "APPROVED":
         return "text-green-400 bg-green-500/10";
       case "ACTIVE":
@@ -246,6 +253,8 @@ const AgendamentosPage: React.FC = () => {
 
   const getStatusText = (status: string): string => {
     switch (status) {
+      case "PENDING":
+        return t("statusFilter.pending");
       case "APPROVED":
         return t("statusFilter.approved");
       case "ACTIVE":
@@ -322,6 +331,7 @@ const AgendamentosPage: React.FC = () => {
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">{t("statusFilter.all")}</option>
+            <option value="PENDING">{t("statusFilter.pending")}</option>
             <option value="APPROVED">{t("statusFilter.approved")}</option>
             <option value="ACTIVE">{t("statusFilter.active")}</option>
             <option value="CANCELLED">{t("statusFilter.cancelled")}</option>
@@ -349,7 +359,7 @@ const AgendamentosPage: React.FC = () => {
             <Clock className="w-5 h-5 text-blue-400" />
             <div>
               <CardTitle className="text-xl">
-                {t("reservationsOfTheDay")} {" "}
+                {t("reservationsOfTheDay")}{" "}
                 {selectedDate.toLocaleDateString(getIntlLocale(locale), {
                   weekday: "long",
                   day: "2-digit",
@@ -357,7 +367,8 @@ const AgendamentosPage: React.FC = () => {
                 })}
               </CardTitle>
               <p className="text-slate-600 dark:text-gray-400 text-sm">
-                {getReservationsForDate(selectedDate).length} {t("reservationsFound")}
+                {getReservationsForDate(selectedDate).length}{" "}
+                {t("reservationsFound")}
               </p>
             </div>
           </div>
