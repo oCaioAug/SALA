@@ -1,11 +1,10 @@
 import { getRequestConfig } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { routing } from "../navigation";
+import { locales, defaultLocale, type Locale } from "../config";
 
-export const locales = routing.locales;
-export const defaultLocale = routing.defaultLocale;
-
-export type Locale = (typeof locales)[number];
+// Re-exportar para compatibilidade
+export { locales, defaultLocale };
+export type { Locale };
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // O requestLocale pode vir do middleware ou do parâmetro explícito

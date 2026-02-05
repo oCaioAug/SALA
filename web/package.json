@@ -24,7 +24,7 @@
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.539.0",
-    "next": "^14.2.33",
+    "next": "^16.1.6",
     "next-auth": "^4.24.11",
     "next-intl": "^4.5.5",
     "prisma": "^6.16.1",

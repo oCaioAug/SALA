@@ -6,6 +6,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig = {
   /* config options here */
   reactStrictMode: false, // Desabilitar para evitar problemas de hidratação dupla
+
+  // Configuração de imagens atualizada para Next.js 16
   images: {
     remotePatterns: [
       {
@@ -26,13 +28,17 @@ const nextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
-    // Permitir servir imagens da pasta uploads
-    domains: ["localhost"],
+    // Removido 'domains' - usar apenas remotePatterns no Next.js 16
   },
-  // Configurações para melhorar estabilidade em produção
-  experimental: {
-    serverComponentsExternalPackages: ["prisma"],
+
+  // serverExternalPackages movido para fora de experimental no Next.js 16
+  serverExternalPackages: ["prisma", "@prisma/client"],
+
+  // Configuração do Turbopack (novo bundler padrão no Next.js 16)
+  turbopack: {
+    root: "C:\\dev\\SALA\\web",
   },
+
   // Reescrever URLs para servir uploads
   async rewrites() {
     return [
@@ -42,17 +48,9 @@ const nextConfig = {
       },
     ];
   },
-  // Evitar problemas de hidratação em produção
-  swcMinify: true,
-  // Configurações específicas para produção
-  compiler: {
-    removeConsole:
-      process.env.NODE_ENV === "production"
-        ? {
-            exclude: ["error", "warn"],
-          }
-        : false,
-  },
+
+  // swcMinify foi removido - agora é padrão no Next.js 16
+
   // Configurar headers de segurança
   async headers() {
     return [
@@ -71,26 +69,28 @@ const nextConfig = {
             key: "Referrer-Policy",
             value: "origin-when-cross-origin",
           },
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
         ],
       },
     ];
   },
-  // Otimizações de webpack para reduzir problemas
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Configurações específicas para client-side build
-      config.optimization.splitChunks.cacheGroups.vendor = {
-        test: /[\\/]node_modules[\\/]/,
-        name: "vendors",
-        chunks: "all",
-        priority: 10,
-        reuseExistingChunk: true,
-        enforce: true,
+
+  // Otimizações webpack - simplificadas para Next.js 16
+  webpack: (config, { isServer }) => {
+    // Adicionar suporte para arquivos específicos se necessário
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
       };
     }
     return config;
   },
 };
 
-// module.exports = nextConfig;
 export default withNextIntl(nextConfig);
