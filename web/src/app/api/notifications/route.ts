@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 // GET /api/notifications - Buscar notificações do usuário
 export async function GET(request: NextRequest) {
