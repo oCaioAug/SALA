@@ -10,10 +10,10 @@ export const dynamic = "force-dynamic";
 // GET /api/incidents/[id] - Buscar incidente específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     console.log(`🎫 Buscando incidente ${id}`);
 
@@ -54,7 +54,7 @@ export async function GET(
 
     return NextResponse.json(incident);
   } catch (error) {
-    console.error(`❌ Erro ao buscar incidente ${params.id}:`, error);
+    console.error(`❌ Erro ao buscar incidente:`, error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -68,7 +68,7 @@ export async function GET(
 // PUT /api/incidents/[id] - Atualizar incidente
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -76,7 +76,7 @@ export async function PUT(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const {
       title,
@@ -222,7 +222,7 @@ export async function PUT(
 
     return NextResponse.json(updatedIncident);
   } catch (error) {
-    console.error(`❌ Erro ao atualizar incidente ${params.id}:`, error);
+    console.error(`❌ Erro ao atualizar incidente:`, error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -236,7 +236,7 @@ export async function PUT(
 // DELETE /api/incidents/[id] - Deletar incidente (apenas admins)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -244,7 +244,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     console.log(`🎫 Tentativa de deletar incidente ${id}`);
 
@@ -281,7 +281,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(`❌ Erro ao deletar incidente ${params.id}:`, error);
+    console.error(`❌ Erro ao deletar incidente:`, error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -295,7 +295,7 @@ export async function DELETE(
 // PATCH /api/incidents/[id] - Atualizar incidente
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -303,7 +303,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     console.log(`🔄 Atualizando incidente ${id}:`, body);
@@ -475,7 +475,7 @@ export async function PATCH(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error(`❌ Erro ao atualizar incidente ${params.id}:`, error);
+    console.error(`❌ Erro ao atualizar incidente:`, error);
     console.error("Stack trace:", error instanceof Error ? error.stack : "N/A");
     
     // Se for erro do Prisma, retornar mensagem mais específica

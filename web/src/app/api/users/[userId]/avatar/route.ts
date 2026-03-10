@@ -11,9 +11,10 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId: targetUserId } = await params;
     // Verificar autenticação (suporta web e mobile)
     const authResult = await verifyAuth(request);
 
@@ -25,7 +26,6 @@ export async function POST(
     }
 
     // Verificar se o usuário pode alterar este perfil
-    const targetUserId = params.userId;
     if (
       authResult.user.id !== targetUserId &&
       authResult.user.role !== "ADMIN"
@@ -107,9 +107,10 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId: targetUserId } = await params;
     // Verificar autenticação (suporta web e mobile)
     const authResult = await verifyAuth(request);
 
@@ -121,7 +122,6 @@ export async function DELETE(
     }
 
     // Verificar se o usuário pode alterar este perfil
-    const targetUserId = params.userId;
     if (
       authResult.user.id !== targetUserId &&
       authResult.user.role !== "ADMIN"

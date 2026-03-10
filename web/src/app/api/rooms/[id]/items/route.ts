@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const items = await prisma.item.findMany({
-      where: { roomId: params.id },
+      where: { roomId: id },
       include: {
         images: {
           select: {
@@ -39,9 +40,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, description, specifications, quantity, icon } = body;
 
@@ -59,7 +61,7 @@ export async function POST(
         specifications: specifications || [],
         quantity: quantity ? parseInt(quantity) : 1,
         icon,
-        roomId: params.id,
+        roomId: id,
       },
     });
 

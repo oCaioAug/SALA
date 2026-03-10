@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 // PUT /api/notifications/[id]/read - Marcar notificação como lida
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     console.log(`🔔 Marcando notificação ${id} como lida`);
 
@@ -38,10 +38,10 @@ export async function PUT(
 // DELETE /api/notifications/[id] - Deletar notificação
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     console.log(`🔔 Deletando notificação ${id}`);
 

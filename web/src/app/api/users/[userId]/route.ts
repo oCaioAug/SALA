@@ -7,9 +7,10 @@ import { verifyAuth } from "@/lib/auth-hybrid";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     // Autenticação híbrida (web + mobile)
     const auth = await verifyAuth(request);
     if (!auth.success) {
@@ -21,7 +22,7 @@ export async function GET(
 
     // Buscar o usuário
     const user = await prisma.user.findUnique({
-      where: { id: params.userId },
+      where: { id: userId },
       select: {
         id: true,
         name: true,
@@ -43,7 +44,7 @@ export async function GET(
     // Verificar permissões
     const currentUser = auth.user!;
     const canView =
-      currentUser.id === params.userId || currentUser.role === "ADMIN";
+      currentUser.id === userId || currentUser.role === "ADMIN";
 
     if (!canView) {
       return NextResponse.json(
@@ -64,9 +65,10 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     // Autenticação híbrida (web + mobile)
     const auth = await verifyAuth(request);
     if (!auth.success) {
@@ -92,7 +94,7 @@ export async function PATCH(
 
     // Verificar se o usuário existe
     const userToUpdate = await prisma.user.findUnique({
-      where: { id: params.userId },
+      where: { id: userId },
     });
 
     if (!userToUpdate) {
@@ -105,7 +107,7 @@ export async function PATCH(
     // Verificar permissões
     const currentUser = auth.user!;
     const canEdit =
-      currentUser.id === params.userId || currentUser.role === "ADMIN";
+      currentUser.id === userId || currentUser.role === "ADMIN";
 
     if (!canEdit) {
       return NextResponse.json(
@@ -130,7 +132,7 @@ export async function PATCH(
 
     // Atualizar o usuário
     const updatedUser = await prisma.user.update({
-      where: { id: params.userId },
+      where: { id: userId },
       data: {
         ...(name !== undefined && { name }),
         ...(email !== undefined && { email }),

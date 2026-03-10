@@ -1,4 +1,4 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { Role } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
@@ -104,4 +104,15 @@ export const authOptions: NextAuthOptions = {
       console.log("🔄 Session event:", { email: session.user?.email });
     },
   },
+  logger: {
+    error(code, metadata) {
+      console.error("🔴 NEXTAUTH ERRO:", code, metadata);
+    },
+    warn(code) {
+      console.warn("🟡 NEXTAUTH AVISO:", code);
+    },
+    debug(code, metadata) {
+      console.log("🔵 NEXTAUTH DEBUG:", code, metadata);
+    }
+  }
 };

@@ -6,12 +6,13 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     console.log(
       "🔄 API Role: Iniciando alteração de role para:",
-      params.userId
+      userId
     );
 
     // Verificar autenticação
@@ -56,7 +57,7 @@ export async function PATCH(
 
     // Verificar se o usuário existe
     const userToUpdate = await prisma.user.findUnique({
-      where: { id: params.userId },
+      where: { id: userId },
     });
 
     console.log("🔍 Usuário a ser atualizado:", userToUpdate?.email);
@@ -81,7 +82,7 @@ export async function PATCH(
     // Atualizar o role do usuário
     console.log("🔄 Atualizando role no banco de dados...");
     const updatedUser = await prisma.user.update({
-      where: { id: params.userId },
+      where: { id: userId },
       data: { role },
       select: {
         id: true,

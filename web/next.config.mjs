@@ -35,9 +35,7 @@ const nextConfig = {
   serverExternalPackages: ["prisma", "@prisma/client"],
 
   // Configuração do Turbopack (novo bundler padrão no Next.js 16)
-  turbopack: {
-    root: "C:\\dev\\SALA\\web",
-  },
+  // Removendo o root chumbado que causava o erro invalid distDirRoot
 
   // Reescrever URLs para servir uploads
   async rewrites() {

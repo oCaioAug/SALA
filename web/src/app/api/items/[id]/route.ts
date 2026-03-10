@@ -4,11 +4,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const item = await prisma.item.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         room: true,
         images: {
@@ -38,15 +39,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name, description, specifications, quantity, icon, roomId } = body;
 
     // Buscar o item atual para preservar dados existentes se necessário
     const currentItem = await prisma.item.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!currentItem) {
@@ -57,7 +59,7 @@ export async function PUT(
     }
 
     const item = await prisma.item.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
@@ -95,12 +97,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Buscar imagens do item antes de deletar
     const item = await prisma.item.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { images: true },
     });
 
@@ -114,7 +117,7 @@ export async function DELETE(
 
     // Deletar item (as imagens serão deletadas automaticamente pelo cascade)
     await prisma.item.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Item deletado com sucesso" });

@@ -5,11 +5,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const reservation = await prisma.reservation.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: true,
         room: true,
@@ -35,15 +36,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { startTime, endTime, purpose, status } = body;
 
     // Verificar se a reserva existe
     const existingReservation = await prisma.reservation.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingReservation) {
@@ -57,7 +59,7 @@ export async function PUT(
     if (startTime && endTime) {
       const conflictingReservation = await prisma.reservation.findFirst({
         where: {
-          id: { not: params.id },
+          id: { not: id },
           roomId: existingReservation.roomId,
           status: "ACTIVE",
           OR: [
@@ -86,7 +88,7 @@ export async function PUT(
     }
 
     const updatedReservation = await prisma.reservation.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(startTime && { startTime: new Date(startTime) }),
         ...(endTime && { endTime: new Date(endTime) }),
@@ -119,12 +121,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Verificar se a reserva existe
     const existingReservation = await prisma.reservation.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: true,
         room: true,
@@ -140,7 +143,7 @@ export async function DELETE(
 
     // Deletar a reserva
     await prisma.reservation.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     // Atualizar status da sala para LIVRE
