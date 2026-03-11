@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+cd web && npx --no-install commitlint --edit "$1"
