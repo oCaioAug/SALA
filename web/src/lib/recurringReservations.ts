@@ -58,7 +58,7 @@ export async function generateRecurringReservations(
   const baseMinute = startDate.getMinutes();
   const baseSecond = startDate.getSeconds();
 
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
 
   // Gerar reservas até a data final
   while (currentDate <= recurringEndDate) {
@@ -178,7 +178,7 @@ export function generateRecurringDates(
   const baseMinute = startDate.getMinutes();
   const baseSecond = startDate.getSeconds();
 
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
 
   while (currentDate <= recurringEndDate) {
     let shouldInclude = false;

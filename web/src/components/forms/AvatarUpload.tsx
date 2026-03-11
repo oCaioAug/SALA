@@ -1,11 +1,12 @@
 "use client";
 
-import { Camera, Upload, X, Trash2 } from "lucide-react";
-import React, { useCallback, useRef, useState } from "react";
+import { Camera, Trash2, Upload, X } from "lucide-react";
 import Image from "next/image";
+import React, { useCallback, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
+import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 
 interface AvatarUploadProps {
   currentAvatar?: string | null;

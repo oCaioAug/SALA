@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
 import { notificationService } from "@/lib/notifications";
+import { prisma } from "@/lib/prisma";
 
 // POST /api/notifications/test-reservation - Testar notificação de nova reserva
 export async function POST(request: NextRequest) {

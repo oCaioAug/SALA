@@ -1,9 +1,10 @@
+import { IncidentPriority, IncidentStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "@/lib/auth";
 import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
-import { IncidentStatus, IncidentPriority } from "@prisma/client";
 
 // Força renderização dinâmica
 export const dynamic = "force-dynamic";

@@ -1,8 +1,9 @@
 // src/app/[locale]/page.tsx
 "use client";
 
-import React from "react";
 import { useTranslations } from "next-intl";
+import React from "react";
+
 import { useRouter } from "@/navigation";
 
 export default function LocalePage() {

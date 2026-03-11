@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+
 import ReservationApprovalPage from "@/components/ReservationApprovalPage";
 
 export default function ApprovalPage() {

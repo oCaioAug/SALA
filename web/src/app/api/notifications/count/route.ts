@@ -35,14 +35,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuário por ID ou email com timeout
-    let user;
-
+    // Buscar usuário por ID ou email com timeout
     const userQuery = userId.includes("@")
       ? prisma.user.findUnique({ where: { email: userId } })
       : prisma.user.findUnique({ where: { id: userId } });
 
     // Timeout de 5 segundos para a query
-    user = (await Promise.race([
+    const user = (await Promise.race([
       userQuery,
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error("Query timeout")), 5000)

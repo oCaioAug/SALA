@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import {
-  generateRecurringReservations,
   checkRecurringConflicts,
   generateRecurringDates,
+  generateRecurringReservations,
 } from "@/lib/recurringReservations";
 
 export async function GET(request: NextRequest) {
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    let {
+    const {
       userId,
       roomId,
       startTime,
@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
       purpose,
       isRecurring,
       recurringPattern,
-      recurringDaysOfWeek,
       recurringEndDate,
     } = body;
+    let { recurringDaysOfWeek } = body;
 
     console.log("Dados recebidos para criar reserva:", {
       userId,
@@ -118,9 +118,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (
-        !["DAILY", "WEEKLY", "MONTHLY"].includes(recurringPattern)
-      ) {
+      if (!["DAILY", "WEEKLY", "MONTHLY"].includes(recurringPattern)) {
         return NextResponse.json(
           { error: "Padrão de recorrência inválido" },
           { status: 400 }
@@ -129,16 +127,25 @@ export async function POST(request: NextRequest) {
 
       // Para padrão WEEKLY, é necessário selecionar pelo menos um dia da semana
       if (recurringPattern === "WEEKLY") {
-        if (!Array.isArray(recurringDaysOfWeek) || recurringDaysOfWeek.length === 0) {
+        if (
+          !Array.isArray(recurringDaysOfWeek) ||
+          recurringDaysOfWeek.length === 0
+        ) {
           return NextResponse.json(
-            { error: "Para padrão semanal, é necessário selecionar pelo menos um dia da semana" },
+            {
+              error:
+                "Para padrão semanal, é necessário selecionar pelo menos um dia da semana",
+            },
             { status: 400 }
           );
         }
       }
 
       // Para DAILY e MONTHLY, usar o dia da semana da data inicial se não fornecido
-      if (recurringPattern !== "WEEKLY" && (!recurringDaysOfWeek || recurringDaysOfWeek.length === 0)) {
+      if (
+        recurringPattern !== "WEEKLY" &&
+        (!recurringDaysOfWeek || recurringDaysOfWeek.length === 0)
+      ) {
         const startDate = new Date(startTime);
         const dayOfWeek = startDate.getDay();
         recurringDaysOfWeek = [dayOfWeek];
@@ -191,7 +198,9 @@ export async function POST(request: NextRequest) {
         new Date(recurringEndDate)
       );
 
-      console.log(`🔍 Verificando conflitos para ${recurringDates.length} ocorrências recorrentes`);
+      console.log(
+        `🔍 Verificando conflitos para ${recurringDates.length} ocorrências recorrentes`
+      );
 
       // Verificar conflitos para cada ocorrência
       const conflicts = await checkRecurringConflicts(roomId, recurringDates);
@@ -199,12 +208,12 @@ export async function POST(request: NextRequest) {
       if (conflicts.length > 0) {
         console.log(`⚠️ Encontrados ${conflicts.length} conflitos`);
         const firstConflict = conflicts[0];
-        const conflictStart = new Date(
-          firstConflict.startTime
-        ).toLocaleString("pt-BR");
-        const conflictEnd = new Date(
-          firstConflict.endTime
-        ).toLocaleString("pt-BR");
+        const conflictStart = new Date(firstConflict.startTime).toLocaleString(
+          "pt-BR"
+        );
+        const conflictEnd = new Date(firstConflict.endTime).toLocaleString(
+          "pt-BR"
+        );
 
         // Buscar informações da reserva conflitante
         const conflictingReservation = await prisma.reservation.findFirst({
@@ -244,14 +253,16 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const conflictDetails = conflictingReservation ? {
-          id: conflictingReservation.id,
-          startTime: conflictingReservation.startTime,
-          endTime: conflictingReservation.endTime,
-          status: conflictingReservation.status,
-          user: conflictingReservation.user.name,
-          userEmail: conflictingReservation.user.email,
-        } : null;
+        const conflictDetails = conflictingReservation
+          ? {
+              id: conflictingReservation.id,
+              startTime: conflictingReservation.startTime,
+              endTime: conflictingReservation.endTime,
+              status: conflictingReservation.status,
+              user: conflictingReservation.user.name,
+              userEmail: conflictingReservation.user.email,
+            }
+          : null;
 
         return NextResponse.json(
           {

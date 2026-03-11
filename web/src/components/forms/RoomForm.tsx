@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import React, { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -16,7 +16,7 @@ interface RoomFormProps {
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   const t = useTranslations("Dashboard");
   const tf = useTranslations("Dashboard.form");
-  
+
   const [formData, setFormData] = useState({
     name: room?.name || "",
     description: room?.description || "",

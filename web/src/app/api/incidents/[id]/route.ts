@@ -1,8 +1,9 @@
+import { IncidentPriority, IncidentStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { IncidentStatus, IncidentPriority } from "@prisma/client";
 
 // Força renderização dinâmica
 export const dynamic = "force-dynamic";
@@ -370,40 +371,47 @@ export async function PATCH(
     const updateData: any = {};
     const ignoredFields: string[] = [];
     const warnings: string[] = [];
-    
+
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (priority !== undefined) updateData.priority = priority as IncidentPriority;
-    if (resolutionNotes !== undefined) updateData.resolutionNotes = resolutionNotes;
-    
+    if (priority !== undefined)
+      updateData.priority = priority as IncidentPriority;
+    if (resolutionNotes !== undefined)
+      updateData.resolutionNotes = resolutionNotes;
+
     // Apenas admins podem atribuir incidentes
     if (assignedToId !== undefined) {
       if (isAdmin) {
         updateData.assignedToId = assignedToId || null;
       } else {
         ignoredFields.push("assignedToId");
-        warnings.push("Você não tem permissão para alterar a atribuição do incidente");
+        warnings.push(
+          "Você não tem permissão para alterar a atribuição do incidente"
+        );
       }
     }
 
     // Atualizar status e adicionar ao histórico se mudou
     const statusRequested = status !== undefined;
-    
+
     if (statusRequested) {
       // Verificar se usuário pode mudar status
       // Apenas admins podem mudar status, ou o próprio usuário pode resolver se for o responsável
-      const canChangeStatus = isAdmin || (status === "RESOLVED" && (isAssigned || isReporter));
-      
+      const canChangeStatus =
+        isAdmin || (status === "RESOLVED" && (isAssigned || isReporter));
+
       if (canChangeStatus) {
         updateData.status = status as IncidentStatus;
-        
+
         // Se resolvendo, adicionar timestamp
         if (status === "RESOLVED" && existingIncident.status !== "RESOLVED") {
           updateData.actualResolutionTime = new Date();
         }
       } else {
         ignoredFields.push("status");
-        warnings.push("Você não tem permissão para alterar o status do incidente. Apenas administradores podem alterar o status, ou você pode resolver o incidente se for o responsável");
+        warnings.push(
+          "Você não tem permissão para alterar o status do incidente. Apenas administradores podem alterar o status, ou você pode resolver o incidente se for o responsável"
+        );
       }
     }
 
@@ -412,10 +420,10 @@ export async function PATCH(
       // Se há campos solicitados mas todos foram ignorados, retornar erro
       if (ignoredFields.length > 0) {
         return NextResponse.json(
-          { 
+          {
             error: "Nenhum campo pode ser atualizado com as permissões atuais",
             ignoredFields,
-            warnings
+            warnings,
           },
           { status: 403 }
         );
@@ -448,7 +456,9 @@ export async function PATCH(
 
     // Adicionar entrada no histórico se o status mudou e foi atualizado
     // statusChanged deve ser recalculado baseado no updateData.status, não no status solicitado
-    const statusWasUpdated = updateData.status !== undefined && updateData.status !== existingIncident.status;
+    const statusWasUpdated =
+      updateData.status !== undefined &&
+      updateData.status !== existingIncident.status;
     if (statusWasUpdated) {
       await prisma.incidentStatusHistory.create({
         data: {
@@ -463,7 +473,9 @@ export async function PATCH(
 
     console.log(`✅ Incidente ${id} atualizado com sucesso`);
     if (ignoredFields.length > 0) {
-      console.log(`⚠️ Campos ignorados devido a permissões: ${ignoredFields.join(", ")}`);
+      console.log(
+        `⚠️ Campos ignorados devido a permissões: ${ignoredFields.join(", ")}`
+      );
     }
 
     // Preparar resposta com avisos se houver campos ignorados
@@ -477,13 +489,13 @@ export async function PATCH(
   } catch (error) {
     console.error(`❌ Erro ao atualizar incidente:`, error);
     console.error("Stack trace:", error instanceof Error ? error.stack : "N/A");
-    
+
     // Se for erro do Prisma, retornar mensagem mais específica
-    if (error && typeof error === 'object' && 'code' in error) {
+    if (error && typeof error === "object" && "code" in error) {
       console.error("Prisma error code:", (error as any).code);
       console.error("Prisma error meta:", (error as any).meta);
     }
-    
+
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

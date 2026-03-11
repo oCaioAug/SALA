@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   createContext,
   ReactNode,
@@ -10,7 +11,6 @@ import {
 } from "react";
 
 import { useToast } from "@/components/ui/Toast";
-import { useTranslations } from "next-intl";
 
 interface AppContextType {
   // Loading states

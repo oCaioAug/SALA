@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { verifyAuth } from "@/lib/auth-hybrid";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -43,8 +43,7 @@ export async function GET(
 
     // Verificar permissões
     const currentUser = auth.user!;
-    const canView =
-      currentUser.id === userId || currentUser.role === "ADMIN";
+    const canView = currentUser.id === userId || currentUser.role === "ADMIN";
 
     if (!canView) {
       return NextResponse.json(
@@ -106,8 +105,7 @@ export async function PATCH(
 
     // Verificar permissões
     const currentUser = auth.user!;
-    const canEdit =
-      currentUser.id === userId || currentUser.role === "ADMIN";
+    const canEdit = currentUser.id === userId || currentUser.role === "ADMIN";
 
     if (!canEdit) {
       return NextResponse.json(

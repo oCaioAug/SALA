@@ -1,11 +1,9 @@
 "use client";
 
 import { Building2, Grid, List, Plus, Search } from "lucide-react";
-import { Link } from "@/navigation";
-import { useRouter } from "@/navigation";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl"; // Importação correta
+import React, { useEffect, useState } from "react";
 
 import { RoomForm } from "@/components/forms/RoomForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -20,6 +18,8 @@ import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { Room } from "@/lib/types";
+import { Link } from "@/navigation";
+import { useRouter } from "@/navigation";
 
 const DashboardPage: React.FC = () => {
   // Inicializando o hook de tradução com o namespace 'Dashboard'

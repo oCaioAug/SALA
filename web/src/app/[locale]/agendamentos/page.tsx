@@ -10,6 +10,7 @@ import {
   Trash2,
   User as UserIcon,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { ReservationForm } from "@/components/forms/ReservationForm";
@@ -24,7 +25,6 @@ import { Modal } from "@/components/ui/Modal";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { ReservationWithUser, Room, User } from "@/lib/types";
-import { useTranslations, useLocale } from "next-intl";
 import { getIntlLocale } from "@/lib/utils";
 
 const AgendamentosPage: React.FC = () => {

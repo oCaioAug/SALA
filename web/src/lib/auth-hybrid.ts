@@ -1,8 +1,9 @@
+import crypto from "crypto";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
 
 interface AuthResult {
   success: boolean;

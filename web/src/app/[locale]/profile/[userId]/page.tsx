@@ -15,18 +15,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AvatarUpload } from "@/components/forms/AvatarUpload";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { AvatarUpload } from "@/components/forms/AvatarUpload";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useTranslations, useLocale } from "next-intl";
 import { getIntlLocale } from "@/lib/utils";
 
 interface UserData {

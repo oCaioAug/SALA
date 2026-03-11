@@ -11,15 +11,15 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
-import { Link } from "@/navigation";
 
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { NotificationModal } from "@/components/ui/NotificationModal";
 import { useTheme } from "@/lib/providers/ThemeProvider";
-import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
+import { Link } from "@/navigation";
 
 interface HeaderProps {
   onNotificationClick?: () => void;

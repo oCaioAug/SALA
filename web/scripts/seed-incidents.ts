@@ -1,4 +1,4 @@
-import { PrismaClient, IncidentCategory } from "@prisma/client";
+import { IncidentCategory, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 

@@ -9,6 +9,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useState } from "react";
 
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -16,7 +17,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useLocale, useTranslations } from "next-intl";
 
 const ConfiguracoesPage: React.FC = () => {
   const t = useTranslations("SettingsPage");

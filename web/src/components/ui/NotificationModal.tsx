@@ -14,6 +14,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -24,7 +25,6 @@ import {
   NOTIFICATION_TYPE_CONFIG,
   NotificationTypeType,
 } from "@/lib/types";
-import { useTranslations, useLocale } from "next-intl";
 import { getIntlLocale } from "@/lib/utils";
 
 interface NotificationModalProps {

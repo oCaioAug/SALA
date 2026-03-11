@@ -12,7 +12,7 @@ import {
   User as UserIcon,
   XCircle,
 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -128,11 +128,12 @@ const SolicitacoesPage: React.FC = () => {
         });
 
         // Adicionar apenas a primeira reserva de cada template recorrente
-        groupedRecurring.forEach((reservations) => {
+        groupedRecurring.forEach(reservations => {
           if (reservations.length > 0) {
             // Adicionar informação sobre quantas instâncias existem
             const firstReservation = reservations[0];
-            (firstReservation as any).recurringInstancesCount = reservations.length;
+            (firstReservation as any).recurringInstancesCount =
+              reservations.length;
             uniqueReservations.push(firstReservation);
           }
         });
@@ -246,12 +247,15 @@ const SolicitacoesPage: React.FC = () => {
   const handleReject = async (solicitacao: ReservationWithDetails) => {
     try {
       setActionLoading(solicitacao.id);
-      const reason = solicitacao.isRecurring 
-        ? prompt(t("rejectReasonRecurring") || "Motivo da rejeição (afetará todas as instâncias):")
+      const reason = solicitacao.isRecurring
+        ? prompt(
+            t("rejectReasonRecurring") ||
+              "Motivo da rejeição (afetará todas as instâncias):"
+          )
         : prompt(t("rejectReason") || "Motivo da rejeição:");
-      
+
       if (reason === null) return; // Usuário cancelou
-      
+
       await rejectSolicitacao(solicitacao.id, reason);
     } catch (error) {
       console.error("Erro ao rejeitar solicitação:", error);
@@ -294,8 +298,11 @@ const SolicitacoesPage: React.FC = () => {
     });
 
     showSuccess(
-      data.message || t("feedback.successApprove") + 
-      (data.recurringInstances ? ` (${data.recurringInstances} instâncias)` : "")
+      data.message ||
+        t("feedback.successApprove") +
+          (data.recurringInstances
+            ? ` (${data.recurringInstances} instâncias)`
+            : "")
     );
     setIsDetailsModalOpen(false);
   };
@@ -334,8 +341,11 @@ const SolicitacoesPage: React.FC = () => {
     });
 
     showSuccess(
-      data.message || t("feedback.successReject") + 
-      (data.recurringInstances ? ` (${data.recurringInstances} instâncias)` : "")
+      data.message ||
+        t("feedback.successReject") +
+          (data.recurringInstances
+            ? ` (${data.recurringInstances} instâncias)`
+            : "")
     );
     setIsDetailsModalOpen(false);
   };
@@ -530,11 +540,13 @@ const SolicitacoesPage: React.FC = () => {
                           )} - {formatDateTime(new Date(solicitacao.endTime))}
                         </div>
                       </div>
-                      {solicitacao.isRecurring && solicitacao.recurringTemplateId && (
-                        <p className="text-xs text-blue-400 mt-1">
-                          {t("recurringInfo") || "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
-                        </p>
-                      )}
+                      {solicitacao.isRecurring &&
+                        solicitacao.recurringTemplateId && (
+                          <p className="text-xs text-blue-400 mt-1">
+                            {t("recurringInfo") ||
+                              "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
+                          </p>
+                        )}
                       {solicitacao.purpose && (
                         <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
                           {solicitacao.purpose}

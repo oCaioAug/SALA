@@ -1,5 +1,6 @@
 import { NotificationType } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
+
 import { prisma } from "@/lib/prisma";
 import { getIntlLocale } from "@/lib/utils";
 

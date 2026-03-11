@@ -33,8 +33,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { getIntlLocale } from "@/lib/utils";
 import { ReservationWithUser, Room, User } from "@/lib/types";
+import { getIntlLocale } from "@/lib/utils";
 
 const RoomSchedulesPage: React.FC = () => {
   const params = useParams();
@@ -210,7 +210,7 @@ const RoomSchedulesPage: React.FC = () => {
   const formatDateTime = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
     const intlLocale = getIntlLocale(locale);
-    
+
     return date.toLocaleString(intlLocale, {
       day: "2-digit",
       month: "2-digit",
@@ -223,7 +223,7 @@ const RoomSchedulesPage: React.FC = () => {
   const formatDate = (date: Date): string => {
     // Converter locale do next-intl para formato do Intl
     const intlLocale = getIntlLocale(locale);
-    
+
     return date.toLocaleDateString(intlLocale, {
       weekday: "long",
       day: "2-digit",

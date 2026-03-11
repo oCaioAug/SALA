@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import type {
   IncidentCategory,
   IncidentPriority,
   IncidentStatus,
 } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 

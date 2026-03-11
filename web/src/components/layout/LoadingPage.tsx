@@ -1,21 +1,18 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import React from "react";
 
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { useTranslations } from "next-intl";
 
 interface LoadingPageProps {
   message?: string;
 }
 
-
-export const LoadingPage: React.FC<LoadingPageProps> = ({
-  message,
-}) => {
+export const LoadingPage: React.FC<LoadingPageProps> = ({ message }) => {
   const t = useTranslations("LoadingPage");
   message = t("loading");
-  
+
   return (
     <div className="page-container flex items-center justify-center gap-4">
       <LoadingSpinner size="lg" />

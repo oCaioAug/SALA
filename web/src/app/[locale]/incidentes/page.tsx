@@ -1,33 +1,34 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useTranslations } from "next-intl";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Edit,
+  Eye,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
+
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
-import { PageLayout } from "@/components/layout/PageLayout";
-import { LoadingPage } from "@/components/layout/LoadingPage";
-import { ErrorPage } from "@/components/layout/ErrorPage";
-import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useApp } from "@/lib/hooks/useApp";
-import {
-  Plus,
-  Search,
-  RefreshCw,
-  AlertTriangle,
-  Clock,
-  CheckCircle,
-  Eye,
-  Edit,
-  Trash2,
-} from "lucide-react";
 import { useIncidents } from "@/hooks/useIncidents";
+import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 import {
   Incident,
+  INCIDENT_CATEGORIES,
   IncidentFilters,
   IncidentStats,
-  INCIDENT_CATEGORIES,
 } from "@/types/incidents";
 
 export default function IncidentsPage() {
@@ -241,7 +242,8 @@ export default function IncidentsPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || errorData.message || t("feedback.error");
+        const errorMessage =
+          errorData.error || errorData.message || t("feedback.error");
         throw new Error(errorMessage);
       }
 
@@ -374,9 +376,7 @@ export default function IncidentsPage() {
 
   // Auth error state
   if (status === "unauthenticated") {
-    return (
-      <ErrorPage error={t("feedback.authError")} />
-    );
+    return <ErrorPage error={t("feedback.authError")} />;
   }
 
   return (
@@ -386,9 +386,7 @@ export default function IncidentsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">{t("title")}</h1>
-            <p className="text-muted-foreground">
-              {t("description")}
-            </p>
+            <p className="text-muted-foreground">{t("description")}</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -415,7 +413,9 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("stats.totalActive")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("stats.totalActive")}
+                  </p>
                   <p className="text-2xl font-bold">
                     {stats.overview.activeTotal}
                   </p>
@@ -426,7 +426,9 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("stats.critical")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("stats.critical")}
+                  </p>
                   <p className="text-2xl font-bold text-red-600">
                     {stats.priority.critical}
                   </p>
@@ -437,7 +439,9 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("stats.inProgress")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("stats.inProgress")}
+                  </p>
                   <p className="text-2xl font-bold">
                     {stats.overview.inProgress}
                   </p>
@@ -448,7 +452,9 @@ export default function IncidentsPage() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("stats.averageTime")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("stats.averageTime")}
+                  </p>
                   <p className="text-2xl font-bold">
                     {stats.performance.averageResolutionTimeHours}h
                   </p>
@@ -557,9 +563,7 @@ export default function IncidentsPage() {
           ) : incidents.length === 0 ? (
             <Card className="p-8 text-center">
               <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                {t("empty.title")}
-              </p>
+              <p className="text-muted-foreground">{t("empty.title")}</p>
             </Card>
           ) : (
             incidents.map(incident => (
@@ -916,10 +920,15 @@ export default function IncidentsPage() {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
                 const status = formData.get("status") as string;
-                const resolutionNotes = formData.get("resolutionNotes") as string;
-                
+                const resolutionNotes = formData.get(
+                  "resolutionNotes"
+                ) as string;
+
                 // Validar se notas de resolução são obrigatórias quando status é RESOLVED
-                if (status === "RESOLVED" && (!resolutionNotes || resolutionNotes.trim() === "")) {
+                if (
+                  status === "RESOLVED" &&
+                  (!resolutionNotes || resolutionNotes.trim() === "")
+                ) {
                   showError(t("form.resolutionNotesRequired"));
                   return;
                 }
@@ -955,12 +964,16 @@ export default function IncidentsPage() {
                   <select
                     name="status"
                     value={editFormStatus}
-                    onChange={(e) => setEditFormStatus(e.target.value)}
+                    onChange={e => setEditFormStatus(e.target.value)}
                     className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="REPORTED">{t("filters.reported")}</option>
-                    <option value="IN_ANALYSIS">{t("filters.inAnalysis")}</option>
-                    <option value="IN_PROGRESS">{t("filters.inProgress")}</option>
+                    <option value="IN_ANALYSIS">
+                      {t("filters.inAnalysis")}
+                    </option>
+                    <option value="IN_PROGRESS">
+                      {t("filters.inProgress")}
+                    </option>
                     <option value="RESOLVED">{t("filters.resolved")}</option>
                   </select>
                 </div>
@@ -999,7 +1012,10 @@ export default function IncidentsPage() {
 
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("form.resolutionNotesLabel")} {editFormStatus === "RESOLVED" && <span className="text-red-500">*</span>}
+                  {t("form.resolutionNotesLabel")}{" "}
+                  {editFormStatus === "RESOLVED" && (
+                    <span className="text-red-500">*</span>
+                  )}
                   {editFormStatus === "RESOLVED" && (
                     <span className="text-xs text-blue-600 dark:text-blue-400 ml-1">
                       ({t("form.resolutionNotesRequired")})
@@ -1010,9 +1026,11 @@ export default function IncidentsPage() {
                   name="resolutionNotes"
                   defaultValue={selectedIncident.resolutionNotes || ""}
                   rows={3}
-                  placeholder={editFormStatus === "RESOLVED" 
-                    ? t("form.resolutionNotesPlaceholder") 
-                    : t("form.resolutionNotesPlaceholder")}
+                  placeholder={
+                    editFormStatus === "RESOLVED"
+                      ? t("form.resolutionNotesPlaceholder")
+                      : t("form.resolutionNotesPlaceholder")
+                  }
                   className={`w-full p-3 bg-slate-100 dark:bg-slate-800 border rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 ${
                     editFormStatus === "RESOLVED"
                       ? "border-blue-300 dark:border-blue-600 focus:ring-blue-500"
@@ -1025,12 +1043,22 @@ export default function IncidentsPage() {
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                   <div className="flex items-start gap-2">
                     <div className="text-green-600 dark:text-green-400 mt-0.5">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                     <div className="text-sm text-green-800 dark:text-green-200">
-                      <p className="font-medium">{t("form.finalizingIncident")}</p>
+                      <p className="font-medium">
+                        {t("form.finalizingIncident")}
+                      </p>
                       <p>{t("form.finalizingIncidentDescription")}</p>
                     </div>
                   </div>
@@ -1048,7 +1076,11 @@ export default function IncidentsPage() {
                   {t("actions.cancel")}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={editLoading}>
-                  {editLoading ? t("form.saving") : editFormStatus === "RESOLVED" ? t("form.resolveIncident") : t("form.saveChanges")}
+                  {editLoading
+                    ? t("form.saving")
+                    : editFormStatus === "RESOLVED"
+                      ? t("form.resolveIncident")
+                      : t("form.saveChanges")}
                 </Button>
               </div>
             </form>
@@ -1068,7 +1100,7 @@ export default function IncidentsPage() {
           <form
             onSubmit={e => {
               e.preventDefault();
-              
+
               // Verificar se o usuário está logado
               if (!session?.user?.id) {
                 alert(t("feedback.authError"));
@@ -1078,11 +1110,13 @@ export default function IncidentsPage() {
               const formData = new FormData(e.currentTarget);
               const roomIdValue = formData.get("roomId") as string;
               const itemIdValue = formData.get("itemId") as string;
-              
+
               // Converter strings vazias em undefined
-              const roomId = roomIdValue && roomIdValue.trim() ? roomIdValue : undefined;
-              const itemId = itemIdValue && itemIdValue.trim() ? itemIdValue : undefined;
-              
+              const roomId =
+                roomIdValue && roomIdValue.trim() ? roomIdValue : undefined;
+              const itemId =
+                itemIdValue && itemIdValue.trim() ? itemIdValue : undefined;
+
               // Lógica para evitar enviar tanto roomId quanto itemId
               // Se item está selecionado, usar apenas o item (mais específico)
               // Se apenas sala está selecionada, usar a sala
@@ -1177,7 +1211,10 @@ export default function IncidentsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("form.roomLabel")} <span className="text-sm text-slate-500 dark:text-gray-400">({t("form.selectRoomOrItem")})</span>
+                  {t("form.roomLabel")}{" "}
+                  <span className="text-sm text-slate-500 dark:text-gray-400">
+                    ({t("form.selectRoomOrItem")})
+                  </span>
                 </label>
                 <select
                   name="roomId"
@@ -1231,8 +1268,16 @@ export default function IncidentsPage() {
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <div className="text-amber-600 dark:text-amber-400 mt-0.5">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="text-sm text-amber-800 dark:text-amber-200">

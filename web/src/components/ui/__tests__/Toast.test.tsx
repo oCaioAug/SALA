@@ -1,100 +1,111 @@
-import React from 'react'
-import { render, screen, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { ToastProvider, useToast } from '../Toast'
+import { act, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+
+import { ToastProvider, useToast } from "../Toast";
 
 // Dummy component to consume the toast context
 const ToastTestComponent = () => {
-  const { addToast } = useToast()
+  const { addToast } = useToast();
   return (
     <div>
-      <button onClick={() => addToast({ title: 'Success Toast', type: 'success', message: 'It worked' })}>
+      <button
+        onClick={() =>
+          addToast({
+            title: "Success Toast",
+            type: "success",
+            message: "It worked",
+          })
+        }
+      >
         Show Success
       </button>
-      <button onClick={() => addToast({ title: 'Error Toast', type: 'error' })}>
+      <button onClick={() => addToast({ title: "Error Toast", type: "error" })}>
         Show Error
       </button>
     </div>
-  )
-}
+  );
+};
 
-describe('Toast Component & Context', () => {
+describe("Toast Component & Context", () => {
   beforeEach(() => {
-    jest.useFakeTimers()
-  })
+    jest.useFakeTimers();
+  });
 
   afterEach(() => {
-    jest.restoreAllMocks()
-    jest.useRealTimers()
-  })
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+  });
 
-  it('renders a toast when addToast is called', async () => {
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+  it("renders a toast when addToast is called", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     render(
       <ToastProvider>
         <ToastTestComponent />
       </ToastProvider>
-    )
+    );
 
     // Trigger success toast
-    await user.click(screen.getByText('Show Success'))
-    
-    expect(screen.getByText('Success Toast')).toBeInTheDocument()
-    expect(screen.getByText('It worked')).toBeInTheDocument()
-  })
+    await user.click(screen.getByText("Show Success"));
 
-  it('can render multiple toasts', async () => {
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    expect(screen.getByText("Success Toast")).toBeInTheDocument();
+    expect(screen.getByText("It worked")).toBeInTheDocument();
+  });
+
+  it("can render multiple toasts", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     render(
       <ToastProvider>
         <ToastTestComponent />
       </ToastProvider>
-    )
+    );
 
-    await user.click(screen.getByText('Show Success'))
-    await user.click(screen.getByText('Show Error'))
-    
-    expect(screen.getByText('Success Toast')).toBeInTheDocument()
-    expect(screen.getByText('Error Toast')).toBeInTheDocument()
-  })
+    await user.click(screen.getByText("Show Success"));
+    await user.click(screen.getByText("Show Error"));
 
-  it('removes toast when close button is clicked', async () => {
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    expect(screen.getByText("Success Toast")).toBeInTheDocument();
+    expect(screen.getByText("Error Toast")).toBeInTheDocument();
+  });
+
+  it("removes toast when close button is clicked", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     render(
       <ToastProvider>
         <ToastTestComponent />
       </ToastProvider>
-    )
+    );
 
-    await user.click(screen.getByText('Show Success'))
-    expect(screen.getByText('Success Toast')).toBeInTheDocument()
+    await user.click(screen.getByText("Show Success"));
+    expect(screen.getByText("Success Toast")).toBeInTheDocument();
 
     // Find and click the close button inside the toast
     // The close button has an SVG X icon, but we can query by role
-    const closeButtons = screen.getAllByRole('button').filter(b => !b.textContent)
-    expect(closeButtons.length).toBeGreaterThan(0)
-    
-    await user.click(closeButtons[0])
-    
-    expect(screen.queryByText('Success Toast')).not.toBeInTheDocument()
-  })
+    const closeButtons = screen
+      .getAllByRole("button")
+      .filter(b => !b.textContent);
+    expect(closeButtons.length).toBeGreaterThan(0);
 
-  it('auto removes toast after duration', async () => {
-    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    await user.click(closeButtons[0]);
+
+    expect(screen.queryByText("Success Toast")).not.toBeInTheDocument();
+  });
+
+  it("auto removes toast after duration", async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     render(
       <ToastProvider>
         <ToastTestComponent />
       </ToastProvider>
-    )
+    );
 
-    await user.click(screen.getByText('Show Success'))
-    expect(screen.getByText('Success Toast')).toBeInTheDocument()
+    await user.click(screen.getByText("Show Success"));
+    expect(screen.getByText("Success Toast")).toBeInTheDocument();
 
     // Default duration is 5000ms
     act(() => {
-      jest.advanceTimersByTime(5000)
-    })
-    
-    expect(screen.queryByText('Success Toast')).not.toBeInTheDocument()
-  })
-})
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(screen.queryByText("Success Toast")).not.toBeInTheDocument();
+  });
+});

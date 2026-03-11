@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
 import "./globals.css";
+
 // Importe suas fontes aqui
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ReactNode } from "react";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const jetbrainsMono = JetBrains_Mono({

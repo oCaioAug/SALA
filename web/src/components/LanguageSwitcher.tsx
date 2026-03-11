@@ -2,9 +2,10 @@
 
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter, usePathname } from "@/navigation";
-import { useTransition, useState } from "react";
+import { useState, useTransition } from "react";
+
 import { locales } from "@/config";
+import { usePathname, useRouter } from "@/navigation";
 
 export default function LanguageSwitcher() {
   const [isPending, startTransition] = useTransition();
@@ -56,11 +57,11 @@ export default function LanguageSwitcher() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Dropdown */}
           <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden transition-colors duration-300">
             <div className="py-2">
-              {locales.map((locale) => (
+              {locales.map(locale => (
                 <button
                   key={locale}
                   onClick={() => handleLocaleChange(locale)}
@@ -73,7 +74,9 @@ export default function LanguageSwitcher() {
                 >
                   <span className="text-sm">{localeLabels[locale]}</span>
                   {locale === localeActive && (
-                    <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>
+                    <span className="ml-auto text-blue-600 dark:text-blue-400">
+                      ✓
+                    </span>
                   )}
                 </button>
               ))}

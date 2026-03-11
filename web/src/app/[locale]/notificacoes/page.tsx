@@ -11,8 +11,8 @@ import {
   Info,
   XCircle,
 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -228,7 +228,7 @@ const NotificationPage: React.FC = () => {
   // Função para traduzir mensagens das notificações baseado no tipo
   const getNotificationMessage = (notification: Notification): string => {
     const intlLocale = getIntlLocale(locale);
-    
+
     // Parse dos dados da notificação
     let notificationData: any = {};
     if (notification.data) {
@@ -245,7 +245,8 @@ const NotificationPage: React.FC = () => {
 
     switch (notification.type) {
       case "RESERVATION_CREATED": {
-        const userName = notificationData.userName || (locale === "pt" ? "Usuário" : "User");
+        const userName =
+          notificationData.userName || (locale === "pt" ? "Usuário" : "User");
         const roomName = notificationData.roomName || "";
         const startTime = notificationData.startTime
           ? new Date(notificationData.startTime).toLocaleString(intlLocale, {
@@ -257,11 +258,14 @@ const NotificationPage: React.FC = () => {
             })
           : "";
         const purpose = notificationData.purpose
-          ? tNotificationService("messages.purposePrefix", { purpose: notificationData.purpose })
+          ? tNotificationService("messages.purposePrefix", {
+              purpose: notificationData.purpose,
+            })
           : "";
 
         // Verificar se o usuário que criou é admin
-        const isAdmin = notificationData.isAdmin || notificationData.userRole === "ADMIN";
+        const isAdmin =
+          notificationData.isAdmin || notificationData.userRole === "ADMIN";
 
         if (isAdmin) {
           return tNotificationService("messages.reservationCreatedAdmin", {
@@ -308,7 +312,9 @@ const NotificationPage: React.FC = () => {
             })
           : "";
         const reason = notificationData.reason
-          ? tNotificationService("messages.reasonPrefix", { reason: notificationData.reason })
+          ? tNotificationService("messages.reasonPrefix", {
+              reason: notificationData.reason,
+            })
           : "";
 
         return tNotificationService("messages.reservationRejected", {
@@ -426,10 +432,10 @@ const NotificationPage: React.FC = () => {
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
                 {unreadCount > 0
-                  ? t("description.unreadCount", { 
-                      unread: unreadCount, 
+                  ? t("description.unreadCount", {
+                      unread: unreadCount,
                       total: notifications.length,
-                      plural: unreadCount > 1 ? "s" : ""
+                      plural: unreadCount > 1 ? "s" : "",
                     })
                   : notifications.length > 0
                     ? t("description.allRead", { total: notifications.length })
@@ -490,7 +496,9 @@ const NotificationPage: React.FC = () => {
 
                       if (response.ok) {
                         const result = await response.json();
-                        showSuccess(t("feedback.testSuccess", { message: result.message }));
+                        showSuccess(
+                          t("feedback.testSuccess", { message: result.message })
+                        );
                         console.log("🧪 Resultado do teste:", result);
                         // Recarregar notificações
                         setTimeout(() => fetchNotifications(), 1000);
@@ -607,9 +615,12 @@ const NotificationPage: React.FC = () => {
               className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">{t("filters.all")}</option>
-              <option value="unread">{t("filters.unread")} ({unreadCount})</option>
+              <option value="unread">
+                {t("filters.unread")} ({unreadCount})
+              </option>
               <option value="read">
-                {t("filters.read")} ({notifications.filter(n => n.isRead).length})
+                {t("filters.read")} (
+                {notifications.filter(n => n.isRead).length})
               </option>
             </select>
           </div>
@@ -620,12 +631,24 @@ const NotificationPage: React.FC = () => {
             className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">{t("types.all")}</option>
-            <option value="SYSTEM_ANNOUNCEMENT">{t("types.SYSTEM_ANNOUNCEMENT")}</option>
-            <option value="RESERVATION_CREATED">{t("types.RESERVATION_CREATED")}</option>
-            <option value="RESERVATION_APPROVED">{t("types.RESERVATION_APPROVED")}</option>
-            <option value="RESERVATION_REJECTED">{t("types.RESERVATION_REJECTED")}</option>
-            <option value="RESERVATION_CANCELLED">{t("types.RESERVATION_CANCELLED")}</option>
-            <option value="RESERVATION_REMINDER">{t("types.RESERVATION_REMINDER")}</option>
+            <option value="SYSTEM_ANNOUNCEMENT">
+              {t("types.SYSTEM_ANNOUNCEMENT")}
+            </option>
+            <option value="RESERVATION_CREATED">
+              {t("types.RESERVATION_CREATED")}
+            </option>
+            <option value="RESERVATION_APPROVED">
+              {t("types.RESERVATION_APPROVED")}
+            </option>
+            <option value="RESERVATION_REJECTED">
+              {t("types.RESERVATION_REJECTED")}
+            </option>
+            <option value="RESERVATION_CANCELLED">
+              {t("types.RESERVATION_CANCELLED")}
+            </option>
+            <option value="RESERVATION_REMINDER">
+              {t("types.RESERVATION_REMINDER")}
+            </option>
           </select>
         </div>
       </div>

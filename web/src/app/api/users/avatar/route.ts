@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
+
 import { authOptions } from "@/lib/auth";
+import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 import {
+  generateFilename,
   uploadAvatar,
   validateImage,
-  generateFilename,
 } from "@/lib/utils/uploadService";
-import { verifyAuth } from "@/lib/auth-hybrid";
 
 export const dynamic = "force-dynamic";
 

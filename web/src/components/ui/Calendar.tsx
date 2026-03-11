@@ -7,11 +7,11 @@ import {
   ChevronRight,
   Clock,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { ReservationWithUser, Room } from "@/lib/types";
-import { useTranslations, useLocale } from "next-intl";
 import { getIntlLocale } from "@/lib/utils";
 
 interface CalendarProps {
@@ -63,7 +63,15 @@ const Calendar: React.FC<CalendarProps> = ({
     t("monthNames.december"),
   ];
 
-  const weekDays = [t("weekDays.sunday"), t("weekDays.monday"), t("weekDays.tuesday"), t("weekDays.wednesday"), t("weekDays.thursday"), t("weekDays.friday"), t("weekDays.saturday")];
+  const weekDays = [
+    t("weekDays.sunday"),
+    t("weekDays.monday"),
+    t("weekDays.tuesday"),
+    t("weekDays.wednesday"),
+    t("weekDays.thursday"),
+    t("weekDays.friday"),
+    t("weekDays.saturday"),
+  ];
 
   const navigateMonth = (direction: "prev" | "next") => {
     setCurrentDate(prev => {

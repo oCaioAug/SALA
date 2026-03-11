@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
+
 import { getIntlLocale } from "@/lib/utils";
 
 interface Reservation {
@@ -58,18 +60,17 @@ export default function ReservationApprovalPage() {
             {t("restricted.title")}
           </h3>
           <p className="text-gray-600 mb-6">{t("restricted.message")}</p>
-          <a
+          <Link
             href="/auth/signin"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             {t("restricted.login")}
-          </a>
+          </Link>
         </div>
       </div>
     );
   }
 
-  // @ts-ignore - Verificação de role
   if (session?.user?.role !== "ADMIN") {
     return (
       <div className="max-w-7xl mx-auto p-6">

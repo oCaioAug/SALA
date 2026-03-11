@@ -1,5 +1,5 @@
 // Tipos para o sistema de incidentes
-import { User, Room, Item } from "@prisma/client";
+import { Item, Room, User } from "@prisma/client";
 
 export enum IncidentStatus {
   REPORTED = "REPORTED",

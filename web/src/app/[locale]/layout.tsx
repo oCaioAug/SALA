@@ -1,18 +1,19 @@
+import "../globals.css";
+
 import type { Metadata } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { notFound } from "next/navigation";
-import { Inter, JetBrains_Mono } from "next/font/google";
 
-import { ToastProvider } from "@/components/ui/Toast";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import ProductionErrorLogger from "@/components/ui/ProductionErrorLogger";
+import { ToastProvider } from "@/components/ui/Toast";
 import { AppProvider } from "@/lib/hooks/useApp";
 import { ThemeProvider } from "@/lib/providers/ThemeProvider";
 import { routing } from "@/navigation";
 
 import AuthProvider from "../_providers/auth";
-import "../globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 const jetbrainsMono = JetBrains_Mono({

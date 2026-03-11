@@ -1,6 +1,6 @@
+import { unlink } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { unlink } from "fs/promises";
 import { join } from "path";
 
 import { authOptions } from "@/lib/auth";

@@ -13,8 +13,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
+
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -24,8 +25,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { getUserInitials, getUserGradient } from "@/lib/utils/userUtils";
 import { getIntlLocale } from "@/lib/utils";
+import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 
 interface User {
   id: string;

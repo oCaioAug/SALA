@@ -7,7 +7,7 @@ import {
   Clock,
   User as UserIcon,
 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -140,7 +140,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         }
       }
 
-      if (formData.recurringPattern === "WEEKLY" && formData.recurringDaysOfWeek.length === 0) {
+      if (
+        formData.recurringPattern === "WEEKLY" &&
+        formData.recurringDaysOfWeek.length === 0
+      ) {
         newErrors.recurringDaysOfWeek = t("errors.recurringDaysRequired");
       }
     }
@@ -171,7 +174,9 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         reservationData.isRecurring = true;
         reservationData.recurringPattern = formData.recurringPattern;
         reservationData.recurringDaysOfWeek = formData.recurringDaysOfWeek;
-        reservationData.recurringEndDate = new Date(formData.recurringEndDate).toISOString();
+        reservationData.recurringEndDate = new Date(
+          formData.recurringEndDate
+        ).toISOString();
       }
 
       await onSubmit(reservationData);
@@ -396,16 +401,21 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             type="checkbox"
             id="isRecurring"
             checked={formData.isRecurring}
-            onChange={(e) => {
+            onChange={e => {
               setFormData(prev => ({
                 ...prev,
                 isRecurring: e.target.checked,
-                recurringDaysOfWeek: e.target.checked ? [new Date(formData.startTime || new Date()).getDay()] : [],
+                recurringDaysOfWeek: e.target.checked
+                  ? [new Date(formData.startTime || new Date()).getDay()]
+                  : [],
               }));
             }}
             className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
           />
-          <label htmlFor="isRecurring" className="text-sm font-medium text-gray-300 cursor-pointer">
+          <label
+            htmlFor="isRecurring"
+            className="text-sm font-medium text-gray-300 cursor-pointer"
+          >
             {t("recurring") || "Reserva Recorrente"}
           </label>
         </div>
@@ -444,15 +454,22 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     { value: 4, label: t("thursday") || "Qui" },
                     { value: 5, label: t("friday") || "Sex" },
                     { value: 6, label: t("saturday") || "Sáb" },
-                  ].map((day) => (
+                  ].map(day => (
                     <button
                       key={day.value}
                       type="button"
                       onClick={() => {
-                        const newDays = formData.recurringDaysOfWeek.includes(day.value)
-                          ? formData.recurringDaysOfWeek.filter(d => d !== day.value)
+                        const newDays = formData.recurringDaysOfWeek.includes(
+                          day.value
+                        )
+                          ? formData.recurringDaysOfWeek.filter(
+                              d => d !== day.value
+                            )
                           : [...formData.recurringDaysOfWeek, day.value];
-                        setFormData(prev => ({ ...prev, recurringDaysOfWeek: newDays }));
+                        setFormData(prev => ({
+                          ...prev,
+                          recurringDaysOfWeek: newDays,
+                        }));
                       }}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         formData.recurringDaysOfWeek.includes(day.value)
@@ -483,7 +500,11 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                 name="recurringEndDate"
                 value={formData.recurringEndDate}
                 onChange={handleInputChange}
-                min={formData.startTime ? formData.startTime.split("T")[0] : undefined}
+                min={
+                  formData.startTime
+                    ? formData.startTime.split("T")[0]
+                    : undefined
+                }
                 className={`w-full px-3 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.recurringEndDate ? "border-red-500" : "border-gray-600"
                 }`}

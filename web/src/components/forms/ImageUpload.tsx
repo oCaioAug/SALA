@@ -1,8 +1,8 @@
 "use client";
 
 import { Image as ImageIcon, Upload, X } from "lucide-react";
-import React, { useCallback, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import React, { useCallback, useRef, useState } from "react";
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -146,7 +146,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {previewUrl ? (
         <div className="relative group">
-          <div 
+          <div
             className="relative w-full h-48 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border-2 border-slate-300 dark:border-slate-600 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
             onClick={handleClick}
           >
@@ -209,9 +209,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             </div>
             <div className="text-center">
               <p className="text-sm font-medium text-slate-700 dark:text-gray-300">
-                {isDragging
-                  ? t("dropImageHere")
-                  : t("clickOrDragImage")}
+                {isDragging ? t("dropImageHere") : t("clickOrDragImage")}
               </p>
               <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                 {t("allowedFormats")}
@@ -225,7 +223,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       )}
 
       {error && (
-        <p className="text-sm text-red-500 dark:text-red-400">{t("errors.error")}</p>
+        <p className="text-sm text-red-500 dark:text-red-400">
+          {t("errors.error")}
+        </p>
       )}
     </div>
   );

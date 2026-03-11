@@ -1,6 +1,7 @@
 "use client";
 
-// src/app/not-found.tsx
+import Link from "next/link";
+
 export default function NotFound() {
   return (
     <html lang="pt">
@@ -10,9 +11,9 @@ export default function NotFound() {
           <p>
             O sistema de internacionalização não encontrou o recurso solicitado.
           </p>
-          <a href="/" style={{ color: "blue", textDecoration: "underline" }}>
+          <Link href="/" style={{ color: "blue", textDecoration: "underline" }}>
             Voltar para o início
-          </a>
+          </Link>
         </div>
       </body>
     </html>

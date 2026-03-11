@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertTriangle,
   Bell,
   Building2,
   Calendar,
@@ -10,10 +11,9 @@ import {
   Settings,
   User,
   Users,
-  AlertTriangle,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import React from "react";
 
 import { cn } from "@/lib/utils";

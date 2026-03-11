@@ -1,9 +1,10 @@
-import { getRequestConfig } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { locales, defaultLocale, type Locale } from "../config";
+import { getRequestConfig } from "next-intl/server";
+
+import { defaultLocale, type Locale, locales } from "../config";
 
 // Re-exportar para compatibilidade
-export { locales, defaultLocale };
+export { defaultLocale, locales };
 export type { Locale };
 
 export default getRequestConfig(async ({ requestLocale }) => {
@@ -11,10 +12,13 @@ export default getRequestConfig(async ({ requestLocale }) => {
   // Se não vier, usar o defaultLocale
   const resolvedLocale = await requestLocale;
   let locale = resolvedLocale || defaultLocale;
-  
+
   // Validar se o locale é suportado
   if (!locale || !locales.includes(locale as any)) {
-    console.error(`Locale não suportado: ${locale}. Locales disponíveis:`, locales);
+    console.error(
+      `Locale não suportado: ${locale}. Locales disponíveis:`,
+      locales
+    );
     // Se o locale não for válido, usar o defaultLocale
     locale = defaultLocale;
   }

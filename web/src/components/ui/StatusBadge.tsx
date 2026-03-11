@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 import { useTranslations } from "next-intl";
+import React from "react";
 
 import { RoomStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ interface StatusBadgeProps {
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
   const t = useTranslations("Dashboard.filters");
-  
+
   const statusConfig = {
     LIVRE: {
       dotColor: "bg-green-500",
