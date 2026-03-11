@@ -15,6 +15,7 @@ async function main() {
       name: "Administrador",
       email: "admin@sala.com",
       role: "ADMIN",
+      // teste
     },
   });
 
