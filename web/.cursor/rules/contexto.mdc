@@ -1,0 +1,59 @@
+---
+alwaysApply: true
+---
+
+# Regras para Inteligência Artificial (AI Rules)
+
+Este documento contém as diretrizes e regras arquiteturais para o desenvolvimento no projeto **SALA**, um sistema moderno utilizando as últimas tecnologias do ecossistema React. A IA deve seguir estas regras rigorosamente ao gerar, refatorar ou analisar código para esta base.
+
+## 1. Stack Tecnológica
+
+- **Framework:** Next.js 16.1+ (App Router obrigatoriamente)
+- **Linguagem:** TypeScript (Strict mode)
+- **Estilização:** Tailwind CSS v4 Integrado + utilitários utilitários (clsx, tailwind-merge) e Radix UI / class-variance-authority
+- **Banco de Dados (ORM):** Prisma (v6.16+)
+- **Autenticação:** NextAuth.js (v4)
+- **Validação:** Zod
+- **Ícones:** Lucide React e React Icons
+- **Upload de Imagens:** Cloudinary
+
+## 2. Padrões do Next.js 16 (App Router)
+
+- **Server Components como Padrão:** Todo componente deve ser um Server Component a menos que interatividade ou hooks de ciclo de vida (ex: `useState`, `useEffect`, `onClick`) sejam estritamente necessários. Use a diretiva `"use client"` apenas no topo do arquivo nestes casos.
+- **Parâmetros Assíncronos (Breaking Change Next.js 15+):** Ao trabalhar com rotas dinâmicas, lembre-se que `params` e `searchParams` agora são **Promises** e devem ser desserializados com `await` antes do uso (ex: `const { id } = await params;`).
+- **Fetch e Cache:** Utilize as opções nativas de `fetch` do Next.js para controle de cache e revalidação. Prefira revalidação baseada em tags (`revalidateTag`) ou caminhos (`revalidatePath`) do que tempo absoluto quando possível.
+- **Turbopack:** O projeto utiliza Turbopack para compilação super rápida, evite modificar configurações baseadas em Webpack no `next.config.mjs` sem necessidade.
+
+## 3. Padrões do Prisma e Banco de Dados
+
+- **Performance de DB:** A aplicação dá forte ênfase a otimização de banco de dados (`DATABASE_OPTIMIZATION.md`). Ao criar queries:
+  - Utilize índices adequadamente no `schema.prisma`.
+  - Evite _N+1 query problems_, utilizando `include` apenas estritamente os relacionamentos necessários ou buscando em lote.
+  - Se a query for muito complexa, prefira consultas ajustadas com otimização no nível ORM ou até `prisma.$queryRaw` (se absolutamente necessário).
+- **Tratamento de Exceções:** Ao lidar com erros Prisma (como violação de chaves únicas), faça os devidos retornos amigáveis ao invés de causar falhas 500 no servidor.
+
+## 4. Linting e Estilo de Código
+
+- **Ordenação de Imports:** É utilizado o plugin `simple-import-sort`. As importações devem estar organizadas para que o ESLint não falhe. O formato é rigoroso.
+- **Variáveis Não Utilizadas:** Quando declarar variáveis, propriedades ou parâmetros que não serão usados, utilize o prefixo `_` (underscore), de acordo com a regra `@typescript-eslint/no-unused-vars` definida no `eslint.config.mjs` (ex: `_props`, `_req`).
+- **Formatador:** Prettier é o formatador padrão. O código gerado deve respeitar o `.prettierrc.json`.
+
+## 5. UI e Estilização
+
+- Utilize os componentes construídos nas dependências (ex: Radix UI com tailwind, como padrão shadcn/ui se em uso) ou componentes customizados em `/components`.
+- As classes Tailwind devem ser concatenadas dinamicamente usando a função utilitária `cn` (provavelmente feita com `clsx` + `tailwind-merge` que já estão instalados).
+
+## 6. Rotas de API
+
+- Para a criação de novas rotas no App Router: Utilize a estrutura de Arquivos `route.ts` (ex: `src/app/api/.../route.ts`).
+- **Retornos Restronados:** Todos de `next/server` (`NextResponse.json(...)`).
+- Sempre valide obody das requisições POST/PUT utilizando o **Zod** antes de processar lógicas de negócio.
+
+## 7. Comandos Úteis
+
+- Iniciar ambiente local: `npm run dev`
+- Gerar o build/prisma: `npm run build`
+- Migrar o banco: `npm run db:push` (para ambiente de desenvolvimento/prototipagem) ou `npm run db:migrate`.
+- Executar formatador: `npm run format`
+
+Siga essas orientações para produzir um código consistente, escalável, e alinhado aos padrões que foram definidos para o ambiente Next.js 16 deste projeto.

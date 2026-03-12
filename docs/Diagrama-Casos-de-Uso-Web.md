@@ -12,7 +12,7 @@ graph TB
 
     %% Casos de Uso - Reservas (centro-esquerda)
     UC3[Criar Reserva]
-    UC4[Visualizar Reservas]
+    UC4[Visualizar/Cancelar Reservas]
     UC5[Aprovar/Rejeitar Reserva]
 
     %% Casos de Uso - Salas (centro)
@@ -79,8 +79,8 @@ graph TB
 
 ### 📅 Reservas
 
-- **UC3 - Criar Reserva**: Criar solicitação de reserva (simples ou recorrente)
-- **UC4 - Visualizar Reservas**: Listar e visualizar reservas
+- **UC3 - Criar Reserva**: Criar solicitação de reserva (simples ou recorrente) com verificação de conflitos
+- **UC4 - Visualizar/Cancelar Reservas**: Listar, visualizar e cancelar reservas (simples ou recorrentes)
 - **UC5 - Aprovar/Rejeitar Reserva**: Administrador aprova ou rejeita solicitações
 
 ### 🏢 Salas
@@ -90,7 +90,7 @@ graph TB
 ### ⚠️ Incidentes
 
 - **UC7 - Reportar Incidente**: Usuário reporta um problema
-- **UC8 - Gerenciar Incidentes**: Administrador atribui, atualiza e resolve incidentes
+- **UC8 - Gerenciar Incidentes**: Administrador atribui, atualiza, resolve incidentes e acompanha seu histórico
 
 ### 🔔 Notificações
 
@@ -102,4 +102,4 @@ graph TB
 
 ### 📊 Dashboard
 
-- **UC11 - Visualizar Dashboard**: Ver resumo e estatísticas do sistema
+- **UC11 - Visualizar Dashboard**: Ver resumo e estatísticas do sistema (reservas, incidentes, utilização)
