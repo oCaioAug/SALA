@@ -7,68 +7,123 @@ import { notificationService } from "@/lib/notifications";
 
 import { prismaMock } from "../../../../../../prisma/mock";
 import { DELETE, GET, PUT } from "../route";
+
 jest.mock("@/lib/notifications", () => ({
   notificationService: {
     reservationCancelled: jest.fn(),
   },
 }));
 
-describe("Reservations [id] API", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+const mockParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
+const mockReservation = {
+  id: "res-1",
+  roomId: "room-1",
+  userId: "user-1",
+  startTime: new Date("2024-01-01T10:00:00"),
+  endTime: new Date("2024-01-01T12:00:00"),
+  status: "ACTIVE",
+  user: { id: "user-1", name: "João" },
+  room: { id: "room-1", name: "Sala 1" },
+};
+
+describe("Reservation [id] API", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  // ==================== GET ====================
   describe("GET /api/reservations/[id]", () => {
-    it("should return 404 if reservation missing", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(null);
-      const req = new NextRequest(
-        "http://localhost:3000/api/reservations/inv-id"
+    it("should return the reservation when found", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(
+        mockReservation as any
       );
-      const response = await GET(req, {
-        params: Promise.resolve({ id: "inv-id" }),
-      });
-      expect(response.status).toBe(404);
-    });
 
-    it("should return reservation", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue({
-        id: "res-1",
-      } as any);
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/res-1"
       );
-      const response = await GET(req, {
-        params: Promise.resolve({ id: "res-1" }),
-      });
+      const response = await GET(req, mockParams("res-1"));
+      const data = await response.json();
+
       expect(response.status).toBe(200);
+      expect(data.id).toBe("res-1");
+    });
+
+    it("should return 404 when reservation is not found", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(null);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/reservations/bad-id"
+      );
+      const response = await GET(req, mockParams("bad-id"));
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.error).toContain("não encontrada");
+    });
+
+    it("should return 500 on DB error", async () => {
+      prismaMock.reservation.findUnique.mockRejectedValue(
+        new Error("DB error")
+      );
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/reservations/res-1"
+      );
+      const response = await GET(req, mockParams("res-1"));
+
+      expect(response.status).toBe(500);
     });
   });
 
+  // ==================== PUT ====================
   describe("PUT /api/reservations/[id]", () => {
-    it("should handle missing reservation", async () => {
+    it("should return 404 if reservation does not exist", async () => {
       prismaMock.reservation.findUnique.mockResolvedValue(null);
+
       const req = new NextRequest(
-        "http://localhost:3000/api/reservations/inv",
+        "http://localhost:3000/api/reservations/bad-id",
         {
           method: "PUT",
-          body: JSON.stringify({ status: "APPROVED" }),
+          body: JSON.stringify({ purpose: "Novo propósito" }),
         }
       );
-      const response = await PUT(req, {
-        params: Promise.resolve({ id: "inv" }),
-      });
+      const response = await PUT(req, mockParams("bad-id"));
+
       expect(response.status).toBe(404);
     });
 
-    it("should update reservation and handle CANCELLED status", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue({
-        id: "res-1",
-        roomId: "room-1",
+    it("should return 409 if time conflict exists when changing time", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(
+        mockReservation as any
+      );
+      prismaMock.reservation.findFirst.mockResolvedValue({
+        id: "conflicting-res",
       } as any);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/reservations/res-1",
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            startTime: "2024-01-01T10:00:00",
+            endTime: "2024-01-01T11:30:00",
+          }),
+        }
+      );
+      const response = await PUT(req, mockParams("res-1"));
+
+      expect(response.status).toBe(409);
+    });
+
+    it("should update reservation and room status to LIVRE when cancelled", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(
+        mockReservation as any
+      );
+      prismaMock.reservation.findFirst.mockResolvedValue(null); // No conflicts
       prismaMock.reservation.update.mockResolvedValue({
-        id: "res-1",
+        ...mockReservation,
         status: "CANCELLED",
       } as any);
+      prismaMock.room.update.mockResolvedValue({} as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/res-1",
@@ -77,9 +132,7 @@ describe("Reservations [id] API", () => {
           body: JSON.stringify({ status: "CANCELLED" }),
         }
       );
-      const response = await PUT(req, {
-        params: Promise.resolve({ id: "res-1" }),
-      });
+      const response = await PUT(req, mockParams("res-1"));
 
       expect(response.status).toBe(200);
       expect(prismaMock.room.update).toHaveBeenCalledWith({
@@ -88,60 +141,63 @@ describe("Reservations [id] API", () => {
       });
     });
 
-    it("should prevent conflicting time updates", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue({
-        id: "res-1",
-        roomId: "room-1",
-      } as any);
-      // Mock conflicting reservation
-      prismaMock.reservation.findFirst.mockResolvedValue({
-        id: "res-2",
+    it("should update reservation fields without conflict check when no time change", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(
+        mockReservation as any
+      );
+      prismaMock.reservation.update.mockResolvedValue({
+        ...mockReservation,
+        purpose: "Treinamento",
       } as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/res-1",
         {
           method: "PUT",
-          body: JSON.stringify({
-            startTime: new Date("2024-01-01T10:00:00"),
-            endTime: new Date("2024-01-01T11:00:00"),
-          }),
+          body: JSON.stringify({ purpose: "Treinamento" }),
         }
       );
-      const response = await PUT(req, {
-        params: Promise.resolve({ id: "res-1" }),
-      });
+      const response = await PUT(req, mockParams("res-1"));
 
-      expect(response.status).toBe(409);
+      expect(response.status).toBe(200);
+      expect(prismaMock.reservation.findFirst).not.toHaveBeenCalled();
     });
   });
 
+  // ==================== DELETE ====================
   describe("DELETE /api/reservations/[id]", () => {
-    it("should handle missing reservation", async () => {
+    it("should return 404 if reservation not found", async () => {
       prismaMock.reservation.findUnique.mockResolvedValue(null);
+
       const req = new NextRequest(
-        "http://localhost:3000/api/reservations/inv",
-        { method: "DELETE" }
+        "http://localhost:3000/api/reservations/bad-id",
+        {
+          method: "DELETE",
+        }
       );
-      const response = await DELETE(req, {
-        params: Promise.resolve({ id: "inv" }),
-      });
+      const response = await DELETE(req, mockParams("bad-id"));
+
       expect(response.status).toBe(404);
     });
 
-    it("should delete reservation and notify user", async () => {
-      const mockRes = { id: "res-1", roomId: "room-1", user: { name: "João" } };
-      prismaMock.reservation.findUnique.mockResolvedValue(mockRes as any);
+    it("should delete reservation and update room status", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(
+        mockReservation as any
+      );
+      prismaMock.reservation.delete.mockResolvedValue({} as any);
+      prismaMock.room.update.mockResolvedValue({} as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/res-1",
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+        }
       );
-      const response = await DELETE(req, {
-        params: Promise.resolve({ id: "res-1" }),
-      });
+      const response = await DELETE(req, mockParams("res-1"));
+      const data = await response.json();
 
       expect(response.status).toBe(200);
+      expect(data.message).toContain("cancelada com sucesso");
       expect(prismaMock.reservation.delete).toHaveBeenCalledWith({
         where: { id: "res-1" },
       });
@@ -149,9 +205,28 @@ describe("Reservations [id] API", () => {
         where: { id: "room-1" },
         data: { status: "LIVRE" },
       });
-      expect(notificationService.reservationCancelled).toHaveBeenCalledWith(
-        mockRes
+      expect(notificationService.reservationCancelled).toHaveBeenCalled();
+    });
+
+    it("should succeed even if notification fails", async () => {
+      prismaMock.reservation.findUnique.mockResolvedValue(
+        mockReservation as any
       );
+      prismaMock.reservation.delete.mockResolvedValue({} as any);
+      prismaMock.room.update.mockResolvedValue({} as any);
+      (notificationService.reservationCancelled as jest.Mock).mockRejectedValue(
+        new Error("Notification failed")
+      );
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/reservations/res-1",
+        {
+          method: "DELETE",
+        }
+      );
+      const response = await DELETE(req, mockParams("res-1"));
+
+      expect(response.status).toBe(200);
     });
   });
 });

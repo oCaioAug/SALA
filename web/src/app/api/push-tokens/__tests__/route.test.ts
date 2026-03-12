@@ -31,5 +31,19 @@ describe("Push Tokens API", () => {
       expect(data.success).toBe(true);
       expect(data.data).toEqual(mockBody);
     });
+
+    it("should return 500 when request body cannot be parsed", async () => {
+      const req = new NextRequest("http://localhost:3000/api/push-tokens", {
+        method: "POST",
+        body: "invalid-json-body",
+        // Content-Type not set to application/json forces json() to fail
+      });
+      // Override json() to simulate a parse failure
+      jest.spyOn(req, "json").mockRejectedValueOnce(new Error("Parse error"));
+
+      const response = await POST(req);
+
+      expect(response.status).toBe(500);
+    });
   });
 });

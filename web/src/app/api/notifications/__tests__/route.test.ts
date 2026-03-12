@@ -6,51 +6,25 @@ import { NextRequest } from "next/server";
 import { prismaMock } from "../../../../../prisma/mock";
 import { GET, POST } from "../route";
 
-describe("Notifications API", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+const mockUser = { id: "user-1", email: "user@example.com", role: "USER" };
 
+describe("Notifications API", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  // ==================== GET ====================
   describe("GET /api/notifications", () => {
     it("should return 400 if userId is missing", async () => {
       const req = new NextRequest("http://localhost:3000/api/notifications");
       const response = await GET(req);
-      expect(response.status).toBe(400);
-    });
-
-    it("should retrieve notifications by user email", async () => {
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: "user-1",
-        email: "user@example.com",
-      } as any);
-      prismaMock.notification.findMany.mockResolvedValue([
-        { id: "notif-1" },
-      ] as any);
-
-      const req = new NextRequest(
-        "http://localhost:3000/api/notifications?userId=user@example.com&isRead=false&limit=10"
-      );
-      const response = await GET(req);
       const data = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(data.length).toBe(1);
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: { email: "user@example.com" },
-      });
-      expect(prismaMock.notification.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { userId: "user-1", isRead: false },
-          take: 10,
-        })
-      );
+      expect(response.status).toBe(400);
+      expect(data.error).toContain("userId");
     });
 
-    it("should retrieve notifications by user id", async () => {
-      prismaMock.user.findUnique.mockResolvedValue({ id: "user-1" } as any);
-      prismaMock.notification.findMany.mockResolvedValue([
-        { id: "notif-1" },
-      ] as any);
+    it("should find user by ID when userId does not contain @", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+      prismaMock.notification.findMany.mockResolvedValue([]);
 
       const req = new NextRequest(
         "http://localhost:3000/api/notifications?userId=user-1"
@@ -63,58 +37,126 @@ describe("Notifications API", () => {
       });
     });
 
-    it("should return 404 if user not found", async () => {
-      prismaMock.user.findUnique.mockResolvedValue(null);
+    it("should find user by email when userId contains @", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+      prismaMock.notification.findMany.mockResolvedValue([]);
+
       const req = new NextRequest(
-        "http://localhost:3000/api/notifications?userId=inv"
+        "http://localhost:3000/api/notifications?userId=user@example.com"
+      );
+      await GET(req);
+
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+        where: { email: "user@example.com" },
+      });
+    });
+
+    it("should return 404 if user is not found", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(null);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/notifications?userId=bad-id"
       );
       const response = await GET(req);
+
       expect(response.status).toBe(404);
+    });
+
+    it("should apply isRead and type filters when provided", async () => {
+      prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
+      prismaMock.notification.findMany.mockResolvedValue([]);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/notifications?userId=user-1&isRead=true&type=RESERVATION_CREATED&limit=5"
+      );
+      await GET(req);
+
+      expect(prismaMock.notification.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId: "user-1",
+            isRead: true,
+            type: "RESERVATION_CREATED",
+          }),
+          take: 5,
+        })
+      );
     });
   });
 
+  // ==================== POST ====================
   describe("POST /api/notifications", () => {
-    const validBody = {
-      userId: "user-1",
-      type: "RESERVATION_CREATED",
-      title: "Nova Reserva",
-      message: "Sua reserva foi criada",
-    };
-
-    it("should fail if required fields are missing", async () => {
+    it("should return 400 if required fields are missing", async () => {
       const req = new NextRequest("http://localhost:3000/api/notifications", {
         method: "POST",
-        body: JSON.stringify({ userId: "user-1" }),
+        body: JSON.stringify({ userId: "user-1" }), // Missing type, title, message
       });
       const response = await POST(req);
+      const data = await response.json();
+
       expect(response.status).toBe(400);
+      expect(data.error).toContain("obrigatórios");
     });
 
-    it("should fail on invalid notification type", async () => {
+    it("should return 400 for invalid notification type", async () => {
       const req = new NextRequest("http://localhost:3000/api/notifications", {
         method: "POST",
-        body: JSON.stringify({ ...validBody, type: "INVALID_TYPE" }),
+        body: JSON.stringify({
+          userId: "user-1",
+          type: "INVALID_TYPE",
+          title: "Test",
+          message: "A test",
+        }),
       });
       const response = await POST(req);
+      const data = await response.json();
+
       expect(response.status).toBe(400);
+      expect(data.error).toContain("inválido");
     });
 
-    it("should create notification successfully", async () => {
-      prismaMock.notification.create.mockResolvedValue({
+    it("should create a notification successfully", async () => {
+      const newNotification = {
         id: "notif-1",
-        ...validBody,
-      } as any);
+        userId: "user-1",
+        type: "RESERVATION_CREATED",
+        title: "Reserva criada",
+        message: "Sua reserva foi criada com sucesso.",
+        user: mockUser,
+      };
+      prismaMock.notification.create.mockResolvedValue(newNotification as any);
 
       const req = new NextRequest("http://localhost:3000/api/notifications", {
         method: "POST",
-        body: JSON.stringify(validBody),
+        body: JSON.stringify({
+          userId: "user-1",
+          type: "RESERVATION_CREATED",
+          title: "Reserva criada",
+          message: "Sua reserva foi criada com sucesso.",
+        }),
       });
       const response = await POST(req);
       const data = await response.json();
 
       expect(response.status).toBe(201);
       expect(data.id).toBe("notif-1");
-      expect(prismaMock.notification.create).toHaveBeenCalled();
+    });
+
+    it("should return 500 on DB error", async () => {
+      prismaMock.notification.create.mockRejectedValue(new Error("DB error"));
+
+      const req = new NextRequest("http://localhost:3000/api/notifications", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "user-1",
+          type: "RESERVATION_CREATED",
+          title: "Test",
+          message: "Test",
+        }),
+      });
+      const response = await POST(req);
+
+      expect(response.status).toBe(500);
     });
   });
 });

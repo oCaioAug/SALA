@@ -22,7 +22,6 @@ describe("Rooms API (List and Create)", () => {
       prismaMock.room.findMany.mockResolvedValue(mockRooms as any);
 
       // First call (hits DB)
-      const req1 = new NextRequest("http://localhost:3000/api/rooms");
       const response1 = await GET();
       const data1 = await response1.json();
 
@@ -31,15 +30,26 @@ describe("Rooms API (List and Create)", () => {
       expect(prismaMock.room.findMany).toHaveBeenCalledTimes(1);
 
       // Second call (should hit cache)
-      const response2 = await GET();
+      await GET();
       expect(prismaMock.room.findMany).toHaveBeenCalledTimes(1); // Still 1
 
       // Advance time beyond cache duration (2 mins)
       jest.advanceTimersByTime(3 * 60 * 1000);
 
       // Third call (should hit DB again)
-      const response3 = await GET();
+      await GET();
       expect(prismaMock.room.findMany).toHaveBeenCalledTimes(2);
+    });
+
+    it("should return 500 on DB error when cache is invalid", async () => {
+      // Reset modules to get a fresh module instance with empty cache
+      jest.resetModules();
+      const { GET: FreshGET } = await import("../route");
+      prismaMock.room.findMany.mockRejectedValue(new Error("DB error"));
+
+      const response = await FreshGET();
+
+      expect(response.status).toBe(500);
     });
   });
 
@@ -76,6 +86,19 @@ describe("Rooms API (List and Create)", () => {
           data: expect.objectContaining({ name: "Sala Nova", capacity: 20 }),
         })
       );
+    });
+
+    it("should return 500 on DB error", async () => {
+      prismaMock.room.create.mockRejectedValue(new Error("DB error"));
+
+      const req = new NextRequest("http://localhost:3000/api/rooms", {
+        method: "POST",
+        body: JSON.stringify({ name: "Sala Erro" }),
+      });
+
+      const response = await POST(req);
+
+      expect(response.status).toBe(500);
     });
   });
 });
