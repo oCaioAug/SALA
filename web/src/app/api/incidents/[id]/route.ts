@@ -51,8 +51,6 @@ export async function GET(
       );
     }
 
-    console.log(`✅ Incidente ${id} encontrado`);
-
     return NextResponse.json(incident);
   } catch (error) {
     console.error(`❌ Erro ao buscar incidente:`, error);

@@ -9,7 +9,6 @@ END $$;
 -- AlterTable
 -- Adiciona os campos de recorrência à tabela reservations
 -- Todos os campos têm valores padrão, então não afeta dados existentes
-
 ALTER TABLE "public"."reservations" ADD COLUMN IF NOT EXISTS "isRecurring" BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE "public"."reservations" ADD COLUMN IF NOT EXISTS "recurringPattern" "public"."RecurringPattern";
 ALTER TABLE "public"."reservations" ADD COLUMN IF NOT EXISTS "recurringDaysOfWeek" INTEGER[] DEFAULT ARRAY[]::INTEGER[];

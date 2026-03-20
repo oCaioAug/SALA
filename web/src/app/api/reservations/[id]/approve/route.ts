@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
@@ -54,12 +55,18 @@ export async function POST(
     });
 
     // Criar notificação para o usuário sobre a aprovação
-    console.log(`🔔 Iniciando criação de notificação para aprovação da reserva ${reservationId}`);
-    console.log(`👤 Usuário que receberá notificação: ${updatedReservation.user.email} (ID: ${updatedReservation.userId})`);
-    
+    console.log(
+      `🔔 Iniciando criação de notificação para aprovação da reserva ${reservationId}`
+    );
+    console.log(
+      `👤 Usuário que receberá notificação: ${updatedReservation.user.email} (ID: ${updatedReservation.userId})`
+    );
+
     try {
       await notificationService.reservationApproved(updatedReservation);
-      console.log(`✅ Notificação de aprovação criada com sucesso para ${updatedReservation.user.email}`);
+      console.log(
+        `✅ Notificação de aprovação criada com sucesso para ${updatedReservation.user.email}`
+      );
     } catch (notificationError) {
       console.error(
         "❌ Erro ao criar notificação de aprovação:",
@@ -67,6 +74,9 @@ export async function POST(
       );
       // Não falhar a aprovação por causa da notificação
     }
+
+    // Sincronizar com Google Calendar (execução em background)
+    void syncReservationToGoogleCalendar(updatedReservation.id);
 
     return NextResponse.json(updatedReservation);
   } catch (error) {

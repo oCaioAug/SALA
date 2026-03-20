@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 
+import { authOptions } from "@/lib/auth";
+import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import {
@@ -74,6 +77,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Usuário não autenticado" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const {
       userId,
@@ -161,20 +173,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verificar se o usuário existe
-    const userExists = await prisma.user.findUnique({
+    // Verificar se o usuário dono da reserva existe
+    const reservationOwner = await prisma.user.findUnique({
       where: { id: userId },
     });
 
-    if (!userExists) {
-      console.log("Usuário não encontrado:", userId);
+    if (!reservationOwner) {
+      console.log("Usuário (dono da reserva) não encontrado:", userId);
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 }
       );
     }
 
-    console.log("Usuário encontrado:", userExists);
+    console.log("Usuário dono da reserva encontrado:", reservationOwner);
     // Verificar se a sala existe
     const room = await prisma.room.findUnique({
       where: { id: roomId },
@@ -329,8 +341,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const userIsAdmin = userExists.role === "ADMIN";
-    const status = userIsAdmin ? "APPROVED" : "PENDING";
+    // Usuário autenticado (quem está criando a reserva)
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    const currentUserIsAdmin = currentUser?.role === "ADMIN";
+    const status = currentUserIsAdmin ? "APPROVED" : "PENDING";
 
     // Se for reserva recorrente, gerar todas as ocorrências
     if (isRecurring) {
@@ -382,6 +399,14 @@ export async function POST(request: NextRequest) {
         // Não falhar a criação da reserva por causa da notificação
       }
 
+      // Sincronizar todas as reservas criadas com o Google Calendar do usuário
+      // Execução em paralelo e sem bloquear a resposta para o cliente
+      void Promise.all(
+        allCreatedReservations.map(reservation =>
+          syncReservationToGoogleCalendar(reservation.id)
+        )
+      );
+
       // Retornar todas as reservas criadas
       return NextResponse.json(
         {
@@ -418,6 +443,9 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar notificação:", notificationError);
       // Não falhar a criação da reserva por causa da notificação
     }
+
+    // Sincronizar reserva com Google Calendar (execução em background)
+    void syncReservationToGoogleCalendar(reservation.id);
 
     return NextResponse.json(reservation, { status: 201 });
   } catch (error) {
