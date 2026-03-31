@@ -1,18 +1,17 @@
 "use client";
 
-// import { useRouter } from "next/navigation";
-// import { useSession } from "next-auth/react";
-import { ReactNode /*, useEffect*/ } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { ReactNode, useEffect } from "react";
 
-// import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ProtectedRouteProps {
   children: ReactNode;
   fallback?: ReactNode;
 }
 
-export function ProtectedRoute({ children, fallback: _fallback }: ProtectedRouteProps) {
-  /* TEMPORARILY DISABLED LOGIN REQUIREMENT
+export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const router = useRouter();
   const { status } = useSession();
 
@@ -42,7 +41,6 @@ export function ProtectedRoute({ children, fallback: _fallback }: ProtectedRoute
       </div>
     );
   }
-  */
 
   return <>{children}</>;
 }
