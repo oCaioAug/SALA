@@ -16,46 +16,75 @@ Para a visão de negócio e posicionamento estratégico do produto, consultar ta
 
 ```mermaid
 flowchart TD
-    %% Atores
+    %% ── Atores humanos ───────────────────────────────────────────────
     webUser["👤 Usuário Web"]
-    adminUser["👨‍💼 Administrador Web"]
+    adminUser["👨‍💼 Administrador\n(herda de Usuário)"]
     mobileApp["📱 App Mobile"]
 
-    %% Frontend
+    %% ── Ator Sistema (automático) ────────────────────────────────────
+    sistema["⚙️ Sistema\n(eventos automáticos)"]
+
+    %% ── Frontend ─────────────────────────────────────────────────────
     webApp["Next.js App Router\nPáginas e Componentes Web"]
 
-    %% Backend / API
+    %% ── Backend / API ────────────────────────────────────────────────
     apiLayer["Next.js API Routes\n(app/api)"]
 
-    %% Serviços de Domínio
-    authDomain["Auth & Sessão"]
+    %% ── Serviços de Domínio ──────────────────────────────────────────
+    authDomain["Auth & Sessão\n(NextAuth + JWT mobile)"]
     reservationDomain["Reservas & Conflitos\n(inclui recorrência)"]
     incidentDomain["Incidentes & Histórico"]
-    notificationDomain["Notificações & Push"]
+    notificationDomain["Notificações & Push\n(NotificationService)"]
+    calendarDomain["Integração de Calendário\n(GoogleCalendarService)"]
 
-    %% Infra
-    database["PostgreSQL\nvia Prisma"]
-    pushService["Serviço de Push\n(Firebase/Expo ou similar)"]
+    %% ── Infra & Serviços Externos ────────────────────────────────────
+    database["🗄️ PostgreSQL\nvia Prisma"]
+    pushService["📲 Push Service\n(Expo / Firebase)"]
+    googleCalendar["📆 Google Calendar API"]
 
-    %% Fluxos principais
-    webUser -->|HTTP/HTTPS| webApp
-    adminUser -->|HTTP/HTTPS| webApp
+    %% ── Fluxos – Atores humanos ──────────────────────────────────────
+    webUser     -->|HTTP/HTTPS| webApp
+    adminUser   -->|HTTP/HTTPS| webApp
+    mobileApp   -->|"REST /api/* (JWT mobile)"| apiLayer
 
-    webApp -->|"fetch /api/*"| apiLayer
-    mobileApp -->|"REST /api/* (token mobile)"| apiLayer
+    webApp      -->|"fetch /api/*"| apiLayer
 
+    %% ── Fluxos – API → Domínio ───────────────────────────────────────
     apiLayer --> authDomain
     apiLayer --> reservationDomain
     apiLayer --> incidentDomain
     apiLayer --> notificationDomain
+    apiLayer --> calendarDomain
 
-    authDomain --> database
-    reservationDomain --> database
-    incidentDomain --> database
+    %% ── Fluxos – Domínio → Persistência ──────────────────────────────
+    authDomain         --> database
+    reservationDomain  --> database
+    incidentDomain     --> database
     notificationDomain --> database
+    calendarDomain     --> database
 
-    notificationDomain --> pushService
-    pushService --> mobileApp
+    %% ── Fluxos – Sistema (automático) ────────────────────────────────
+    sistema -->|"dispara ao criar/\naprovar/cancelar reserva\nou criar/atualizar incidente"| notificationDomain
+    sistema -->|"dispara ao criar/\naprovar/cancelar reserva"| calendarDomain
+
+    %% ── Fluxos – Serviços externos ───────────────────────────────────
+    notificationDomain -->|"token push"| pushService
+    pushService        -->|"push notification"| mobileApp
+    calendarDomain     -->|"OAuth2 + REST"| googleCalendar
+
+    %% ── Estilos ──────────────────────────────────────────────────────
+    classDef actor     fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+    classDef adminActor fill:#fef3c7,stroke:#d97706,stroke-width:2px
+    classDef sysActor  fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+    classDef layer     fill:#f0fdf4,stroke:#15803d,stroke-width:1px
+    classDef external  fill:#fef2f2,stroke:#dc2626,stroke-width:1px,stroke-dasharray:4 4
+
+    class webUser actor
+    class adminUser adminActor
+    class mobileApp actor
+    class sistema sysActor
+    class webApp,apiLayer,authDomain,reservationDomain,incidentDomain,notificationDomain,calendarDomain,database layer
+    class pushService,googleCalendar external
 ```
 
 ## Camadas e Módulos
@@ -105,6 +134,11 @@ Principais módulos:
   - Criação de notificações de negócio para eventos de reserva e incidente.
   - Integração com push notification (via `PushToken`).
   - Contadores e filtros de notificações lidas/não lidas.
+- **Integração com Google Calendar** (`lib/googleCalendar.ts`):
+  - Sincronização automática de reservas como eventos no Google Calendar do usuário.
+  - Criação/atualização de evento ao criar ou aprovar reserva; exclusão ao cancelar/rejeitar.
+  - Renovação automática do OAuth2 `access_token` usando o `refresh_token` armazenado no modelo `Account`.
+  - Armazena o ID do evento externo em `Reservation.googleCalendarEventId`.
 - **Incidentes**:
   - Criação, atribuição e atualização de status.
   - Registro de histórico em `IncidentStatusHistory`.
@@ -171,3 +205,13 @@ Principais módulos:
    - Usa rotas como `/api/notifications/count` e `/api/notifications/mark-all-read`.
 4. App mobile:
    - Recebe notificações push e consome as mesmas APIs para sincronizar estado.
+
+### Fluxo de Sincronização com Google Calendar
+
+1. Ao criar, aprovar, rejeitar ou cancelar uma reserva, o backend aciona `syncReservationToGoogleCalendar(reservationId)`.
+2. `GoogleCalendarService`:
+   - Recupera o `access_token` OAuth2 do usuário (modelo `Account`); renova via `refresh_token` se expirado.
+   - Se a reserva admite evento (status `PENDING`, `APPROVED`, `ACTIVE`, `COMPLETED`): cria ou atualiza o evento via Google Calendar API (`PATCH`/`POST`).
+   - Se a reserva foi rejeitada ou cancelada: remove o evento via `DELETE` e limpa `googleCalendarEventId`.
+3. O ID do evento criado/atualizado é persistido em `Reservation.googleCalendarEventId`.
+4. Ao fazer login (ou conceder permissão de calendário pela primeira vez), `syncUpcomingReservationsForUser` sincroniza todas as reservas futuras do usuário em paralelo.
