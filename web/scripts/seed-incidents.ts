@@ -3,7 +3,7 @@ import { IncidentCategory, PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🎫 Criando incidentes de teste...");
+  console.log("[seed-incidents] Criando incidentes de teste...");
 
   try {
     // Primeiro, vamos verificar se temos usuários e salas para relacionar
@@ -13,7 +13,7 @@ async function main() {
 
     if (users.length === 0) {
       console.log(
-        "❌ Nenhum usuário encontrado. Execute o seed de usuários primeiro."
+        "[seed-incidents] Nenhum usuário encontrado. Execute o seed de usuários primeiro."
       );
       return;
     }
@@ -161,11 +161,15 @@ async function main() {
         });
       }
 
-      console.log(`✅ Incidente criado: ${incident.title}`);
+      console.log(`[seed-incidents] Incidente criado: ${incident.title}`);
     }
 
-    console.log("🎉 Todos os incidentes de teste foram criados com sucesso!");
-    console.log(`📊 Total de incidentes criados: ${incidentsData.length}`);
+    console.log(
+      "[seed-incidents] Todos os incidentes de teste foram criados com sucesso!"
+    );
+    console.log(
+      `[seed-incidents] Total de incidentes criados: ${incidentsData.length}`
+    );
 
     // Mostrar estatísticas
     const stats = await prisma.incident.groupBy({
@@ -173,19 +177,19 @@ async function main() {
       _count: { _all: true },
     });
 
-    console.log("\n📈 Estatísticas dos incidentes criados:");
+    console.log("\n[seed-incidents] Estatísticas dos incidentes criados:");
     stats.forEach(stat => {
       console.log(`   ${stat.status}: ${stat._count._all} incidentes`);
     });
   } catch (error) {
-    console.error("❌ Erro ao criar incidentes de teste:", error);
+    console.error("[seed-incidents] Erro ao criar incidentes de teste:", error);
     throw error;
   }
 }
 
 main()
   .catch(e => {
-    console.error("❌ Erro fatal:", e);
+    console.error("[seed-incidents] Erro fatal:", e);
     process.exit(1);
   })
   .finally(async () => {

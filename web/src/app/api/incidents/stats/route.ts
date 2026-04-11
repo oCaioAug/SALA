@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("🎫 Buscando estatísticas de incidentes");
+    console.log("Buscando estatísticas de incidentes");
 
     // Estatísticas básicas
     const [
@@ -229,11 +229,11 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    console.log("✅ Estatísticas de incidentes calculadas");
+    console.log("Estatísticas de incidentes calculadas");
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error("❌ Erro ao buscar estatísticas de incidentes:", error);
+    console.error("Erro ao buscar estatísticas de incidentes:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

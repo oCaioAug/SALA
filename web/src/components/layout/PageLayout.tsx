@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import { useTranslations } from "next-intl";
+import React, { useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Drawer } from "@/components/ui/Drawer";
 
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -30,27 +32,54 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   showSidebar = true,
   showHeader = true,
 }) => {
+  const tHeader = useTranslations("Header");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const handleNavigate = (page: string) => {
+    onNavigate(page);
+    setMobileNavOpen(false);
+  };
+
   return (
     <ProtectedRoute>
-      <div className="page-container flex">
+      <div className="page-container flex min-h-screen">
         {showSidebar && (
-          <Sidebar
-            currentPage={currentPage}
-            onNavigate={onNavigate}
-            isNavigating={isNavigating}
-          />
+          <>
+            <Sidebar
+              variant="desktop"
+              currentPage={currentPage}
+              onNavigate={onNavigate}
+              isNavigating={isNavigating}
+            />
+            <Drawer
+              side="left"
+              isOpen={mobileNavOpen}
+              onClose={() => setMobileNavOpen(false)}
+              title={tHeader("menuTitle")}
+              size="md"
+            >
+              <Sidebar
+                variant="mobile"
+                currentPage={currentPage}
+                onNavigate={handleNavigate}
+                isNavigating={isNavigating}
+              />
+            </Drawer>
+          </>
         )}
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           {showHeader && (
             <Header
               onNotificationClick={onNotificationClick || (() => {})}
               onNotificationItemClick={onNotificationItemClick}
               notificationUpdateTrigger={notificationUpdateTrigger}
+              showMobileNavTrigger={showSidebar}
+              onMobileNavOpen={() => setMobileNavOpen(true)}
             />
           )}
 
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-4 sm:p-6">{children}</main>
         </div>
       </div>
     </ProtectedRoute>

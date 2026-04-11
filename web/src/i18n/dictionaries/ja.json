@@ -64,6 +64,118 @@
       "cancel": "キャンセル"
     }
   },
+  "Pagination": {
+    "prev": "前へ",
+    "next": "次へ",
+    "perPage": "表示件数",
+    "pageOf": "{current} / {total} ページ",
+    "empty": "結果なし",
+    "showing": "{total} 件中 {start}–{end}"
+  },
+  "SalasPage": {
+    "title": "会議室",
+    "subtitle": "会議室の一覧・フィルター・管理"
+  },
+  "DashboardHome": {
+    "title": "ダッシュボード",
+    "subtitle": "システム概要とショートカット",
+    "shortcutSalasTitle": "会議室",
+    "shortcutSalasDesc": "会議室・備品の一覧と作成",
+    "shortcutAgendamentosTitle": "予約",
+    "shortcutAgendamentosDesc": "カレンダーと新規予約",
+    "shortcutIncidentesTitle": "インシデント",
+    "shortcutIncidentesDesc": "報告と追跡",
+    "open": "開く",
+    "incidentsAndRequests": {
+      "sectionTitle": "インシデントと申請",
+      "sectionDescAdmin": "インシデントと予約承認キューの概要です。",
+      "sectionDescUser": "あなたのインシデントと承認待ちの予約申請です。",
+      "incidentsTitle": "インシデント",
+      "incidentsDesc": "アクセス範囲内のステータス別件数です。",
+      "emptyIncidents": "この範囲にインシデントはありません。",
+      "openCountLabel": "未完了",
+      "totalLabel": "合計",
+      "openIncidentes": "インシデントを開く",
+      "solicitationsTitle": "申請",
+      "solicitationsDesc": "承認待ちの予約です。",
+      "pendingLabel": "承認待ち",
+      "pendingZero": "承認待ちの申請はありません。",
+      "openSolicitacoes": "申請一覧を開く",
+      "incidentStatus": {
+        "REPORTED": "報告済み",
+        "IN_ANALYSIS": "分析中",
+        "IN_PROGRESS": "対応中",
+        "RESOLVED": "解決済み",
+        "CANCELLED": "キャンセル"
+      }
+    },
+    "grid": {
+      "editDashboard": "ダッシュボードを編集",
+      "saveDashboard": "レイアウトを保存",
+      "cancelEdit": "キャンセル",
+      "saving": "保存中…",
+      "editModeHint": "グリップ付きのバーからドラッグ・リサイズできます。保存で反映されます。",
+      "saveSuccess": "ダッシュボードのレイアウトを保存しました。",
+      "saveError": "レイアウトを保存できませんでした。もう一度お試しください。",
+      "restoreDefault": "初期レイアウトに戻す",
+      "restoreConfirm": "ダッシュボードを初期レイアウトに戻しますか？現在のカスタマイズは上書きされ保存されます。",
+      "restoreSuccess": "初期レイアウトに戻しました。",
+      "restoreError": "初期レイアウトに戻せませんでした。もう一度お試しください。",
+      "addWidgets": "ウィジェットを追加",
+      "widgetDrawerTitle": "ダッシュボードのウィジェット",
+      "paletteHint": "パネル外へドラッグすると閉じ、グリッドへドロップできます。「追加」で非表示を末尾に戻せます。",
+      "paletteHiddenBadge": "非表示 — ドラッグまたは「追加」",
+      "paletteOnBoardBadge": "表示中 — ドラッグで移動",
+      "paletteAddButton": "追加",
+      "removeWidget": "ダッシュボードからウィジェットを外す",
+      "widgetStatTotal": "会議室: 合計",
+      "widgetStatAvailable": "会議室: 空室",
+      "widgetStatInUse": "会議室: 使用中",
+      "widgetStatReserved": "会議室: 予約済み",
+      "widgetChartRoomStatus": "グラフ: 部屋の状態別",
+      "widgetChartWeekly": "グラフ: 週ごとの予約",
+      "widgetChartReservationStatus": "グラフ: ステータス別の予約",
+      "widgetChartTopRooms": "グラフ: 予約が多い部屋",
+      "widgetIncidents": "インシデント",
+      "widgetSolicitations": "申請",
+      "widgetShortcutSalas": "ショートカット: 会議室",
+      "widgetShortcutAgendamentos": "ショートカット: 予約",
+      "widgetShortcutIncidentes": "ショートカット: インシデント"
+    },
+    "charts": {
+      "sectionTitle": "指標",
+      "sectionDescAdmin": "直近数週間とシステム全体の予約状況の概要です。",
+      "sectionDescUser": "直近数週間のあなたの予約の概要です。",
+      "roomStatusTitle": "部屋の状態別",
+      "roomStatusDesc": "公開されている部屋ステータスの内訳です。",
+      "weeklyTitle": "週ごとの予約",
+      "weeklyDesc": "各週の予約開始件数（直近8週間）。",
+      "weeklySeries": "予約",
+      "emptyWeekly": "この期間に予約はまだありません。",
+      "reservationStatusTitle": "ステータス別の予約",
+      "reservationStatusDesc": "表示週と同じ期間の件数です。",
+      "emptyStatus": "この期間にステータスデータがありません。",
+      "topRoomsTitleAdmin": "予約が多い部屋",
+      "topRoomsTitleUser": "よく予約する部屋",
+      "topRoomsDescAdmin": "期間内の予約数トップ5の部屋です。",
+      "topRoomsDescUser": "期間内にあなたが最も使った部屋です。",
+      "topRoomsSeries": "予約",
+      "emptyTopRooms": "このランキング用の期間内予約がありません。",
+      "roomStatus": {
+        "livre": "空室",
+        "emUso": "使用中",
+        "reservado": "予約済み"
+      },
+      "reservationStatus": {
+        "PENDING": "保留",
+        "APPROVED": "承認済み",
+        "REJECTED": "却下",
+        "CANCELLED": "キャンセル",
+        "ACTIVE": "アクティブ",
+        "COMPLETED": "完了"
+      }
+    }
+  },
   "Common": {
     "systemName": "S.A.L.A",
     "systemDescription": "管理システム",
@@ -87,6 +199,10 @@
       "dashboard": {
         "label": "概要",
         "description": "メインダッシュボード"
+      },
+      "salas": {
+        "label": "会議室",
+        "description": "会議室の一覧と管理"
       },
       "solicitacoes": {
         "label": "申請",
@@ -131,7 +247,14 @@
       "settings": "設定",
       "logout": "ログアウト",
       "ariaLabel": "テーマを切り替え"
-    }
+    },
+    "guest": {
+      "greeting": "こんにちは、ゲスト",
+      "loginPrompt": "ログインしてください",
+      "login": "ログイン"
+    },
+    "openMenu": "メニューを開く",
+    "menuTitle": "メニュー"
   },
   "LanguageSwitcher": {
     "changeLanguage": "言語を変更",
@@ -258,7 +381,7 @@
     "actions": {
       "refresh": "リストを更新",
       "debug": "デバッグ",
-      "testPush": "プッシュ通知テスト 🔔"
+      "testPush": "プッシュ通知テスト"
     },
     "card": {
       "pending": "保留中",
@@ -267,8 +390,8 @@
       "end": "終了",
       "purpose": "目的",
       "notInformed": "未入力",
-      "approve": "✅ 承認",
-      "reject": "❌ 拒否",
+      "approve": "承認",
+      "reject": "拒否",
       "rejectReason": "拒否理由（任意）："
     },
     "table": {
@@ -498,7 +621,15 @@
     },
     "recurring": "繰り返し",
     "recurringInfo": "これは繰り返し予約です。承認/拒否はすべてのインスタンスに影響します。",
-    "rejectReasonRecurring": "拒否理由（すべてのインスタンスに影響します）："
+    "rejectModal": {
+      "title": "リクエストを拒否",
+      "description": "必要に応じて拒否理由を入力してください。",
+      "descriptionRecurring": "繰り返しリクエストです。拒否はすべてのインスタンスに適用されます。理由は任意です。",
+      "reasonLabel": "拒否理由",
+      "placeholder": "拒否の理由を入力...",
+      "cancel": "キャンセル",
+      "confirm": "拒否を確定"
+    }
   },
   "Notifications": {
     "title": "通知",
@@ -526,9 +657,9 @@
       "markRead": "既読にする",
       "markUnread": "未読にする",
       "delete": "削除",
-      "reload": "🔄 再読み込み",
-      "debug": "🔍 デバッグ",
-      "test": "🧪 通知テスト"
+      "reload": "再読み込み",
+      "debug": "デバッグ",
+      "test": "通知テスト"
     },
     "stats": {
       "total": "合計",
@@ -550,9 +681,9 @@
       "markReadSuccess": "通知を既読にしました",
       "deleteSuccess": "通知を削除しました",
       "error": "通知処理エラー",
-      "debugSuccess": "📊 データベースで {count} 件の通知が見つかりました（コンソールを参照）",
+      "debugSuccess": "データベースで {count} 件の通知が見つかりました（コンソールを参照）",
       "debugError": "デバッグ取得エラー",
-      "testSuccess": "✅ {message}",
+      "testSuccess": "{message}",
       "testError": "テスト通知作成エラー"
     }
   },
@@ -680,7 +811,7 @@
       "update": "更新",
       "cancel": "キャンセル",
       "category": "カテゴリ",
-      "warning": "⚠️ 場所は必須です",
+      "warning": "場所は必須です",
       "warningDescription": "少なくとも1つの部屋または特定の備品を選択する必要があります。備品を選択した場合、部屋は自動的に決定されます。",
       "tip": "ヒント",
       "tipDescription": "解決を早めるために、説明は具体的に記述し、時間、エラーメッセージ、問題の再現手順を含めてください。"
@@ -787,8 +918,8 @@
       "specifications": "仕様（カンマ区切り）",
       "specificationsPlaceholder": "例：Windows 11, 16GB RAM, Core i7",
       "quantity": "数量",
-      "icon": "アイコン（絵文字）",
-      "iconPlaceholder": "💻",
+      "icon": "アイコン",
+      "iconPlaceholder": "",
       "iconHint": "任意 - 画像がない場合の代替として使用",
       "saving": "保存中...",
       "updateItem": "備品を更新",
@@ -843,7 +974,7 @@
       "status": "ステータス",
       "actions": "アクション"
     },
-    "testSession": "🧪 セッションテスト",
+    "testSession": "セッションテスト",
     "users": "ユーザー",
     "tryAgain": "再試行",
     "noUsersFound": "ユーザーが見つかりません",
@@ -908,8 +1039,8 @@
   "NotificationService": {
     "titles": {
       "reservationCreated": "新規予約リクエスト",
-      "reservationApproved": "予約承認 ✅",
-      "reservationRejected": "予約拒否 ❌",
+      "reservationApproved": "予約承認",
+      "reservationRejected": "予約拒否",
       "reservationCancelled": "予約キャンセル"
     },
     "messages": {

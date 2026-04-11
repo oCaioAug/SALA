@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import { HiBeaker } from "react-icons/hi2";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Header } from "@/components/layout/Header";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Pagination } from "@/components/ui/Pagination";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { getIntlLocale } from "@/lib/utils";
@@ -47,6 +49,8 @@ const UsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [listPage, setListPage] = useState(1);
+  const [listPageSize, setListPageSize] = useState(12);
 
   const { showSuccess, showError } = useApp();
   const t = useTranslations("UsersPage");
@@ -62,7 +66,7 @@ const UsersPage: React.FC = () => {
 
   // Debug da sessão
   useEffect(() => {
-    console.log("🔍 Sessão do usuário:", {
+    console.log("Sessão do usuário:", {
       hasSession: !!session,
       userEmail: session?.user?.email,
       userRole: session?.user?.role,
@@ -113,13 +117,25 @@ const UsersPage: React.FC = () => {
     return matchesSearch && matchesRole;
   });
 
+  useEffect(() => {
+    setListPage(1);
+  }, [searchTerm, roleFilter]);
+
+  const totalUsers = filteredUsers.length;
+  const totalUserPages = Math.max(1, Math.ceil(totalUsers / listPageSize));
+  const safeUserPage = Math.min(listPage, totalUserPages);
+  const paginatedUsers = filteredUsers.slice(
+    (safeUserPage - 1) * listPageSize,
+    safeUserPage * listPageSize
+  );
+
   // Alterar role do usuário
   const handleToggleRole = async (userId: string, currentRole: string) => {
     try {
-      console.log("🔄 Alterando role do usuário:", { userId, currentRole });
+      console.log("Alterando role do usuário:", { userId, currentRole });
       setActionLoading(userId);
       const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
-      console.log("📝 Novo role:", newRole);
+      console.log("Novo role:", newRole);
 
       const response = await fetch(`/api/users/${userId}/role`, {
         method: "PATCH",
@@ -129,16 +145,16 @@ const UsersPage: React.FC = () => {
         body: JSON.stringify({ role: newRole }),
       });
 
-      console.log("📡 Resposta da API:", response.status);
+      console.log("Resposta da API:", response.status);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("❌ Erro na API:", errorData);
+        console.error("Erro na API:", errorData);
         throw new Error(errorData.error || t("errorUserPermissionChange"));
       }
 
       const result = await response.json();
-      console.log("✅ Resultado da API:", result);
+      console.log("Resultado da API:", result);
 
       // Atualizar a lista local
       setUsers(prev =>
@@ -155,7 +171,7 @@ const UsersPage: React.FC = () => {
         })
       );
     } catch (error) {
-      console.error("❌ Erro ao alterar role:", error);
+      console.error("Erro ao alterar role:", error);
       showError(
         error instanceof Error ? error.message : t("errorUserPermissionChange")
       );
@@ -169,7 +185,7 @@ const UsersPage: React.FC = () => {
     try {
       const response = await fetch("/api/test-session");
       const data = await response.json();
-      console.log("🧪 Teste da sessão:", data);
+      console.log("Teste da sessão:", data);
       if (response.ok) {
         showSuccess(t("sessionValid"));
       } else {
@@ -215,6 +231,7 @@ const UsersPage: React.FC = () => {
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
         <Sidebar
+          variant="desktop"
           currentPage={currentPage}
           onNavigate={navigate}
           isNavigating={isNavigating}
@@ -243,8 +260,9 @@ const UsersPage: React.FC = () => {
                   <Button
                     variant="outline"
                     onClick={testSession}
-                    className="px-3 py-2 text-sm"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm"
                   >
+                    <HiBeaker className="h-4 w-4 shrink-0" aria-hidden />
                     {t("testSession")}
                   </Button>
                   <div className="text-right">
@@ -360,7 +378,7 @@ const UsersPage: React.FC = () => {
               />
             ) : (
               <div className="space-y-4">
-                {filteredUsers.map(user => (
+                {paginatedUsers.map(user => (
                   <Card
                     key={user.id}
                     variant="elevated"
@@ -492,6 +510,16 @@ const UsersPage: React.FC = () => {
                     </CardContent>
                   </Card>
                 ))}
+                <Pagination
+                  page={safeUserPage}
+                  pageSize={listPageSize}
+                  total={totalUsers}
+                  onPageChange={setListPage}
+                  onPageSizeChange={size => {
+                    setListPageSize(size);
+                    setListPage(1);
+                  }}
+                />
               </div>
             )}
           </main>

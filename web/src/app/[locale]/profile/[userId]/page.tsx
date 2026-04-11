@@ -417,7 +417,7 @@ const UserProfilePage: React.FC = () => {
                     {/* Campos de edição */}
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-300 mb-2 block">
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                           {t("fullName")}
                         </label>
                         {isEditing ? (
@@ -441,7 +441,7 @@ const UserProfilePage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-300 mb-2 block">
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                           {t("email")}
                         </label>
                         {isEditing ? (
@@ -466,7 +466,7 @@ const UserProfilePage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-300 mb-2 block">
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                           {t("role")}
                         </label>
                         <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">

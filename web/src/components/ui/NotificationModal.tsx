@@ -129,7 +129,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   const markAllAsRead = async () => {
     try {
-      console.log("🔄 Marcando todas como lidas para userId:", userId);
+      console.log("Marcando todas como lidas para userId:", userId);
 
       const response = await fetch("/api/notifications/mark-all-read", {
         method: "PUT",
@@ -139,30 +139,30 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         body: JSON.stringify({ userId }),
       });
 
-      console.log("📡 Resposta da API:", response.status, response.ok);
+      console.log("Resposta da API:", response.status, response.ok);
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("❌ Erro da API:", errorData);
+        console.error("Erro da API:", errorData);
         throw new Error(t("errors.markAllAsRead"));
       }
 
       const result = await response.json();
-      console.log("✅ Resultado da API:", result);
+      console.log("Resultado da API:", result);
 
       // Atualizar estado local
       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
 
-      console.log("🔄 Chamando onNotificationChange...");
+      console.log("Chamando onNotificationChange...");
       // Notificar mudança
       if (onNotificationChange) {
         onNotificationChange();
-        console.log("✅ onNotificationChange chamado");
+        console.log("onNotificationChange chamado");
       } else {
-        console.log("❌ onNotificationChange não definido");
+        console.log("onNotificationChange não definido");
       }
     } catch (err) {
-      console.error("❌ Erro ao marcar todas como lidas:", err);
+      console.error("Erro ao marcar todas como lidas:", err);
     }
   };
 

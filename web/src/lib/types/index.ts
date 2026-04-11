@@ -36,6 +36,9 @@ export interface RoomWithItems {
   description: string | null;
   status: RoomStatus;
   capacity: number | null;
+  locationDescription: string | null;
+  outletCount: number | null;
+  climateControlled: boolean;
   createdAt: Date;
   updatedAt: Date;
   items: ItemWithImages[];

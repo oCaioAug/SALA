@@ -68,7 +68,7 @@ const LoginContent: React.FC = () => {
 
   const handleLoginWithGoogleClick = async () => {
     try {
-      console.log("🔄 Iniciando login com Google...");
+      console.log("Iniciando login com Google...");
 
       // Usar redirect: true para que o NextAuth handle o redirecionamento automaticamente
       await signIn("google", {
@@ -76,7 +76,7 @@ const LoginContent: React.FC = () => {
         redirect: true,
       });
     } catch (error) {
-      console.error("❌ Erro ao tentar fazer login:", error);
+      console.error("Erro ao tentar fazer login:", error);
       router.push("/auth/error?error=Default");
     }
   };

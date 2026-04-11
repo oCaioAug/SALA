@@ -4,15 +4,19 @@ import {
   ArrowLeft,
   Calendar as CalendarIcon,
   Edit,
+  MapPin,
   Package,
+  Plug,
   Plus,
+  Snowflake,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import { HiUsers } from "react-icons/hi2";
+import { MdInventory2 } from "react-icons/md";
 
 import { ImageUpload } from "@/components/forms/ImageUpload";
 import { RoomForm } from "@/components/forms/RoomForm";
@@ -21,23 +25,23 @@ import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/Card";
-import { Modal } from "@/components/ui/Modal";
+import { Drawer } from "@/components/ui/Drawer";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { Item, Room, RoomWithItems } from "@/lib/types";
+import { Link, useRouter } from "@/navigation";
 
 const RoomDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
   const t = useTranslations("RoomDetail");
-  const locale = params.locale as string;
   const roomId = params.id as string;
 
   // Verificar se o usuário é admin
   const isAdmin = session?.user?.role === "ADMIN";
 
-  const [currentPage, setCurrentPage] = useState("dashboard");
+  const [currentPage, setCurrentPage] = useState("salas");
   const [room, setRoom] = useState<RoomWithItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -238,20 +242,6 @@ const RoomDetailPage: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <LoadingPage message={t("loading")} />;
-  }
-
-  if (error || !room) {
-    return (
-      <ErrorPage
-        error={error || t("notFound")}
-        onRetry={() => router.push(`/${locale}/dashboard`)}
-        retryLabel={t("backToDashboard")}
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -259,10 +249,21 @@ const RoomDetailPage: React.FC = () => {
       isNavigating={isNavigating}
       onNotificationClick={() => {}}
     >
+      {loading ? (
+        <LoadingPage variant="embedded" message={t("loading")} />
+      ) : error || !room ? (
+        <ErrorPage
+          variant="embedded"
+          error={error || t("notFound")}
+          onRetry={() => router.push("/dashboard")}
+          retryLabel={t("backToDashboard")}
+        />
+      ) : (
+      <>
       {/* Header da sala */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-6">
-          <Link href={`/${locale}/dashboard`}>
+          <Link href="/salas">
             <Button variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               {t("back")}
@@ -280,7 +281,10 @@ const RoomDetailPage: React.FC = () => {
               {room.capacity && (
                 <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                   <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
-                    <span className="text-xs">👥</span>
+                    <HiUsers
+                      className="h-3 w-3 text-slate-600 dark:text-slate-400"
+                      aria-hidden
+                    />
                   </div>
                   <span>{t("capacity", { count: room.capacity })}</span>
                 </div>
@@ -291,7 +295,7 @@ const RoomDetailPage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() => router.push(`/${locale}/salas/${roomId}/agendamentos`)}
+              onClick={() => router.push(`/salas/${roomId}/agendamentos`)}
               className="gap-2"
             >
               <CalendarIcon className="w-4 h-4" />
@@ -329,6 +333,42 @@ const RoomDetailPage: React.FC = () => {
           </p>
         </Card>
       )}
+
+      <Card className="mb-6">
+        <CardTitle className="mb-4 text-lg">{t("infoTitle")}</CardTitle>
+        <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+          <div className="flex gap-3">
+            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white">
+                {t("location")}
+              </p>
+              <p>{room.locationDescription?.trim() || "—"}</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Plug className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white">
+                {t("outlets")}
+              </p>
+              <p>
+                {room.outletCount != null && room.outletCount !== undefined
+                  ? room.outletCount
+                  : "—"}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Snowflake className="mt-0.5 h-5 w-5 shrink-0 text-cyan-500" />
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white">
+                {room.climateControlled ? t("climateYes") : t("climateNo")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Itens da sala */}
       <Card variant="elevated">
@@ -399,7 +439,11 @@ const RoomDetailPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                      <span className="text-4xl">{item.icon || "📦"}</span>
+                      {item.icon ? (
+                        <span className="text-4xl">{item.icon}</span>
+                      ) : (
+                        <MdInventory2 className="h-16 w-16 text-slate-500 dark:text-slate-400" />
+                      )}
                     </div>
                   )}
 
@@ -474,7 +518,7 @@ const RoomDetailPage: React.FC = () => {
       </Card>
 
       {/* Modal para editar sala */}
-      <Modal
+      <Drawer
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title={t("modals.editRoom")}
@@ -484,10 +528,9 @@ const RoomDetailPage: React.FC = () => {
           onSubmit={handleUpdateRoom}
           onCancel={() => setIsEditModalOpen(false)}
         />
-      </Modal>
+      </Drawer>
 
-      {/* Modal para adicionar item */}
-      <Modal
+      <Drawer
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         title={t("modals.addItem")}
@@ -496,10 +539,9 @@ const RoomDetailPage: React.FC = () => {
           onSubmit={handleAddItem}
           onCancel={() => setIsAddItemModalOpen(false)}
         />
-      </Modal>
+      </Drawer>
 
-      {/* Modal para editar item */}
-      <Modal
+      <Drawer
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
         title={t("modals.editItem")}
@@ -509,7 +551,9 @@ const RoomDetailPage: React.FC = () => {
           onSubmit={handleUpdateItem}
           onCancel={() => setEditingItem(null)}
         />
-      </Modal>
+      </Drawer>
+      </>
+      )}
     </PageLayout>
   );
 };

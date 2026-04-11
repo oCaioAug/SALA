@@ -4,6 +4,7 @@ import {
   Bell,
   ChevronDown,
   LogOut,
+  Menu,
   Moon,
   Search,
   Settings,
@@ -25,12 +26,16 @@ interface HeaderProps {
   onNotificationClick?: () => void;
   onNotificationItemClick?: (notification: any) => void;
   notificationUpdateTrigger?: number;
+  showMobileNavTrigger?: boolean;
+  onMobileNavOpen?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   onNotificationClick,
   onNotificationItemClick,
   notificationUpdateTrigger,
+  showMobileNavTrigger = false,
+  onMobileNavOpen,
 }) => {
   const t = useTranslations("Header");
   const tCommon = useTranslations("Common");
@@ -48,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({
     }
 
     console.log(
-      "🔄 Header: Buscando contador de notificações para:",
+      "Header: Buscando contador de notificações para:",
       session.user.email
     );
 
@@ -64,26 +69,26 @@ const Header: React.FC<HeaderProps> = ({
       clearTimeout(timeoutId);
 
       console.log(
-        "📡 Header: Resposta do contador:",
+        "Header: Resposta do contador:",
         response.status,
         response.ok
       );
 
       if (response.ok) {
         const data = await response.json();
-        console.log("✅ Header: Contador atualizado:", data.count);
+        console.log("Header: Contador atualizado:", data.count);
         setNotificationCount(data.count);
       } else {
-        console.error("❌ Header: Erro ao buscar contador:", response.status);
+        console.error("Header: Erro ao buscar contador:", response.status);
         // Em caso de erro, manter o valor anterior
       }
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          console.warn("⏱️ Header: Timeout ao buscar contador de notificações");
+          console.warn(" Header: Timeout ao buscar contador de notificações");
         } else {
           console.error(
-            "❌ Header: Erro ao buscar contador de notificações:",
+            "Header: Erro ao buscar contador de notificações:",
             error
           );
         }
@@ -125,58 +130,63 @@ const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  if (!session?.user) return null;
-
   return (
-    <header className="bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border-b border-slate-300/50 dark:border-slate-600/50 px-6 py-4 shadow-lg backdrop-blur-sm relative z-50 transition-colors duration-300">
-      <div className="flex items-center justify-between">
-        {/* Breadcrumb e título */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-            <span className="text-sm">{t("breadcrumb.dashboard")}</span>
-            <ChevronDown className="w-4 h-4 rotate-90" />
-            <span className="text-sm font-medium text-slate-900 dark:text-white">
+    <header className="relative z-50 border-b border-slate-300/50 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 px-3 py-3 shadow-lg backdrop-blur-sm transition-colors duration-300 dark:border-slate-600/50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 sm:px-6 sm:py-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+          {showMobileNavTrigger && onMobileNavOpen && (
+            <button
+              type="button"
+              onClick={onMobileNavOpen}
+              className="rounded-xl p-2.5 text-slate-600 hover:bg-slate-200/80 dark:text-slate-400 dark:hover:bg-slate-600/50 md:hidden"
+              aria-label={t("openMenu")}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
+          <div className="flex min-w-0 items-center gap-2 text-slate-600 dark:text-slate-300">
+            <span className="truncate text-xs sm:text-sm">
+              {t("breadcrumb.dashboard")}
+            </span>
+            <ChevronDown className="h-4 w-4 shrink-0 rotate-90" />
+            <span className="truncate text-xs font-medium text-slate-900 sm:text-sm dark:text-white">
               {t("breadcrumb.overview")}
             </span>
           </div>
         </div>
 
-        {/* Barra de busca centralizada */}
-        <div className="flex-1 max-w-md mx-8">
+        <div className="mx-0 w-full min-w-0 max-w-none sm:mx-4 sm:max-w-md md:flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder={t("search.placeholder")}
-              className="w-full pl-10 pr-4 py-2 bg-white/80 dark:bg-slate-600/50 border border-slate-300/50 dark:border-slate-500/50 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300"
+              className="w-full rounded-xl border border-slate-300/50 bg-white/80 py-2 pl-10 pr-4 text-sm text-slate-900 transition-all duration-300 placeholder:text-slate-500 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:border-slate-500/50 dark:bg-slate-600/50 dark:text-white dark:placeholder:text-slate-400"
             />
           </div>
         </div>
 
-        {/* Ações e perfil */}
-        <div className="flex items-center gap-3">
-          {/* Botão de notificações */}
-          <div className="relative notification-dropdown">
-            <button
-              onClick={handleNotificationClick}
-              className="relative p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-300 group"
-            >
-              <Bell className="w-5 h-5" />
-              {notificationCount > 0 && (
-                <>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full opacity-75 animate-ping"></div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">
-                      {notificationCount > 9 ? "9+" : notificationCount}
-                    </span>
-                  </div>
-                </>
-              )}
-            </button>
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+          {session?.user && (
+            <div className="relative notification-dropdown">
+              <button
+                onClick={handleNotificationClick}
+                className="relative p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-300 group"
+              >
+                <Bell className="w-5 h-5" />
+                {notificationCount > 0 && (
+                  <>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full opacity-75 animate-ping"></div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-xs text-white font-bold">
+                        {notificationCount > 9 ? "9+" : notificationCount}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </button>
 
-            {/* Modal de Notificações */}
-            {session?.user && (
               <NotificationModal
                 isOpen={isNotificationModalOpen}
                 onClose={() => setIsNotificationModalOpen(false)}
@@ -184,8 +194,8 @@ const Header: React.FC<HeaderProps> = ({
                 onNotificationChange={fetchNotificationCount}
                 onNotificationClick={onNotificationItemClick}
               />
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Seletor de idioma */}
           <LanguageSwitcher />
@@ -203,111 +213,128 @@ const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Menu do usuário */}
-          <div className="relative">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-600/50 transition-all duration-300 group"
-            >
-              <div className="relative">
-                {session.user.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt={session.user.name || "Avatar"}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-xl object-cover shadow-lg group-hover:shadow-xl transition-all duration-300"
-                  />
-                ) : (
-                  <div
-                    className={`w-10 h-10 bg-gradient-to-br ${getUserGradient(session.user.name)} rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
-                  >
-                    <span className="text-white font-semibold text-sm">
-                      {getUserInitials(session.user.name)}
-                    </span>
-                  </div>
-                )}
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-slate-800"></div>
-              </div>
+          {session?.user ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-600/50 transition-all duration-300 group"
+              >
+                <div className="relative">
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name || "Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-xl object-cover shadow-lg group-hover:shadow-xl transition-all duration-300"
+                    />
+                  ) : (
+                    <div
+                      className={`w-10 h-10 bg-gradient-to-br ${getUserGradient(session.user.name)} rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                    >
+                      <span className="text-white font-semibold text-sm">
+                        {getUserInitials(session.user.name)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-slate-800"></div>
+                </div>
 
-              <div className="text-left">
-                <p className="text-slate-900 dark:text-white font-medium text-sm">
-                  {session.user.name || tCommon("user")}
-                </p>
-                <p className="text-slate-600 dark:text-slate-400 text-xs capitalize">
-                  {session.user.role || tCommon("user")}
-                </p>
-              </div>
+                <div className="text-left">
+                  <p className="text-slate-900 dark:text-white font-medium text-sm">
+                    {session.user.name || tCommon("user")}
+                  </p>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs capitalize">
+                    {session.user.role || tCommon("user")}
+                  </p>
+                </div>
 
-              <ChevronDown
-                className={`w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform duration-300 ${
-                  showUserMenu ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-600 dark:text-slate-400 transition-transform duration-300 ${
+                    showUserMenu ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            {/* Dropdown do usuário */}
-            {showUserMenu && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden transition-colors duration-300">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-600/50">
-                  <div className="flex items-center gap-3">
-                    {session.user.image ? (
-                      <Image
-                        src={session.user.image}
-                        alt={session.user.name || "Avatar"}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-xl object-cover"
-                      />
-                    ) : (
-                      <div
-                        className={`w-12 h-12 bg-gradient-to-br ${getUserGradient(session.user.name)} rounded-xl flex items-center justify-center`}
-                      >
-                        <span className="text-white font-semibold">
-                          {getUserInitials(session.user.name)}
-                        </span>
+              {showUserMenu && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden transition-colors duration-300">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-600/50">
+                    <div className="flex items-center gap-3">
+                      {session.user.image ? (
+                        <Image
+                          src={session.user.image}
+                          alt={session.user.name || "Avatar"}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-xl object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`w-12 h-12 bg-gradient-to-br ${getUserGradient(session.user.name)} rounded-xl flex items-center justify-center`}
+                        >
+                          <span className="text-white font-semibold">
+                            {getUserInitials(session.user.name)}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-slate-900 dark:text-white font-medium">
+                          {session.user.name || tCommon("user")}
+                        </p>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm">
+                          {session.user.email || "user@sala.com"}
+                        </p>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-slate-900 dark:text-white font-medium">
-                        {session.user.name || tCommon("user")}
-                      </p>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm">
-                        {session.user.email || "user@sala.com"}
-                      </p>
                     </div>
                   </div>
-                </div>
 
-                <div className="py-2">
-                  <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors duration-200">
-                    <Link
-                      href="/profile"
-                      className="flex items-center gap-3 w-full"
+                  <div className="py-2">
+                    <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors duration-200">
+                      <Link
+                        href="/profile"
+                        className="flex items-center gap-3 w-full"
+                      >
+                        <UserIcon className="w-4 h-4" />
+                        <span>{t("userMenu.profile")}</span>
+                      </Link>
+                    </button>
+
+                    <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors duration-200">
+                      <Settings className="w-4 h-4" />
+                      <span>{t("userMenu.settings")}</span>
+                    </button>
+
+                    <div className="border-t border-slate-200 dark:border-slate-600/50 my-2"></div>
+
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors duration-200"
                     >
-                      <UserIcon className="w-4 h-4" />
-                      <span>{t("userMenu.profile")}</span>
-                    </Link>
-                  </button>
-
-                  <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors duration-200">
-                    <Settings className="w-4 h-4" />
-                    <span>{t("userMenu.settings")}</span>
-                  </button>
-
-                  <div className="border-t border-slate-200 dark:border-slate-600/50 my-2"></div>
-
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors duration-200"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>{t("userMenu.logout")}</span>
-                  </button>
+                      <LogOut className="w-4 h-4" />
+                      <span>{t("userMenu.logout")}</span>
+                    </button>
+                  </div>
                 </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="flex items-center gap-3 rounded-xl p-2 transition-all duration-300 hover:bg-slate-200/80 dark:hover:bg-slate-600/50"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-dashed border-slate-400 bg-slate-100 dark:border-slate-500 dark:bg-slate-700/80">
+                <UserIcon className="h-5 w-5 text-slate-500 dark:text-slate-400" />
               </div>
-            )}
-          </div>
+              <div className="hidden min-w-0 text-left sm:block">
+                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  {t("guest.greeting")}
+                </p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  {t("guest.loginPrompt")}
+                </p>
+              </div>
+            </Link>
+          )}
         </div>
       </div>
     </header>

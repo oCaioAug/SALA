@@ -13,7 +13,7 @@ export const ProductionErrorLogger: React.FC = () => {
 
       // Filtrar o erro React #310
       if (error?.message?.includes("Minified React error #310")) {
-        console.error("🔍 React Error #310 detectado:", {
+        console.error("React Error #310 detectado:", {
           message: error.message,
           stack: error.stack,
           filename: event.filename,
@@ -35,7 +35,7 @@ export const ProductionErrorLogger: React.FC = () => {
 
       // Filtrar erro de postMessage
       if (error?.message?.includes('can\'t access property "postMessage"')) {
-        console.warn("🔍 PostMessage error ignorado:", error.message);
+        console.warn("PostMessage error ignorado:", error.message);
         // Não fazer nada - erro conhecido de extensões do navegador
         event.preventDefault();
         return true;
@@ -44,7 +44,7 @@ export const ProductionErrorLogger: React.FC = () => {
 
     // Capturar promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error("🔍 Promise rejection:", {
+      console.error("Promise rejection:", {
         reason: event.reason,
         timestamp: new Date().toISOString(),
         url: window.location.href,

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    console.log("🔍 Verificando todos os push tokens no banco...");
+    console.log("Verificando todos os push tokens no banco...");
 
     const allTokens = await prisma.pushToken.findMany({
       include: {
@@ -18,13 +18,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    console.log(`📊 Total de tokens encontrados: ${allTokens.length}`);
+    console.log(` Total de tokens encontrados: ${allTokens.length}`);
 
     const activeTokens = allTokens.filter(token => token.isActive);
     const inactiveTokens = allTokens.filter(token => !token.isActive);
 
-    console.log(`✅ Tokens ativos: ${activeTokens.length}`);
-    console.log(`❌ Tokens inativos: ${inactiveTokens.length}`);
+    console.log(` Tokens ativos: ${activeTokens.length}`);
+    console.log(` Tokens inativos: ${inactiveTokens.length}`);
 
     return NextResponse.json({
       total: allTokens.length,
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error("❌ Erro ao verificar push tokens:", error);
+    console.error("Erro ao verificar push tokens:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }

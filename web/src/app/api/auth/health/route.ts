@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  console.log("🔍 Health check - NextAuth route accessible");
+  console.log("Health check - NextAuth route accessible");
 
   const envCheck = {
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL || "❌ Not Set",
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? "✅ Set" : "❌ Missing",
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? "✅ Set" : "❌ Missing",
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || "not_set",
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? "set" : "missing",
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? "set" : "missing",
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
-      ? "✅ Set"
-      : "❌ Missing",
+      ? "set"
+      : "missing",
     NODE_ENV: process.env.NODE_ENV,
     VERCEL_URL: process.env.VERCEL_URL,
     HARDCODED_URL:

@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
           "Para usar o login com Google, configure as credenciais OAuth no arquivo .env\n\nVeja as instruções no console do navegador."
         );
         console.log(`
-🔧 CONFIGURAÇÃO DO GOOGLE OAUTH NECESSÁRIA:
+ CONFIGURAÇÃO DO GOOGLE OAUTH NECESSÁRIA:
 
 1. Acesse: https://console.cloud.google.com
 2. Crie um projeto ou selecione um existente

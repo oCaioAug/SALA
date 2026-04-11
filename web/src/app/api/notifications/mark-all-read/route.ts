@@ -9,7 +9,7 @@ export async function PUT(request: NextRequest) {
     const { userId } = body;
 
     console.log(
-      `🔔 Marcando todas as notificações do usuário ${userId} como lidas`
+      ` Marcando todas as notificações do usuário ${userId} como lidas`
     );
 
     if (!userId) {
@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest) {
       }
 
       actualUserId = user.id;
-      console.log(`🔍 Email ${userId} convertido para ID ${actualUserId}`);
+      console.log(` Email ${userId} convertido para ID ${actualUserId}`);
     }
 
     const result = await prisma.notification.updateMany({
@@ -49,14 +49,14 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    console.log(`✅ ${result.count} notificações marcadas como lidas`);
+    console.log(` ${result.count} notificações marcadas como lidas`);
 
     return NextResponse.json({
       success: true,
       count: result.count,
     });
   } catch (error) {
-    console.error("❌ Erro ao marcar notificações como lidas:", error);
+    console.error("Erro ao marcar notificações como lidas:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

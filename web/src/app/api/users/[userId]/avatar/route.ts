@@ -86,7 +86,7 @@ export async function POST(
       },
     });
 
-    console.log("✅ Avatar atualizado via mobile para usuário:", {
+    console.log("Avatar atualizado via mobile para usuário:", {
       userId: targetUserId,
       originalPath,
       thumbnailPath,
@@ -152,7 +152,7 @@ export async function DELETE(
       },
     });
 
-    console.log("✅ Avatar removido via mobile para usuário:", targetUserId);
+    console.log("Avatar removido via mobile para usuário:", targetUserId);
 
     return NextResponse.json({
       success: true,

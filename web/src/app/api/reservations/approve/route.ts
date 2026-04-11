@@ -118,8 +118,8 @@ export async function POST(req: NextRequest) {
             userId: recurringReservation.userId,
             type: approved ? "RESERVATION_APPROVED" : "RESERVATION_REJECTED",
             title: approved
-              ? "✅ Reserva Recorrente Aprovada!"
-              : "❌ Reserva Recorrente Rejeitada",
+              ? "Reserva Recorrente Aprovada!"
+              : "Reserva Recorrente Rejeitada",
             message: approved
               ? `Suas reservas recorrentes da ${recurringReservation.room.name} foram aprovadas!`
               : `Suas reservas recorrentes da ${recurringReservation.room.name} foram rejeitadas${reason ? `. Motivo: ${reason}` : "."}`,
@@ -158,10 +158,13 @@ export async function POST(req: NextRequest) {
           );
         }
         console.log(
-          `✅ Notificação push enviada para usuário ${reservation.userId}`
+          `[approve] Notificação push enviada para usuário ${reservation.userId}`
         );
       } catch (pushError) {
-        console.error("⚠️ Erro ao enviar notificação push:", pushError);
+        console.error(
+          "[approve] Erro ao enviar notificação push:",
+          pushError
+        );
       }
 
       return NextResponse.json({
@@ -190,7 +193,7 @@ export async function POST(req: NextRequest) {
       data: {
         userId: reservation.userId,
         type: approved ? "RESERVATION_APPROVED" : "RESERVATION_REJECTED",
-        title: approved ? "✅ Reserva Aprovada!" : "❌ Reserva Rejeitada",
+        title: approved ? "Reserva Aprovada!" : "Reserva Rejeitada",
         message: approved
           ? `Sua reserva da ${reservation.room.name} foi aprovada!`
           : `Sua reserva da ${reservation.room.name} foi rejeitada${reason ? `. Motivo: ${reason}` : "."}`,
@@ -226,10 +229,13 @@ export async function POST(req: NextRequest) {
         );
       }
       console.log(
-        `✅ Notificação push enviada para usuário ${reservation.userId}`
+        `[approve] Notificação push enviada para usuário ${reservation.userId}`
       );
     } catch (pushError) {
-      console.error("⚠️ Erro ao enviar notificação push:", pushError);
+      console.error(
+        "[approve] Erro ao enviar notificação push:",
+        pushError
+      );
       // Não falhar a requisição se a notificação push falhar
     }
 

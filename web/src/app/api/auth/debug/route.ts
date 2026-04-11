@@ -27,20 +27,20 @@ export async function GET() {
 
     const config = {
       googleClientId: process.env.GOOGLE_CLIENT_ID
-        ? "✓ Configurado"
-        : "✗ Não configurado",
+        ? "configurado"
+        : "nao_configurado",
       googleClientSecret: process.env.GOOGLE_CLIENT_SECRET
-        ? "✓ Configurado"
-        : "✗ Não configurado",
+        ? "configurado"
+        : "nao_configurado",
       nextAuthSecret: process.env.NEXTAUTH_SECRET
-        ? "✓ Configurado"
-        : "✗ Não configurado",
+        ? "configurado"
+        : "nao_configurado",
       nextAuthUrl: process.env.NEXTAUTH_URL || "Não configurado",
       databaseUrl: process.env.DATABASE_URL
-        ? "✓ Configurado"
-        : "✗ Não configurado",
+        ? "configurado"
+        : "nao_configurado",
       nodeEnv: process.env.NODE_ENV,
-      currentSession: session ? "✓ Logado" : "✗ Não logado",
+      currentSession: session ? "logado" : "nao_logado",
       sessionData: session,
       redirectUris: [
         "http://localhost:3000/api/auth/callback/google",

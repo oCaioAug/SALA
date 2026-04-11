@@ -238,3 +238,23 @@
     transform: scale(1);
   }
 }
+
+/* react-grid-layout / react-resizable — alinhar handles ao tema */
+.react-grid-item > .react-resizable-handle::after {
+  border-color: rgb(148 163 184 / 0.45);
+}
+
+.dark .react-grid-item > .react-resizable-handle::after {
+  border-color: rgb(100 116 139 / 0.55);
+}
+
+.react-grid-placeholder {
+  border-radius: 0.75rem;
+  border: 1px dashed rgb(59 130 246 / 0.35);
+  background: rgb(59 130 246 / 0.08);
+}
+
+.dark .react-grid-placeholder {
+  border-color: rgb(96 165 250 / 0.4);
+  background: rgb(59 130 246 / 0.12);
+}

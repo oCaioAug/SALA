@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { RoomWithItems } from "@/lib/types";
+import { roomCreateBodySchema } from "@/lib/validation/room";
 
 // Cache simples em memória
 let roomsCache: any[] | null = null;
@@ -25,6 +25,9 @@ export async function GET() {
         description: true,
         capacity: true,
         status: true,
+        locationDescription: true,
+        outletCount: true,
+        climateControlled: true,
         createdAt: true,
         updatedAt: true,
         items: {
@@ -84,22 +87,33 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, description, capacity } = body;
-
-    if (!name) {
+    const json = await request.json();
+    const parsed = roomCreateBodySchema.safeParse(json);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Nome da sala é obrigatório" },
+        { error: "Dados inválidos", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
+    const {
+      name,
+      description,
+      capacity,
+      locationDescription,
+      outletCount,
+      climateControlled,
+      status,
+    } = parsed.data;
 
     const room = await prisma.room.create({
       data: {
         name,
-        description,
-        capacity: capacity ? parseInt(capacity) : null,
-        status: "LIVRE",
+        description: description ?? null,
+        capacity,
+        locationDescription: locationDescription ?? null,
+        outletCount,
+        climateControlled: climateControlled ?? false,
+        status: status ?? "LIVRE",
       },
       include: {
         items: true,

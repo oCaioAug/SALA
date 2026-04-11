@@ -59,9 +59,126 @@
       "capacityLabel": "Capacity",
       "capacityPlaceholder": "Ex: 30",
       "statusLabel": "Status",
+      "locationLabel": "Location",
+      "locationPlaceholder": "E.g. Near the corner, 2nd floor...",
+      "outletsLabel": "Wall outlets",
+      "outletsPlaceholder": "Count",
+      "climateLabel": "Climate controlled",
       "submitCreate": "Create Room",
       "submitUpdate": "Update Room",
       "cancel": "Cancel"
+    }
+  },
+  "Pagination": {
+    "prev": "Previous",
+    "next": "Next",
+    "perPage": "Per page",
+    "pageOf": "Page {current} of {total}",
+    "empty": "No results",
+    "showing": "{start}–{end} of {total}"
+  },
+  "SalasPage": {
+    "title": "Rooms",
+    "subtitle": "Browse, filter and manage rooms"
+  },
+  "DashboardHome": {
+    "title": "Dashboard",
+    "subtitle": "System overview and quick access",
+    "shortcutSalasTitle": "Rooms",
+    "shortcutSalasDesc": "List rooms, items and create rooms",
+    "shortcutAgendamentosTitle": "Schedules",
+    "shortcutAgendamentosDesc": "Calendar and new reservations",
+    "shortcutIncidentesTitle": "Incidents",
+    "shortcutIncidentesDesc": "Report and track issues",
+    "open": "Open",
+    "incidentsAndRequests": {
+      "sectionTitle": "Incidents and requests",
+      "sectionDescAdmin": "Overview of incidents and the reservation approval queue.",
+      "sectionDescUser": "Your incidents and reservation requests awaiting approval.",
+      "incidentsTitle": "Incidents",
+      "incidentsDesc": "Volume by status within your access scope.",
+      "emptyIncidents": "No incidents in this scope.",
+      "openCountLabel": "Open",
+      "totalLabel": "Total",
+      "openIncidentes": "Open incidents",
+      "solicitationsTitle": "Requests",
+      "solicitationsDesc": "Reservations pending approval.",
+      "pendingLabel": "Pending approval",
+      "pendingZero": "There are no pending requests right now.",
+      "openSolicitacoes": "Open requests",
+      "incidentStatus": {
+        "REPORTED": "Reported",
+        "IN_ANALYSIS": "In analysis",
+        "IN_PROGRESS": "In progress",
+        "RESOLVED": "Resolved",
+        "CANCELLED": "Cancelled"
+      }
+    },
+    "grid": {
+      "editDashboard": "Edit dashboard",
+      "saveDashboard": "Save layout",
+      "cancelEdit": "Cancel",
+      "saving": "Saving…",
+      "editModeHint": "Drag and resize using the grip bars. Save to apply.",
+      "saveSuccess": "Dashboard layout saved.",
+      "saveError": "Could not save the layout. Please try again.",
+      "restoreDefault": "Restore default",
+      "restoreConfirm": "Restore the default dashboard layout? Your current customization will be replaced and saved.",
+      "restoreSuccess": "Default layout restored.",
+      "restoreError": "Could not restore the default layout. Please try again.",
+      "addWidgets": "Add widgets",
+      "widgetDrawerTitle": "Dashboard widgets",
+      "paletteHint": "Drag out of the panel: it closes so you can drop on the grid. “Add” puts a hidden widget back at the bottom.",
+      "paletteHiddenBadge": "Hidden — drag or tap Add",
+      "paletteOnBoardBadge": "On the dashboard — drag to move",
+      "paletteAddButton": "Add",
+      "removeWidget": "Remove widget from dashboard",
+      "widgetStatTotal": "Rooms: total",
+      "widgetStatAvailable": "Rooms: available",
+      "widgetStatInUse": "Rooms: in use",
+      "widgetStatReserved": "Rooms: reserved",
+      "widgetChartRoomStatus": "Chart: rooms by status",
+      "widgetChartWeekly": "Chart: reservations per week",
+      "widgetChartReservationStatus": "Chart: reservations by status",
+      "widgetChartTopRooms": "Chart: most booked rooms",
+      "widgetIncidents": "Incidents",
+      "widgetSolicitations": "Requests",
+      "widgetShortcutSalas": "Shortcut: Rooms",
+      "widgetShortcutAgendamentos": "Shortcut: Schedules",
+      "widgetShortcutIncidentes": "Shortcut: Incidents"
+    },
+    "charts": {
+      "sectionTitle": "Insights",
+      "sectionDescAdmin": "Last few weeks and reservation activity across the system.",
+      "sectionDescUser": "Your reservation activity over the last few weeks.",
+      "roomStatusTitle": "Rooms by status",
+      "roomStatusDesc": "Current distribution of published room status.",
+      "weeklyTitle": "Reservations per week",
+      "weeklyDesc": "Reservation starts in each week (last 8 weeks).",
+      "weeklySeries": "Reservations",
+      "emptyWeekly": "No reservations in this period yet.",
+      "reservationStatusTitle": "Reservations by status",
+      "reservationStatusDesc": "Volume in the same period as the weeks shown.",
+      "emptyStatus": "No status data in this period.",
+      "topRoomsTitleAdmin": "Most booked rooms",
+      "topRoomsTitleUser": "Rooms you book the most",
+      "topRoomsDescAdmin": "Top 5 rooms by number of reservations in the period.",
+      "topRoomsDescUser": "Your most used rooms in the period.",
+      "topRoomsSeries": "Reservations",
+      "emptyTopRooms": "No reservations in the period for this ranking.",
+      "roomStatus": {
+        "livre": "Available",
+        "emUso": "In use",
+        "reservado": "Reserved"
+      },
+      "reservationStatus": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled",
+        "ACTIVE": "Active",
+        "COMPLETED": "Completed"
+      }
     }
   },
   "Common": {
@@ -87,6 +204,10 @@
       "dashboard": {
         "label": "Overview",
         "description": "Main dashboard"
+      },
+      "salas": {
+        "label": "Rooms",
+        "description": "List and manage rooms"
       },
       "solicitacoes": {
         "label": "Requests",
@@ -131,7 +252,14 @@
       "settings": "Settings",
       "logout": "Logout",
       "ariaLabel": "Toggle theme"
-    }
+    },
+    "guest": {
+      "greeting": "Hello, guest",
+      "loginPrompt": "Sign in to continue",
+      "login": "Sign in"
+    },
+    "openMenu": "Open menu",
+    "menuTitle": "Menu"
   },
   "LanguageSwitcher": {
     "changeLanguage": "Change language",
@@ -258,7 +386,7 @@
     "actions": {
       "refresh": "Refresh List",
       "debug": "Debug",
-      "testPush": "Test Push 🔔"
+      "testPush": "Test Push"
     },
     "card": {
       "pending": "Pending",
@@ -267,8 +395,8 @@
       "end": "End",
       "purpose": "Purpose",
       "notInformed": "Not informed",
-      "approve": "✅ Approve",
-      "reject": "❌ Reject",
+      "approve": "Approve",
+      "reject": "Reject",
       "rejectReason": "Rejection reason (optional):"
     },
     "table": {
@@ -498,8 +626,15 @@
     },
     "recurring": "Recurring",
     "recurringInfo": "This is a recurring reservation. Approving/rejecting will affect all instances.",
-    "rejectReasonRecurring": "Rejection reason (will affect all instances):",
-    "rejectReason": "Rejection reason:"
+    "rejectModal": {
+      "title": "Reject request",
+      "description": "Optionally enter a reason for the rejection.",
+      "descriptionRecurring": "This is a recurring request: the rejection applies to all instances. The reason is optional.",
+      "reasonLabel": "Reason for rejection",
+      "placeholder": "Describe the reason for rejection...",
+      "cancel": "Cancel",
+      "confirm": "Confirm rejection"
+    }
   },
   "Notifications": {
     "title": "Notifications",
@@ -527,9 +662,9 @@
       "markRead": "Mark as read",
       "markUnread": "Mark as unread",
       "delete": "Delete",
-      "reload": "🔄 Reload",
-      "debug": "🔍 Debug",
-      "test": "🧪 Test Notification"
+      "reload": "Reload",
+      "debug": "Debug",
+      "test": "Test Notification"
     },
     "stats": {
       "total": "Total",
@@ -551,9 +686,9 @@
       "markReadSuccess": "Notification marked as read",
       "deleteSuccess": "Notification deleted",
       "error": "Error processing notification",
-      "debugSuccess": "📊 {count} notifications found in database (see console)",
+      "debugSuccess": "{count} notifications found in database (see console)",
       "debugError": "Error fetching debug",
-      "testSuccess": "✅ {message}",
+      "testSuccess": "{message}",
       "testError": "Error creating test notification"
     }
   },
@@ -681,7 +816,7 @@
       "update": "Update",
       "cancel": "Cancel",
       "category": "Category",
-      "warning": "⚠️ Location required",
+      "warning": "Location required",
       "warningDescription": "You must select at least one room or a specific item. If you select an item, the room will be automatically determined.",
       "tip": "Tip",
       "tipDescription": "Be specific in the description to speed up resolution, include times, error messages and steps to reproduce the problem."
@@ -761,6 +896,11 @@
     "editRoom": "Edit Room",
     "addItem": "Add Item",
     "description": "Description",
+    "infoTitle": "Details",
+    "location": "Location",
+    "outlets": "Outlets",
+    "climateYes": "Climate controlled",
+    "climateNo": "Not climate controlled",
     "roomItems": "Room Items",
     "itemsRegistered": "{count} items registered",
     "itemsRegisteredOne": "{count} item registered",
@@ -788,8 +928,8 @@
       "specifications": "Specifications (comma separated)",
       "specificationsPlaceholder": "Ex: Windows 11, 16GB RAM, Core i7",
       "quantity": "Quantity",
-      "icon": "Icon (emoji)",
-      "iconPlaceholder": "💻",
+      "icon": "Icon",
+      "iconPlaceholder": "",
       "iconHint": "Optional - used as fallback if there's no image",
       "saving": "Saving...",
       "updateItem": "Update Item",
@@ -844,7 +984,7 @@
       "status": "Status",
       "actions": "Actions"
     },
-    "testSession": "🧪 Test Session",
+    "testSession": "Test Session",
     "users": "Users",
     "tryAgain": "Try Again",
     "noUsersFound": "No users found",
@@ -909,8 +1049,8 @@
   "NotificationService": {
     "titles": {
       "reservationCreated": "New Reservation Request",
-      "reservationApproved": "Reservation Approved ✅",
-      "reservationRejected": "Reservation Rejected ❌",
+      "reservationApproved": "Reservation Approved",
+      "reservationRejected": "Reservation Rejected",
       "reservationCancelled": "Reservation Cancelled"
     },
     "messages": {

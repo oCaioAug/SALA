@@ -5,7 +5,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  console.log("🌱 Iniciando seed do banco de dados...");
+  console.log("[seed] Iniciando seed do banco de dados...");
 
   // Criar usuários de exemplo
   const adminUser = await prisma.user.upsert({
@@ -59,7 +59,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Usuários criados");
+  console.log("[seed] Usuários criados");
 
   // Criar salas de exemplo
   const labRobotica = await prisma.room.upsert({
@@ -114,7 +114,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Salas criadas");
+  console.log("[seed] Salas criadas");
 
   // Criar itens para o Laboratório de Robótica
   await prisma.item.upsert({
@@ -133,7 +133,7 @@ async function main() {
         "SSD 1TB NVMe",
       ],
       quantity: 15,
-      icon: "💻",
+      icon: "",
       roomId: labRobotica.id,
     },
   });
@@ -152,7 +152,7 @@ async function main() {
         "Controle remoto",
       ],
       quantity: 1,
-      icon: "📽️",
+      icon: "",
       roomId: labRobotica.id,
     },
   });
@@ -172,7 +172,7 @@ async function main() {
         "Ferramentas",
       ],
       quantity: 10,
-      icon: "🤖",
+      icon: "",
       roomId: labRobotica.id,
     },
   });
@@ -193,7 +193,7 @@ async function main() {
         "Bluetooth",
       ],
       quantity: 1,
-      icon: "📺",
+      icon: "",
       roomId: salaReunioes.id,
     },
   });
@@ -212,7 +212,7 @@ async function main() {
         "Cabo de rede",
       ],
       quantity: 1,
-      icon: "🪑",
+      icon: "",
       roomId: salaReunioes.id,
     },
   });
@@ -233,7 +233,7 @@ async function main() {
         "Tela Retina 4.5K",
       ],
       quantity: 8,
-      icon: "🖥️",
+      icon: "",
       roomId: estudioDesign.id,
     },
   });
@@ -252,7 +252,7 @@ async function main() {
         "USB-C",
       ],
       quantity: 8,
-      icon: "🎨",
+      icon: "",
       roomId: estudioDesign.id,
     },
   });
@@ -272,7 +272,7 @@ async function main() {
         "Duplex automático",
       ],
       quantity: 2,
-      icon: "🖨️",
+      icon: "",
       roomId: estudioDesign.id,
     },
   });
@@ -292,7 +292,7 @@ async function main() {
         "Software de análise",
       ],
       quantity: 12,
-      icon: "🔬",
+      icon: "",
       roomId: laboratorioQuimica.id,
     },
   });
@@ -311,7 +311,7 @@ async function main() {
         "USB",
       ],
       quantity: 6,
-      icon: "⚖️",
+      icon: "",
       roomId: laboratorioQuimica.id,
     },
   });
@@ -331,12 +331,12 @@ async function main() {
         "Termômetro",
       ],
       quantity: 20,
-      icon: "🧪",
+      icon: "",
       roomId: laboratorioQuimica.id,
     },
   });
 
-  console.log("✅ Itens criados");
+  console.log("[seed] Itens criados");
 
   // Criar algumas reservas de exemplo
   await prisma.reservation.upsert({
@@ -452,7 +452,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Reservas e solicitações criadas");
+  console.log("[seed] Reservas e solicitações criadas");
 
   // Temporariamente removido devido a erro de schema
   // TODO: Reativar quando o modelo Notification estiver correto
@@ -473,23 +473,23 @@ async function main() {
     skipDuplicates: true,
   });
 
-  console.log('✅ Notificações criadas');
+  console.log("[seed] Notificações criadas");
   */
 
-  console.log("🎉 Seed concluído com sucesso!");
+  console.log("[seed] Seed concluído com sucesso!");
 }
 
 main()
   .catch(e => {
-    console.error("❌ Erro durante o seed:", e);
+    console.error(" Erro durante o seed:", e);
     console.error("Stack trace:", e.stack);
     process.exit(1);
   })
   .finally(async () => {
     try {
       await prisma.$disconnect();
-      console.log("✅ Conexão com banco de dados encerrada");
+      console.log("[seed] Conexão com banco de dados encerrada");
     } catch (error) {
-      console.error("❌ Erro ao desconectar:", error);
+      console.error(" Erro ao desconectar:", error);
     }
   });

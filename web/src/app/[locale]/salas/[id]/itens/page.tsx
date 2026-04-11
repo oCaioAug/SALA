@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { MdInventory2 } from "react-icons/md";
 
 import { ImageUpload } from "@/components/forms/ImageUpload";
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -9,7 +10,7 @@ import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
-import { Modal } from "@/components/ui/Modal";
+import { Drawer } from "@/components/ui/Drawer";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { Image, Item, Room, User } from "@/lib/types";
 
@@ -181,20 +182,6 @@ const RoomItemsPage: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <LoadingPage message="Carregando itens..." />;
-  }
-
-  if (error || !room) {
-    return (
-      <ErrorPage
-        error={error || "Sala não encontrada"}
-        onRetry={() => router.push(`/salas/${roomId}`)}
-        retryLabel="Voltar à Sala"
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -202,6 +189,17 @@ const RoomItemsPage: React.FC = () => {
       isNavigating={isNavigating}
       onNotificationClick={() => {}}
     >
+      {loading ? (
+        <LoadingPage variant="embedded" message="Carregando itens..." />
+      ) : error || !room ? (
+        <ErrorPage
+          variant="embedded"
+          error={error || "Sala não encontrada"}
+          onRetry={() => router.push(`/salas/${roomId}`)}
+          retryLabel="Voltar à Sala"
+        />
+      ) : (
+      <>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -281,7 +279,11 @@ const RoomItemsPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                      <span className="text-5xl">{item.icon || "📦"}</span>
+                      {item.icon ? (
+                        <span className="text-5xl">{item.icon}</span>
+                      ) : (
+                        <MdInventory2 className="h-20 w-20 text-slate-500 dark:text-slate-400" />
+                      )}
                     </div>
                   )}
 
@@ -348,7 +350,7 @@ const RoomItemsPage: React.FC = () => {
       )}
 
       {/* Modal para adicionar item */}
-      <Modal
+      <Drawer
         isOpen={isAddItemModalOpen}
         onClose={() => setIsAddItemModalOpen(false)}
         title="Adicionar Item"
@@ -357,10 +359,9 @@ const RoomItemsPage: React.FC = () => {
           onSubmit={handleAddItem}
           onCancel={() => setIsAddItemModalOpen(false)}
         />
-      </Modal>
+      </Drawer>
 
-      {/* Modal para editar item */}
-      <Modal
+      <Drawer
         isOpen={!!editingItem}
         onClose={() => setEditingItem(null)}
         title="Editar Item"
@@ -370,7 +371,9 @@ const RoomItemsPage: React.FC = () => {
           onSubmit={handleUpdateItem}
           onCancel={() => setEditingItem(null)}
         />
-      </Modal>
+      </Drawer>
+      </>
+      )}
     </PageLayout>
   );
 };
@@ -529,7 +532,7 @@ const ItemForm: React.FC<{
 
         <div>
           <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-            Ícone (emoji)
+            Ícone
           </label>
           <input
             type="text"
@@ -538,7 +541,7 @@ const ItemForm: React.FC<{
               setFormData(prev => ({ ...prev, icon: e.target.value }))
             }
             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="💻"
+            placeholder=""
           />
           <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
             Opcional - usado como fallback se não houver imagem

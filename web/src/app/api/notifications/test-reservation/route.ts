@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // POST /api/notifications/test-reservation - Testar notificação de nova reserva
 export async function POST(request: NextRequest) {
   try {
-    console.log("🧪 Testando notificação de nova reserva para administradores");
+    console.log("Testando notificação de nova reserva para administradores");
 
     // Buscar um usuário comum e uma sala para criar reserva fictícia
     const user = await prisma.user.findFirst({
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       await notificationService.reservationCreated(mockReservation);
 
     console.log(
-      `✅ ${notifications.length} notificações de teste criadas para administradores`
+      ` ${notifications.length} notificações de teste criadas para administradores`
     );
 
     return NextResponse.json({
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ Erro ao testar notificação de reserva:", error);
+    console.error("Erro ao testar notificação de reserva:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

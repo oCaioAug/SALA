@@ -20,9 +20,10 @@ import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
@@ -46,12 +47,18 @@ const SolicitacoesPage: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const [conflictData, setConflictData] = useState<any>(null);
+  const [isRejectDrawerOpen, setIsRejectDrawerOpen] = useState(false);
+  const [rejectTarget, setRejectTarget] =
+    useState<ReservationWithDetails | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("PENDING");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [focusedReservationId, setFocusedReservationId] = useState<
     string | null
   >(null);
+  const [listPage, setListPage] = useState(1);
+  const [listPageSize, setListPageSize] = useState(12);
 
   const { showSuccess, showError, showInfo } = useApp();
   const { handleNotificationClick: globalNotificationHandler } =
@@ -185,6 +192,18 @@ const SolicitacoesPage: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  useEffect(() => {
+    setListPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const totalFilteredSol = filteredSolicitacoes.length;
+  const totalSolPages = Math.max(1, Math.ceil(totalFilteredSol / listPageSize));
+  const safeSolPage = Math.min(listPage, totalSolPages);
+  const paginatedSolicitacoes = filteredSolicitacoes.slice(
+    (safeSolPage - 1) * listPageSize,
+    safeSolPage * listPageSize
+  );
+
   const handleSolicitacaoClick = (solicitacao: ReservationWithDetails) => {
     setSelectedSolicitacao(solicitacao);
     setIsDetailsModalOpen(true);
@@ -244,19 +263,25 @@ const SolicitacoesPage: React.FC = () => {
     }
   };
 
-  const handleReject = async (solicitacao: ReservationWithDetails) => {
+  const openRejectDrawer = (solicitacao: ReservationWithDetails) => {
+    setRejectTarget(solicitacao);
+    setRejectReason("");
+    setIsRejectDrawerOpen(true);
+  };
+
+  const closeRejectDrawer = () => {
+    setIsRejectDrawerOpen(false);
+    setRejectTarget(null);
+    setRejectReason("");
+  };
+
+  const confirmReject = async () => {
+    if (!rejectTarget) return;
     try {
-      setActionLoading(solicitacao.id);
-      const reason = solicitacao.isRecurring
-        ? prompt(
-            t("rejectReasonRecurring") ||
-              "Motivo da rejeição (afetará todas as instâncias):"
-          )
-        : prompt(t("rejectReason") || "Motivo da rejeição:");
-
-      if (reason === null) return; // Usuário cancelou
-
-      await rejectSolicitacao(solicitacao.id, reason);
+      setActionLoading(rejectTarget.id);
+      const trimmed = rejectReason.trim();
+      await rejectSolicitacao(rejectTarget.id, trimmed || undefined);
+      closeRejectDrawer();
     } catch (error) {
       console.error("Erro ao rejeitar solicitação:", error);
       showError(t("feedback.errorReject"));
@@ -416,20 +441,6 @@ const SolicitacoesPage: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <LoadingPage message={t("loading")} />;
-  }
-
-  if (error) {
-    return (
-      <ErrorPage
-        error={error}
-        onRetry={() => window.location.reload()}
-        retryLabel={tCommon("retry")}
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -439,6 +450,17 @@ const SolicitacoesPage: React.FC = () => {
       onNotificationItemClick={globalNotificationHandler}
       notificationUpdateTrigger={0}
     >
+      {loading ? (
+        <LoadingPage variant="embedded" message={t("loading")} />
+      ) : error ? (
+        <ErrorPage
+          variant="embedded"
+          error={error}
+          onRetry={() => window.location.reload()}
+          retryLabel={tCommon("retry")}
+        />
+      ) : (
+      <>
       {/* Header da página */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -505,7 +527,7 @@ const SolicitacoesPage: React.FC = () => {
         />
       ) : (
         <div className="space-y-4">
-          {filteredSolicitacoes.map(solicitacao => (
+          {paginatedSolicitacoes.map(solicitacao => (
             <Card
               key={solicitacao.id}
               variant="elevated"
@@ -592,7 +614,7 @@ const SolicitacoesPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleReject(solicitacao)}
+                            onClick={() => openRejectDrawer(solicitacao)}
                             disabled={actionLoading === solicitacao.id}
                             className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                           >
@@ -610,14 +632,24 @@ const SolicitacoesPage: React.FC = () => {
               </CardContent>
             </Card>
           ))}
+          <Pagination
+            page={safeSolPage}
+            pageSize={listPageSize}
+            total={totalFilteredSol}
+            onPageChange={setListPage}
+            onPageSizeChange={size => {
+              setListPageSize(size);
+              setListPage(1);
+            }}
+          />
         </div>
       )}
 
-      {/* Modal de detalhes da solicitação */}
-      <Modal
+      <Drawer
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         title={t("modal.details")}
+        closeOnEscape={!isRejectDrawerOpen}
       >
         {selectedSolicitacao && (
           <div className="space-y-6">
@@ -722,7 +754,7 @@ const SolicitacoesPage: React.FC = () => {
                   )}
                 </Button>
                 <Button
-                  onClick={() => handleReject(selectedSolicitacao)}
+                  onClick={() => openRejectDrawer(selectedSolicitacao)}
                   disabled={actionLoading === selectedSolicitacao.id}
                   variant="outline"
                   className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
@@ -740,10 +772,9 @@ const SolicitacoesPage: React.FC = () => {
             )}
           </div>
         )}
-      </Modal>
+      </Drawer>
 
-      {/* Modal de conflito */}
-      <Modal
+      <Drawer
         isOpen={isConflictModalOpen}
         onClose={() => setIsConflictModalOpen(false)}
         title={t("conflict.title")}
@@ -815,7 +846,67 @@ const SolicitacoesPage: React.FC = () => {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
+
+      <Drawer
+        isOpen={isRejectDrawerOpen}
+        onClose={closeRejectDrawer}
+        title={t("rejectModal.title")}
+      >
+        {rejectTarget && (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-gray-400">
+              {rejectTarget.isRecurring
+                ? t("rejectModal.descriptionRecurring")
+                : t("rejectModal.description")}
+            </p>
+            <div>
+              <label
+                htmlFor="reject-reason"
+                className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block"
+              >
+                {t("rejectModal.reasonLabel")}
+              </label>
+              <textarea
+                id="reject-reason"
+                rows={4}
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder={t("rejectModal.placeholder")}
+                className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400"
+              />
+            </div>
+            <div className="flex gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={closeRejectDrawer}
+                disabled={actionLoading === rejectTarget.id}
+              >
+                {t("rejectModal.cancel")}
+              </Button>
+              <Button
+                type="button"
+                onClick={confirmReject}
+                disabled={actionLoading === rejectTarget.id}
+                className="flex flex-1 items-center justify-center gap-0 bg-red-600 hover:bg-red-700 text-white"
+              >
+                {actionLoading === rejectTarget.id ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4 mr-2" />
+                    {t("rejectModal.confirm")}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Drawer>
+      </>
+      )}
     </PageLayout>
   );
 };

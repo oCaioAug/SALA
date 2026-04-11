@@ -18,9 +18,9 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
 
-    console.log(" ---> mostrando requisicao de reservas: ", request);
+    console.log("---> mostrando requisicao de reservas: ", request);
 
-    console.log("🔍 Buscando reservas com filtros:", {
+    console.log("Buscando reservas com filtros:", {
       roomId,
       status,
       userId,
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       where.userId = userId;
     }
 
-    console.log("📋 Query where:", where);
+    console.log("Query where:", where);
 
     // Se não há filtro de status específico, mostrar apenas reservas ativas/aprovadas
     // if (!status) {
@@ -60,11 +60,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log(`✅ Encontradas ${reservations.length} reservas`);
+    console.log(` Encontradas ${reservations.length} reservas`);
 
     return NextResponse.json(reservations);
   } catch (error) {
-    console.error("❌ Erro ao buscar reservas:", error);
+    console.error("Erro ao buscar reservas:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -211,14 +211,14 @@ export async function POST(request: NextRequest) {
       );
 
       console.log(
-        `🔍 Verificando conflitos para ${recurringDates.length} ocorrências recorrentes`
+        ` Verificando conflitos para ${recurringDates.length} ocorrências recorrentes`
       );
 
       // Verificar conflitos para cada ocorrência
       const conflicts = await checkRecurringConflicts(roomId, recurringDates);
 
       if (conflicts.length > 0) {
-        console.log(`⚠️ Encontrados ${conflicts.length} conflitos`);
+        console.log(` Encontrados ${conflicts.length} conflitos`);
         const firstConflict = conflicts[0];
         const conflictStart = new Date(firstConflict.startTime).toLocaleString(
           "pt-BR"

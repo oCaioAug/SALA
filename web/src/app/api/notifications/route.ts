@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const limit = searchParams.get("limit");
 
-    console.log("🔔 Buscando notificações com filtros:", {
+    console.log("Buscando notificações com filtros:", {
       userId,
       isRead,
       type,
@@ -29,27 +29,27 @@ export async function GET(request: NextRequest) {
     let user;
     if (userId.includes("@")) {
       // Se contém @, é um email
-      console.log("🔍 Buscando usuário por email:", userId);
+      console.log("Buscando usuário por email:", userId);
       user = await prisma.user.findUnique({
         where: { email: userId },
       });
     } else {
       // Senão, é um ID
-      console.log("🔍 Buscando usuário por ID:", userId);
+      console.log("Buscando usuário por ID:", userId);
       user = await prisma.user.findUnique({
         where: { id: userId },
       });
     }
 
     if (!user) {
-      console.log(`❌ Usuário não encontrado: ${userId}`);
+      console.log(` Usuário não encontrado: ${userId}`);
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 }
       );
     }
 
-    console.log(`✅ Usuário encontrado: ${user.email} (${user.role})`);
+    console.log(` Usuário encontrado: ${user.email} (${user.role})`);
 
     const where: any = {
       userId: user.id,
@@ -75,12 +75,12 @@ export async function GET(request: NextRequest) {
     });
 
     console.log(
-      `✅ Encontradas ${notifications.length} notificações para ${user.email}`
+      ` Encontradas ${notifications.length} notificações para ${user.email}`
     );
 
     // Log detalhado das notificações
     if (notifications.length > 0) {
-      console.log("📋 Notificações encontradas:");
+      console.log("Notificações encontradas:");
       notifications.forEach((notif, index) => {
         console.log(
           `  ${index + 1}. [${notif.type}] ${notif.title} - ${notif.isRead ? "Lida" : "Não lida"} - ${notif.createdAt}`
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(notifications);
   } catch (error) {
-    console.error("❌ Erro ao buscar notificações:", error);
+    console.error("Erro ao buscar notificações:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { userId, type, title, message, data } = body;
 
-    console.log("🔔 Criando notificação:", { userId, type, title });
+    console.log("Criando notificação:", { userId, type, title });
 
     if (!userId || !type || !title || !message) {
       return NextResponse.json(
@@ -147,11 +147,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log(`✅ Notificação criada com ID: ${notification.id}`);
+    console.log(` Notificação criada com ID: ${notification.id}`);
 
     return NextResponse.json(notification, { status: 201 });
   } catch (error) {
-    console.error("❌ Erro ao criar notificação:", error);
+    console.error("Erro ao criar notificação:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

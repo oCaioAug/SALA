@@ -17,7 +17,7 @@ async function getGoogleAccessTokenForUser(
   userId: string
 ): Promise<string | null> {
   console.log(
-    "🔎 [GoogleCalendar] Buscando conta Google para usuário:",
+    "[GoogleCalendar] Buscando conta Google para usuário:",
     userId
   );
 
@@ -30,13 +30,13 @@ async function getGoogleAccessTokenForUser(
 
   if (!account) {
     console.warn(
-      `⚠️ Nenhuma conta do Google vinculada encontrada para o usuário ${userId}`
+      ` Nenhuma conta do Google vinculada encontrada para o usuário ${userId}`
     );
     return null;
   }
 
   console.log(
-    "ℹ️ [GoogleCalendar] Conta Google encontrada:",
+    " [GoogleCalendar] Conta Google encontrada:",
     JSON.stringify(
       {
         provider: account.provider,
@@ -55,7 +55,7 @@ async function getGoogleAccessTokenForUser(
   // Se não há refresh_token nem access_token, não há muito o que fazer
   if (!account.access_token && !account.refresh_token) {
     console.warn(
-      `⚠️ Conta Google para o usuário ${userId} não possui tokens OAuth armazenados`
+      ` Conta Google para o usuário ${userId} não possui tokens OAuth armazenados`
     );
     return null;
   }
@@ -69,7 +69,7 @@ async function getGoogleAccessTokenForUser(
     account.expires_at > nowInSeconds + 60
   ) {
     console.log(
-      "✅ [GoogleCalendar] Usando access_token atual (ainda válido). Expires_at:",
+      "[GoogleCalendar] Usando access_token atual (ainda válido). Expires_at:",
       account.expires_at
     );
     return account.access_token;
@@ -93,7 +93,7 @@ async function getGoogleAccessTokenForUser(
 
       if (!tokenResponse.ok) {
         console.error(
-          "❌ Falha ao renovar token de acesso do Google:",
+          "Falha ao renovar token de acesso do Google:",
           await tokenResponse.text()
         );
         return account.access_token ?? null;
@@ -108,7 +108,7 @@ async function getGoogleAccessTokenForUser(
       };
 
       console.log(
-        "ℹ️ [GoogleCalendar] Resposta de renovação de token:",
+        " [GoogleCalendar] Resposta de renovação de token:",
         JSON.stringify(
           {
             hasAccessToken: Boolean(tokens.access_token),
@@ -124,7 +124,7 @@ async function getGoogleAccessTokenForUser(
 
       if (!tokens.access_token) {
         console.error(
-          "❌ Resposta de renovação de token não contém access_token",
+          "Resposta de renovação de token não contém access_token",
           tokens
         );
         return account.access_token ?? null;
@@ -150,14 +150,14 @@ async function getGoogleAccessTokenForUser(
       });
 
       console.log(
-        "✅ [GoogleCalendar] Token de acesso renovado e salvo. Novo expires_at:",
+        "[GoogleCalendar] Token de acesso renovado e salvo. Novo expires_at:",
         updatedAccount.expires_at
       );
 
       return updatedAccount.access_token ?? null;
     } catch (error) {
       console.error(
-        "❌ Erro ao tentar renovar token de acesso do Google:",
+        "Erro ao tentar renovar token de acesso do Google:",
         error
       );
       return account.access_token ?? null;
@@ -220,7 +220,7 @@ async function createOrUpdateCalendarEvent(
 
   if (!accessToken) {
     console.warn(
-      `⚠️ Não foi possível obter access_token do Google para o usuário ${reservation.userId}. Pulando sincronização do calendário.`
+      ` Não foi possível obter access_token do Google para o usuário ${reservation.userId}. Pulando sincronização do calendário.`
     );
     return null;
   }
@@ -239,7 +239,7 @@ async function createOrUpdateCalendarEvent(
   const method = isUpdate ? "PATCH" : "POST";
 
   console.log(
-    `📤 [GoogleCalendar] Enviando requisição para ${method} evento`,
+    ` [GoogleCalendar] Enviando requisição para ${method} evento`,
     JSON.stringify(
       {
         url,
@@ -264,7 +264,7 @@ async function createOrUpdateCalendarEvent(
 
   if (!response.ok) {
     console.error(
-      `❌ Falha ao ${isUpdate ? "atualizar" : "criar"} evento no Google Calendar:`,
+      ` Falha ao ${isUpdate ? "atualizar" : "criar"} evento no Google Calendar:`,
       await response.text()
     );
     return null;
@@ -274,7 +274,7 @@ async function createOrUpdateCalendarEvent(
 
   if (!data.id) {
     console.error(
-      "❌ Resposta do Google Calendar não contém ID do evento",
+      "Resposta do Google Calendar não contém ID do evento",
       data
     );
     return null;
@@ -290,7 +290,7 @@ async function deleteCalendarEvent(reservation: ReservationWithRelations) {
 
   if (!accessToken) {
     console.warn(
-      `⚠️ Não foi possível obter access_token do Google para o usuário ${reservation.userId} ao tentar remover evento`
+      ` Não foi possível obter access_token do Google para o usuário ${reservation.userId} ao tentar remover evento`
     );
     return;
   }
@@ -309,7 +309,7 @@ async function deleteCalendarEvent(reservation: ReservationWithRelations) {
 
   if (!response.ok && response.status !== 404) {
     console.error(
-      "❌ Falha ao remover evento do Google Calendar:",
+      "Falha ao remover evento do Google Calendar:",
       await response.text()
     );
   }
@@ -334,7 +334,7 @@ export async function syncReservationToGoogleCalendar(
 
   if (!reservation) {
     console.warn(
-      `⚠️ Reserva ${reservationId} não encontrada ao tentar sincronizar com Google Calendar`
+      ` Reserva ${reservationId} não encontrada ao tentar sincronizar com Google Calendar`
     );
     return;
   }
@@ -376,7 +376,7 @@ export async function syncUpcomingReservationsForUser(
   userId: string
 ): Promise<void> {
   console.log(
-    "🔄 [GoogleCalendar] Sincronizando reservas futuras para usuário:",
+    "[GoogleCalendar] Sincronizando reservas futuras para usuário:",
     userId
   );
 
@@ -400,13 +400,13 @@ export async function syncUpcomingReservationsForUser(
 
   if (reservations.length === 0) {
     console.log(
-      "ℹ️ [GoogleCalendar] Nenhuma reserva futura encontrada para sincronizar."
+      " [GoogleCalendar] Nenhuma reserva futura encontrada para sincronizar."
     );
     return;
   }
 
   console.log(
-    `ℹ️ [GoogleCalendar] Encontradas ${reservations.length} reservas futuras para sincronizar.`
+    ` [GoogleCalendar] Encontradas ${reservations.length} reservas futuras para sincronizar.`
   );
 
   // Executa em paralelo, mas sem bloquear o fluxo de login

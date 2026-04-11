@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("🎫 Buscando usuários disponíveis para atribuição");
+    console.log("Buscando usuários disponíveis para atribuição");
 
     // Buscar todos os usuários (admins e técnicos podem receber atribuições)
     const assignableUsers = await prisma.user.findMany({
@@ -65,11 +65,11 @@ export async function GET(request: NextRequest) {
       activeIncidents: user._count.assignedIncidents,
     }));
 
-    console.log(`✅ Encontrados ${usersWithStats.length} usuários disponíveis`);
+    console.log(` Encontrados ${usersWithStats.length} usuários disponíveis`);
 
     return NextResponse.json(usersWithStats);
   } catch (error) {
-    console.error("❌ Erro ao buscar usuários assignáveis:", error);
+    console.error("Erro ao buscar usuários assignáveis:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

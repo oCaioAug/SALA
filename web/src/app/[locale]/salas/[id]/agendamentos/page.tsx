@@ -28,9 +28,9 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/Card";
+import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Modal } from "@/components/ui/Modal";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { ReservationWithUser, Room, User } from "@/lib/types";
@@ -288,20 +288,6 @@ const RoomSchedulesPage: React.FC = () => {
 
   const groupedReservations = groupReservationsByDate(filteredReservations);
 
-  if (loading) {
-    return <LoadingPage message="Carregando agendamentos..." />;
-  }
-
-  if (error || !room) {
-    return (
-      <ErrorPage
-        error={error || "Sala não encontrada"}
-        onRetry={() => router.back()}
-        retryLabel="Voltar"
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -309,6 +295,20 @@ const RoomSchedulesPage: React.FC = () => {
       isNavigating={isNavigating}
       onNotificationClick={() => {}}
     >
+      {loading ? (
+        <LoadingPage
+          variant="embedded"
+          message="Carregando agendamentos..."
+        />
+      ) : error || !room ? (
+        <ErrorPage
+          variant="embedded"
+          error={error || "Sala não encontrada"}
+          onRetry={() => router.back()}
+          retryLabel="Voltar"
+        />
+      ) : (
+      <>
       {/* Header da página */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-6">
@@ -500,7 +500,7 @@ const RoomSchedulesPage: React.FC = () => {
       )}
 
       {/* Modal de detalhes da reserva */}
-      <Modal
+      <Drawer
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         title="Detalhes da Reserva"
@@ -604,10 +604,9 @@ const RoomSchedulesPage: React.FC = () => {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
-      {/* Modal para criar reserva */}
-      <Modal
+      <Drawer
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Nova Reserva"
@@ -621,7 +620,9 @@ const RoomSchedulesPage: React.FC = () => {
           onCancel={() => setIsCreateModalOpen(false)}
           loading={createReservationLoading}
         />
-      </Modal>
+      </Drawer>
+      </>
+      )}
     </PageLayout>
   );
 };

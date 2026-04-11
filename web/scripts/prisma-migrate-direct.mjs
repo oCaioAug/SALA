@@ -7,7 +7,7 @@ const forwardedArgs = subcommand === "deploy" ? process.argv.slice(3) : process.
 
 if (!directUrl) {
   console.error(
-    "❌ DIRECT_URL não está definido. Configure DIRECT_URL no web/.env para rodar migrations via conexão direta."
+    "[migrate] DIRECT_URL não está definido. Configure DIRECT_URL no web/.env para rodar migrations via conexão direta."
   );
   process.exit(1);
 }
@@ -23,7 +23,7 @@ const result = spawnSync(`npx ${args.join(" ")}`, {
 });
 
 if (result.error) {
-  console.error("❌ Falha ao executar Prisma CLI:", result.error);
+  console.error("[migrate] Falha ao executar Prisma CLI:", result.error);
   process.exit(1);
 }
 

@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { userId } = await params;
 
-    console.log("📊 Buscando estatísticas para usuário:", userId);
+    console.log("Buscando estatísticas para usuário:", userId);
 
     // Buscar todas as reservas do usuário
     const reservations = await prisma.reservation.findMany({
@@ -25,7 +25,7 @@ export async function GET(
       },
     });
 
-    console.log("📊 Reservas encontradas:", reservations.length);
+    console.log("Reservas encontradas:", reservations.length);
 
     // Calcular estatísticas
     const now = new Date();
@@ -45,7 +45,7 @@ export async function GET(
       rejected: reservations.filter(r => r.status === "REJECTED").length,
     };
 
-    console.log("📊 Estatísticas calculadas:", stats);
+    console.log("Estatísticas calculadas:", stats);
 
     return NextResponse.json(stats);
   } catch (error) {

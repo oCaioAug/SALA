@@ -27,7 +27,7 @@ export async function createNotification(
     });
 
     console.log(
-      `✅ Notificação criada para ${notification.user.email}: ${title}`
+      ` Notificação criada para ${notification.user.email}: ${title}`
     );
     return notification;
   } catch (error) {
@@ -90,7 +90,7 @@ export const notificationService = {
       });
 
       console.log(
-        `🔔 Criando notificações para ${adminUsers.length} administradores`
+        ` Criando notificações para ${adminUsers.length} administradores`
       );
 
       // Criar notificação para cada admin
@@ -112,7 +112,7 @@ export const notificationService = {
       );
 
       console.log(
-        `✅ ${notifications.length} notificações criadas com sucesso`
+        ` ${notifications.length} notificações criadas com sucesso`
       );
       return notifications;
     } catch (error) {
@@ -125,12 +125,12 @@ export const notificationService = {
   async reservationApproved(reservation: any, locale: string = "pt") {
     try {
       console.log(
-        `🔔 Criando notificação de aprovação para reserva ${reservation.id}`
+        ` Criando notificação de aprovação para reserva ${reservation.id}`
       );
       console.log(
-        `👤 Usuário: ${reservation.user.email} (ID: ${reservation.userId})`
+        ` Usuário: ${reservation.user.email} (ID: ${reservation.userId})`
       );
-      console.log(`🏢 Sala: ${reservation.room.name}`);
+      console.log(` Sala: ${reservation.room.name}`);
 
       const t = await getTranslations({
         locale,
@@ -157,7 +157,7 @@ export const notificationService = {
         startTime,
       });
 
-      console.log(`📝 Dados da notificação: ${title} - ${message}`);
+      console.log(` Dados da notificação: ${title} - ${message}`);
 
       const notification = await createNotification(
         reservation.userId,
@@ -173,10 +173,10 @@ export const notificationService = {
         }
       );
 
-      console.log(`✅ Notificação criada com sucesso: ID ${notification.id}`);
+      console.log(` Notificação criada com sucesso: ID ${notification.id}`);
       return notification;
     } catch (error) {
-      console.error("❌ Erro ao notificar aprovação de reserva:", error);
+      console.error("Erro ao notificar aprovação de reserva:", error);
       throw error;
     }
   },
@@ -295,7 +295,7 @@ export const notificationService = {
       );
 
       console.log(
-        `✅ Anúncio do sistema enviado para ${notifications.length} usuários`
+        ` Anúncio do sistema enviado para ${notifications.length} usuários`
       );
       return notifications;
     } catch (error) {

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useState } from "react";
+import { MdEvent } from "react-icons/md";
 
 import { Button } from "@/components/ui/Button";
 import { ReservationWithUser, Room } from "@/lib/types";
@@ -310,9 +311,16 @@ const Calendar: React.FC<CalendarProps> = ({
                         reservation.user.name
                       }${isMultiDay ? ` (${t("multipleDaysReservation")})` : ""}`}
                     >
-                      <div className="truncate font-medium">
-                        {room?.name || t("room")}
-                        {isMultiDay && " 📅"}
+                      <div className="flex min-w-0 items-center gap-0.5 font-medium">
+                        <span className="truncate">
+                          {room?.name || t("room")}
+                        </span>
+                        {isMultiDay ? (
+                          <MdEvent
+                            className="h-3 w-3 shrink-0"
+                            aria-label={t("multipleDaysReservation")}
+                          />
+                        ) : null}
                       </div>
                       <div className="flex items-center gap-1 text-xs opacity-90">
                         <Clock className="w-3 h-3" />

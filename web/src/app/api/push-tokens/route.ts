@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('🔔 POST /api/push-tokens recebido!')
+    console.log('POST /api/push-tokens recebido!')
     
     const body = await req.json()
-    console.log('📱 Body recebido:', body)
+    console.log('Body recebido:', body)
     
     return NextResponse.json({ 
       success: true,
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       data: body
     })
   } catch (error) {
-    console.error('❌ Erro no push-tokens:', error)
+    console.error('Erro no push-tokens:', error)
     return NextResponse.json(
       { error: 'Erro interno' },
       { status: 500 }
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  console.log('📱 GET /api/push-tokens recebido!')
+  console.log('GET /api/push-tokens recebido!')
   return NextResponse.json({ 
     success: true,
     message: 'GET funcionando!' 

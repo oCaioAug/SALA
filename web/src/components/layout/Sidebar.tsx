@@ -7,6 +7,7 @@ import {
   Calendar,
   ChevronRight,
   ClipboardList,
+  DoorOpen,
   LayoutDashboard,
   Settings,
   User,
@@ -22,12 +23,15 @@ interface SidebarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   isNavigating?: boolean;
+  /** desktop: barra lateral fixa; mobile: conteúdo dentro do drawer */
+  variant?: "desktop" | "mobile";
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
   onNavigate,
   isNavigating = false,
+  variant = "desktop",
 }) => {
   const t = useTranslations("Sidebar");
   const tCommon = useTranslations("Common");
@@ -41,6 +45,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: LayoutDashboard,
       description: t("menuItems.dashboard.description"),
       active: currentPage === "dashboard",
+    },
+    {
+      id: "salas",
+      label: t("menuItems.salas.label"),
+      icon: DoorOpen,
+      description: t("menuItems.salas.description"),
+      active: currentPage === "salas",
     },
     {
       id: "solicitacoes",
@@ -99,9 +110,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <div className="w-72 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 h-full flex flex-col border-r border-slate-200 dark:border-slate-700/50 shadow-2xl transition-colors duration-300">
-      {/* Header com logo melhorado */}
-      <div className="p-6 border-b border-slate-200 dark:border-slate-700/50">
+    <div
+      className={cn(
+        "flex flex-col border-slate-200 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 shadow-2xl transition-colors duration-300 dark:border-slate-700/50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900",
+        variant === "desktop" &&
+          "sticky top-0 hidden h-screen w-72 shrink-0 overflow-y-auto border-r md:flex",
+        variant === "mobile" && "h-full min-h-0 w-full border-0 shadow-none"
+      )}
+    >
+      {variant !== "mobile" && (
+      <div className="border-b border-slate-200 p-6 dark:border-slate-700/50">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
             <Building2 className="w-6 h-6 text-white" />
@@ -115,11 +133,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             </p>
           </div>
         </div>
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-400 dark:via-slate-600 to-transparent mt-4"></div>
+        <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-slate-400 to-transparent dark:via-slate-600"></div>
       </div>
+      )}
 
-      {/* Navegação melhorada */}
-      <nav className="flex-1 px-4 py-6">
+      <nav
+        className={cn(
+          "flex-1 overflow-y-auto px-4 py-6",
+          variant === "mobile" && "min-h-0"
+        )}
+      >
         <div className="mb-6">
           <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3 px-3">
             {t("navigation")}

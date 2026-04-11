@@ -180,20 +180,6 @@ const ProfilePage: React.FC = () => {
     });
   };
 
-  if (loading) {
-    return <LoadingPage message={t("loading")} />;
-  }
-
-  if (!userData) {
-    return (
-      <ErrorPage
-        error={t("errors.userLoadError")}
-        onRetry={() => router.push("/dashboard")}
-        retryLabel={t("actions.backToDashboard")}
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -201,6 +187,17 @@ const ProfilePage: React.FC = () => {
       isNavigating={isNavigating}
       onNotificationClick={() => {}}
     >
+      {loading ? (
+        <LoadingPage variant="embedded" message={t("loading")} />
+      ) : !userData ? (
+        <ErrorPage
+          variant="embedded"
+          error={t("errors.userLoadError")}
+          onRetry={() => router.push("/dashboard")}
+          retryLabel={t("actions.backToDashboard")}
+        />
+      ) : (
+      <>
       {/* Header da página */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -457,6 +454,8 @@ const ProfilePage: React.FC = () => {
           </Card>
         </div>
       </div>
+      </>
+      )}
     </PageLayout>
   );
 };

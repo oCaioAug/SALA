@@ -3,12 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
-  console.log("🚀 API /api/auth/login foi chamada!");
+  console.log("API /api/auth/login foi chamada!");
   try {
     const body = await request.json();
     const { email, password } = body;
 
-    console.log("🔐 Tentativa de login:", { email, password: "***" });
+    console.log("Tentativa de login:", { email, password: "***" });
 
     if (!email || !password) {
       return NextResponse.json(
@@ -27,16 +27,16 @@ export async function POST(request: NextRequest) {
       email === validCredentials.email &&
       password === validCredentials.password
     ) {
-      console.log("✅ Credenciais válidas, buscando usuário...");
+      console.log("Credenciais válidas, buscando usuário...");
 
       // Buscar usuário admin existente
-      console.log("🔍 Buscando usuário com email:", email);
+      console.log("Buscando usuário com email:", email);
       const user = await prisma.user.findUnique({
         where: { email },
       });
 
       console.log(
-        "👤 Usuário encontrado:",
+        "Usuário encontrado:",
         user
           ? { id: user.id, email: user.email, createdAt: user.createdAt }
           : "Nenhum usuário encontrado"
@@ -48,19 +48,19 @@ export async function POST(request: NextRequest) {
         orderBy: { createdAt: "desc" },
       });
       console.log(
-        "🔍 Todos os usuários com este email:",
+        "Todos os usuários com este email:",
         allUsersWithEmail.map(u => ({ id: u.id, createdAt: u.createdAt }))
       );
 
       if (!user) {
-        console.log("❌ Usuário não encontrado, retornando erro 404");
+        console.log("Usuário não encontrado, retornando erro 404");
         return NextResponse.json(
           { error: "Usuário admin não encontrado. Execute o seed primeiro." },
           { status: 404 }
         );
       }
 
-      console.log("✅ Login bem-sucedido para:", {
+      console.log("Login bem-sucedido para:", {
         id: user.id,
         email: user.email,
       });
@@ -75,14 +75,14 @@ export async function POST(request: NextRequest) {
         },
       });
     } else {
-      console.log("❌ Credenciais inválidas");
+      console.log("Credenciais inválidas");
       return NextResponse.json(
         { error: "Email ou senha incorretos" },
         { status: 401 }
       );
     }
   } catch (error) {
-    console.error("❌ Erro no login:", error);
+    console.error("Erro no login:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }

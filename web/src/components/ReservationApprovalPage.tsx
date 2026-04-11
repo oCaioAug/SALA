@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import { FaBell, FaCheck, FaTimes } from "react-icons/fa";
+import {
+  HiClipboardDocumentList,
+  HiExclamationTriangle,
+  HiLockClosed,
+} from "react-icons/hi2";
 
 import { getIntlLocale } from "@/lib/utils";
 
@@ -55,7 +61,9 @@ export default function ReservationApprovalPage() {
     return (
       <div className="max-w-7xl mx-auto p-6">
         <div className="text-center py-12">
-          <div className="text-red-400 text-5xl mb-4">🔒</div>
+          <div className="text-red-400 mb-4 flex justify-center">
+            <HiLockClosed className="h-14 w-14" aria-hidden />
+          </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             {t("restricted.title")}
           </h3>
@@ -75,7 +83,9 @@ export default function ReservationApprovalPage() {
     return (
       <div className="max-w-7xl mx-auto p-6">
         <div className="text-center py-12">
-          <div className="text-yellow-400 text-5xl mb-4">⚠️</div>
+          <div className="text-amber-500 mb-4 flex justify-center">
+            <HiExclamationTriangle className="h-14 w-14" aria-hidden />
+          </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             {t("denied.title")}
           </h3>
@@ -89,7 +99,7 @@ export default function ReservationApprovalPage() {
     try {
       setLoading(true);
 
-      console.log("🔄 Buscando reservas pendentes...");
+      console.log("Buscando reservas pendentes...");
 
       // Buscar reservas pendentes
       const response = await fetch("/api/reservations?status=PENDING", {
@@ -100,19 +110,19 @@ export default function ReservationApprovalPage() {
         credentials: "include",
       });
 
-      console.log("📡 Resposta da API:", response.status, response.statusText);
+      console.log("Resposta da API:", response.status, response.statusText);
 
       if (response.ok) {
         const reservations = await response.json();
-        console.log("📋 Reservas encontradas:", reservations.length);
+        console.log("Reservas encontradas:", reservations.length);
         setPendingReservations(reservations || []);
       } else {
-        console.error("❌ Erro ao buscar reservas pendentes:", response.status);
+        console.error("Erro ao buscar reservas pendentes:", response.status);
         const errorText = await response.text();
-        console.error("📄 Erro detalhado:", errorText);
+        console.error("Erro detalhado:", errorText);
       }
     } catch (error) {
-      console.error("❌ Erro ao buscar reservas pendentes:", error);
+      console.error("Erro ao buscar reservas pendentes:", error);
     } finally {
       setLoading(false);
     }
@@ -126,7 +136,7 @@ export default function ReservationApprovalPage() {
     try {
       setApproving(reservationId);
 
-      console.log("🔄 Processando aprovação:", {
+      console.log("Processando aprovação:", {
         reservationId,
         approved,
         reason,
@@ -146,14 +156,14 @@ export default function ReservationApprovalPage() {
       });
 
       console.log(
-        "📡 Resposta da aprovação:",
+        "Resposta da aprovação:",
         response.status,
         response.statusText
       );
 
       if (response.ok) {
         const data = await response.json();
-        console.log("✅ Reserva processada:", data);
+        console.log("Reserva processada:", data);
 
         // Remover a reserva da lista
         setPendingReservations(prev =>
@@ -168,11 +178,11 @@ export default function ReservationApprovalPage() {
         );
       } else {
         const errorData = await response.json();
-        console.error("❌ Erro na aprovação:", errorData);
+        console.error("Erro na aprovação:", errorData);
         alert(`Erro: ${errorData.error}`);
       }
     } catch (error) {
-      console.error("❌ Erro ao processar aprovação:", error);
+      console.error("Erro ao processar aprovação:", error);
       alert(t("feedback.errorInternal"));
     } finally {
       setApproving(null);
@@ -184,7 +194,7 @@ export default function ReservationApprovalPage() {
       const userId = prompt(t("feedback.testPushPrompt"));
       if (!userId) return;
 
-      console.log("🧪 Testando push notification para usuário:", userId);
+      console.log("Testando push notification para usuário:", userId);
 
       const response = await fetch("/api/test-push", {
         method: "POST",
@@ -201,15 +211,15 @@ export default function ReservationApprovalPage() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("✅ Resultado do teste:", data);
+        console.log("Resultado do teste:", data);
         alert(data.message);
       } else {
         const errorData = await response.json();
-        console.error("❌ Erro no teste:", errorData);
+        console.error("Erro no teste:", errorData);
         alert(`Erro: ${errorData.error}`);
       }
     } catch (error) {
-      console.error("❌ Erro ao testar push:", error);
+      console.error("Erro ao testar push:", error);
       alert(t("feedback.errorTestPush"));
     }
   };
@@ -248,7 +258,7 @@ export default function ReservationApprovalPage() {
         <div className="flex space-x-3">
           <button
             onClick={() => {
-              console.log("📋 Estado atual das reservas:", pendingReservations);
+              console.log("Estado atual das reservas:", pendingReservations);
               fetchPendingReservations();
             }}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -258,7 +268,7 @@ export default function ReservationApprovalPage() {
           <button
             onClick={() => {
               console.log(
-                "🔍 Debug - Reservas pendentes:",
+                "Debug - Reservas pendentes:",
                 JSON.stringify(pendingReservations, null, 2)
               );
             }}
@@ -268,8 +278,9 @@ export default function ReservationApprovalPage() {
           </button>
           <button
             onClick={testPushNotification}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
+            <FaBell className="h-4 w-4 shrink-0" aria-hidden />
             {t("actions.testPush")}
           </button>
         </div>
@@ -277,7 +288,9 @@ export default function ReservationApprovalPage() {
 
       {pendingReservations.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <div className="text-gray-400 text-5xl mb-4">📋</div>
+          <div className="text-gray-400 mb-4 flex justify-center">
+            <HiClipboardDocumentList className="h-14 w-14" aria-hidden />
+          </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             {t("noPending")}
           </h3>
@@ -350,8 +363,9 @@ export default function ReservationApprovalPage() {
                 <button
                   onClick={() => handleApproval(reservation.id, true)}
                   disabled={approving === reservation.id}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex flex-1 items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
+                  <FaCheck className="h-4 w-4 shrink-0" aria-hidden />
                   {approving === reservation.id
                     ? t("feedback.approving")
                     : t("card.approve")}
@@ -365,8 +379,9 @@ export default function ReservationApprovalPage() {
                     }
                   }}
                   disabled={approving === reservation.id}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex flex-1 items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
+                  <FaTimes className="h-4 w-4 shrink-0" aria-hidden />
                   {approving === reservation.id
                     ? t("feedback.rejecting")
                     : t("card.reject")}

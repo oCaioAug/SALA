@@ -61,7 +61,7 @@ function isVercel(): boolean {
   const nodeEnv = process.env.NODE_ENV === "production";
   const forceCloudinary = process.env.USE_CLOUDINARY === "true";
 
-  console.log("🔍 Environment detection:", {
+  console.log("Environment detection:", {
     VERCEL: process.env.VERCEL,
     VERCEL_ENV: process.env.VERCEL_ENV,
     NODE_ENV: process.env.NODE_ENV,
@@ -76,7 +76,7 @@ function isVercel(): boolean {
     process.env.CLOUDINARY_API_SECRET
   );
 
-  console.log("☁️ Cloudinary credentials available:", hasCloudinaryCredentials);
+  console.log(" Cloudinary credentials available:", hasCloudinaryCredentials);
 
   // Usar Cloudinary se:
   // 1. Estiver na Vercel (VERCEL=1 ou VERCEL_ENV existe)
@@ -85,7 +85,7 @@ function isVercel(): boolean {
   const shouldUseCloudinary =
     (vercelEnv || vercelFlag || forceCloudinary) && hasCloudinaryCredentials;
 
-  console.log("🎯 Final decision: useCloudinary =", shouldUseCloudinary);
+  console.log("Final decision: useCloudinary =", shouldUseCloudinary);
 
   return shouldUseCloudinary;
 }
@@ -122,7 +122,7 @@ async function uploadWithCloudinary(
   filename: string,
   folder: string = "sala/items"
 ): Promise<{ originalPath: string; thumbnailPath: string }> {
-  console.log("☁️ Initiating Cloudinary upload...");
+  console.log(" Initiating Cloudinary upload...");
 
   // Verificar credenciais
   if (
@@ -142,7 +142,7 @@ async function uploadWithCloudinary(
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
-  console.log(`☁️ Cloudinary config: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+  console.log(` Cloudinary config: ${process.env.CLOUDINARY_CLOUD_NAME}`);
 
   const { originalBuffer, thumbnailBuffer } = await processImageBuffers(
     buffer,
@@ -246,10 +246,10 @@ export async function uploadImage(
   filename: string
 ): Promise<{ originalPath: string; thumbnailPath: string }> {
   if (isVercel()) {
-    console.log("🌐 Uploading to Vercel using Cloudinary");
+    console.log("Uploading to Vercel using Cloudinary");
     return uploadWithCloudinary(buffer, filename, "sala/items");
   } else {
-    console.log("💻 Uploading locally using filesystem");
+    console.log("Uploading locally using filesystem");
     return uploadWithFilesystem(buffer, filename);
   }
 }
@@ -270,12 +270,12 @@ export async function uploadAvatar(
   );
 
   if (hasCloudinaryCredentials) {
-    console.log("☁️ Uploading avatar to Cloudinary");
+    console.log(" Uploading avatar to Cloudinary");
     return uploadWithCloudinary(buffer, filename, "sala/avatars");
   } else {
     // Fallback para filesystem se Cloudinary não estiver configurado
     console.log(
-      "💻 Uploading avatar locally using filesystem (Cloudinary não configurado)"
+      "Uploading avatar locally using filesystem (Cloudinary não configurado)"
     );
     const fs = await import("fs/promises");
     const path = await import("path");

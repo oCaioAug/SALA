@@ -58,7 +58,7 @@ export function useIncidents() {
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
         setError(message);
-        console.error("❌ Erro ao buscar incidentes:", err);
+        console.error("Erro ao buscar incidentes:", err);
         return null;
       } finally {
         setLoading(false);
@@ -89,7 +89,7 @@ export function useIncidents() {
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
         setError(message);
-        console.error("❌ Erro ao buscar incidente:", err);
+        console.error("Erro ao buscar incidente:", err);
         return null;
       } finally {
         setLoading(false);
@@ -124,7 +124,7 @@ export function useIncidents() {
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
         setError(message);
-        console.error("❌ Erro ao criar incidente:", err);
+        console.error("Erro ao criar incidente:", err);
         return null;
       } finally {
         setLoading(false);
@@ -162,7 +162,7 @@ export function useIncidents() {
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
         setError(message);
-        console.error("❌ Erro ao atualizar incidente:", err);
+        console.error("Erro ao atualizar incidente:", err);
         return null;
       } finally {
         setLoading(false);
@@ -190,7 +190,7 @@ export function useIncidents() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       setError(message);
-      console.error("❌ Erro ao deletar incidente:", err);
+      console.error("Erro ao deletar incidente:", err);
       return false;
     } finally {
       setLoading(false);
@@ -216,7 +216,7 @@ export function useIncidents() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       setError(message);
-      console.error("❌ Erro ao buscar usuários:", err);
+      console.error("Erro ao buscar usuários:", err);
       return null;
     } finally {
       setLoading(false);
@@ -242,7 +242,7 @@ export function useIncidents() {
         const message =
           err instanceof Error ? err.message : "Erro desconhecido";
         setError(message);
-        console.error("❌ Erro ao buscar estatísticas:", err);
+        console.error("Erro ao buscar estatísticas:", err);
         return null;
       } finally {
         setLoading(false);

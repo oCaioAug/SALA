@@ -10,7 +10,7 @@ export async function PUT(
   try {
     const { id } = await params;
 
-    console.log(`🔔 Marcando notificação ${id} como lida`);
+    console.log(` Marcando notificação ${id} como lida`);
 
     const notification = await prisma.notification.update({
       where: { id },
@@ -20,11 +20,11 @@ export async function PUT(
       },
     });
 
-    console.log(`✅ Notificação ${id} marcada como lida`);
+    console.log(` Notificação ${id} marcada como lida`);
 
     return NextResponse.json(notification);
   } catch (error) {
-    console.error("❌ Erro ao marcar notificação como lida:", error);
+    console.error("Erro ao marcar notificação como lida:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -43,17 +43,17 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    console.log(`🔔 Deletando notificação ${id}`);
+    console.log(` Deletando notificação ${id}`);
 
     await prisma.notification.delete({
       where: { id },
     });
 
-    console.log(`✅ Notificação ${id} deletada`);
+    console.log(` Notificação ${id} deletada`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("❌ Erro ao deletar notificação:", error);
+    console.error("Erro ao deletar notificação:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

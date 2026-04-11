@@ -24,15 +24,15 @@ export async function POST(req: NextRequest) {
 
     // Verificar se o usuário é admin
     const user = await session.user;
-    console.log("🔍 Usuário que está testando push:", user);
+    console.log("Usuário que está testando push:", user);
 
     const body = await req.json();
-    console.log("📦 Dados recebidos para teste push:", body);
+    console.log("Dados recebidos para teste push:", body);
 
     const { userId, title, body: message } = testPushSchema.parse(body);
 
     // Enviar notificação push de teste
-    console.log("🚀 Enviando push notification de teste...");
+    console.log("Enviando push notification de teste...");
 
     const success = await pushNotificationService.sendSystemNotification(
       userId,
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    console.log("✅ Resultado do envio:", success);
+    console.log("Resultado do envio:", success);
 
     return NextResponse.json({
       success,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       body: message,
     });
   } catch (error) {
-    console.error("❌ Erro ao testar push notification:", error);
+    console.error("Erro ao testar push notification:", error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

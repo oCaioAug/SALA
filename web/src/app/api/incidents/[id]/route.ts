@@ -16,7 +16,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    console.log(`🎫 Buscando incidente ${id}`);
+    console.log(` Buscando incidente ${id}`);
 
     const incident = await prisma.incident.findUnique({
       where: { id },
@@ -53,7 +53,7 @@ export async function GET(
 
     return NextResponse.json(incident);
   } catch (error) {
-    console.error(`❌ Erro ao buscar incidente:`, error);
+    console.error(` Erro ao buscar incidente:`, error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -87,7 +87,7 @@ export async function PUT(
       resolutionNotes,
     } = body;
 
-    console.log(`🎫 Atualizando incidente ${id}:`, body);
+    console.log(` Atualizando incidente ${id}:`, body);
 
     // Buscar usuário atual
     const currentUser = await prisma.user.findUnique({
@@ -214,14 +214,14 @@ export async function PUT(
       });
     }
 
-    console.log(`✅ Incidente ${id} atualizado com sucesso`);
+    console.log(` Incidente ${id} atualizado com sucesso`);
 
     // TODO: Enviar notificações para usuários relevantes
     // TODO: Se status mudou para RESOLVED, reativar sala/item se necessário
 
     return NextResponse.json(updatedIncident);
   } catch (error) {
-    console.error(`❌ Erro ao atualizar incidente:`, error);
+    console.error(` Erro ao atualizar incidente:`, error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -245,7 +245,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    console.log(`🎫 Tentativa de deletar incidente ${id}`);
+    console.log(` Tentativa de deletar incidente ${id}`);
 
     // Buscar usuário atual
     const currentUser = await prisma.user.findUnique({
@@ -276,11 +276,11 @@ export async function DELETE(
       where: { id },
     });
 
-    console.log(`✅ Incidente ${id} deletado com sucesso`);
+    console.log(` Incidente ${id} deletado com sucesso`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(`❌ Erro ao deletar incidente:`, error);
+    console.error(` Erro ao deletar incidente:`, error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -305,7 +305,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    console.log(`🔄 Atualizando incidente ${id}:`, body);
+    console.log(` Atualizando incidente ${id}:`, body);
 
     // Buscar usuário atual primeiro
     const currentUser = await prisma.user.findUnique({
@@ -469,10 +469,10 @@ export async function PATCH(
       });
     }
 
-    console.log(`✅ Incidente ${id} atualizado com sucesso`);
+    console.log(` Incidente ${id} atualizado com sucesso`);
     if (ignoredFields.length > 0) {
       console.log(
-        `⚠️ Campos ignorados devido a permissões: ${ignoredFields.join(", ")}`
+        ` Campos ignorados devido a permissões: ${ignoredFields.join(", ")}`
       );
     }
 
@@ -485,7 +485,7 @@ export async function PATCH(
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error(`❌ Erro ao atualizar incidente:`, error);
+    console.error(` Erro ao atualizar incidente:`, error);
     console.error("Stack trace:", error instanceof Error ? error.stack : "N/A");
 
     // Se for erro do Prisma, retornar mensagem mais específica

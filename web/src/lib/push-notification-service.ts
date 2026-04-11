@@ -26,7 +26,7 @@ export class PushNotificationService {
    */
   async sendToUser(userId: string, payload: Omit<PushNotificationPayload, 'to'>): Promise<boolean> {
     try {
-      console.log(`🔍 Buscando push tokens para usuário: ${userId}`);
+      console.log(` Buscando push tokens para usuário: ${userId}`);
       
       // Buscar tokens ativos do usuário
       const pushTokens = await prisma.pushToken.findMany({
@@ -39,25 +39,25 @@ export class PushNotificationService {
         }
       })
 
-      console.log(`📱 Tokens encontrados: ${pushTokens.length}`);
+      console.log(` Tokens encontrados: ${pushTokens.length}`);
       pushTokens.forEach((token, index) => {
         console.log(`Token ${index + 1}: ${token.token.substring(0, 20)}...`);
       });
 
       if (pushTokens.length === 0) {
-        console.log(`⚠️ Nenhum token push ativo encontrado para o usuário ${userId}`);
+        console.log(` Nenhum token push ativo encontrado para o usuário ${userId}`);
         return false
       }
 
       const tokens = pushTokens.map(pt => pt.token)
-      console.log(`🚀 Enviando push para ${tokens.length} tokens...`);
+      console.log(` Enviando push para ${tokens.length} tokens...`);
       
       const result = await this.sendToTokens(tokens, payload)
-      console.log(`📊 Resultado do envio: ${result}`);
+      console.log(` Resultado do envio: ${result}`);
       
       return result
     } catch (error) {
-      console.error('❌ Erro ao enviar notificação push para usuário:', error)
+      console.error('Erro ao enviar notificação push para usuário:', error)
       return false
     }
   }
@@ -67,7 +67,7 @@ export class PushNotificationService {
    */
   async sendToTokens(tokens: string[], payload: Omit<PushNotificationPayload, 'to'>): Promise<boolean> {
     try {
-      console.log(`📤 Preparando ${tokens.length} mensagens push...`);
+      console.log(` Preparando ${tokens.length} mensagens push...`);
       
       const messages: ExpoPushMessage[] = tokens.map(token => ({
         to: token,
@@ -78,14 +78,14 @@ export class PushNotificationService {
         badge: payload.badge
       }))
 
-      console.log(`📋 Mensagens preparadas:`, {
+      console.log(` Mensagens preparadas:`, {
         count: messages.length,
         title: payload.title,
         body: payload.body,
         firstToken: messages[0]?.to?.substring(0, 20) + '...'
       });
 
-      console.log(`🌐 Enviando para Expo: ${this.expoUrl}`);
+      console.log(` Enviando para Expo: ${this.expoUrl}`);
 
       const response = await fetch(this.expoUrl, {
         method: 'POST',
@@ -97,11 +97,11 @@ export class PushNotificationService {
         body: JSON.stringify(messages)
       })
 
-      console.log(`📡 Resposta HTTP: ${response.status} ${response.statusText}`);
+      console.log(` Resposta HTTP: ${response.status} ${response.statusText}`);
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ Erro na resposta do Expo:', {
+        console.error('Erro na resposta do Expo:', {
           status: response.status,
           statusText: response.statusText,
           body: errorText
@@ -110,37 +110,37 @@ export class PushNotificationService {
       }
 
       const result = await response.json()
-      console.log('📊 Resultado completo do Expo:', JSON.stringify(result, null, 2));
+      console.log('Resultado completo do Expo:', JSON.stringify(result, null, 2));
 
       // Verificar se há tokens inválidos e desativá-los
       if (result.data) {
         let invalidTokensCount = 0;
         for (let i = 0; i < result.data.length; i++) {
           const receipt = result.data[i]
-          console.log(`📋 Receipt ${i + 1}:`, receipt);
+          console.log(` Receipt ${i + 1}:`, receipt);
           
           if (receipt.status === 'error') {
             const invalidToken = tokens[i]
-            console.error(`❌ Token inválido: ${invalidToken?.substring(0, 20)}... - Erro: ${receipt.details?.error}`);
+            console.error(` Token inválido: ${invalidToken?.substring(0, 20)}... - Erro: ${receipt.details?.error}`);
             
             if (receipt.details?.error === 'DeviceNotRegistered') {
               await this.deactivateToken(invalidToken)
               invalidTokensCount++;
-              console.log(`🔄 Token desativado: ${invalidToken?.substring(0, 20)}...`);
+              console.log(` Token desativado: ${invalidToken?.substring(0, 20)}...`);
             }
           } else {
-            console.log(`✅ Push enviado com sucesso para token ${i + 1}`);
+            console.log(` Push enviado com sucesso para token ${i + 1}`);
           }
         }
         
         if (invalidTokensCount > 0) {
-          console.log(`⚠️ ${invalidTokensCount} tokens inválidos foram desativados`);
+          console.log(` ${invalidTokensCount} tokens inválidos foram desativados`);
         }
       }
 
       return true
     } catch (error) {
-      console.error('❌ Erro ao enviar notificações push:', error)
+      console.error('Erro ao enviar notificações push:', error)
       return false
     }
   }
@@ -184,7 +184,7 @@ export class PushNotificationService {
     })
 
     return await this.sendToUser(userId, {
-      title: '✅ Reserva Aprovada!',
+      title: "Reserva Aprovada!",
       body: `Sua reserva da ${reservationData.roomName} foi aprovada para ${startTimeFormatted} - ${endTimeFormatted}`,
       data: {
         type: 'RESERVATION_APPROVED',
@@ -215,7 +215,7 @@ export class PushNotificationService {
       : `Sua reserva da ${reservationData.roomName} para ${startTimeFormatted} foi rejeitada.`
 
     return await this.sendToUser(userId, {
-      title: '❌ Reserva Rejeitada',
+      title: "Reserva Rejeitada",
       body: bodyMessage,
       data: {
         type: 'RESERVATION_REJECTED',

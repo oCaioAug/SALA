@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
-    console.log("🔔 Contando notificações não lidas para usuário:", userId);
+    console.log("Contando notificações não lidas para usuário:", userId);
 
     if (!userId) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const now = Date.now();
 
     if (cached && now - cached.timestamp < CACHE_DURATION) {
-      console.log(`📦 Cache hit para ${userId}: ${cached.count}`);
+      console.log(` Cache hit para ${userId}: ${cached.count}`);
       return NextResponse.json({ count: cached.count });
     }
 
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     ])) as any;
 
     if (!user) {
-      console.log(`❌ Usuário não encontrado: ${userId}`);
+      console.log(` Usuário não encontrado: ${userId}`);
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 }
@@ -75,12 +75,12 @@ export async function GET(request: NextRequest) {
     cache.set(cacheKey, { count, timestamp: now });
 
     console.log(
-      `✅ Usuário ${user.email} (${user.id}) tem ${count} notificações não lidas`
+      ` Usuário ${user.email} (${user.id}) tem ${count} notificações não lidas`
     );
 
     return NextResponse.json({ count });
   } catch (error) {
-    console.error("❌ Erro ao contar notificações:", error);
+    console.error("Erro ao contar notificações:", error);
 
     // Se for erro de timeout ou conexão, retornar 0 em vez de erro
     if (
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         error.message.includes("connection pool") ||
         error.message.includes("P2024"))
     ) {
-      console.log("⚠️ Retornando 0 devido a timeout de conexão");
+      console.log(" Retornando 0 devido a timeout de conexão");
       return NextResponse.json({ count: 0 });
     }
 

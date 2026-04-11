@@ -64,6 +64,118 @@
       "cancel": "Annuler"
     }
   },
+  "Pagination": {
+    "prev": "Précédent",
+    "next": "Suivant",
+    "perPage": "Par page",
+    "pageOf": "Page {current} sur {total}",
+    "empty": "Aucun résultat",
+    "showing": "{start}–{end} sur {total}"
+  },
+  "SalasPage": {
+    "title": "Salles",
+    "subtitle": "Parcourir, filtrer et gérer les salles"
+  },
+  "DashboardHome": {
+    "title": "Tableau de bord",
+    "subtitle": "Aperçu du système et accès rapides",
+    "shortcutSalasTitle": "Salles",
+    "shortcutSalasDesc": "Lister les salles, articles et créer des salles",
+    "shortcutAgendamentosTitle": "Planning",
+    "shortcutAgendamentosDesc": "Calendrier et nouvelles réservations",
+    "shortcutIncidentesTitle": "Incidents",
+    "shortcutIncidentesDesc": "Signaler et suivre les incidents",
+    "open": "Ouvrir",
+    "incidentsAndRequests": {
+      "sectionTitle": "Incidents et demandes",
+      "sectionDescAdmin": "Vue d’ensemble des incidents et de la file d’approbation des réservations.",
+      "sectionDescUser": "Vos incidents et demandes de réservation en attente d’approbation.",
+      "incidentsTitle": "Incidents",
+      "incidentsDesc": "Volume par statut dans votre périmètre d’accès.",
+      "emptyIncidents": "Aucun incident dans ce périmètre.",
+      "openCountLabel": "Ouverts",
+      "totalLabel": "Total",
+      "openIncidentes": "Ouvrir les incidents",
+      "solicitationsTitle": "Demandes",
+      "solicitationsDesc": "Réservations en attente d’approbation.",
+      "pendingLabel": "En attente d’approbation",
+      "pendingZero": "Aucune demande en attente pour le moment.",
+      "openSolicitacoes": "Ouvrir les demandes",
+      "incidentStatus": {
+        "REPORTED": "Signalé",
+        "IN_ANALYSIS": "En analyse",
+        "IN_PROGRESS": "En cours",
+        "RESOLVED": "Résolu",
+        "CANCELLED": "Annulé"
+      }
+    },
+    "grid": {
+      "editDashboard": "Modifier le tableau",
+      "saveDashboard": "Enregistrer la disposition",
+      "cancelEdit": "Annuler",
+      "saving": "Enregistrement…",
+      "editModeHint": "Glissez et redimensionnez via les barres avec poignée. Enregistrez pour appliquer.",
+      "saveSuccess": "Disposition du tableau enregistrée.",
+      "saveError": "Impossible d’enregistrer la disposition. Réessayez.",
+      "restoreDefault": "Rétablir la disposition par défaut",
+      "restoreConfirm": "Rétablir la disposition par défaut du tableau de bord ? Votre personnalisation actuelle sera remplacée et enregistrée.",
+      "restoreSuccess": "Disposition par défaut rétablie.",
+      "restoreError": "Impossible de rétablir la disposition par défaut. Réessayez.",
+      "addWidgets": "Ajouter des widgets",
+      "widgetDrawerTitle": "Widgets du tableau de bord",
+      "paletteHint": "Glissez hors du panneau : il se ferme, puis déposez sur la grille. « Ajouter » remet un widget masqué en bas.",
+      "paletteHiddenBadge": "Masqué — glisser ou appuyer sur Ajouter",
+      "paletteOnBoardBadge": "Visible — glisser pour déplacer",
+      "paletteAddButton": "Ajouter",
+      "removeWidget": "Retirer le widget du tableau",
+      "widgetStatTotal": "Salles : total",
+      "widgetStatAvailable": "Salles : libres",
+      "widgetStatInUse": "Salles : occupées",
+      "widgetStatReserved": "Salles : réservées",
+      "widgetChartRoomStatus": "Graphique : salles par statut",
+      "widgetChartWeekly": "Graphique : réservations par semaine",
+      "widgetChartReservationStatus": "Graphique : réservations par statut",
+      "widgetChartTopRooms": "Graphique : salles les plus réservées",
+      "widgetIncidents": "Incidents",
+      "widgetSolicitations": "Demandes",
+      "widgetShortcutSalas": "Raccourci : Salles",
+      "widgetShortcutAgendamentos": "Raccourci : Planning",
+      "widgetShortcutIncidentes": "Raccourci : Incidents"
+    },
+    "charts": {
+      "sectionTitle": "Indicateurs",
+      "sectionDescAdmin": "Aperçu des dernières semaines et des réservations sur tout le système.",
+      "sectionDescUser": "Aperçu de vos réservations sur les dernières semaines.",
+      "roomStatusTitle": "Salles par statut",
+      "roomStatusDesc": "Répartition actuelle du statut publié des salles.",
+      "weeklyTitle": "Réservations par semaine",
+      "weeklyDesc": "Débuts de réservation par semaine (8 dernières semaines).",
+      "weeklySeries": "Réservations",
+      "emptyWeekly": "Aucune réservation sur cette période.",
+      "reservationStatusTitle": "Réservations par statut",
+      "reservationStatusDesc": "Volume sur la même période que les semaines affichées.",
+      "emptyStatus": "Aucune donnée de statut sur cette période.",
+      "topRoomsTitleAdmin": "Salles les plus réservées",
+      "topRoomsTitleUser": "Salles que vous réservez le plus",
+      "topRoomsDescAdmin": "Top 5 des salles par nombre de réservations sur la période.",
+      "topRoomsDescUser": "Vos salles les plus utilisées sur la période.",
+      "topRoomsSeries": "Réservations",
+      "emptyTopRooms": "Aucune réservation sur la période pour ce classement.",
+      "roomStatus": {
+        "livre": "Libre",
+        "emUso": "Occupée",
+        "reservado": "Réservée"
+      },
+      "reservationStatus": {
+        "PENDING": "En attente",
+        "APPROVED": "Approuvée",
+        "REJECTED": "Rejetée",
+        "CANCELLED": "Annulée",
+        "ACTIVE": "Active",
+        "COMPLETED": "Terminée"
+      }
+    }
+  },
   "Common": {
     "systemName": "S.A.L.A",
     "systemDescription": "Système de Gestion",
@@ -87,6 +199,10 @@
       "dashboard": {
         "label": "Vue d'ensemble",
         "description": "Tableau de bord principal"
+      },
+      "salas": {
+        "label": "Salles",
+        "description": "Lister et gérer les salles"
       },
       "solicitacoes": {
         "label": "Demandes",
@@ -131,7 +247,14 @@
       "settings": "Paramètres",
       "logout": "Déconnexion",
       "ariaLabel": "Changer de thème"
-    }
+    },
+    "guest": {
+      "greeting": "Bonjour, visiteur",
+      "loginPrompt": "Connectez-vous",
+      "login": "Connexion"
+    },
+    "openMenu": "Ouvrir le menu",
+    "menuTitle": "Menu"
   },
   "LanguageSwitcher": {
     "changeLanguage": "Changer de langue",
@@ -258,7 +381,7 @@
     "actions": {
       "refresh": "Actualiser la Liste",
       "debug": "Débogage",
-      "testPush": "Test Push 🔔"
+      "testPush": "Test Push"
     },
     "card": {
       "pending": "En attente",
@@ -267,8 +390,8 @@
       "end": "Fin",
       "purpose": "Objet",
       "notInformed": "Non renseigné",
-      "approve": "✅ Approuver",
-      "reject": "❌ Rejeter",
+      "approve": "Approuver",
+      "reject": "Rejeter",
       "rejectReason": "Motif du rejet (optionnel) :"
     },
     "table": {
@@ -498,8 +621,15 @@
     },
     "recurring": "Récurrente",
     "recurringInfo": "Il s'agit d'une réservation récurrente. L'approbation/le rejet affectera toutes les instances.",
-    "rejectReasonRecurring": "Raison du rejet (affectera toutes les instances) :",
-    "rejectReason": "Raison du rejet :"
+    "rejectModal": {
+      "title": "Refuser la demande",
+      "description": "Indiquez éventuellement le motif du refus.",
+      "descriptionRecurring": "Cette demande est récurrente : le refus s'applique à toutes les instances. Le motif est facultatif.",
+      "reasonLabel": "Motif du refus",
+      "placeholder": "Décrivez le motif du refus...",
+      "cancel": "Annuler",
+      "confirm": "Confirmer le refus"
+    }
   },
   "Notifications": {
     "title": "Notifications",
@@ -527,9 +657,9 @@
       "markRead": "Marquer comme lu",
       "markUnread": "Marcar comme non lu",
       "delete": "Supprimer",
-      "reload": "🔄 Recharger",
-      "debug": "🔍 Debug",
-      "test": "🧪 Test Notification"
+      "reload": "Recharger",
+      "debug": "Debug",
+      "test": "Test Notification"
     },
     "stats": {
       "total": "Total",
@@ -551,9 +681,9 @@
       "markReadSuccess": "Notification marquée comme lue",
       "deleteSuccess": "Notification supprimée",
       "error": "Erreur lors du traitement",
-      "debugSuccess": "📊 {count} notifications trouvées en base (voir console)",
+      "debugSuccess": "{count} notifications trouvées en base (voir console)",
       "debugError": "Erreur de debug",
-      "testSuccess": "✅ {message}",
+      "testSuccess": "{message}",
       "testError": "Erreur lors du test"
     }
   },
@@ -681,7 +811,7 @@
       "update": "Mettre à jour",
       "cancel": "Annuler",
       "category": "Catégorie",
-      "warning": "⚠️ Lieu requis",
+      "warning": "Lieu requis",
       "warningDescription": "Vous devez sélectionner au moins une salle ou un équipement spécifique.",
       "tip": "Conseil",
       "tipDescription": "Soyez précis dans la description pour accélérer la résolution."
@@ -788,8 +918,8 @@
       "specifications": "Spécifications (séparées par virgules)",
       "specificationsPlaceholder": "Ex : Windows 11, 16Go RAM, Core i7",
       "quantity": "Quantité",
-      "icon": "Icône (emoji)",
-      "iconPlaceholder": "💻",
+      "icon": "Icône",
+      "iconPlaceholder": "",
       "iconHint": "Optionnel - utilisé si pas d'image",
       "saving": "Enregistrement...",
       "updateItem": "Mettre à jour",
@@ -844,7 +974,7 @@
       "status": "Statut",
       "actions": "Actions"
     },
-    "testSession": "🧪 Test Session",
+    "testSession": "Test Session",
     "users": "Utilisateurs",
     "tryAgain": "Réessayer",
     "noUsersFound": "Aucun utilisateur trouvé",
@@ -909,8 +1039,8 @@
   "NotificationService": {
     "titles": {
       "reservationCreated": "Nouvelle Demande de Réservation",
-      "reservationApproved": "Réservation Approuvée ✅",
-      "reservationRejected": "Réservation Rejetée ❌",
+      "reservationApproved": "Réservation Approuvée",
+      "reservationRejected": "Réservation Rejetée",
       "reservationCancelled": "Réservation Annulée"
     },
     "messages": {

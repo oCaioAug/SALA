@@ -11,19 +11,19 @@ export async function PATCH(
   try {
     const { userId } = await params;
     console.log(
-      "🔄 API Role: Iniciando alteração de role para:",
+      "API Role: Iniciando alteração de role para:",
       userId
     );
 
     // Verificar autenticação
     const session = await getServerSession(authOptions);
-    console.log("🔑 Sessão obtida:", {
+    console.log("Sessão obtida:", {
       user: session?.user?.email,
       role: session?.user?.role,
     });
 
     if (!session?.user?.email) {
-      console.log("❌ Usuário não autenticado");
+      console.log("Usuário não autenticado");
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
@@ -33,10 +33,10 @@ export async function PATCH(
       select: { role: true, id: true },
     });
 
-    console.log("👤 Usuário atual:", currentUser);
+    console.log("Usuário atual:", currentUser);
 
     if (!currentUser || currentUser.role !== "ADMIN") {
-      console.log("❌ Usuário não é admin");
+      console.log("Usuário não é admin");
       return NextResponse.json(
         { error: "Acesso negado. Apenas administradores podem alterar roles." },
         { status: 403 }
@@ -44,11 +44,11 @@ export async function PATCH(
     }
 
     const { role } = await request.json();
-    console.log("📝 Novo role solicitado:", role);
+    console.log("Novo role solicitado:", role);
 
     // Validar o role
     if (!role || !["ADMIN", "USER"].includes(role)) {
-      console.log("❌ Role inválido:", role);
+      console.log("Role inválido:", role);
       return NextResponse.json(
         { error: "Role inválido. Use 'ADMIN' ou 'USER'." },
         { status: 400 }
@@ -60,10 +60,10 @@ export async function PATCH(
       where: { id: userId },
     });
 
-    console.log("🔍 Usuário a ser atualizado:", userToUpdate?.email);
+    console.log("Usuário a ser atualizado:", userToUpdate?.email);
 
     if (!userToUpdate) {
-      console.log("❌ Usuário não encontrado");
+      console.log("Usuário não encontrado");
       return NextResponse.json(
         { error: "Usuário não encontrado" },
         { status: 404 }
@@ -72,7 +72,7 @@ export async function PATCH(
 
     // Impedir que o usuário altere seu próprio role
     if (userToUpdate.id === currentUser.id) {
-      console.log("❌ Tentativa de auto-alteração de role");
+      console.log("Tentativa de auto-alteração de role");
       return NextResponse.json(
         { error: "Você não pode alterar sua própria permissão" },
         { status: 400 }
@@ -80,7 +80,7 @@ export async function PATCH(
     }
 
     // Atualizar o role do usuário
-    console.log("🔄 Atualizando role no banco de dados...");
+    console.log("Atualizando role no banco de dados...");
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { role },
@@ -93,10 +93,10 @@ export async function PATCH(
       },
     });
 
-    console.log("✅ Usuário atualizado com sucesso:", updatedUser);
+    console.log("Usuário atualizado com sucesso:", updatedUser);
     return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error("❌ Erro ao alterar role do usuário:", error);
+    console.error("Erro ao alterar role do usuário:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // GET /api/notifications/debug - Listar todas as notificações para debug
 export async function GET() {
   try {
-    console.log("🔍 Listando TODAS as notificações para debug...");
+    console.log("Listando TODAS as notificações para debug...");
 
     const notifications = await prisma.notification.findMany({
       include: {
@@ -23,11 +23,11 @@ export async function GET() {
       },
     });
 
-    console.log(`📊 Total de notificações no banco: ${notifications.length}`);
+    console.log(` Total de notificações no banco: ${notifications.length}`);
 
     // Log detalhado
     if (notifications.length > 0) {
-      console.log("📋 Todas as notificações no banco:");
+      console.log("Todas as notificações no banco:");
       notifications.forEach((notif, index) => {
         console.log(`  ${index + 1}. [${notif.type}] ${notif.title}`);
         console.log(`      Para: ${notif.user.email} (${notif.user.role})`);
@@ -53,7 +53,7 @@ export async function GET() {
       })),
     });
   } catch (error) {
-    console.error("❌ Erro ao listar notificações para debug:", error);
+    console.error("Erro ao listar notificações para debug:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

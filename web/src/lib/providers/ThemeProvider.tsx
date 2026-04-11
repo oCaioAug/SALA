@@ -14,59 +14,40 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function applyThemeClass(next: Theme) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  root.classList.remove("dark", "light");
+  root.classList.add(next);
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Começar sempre com dark para evitar flash
   const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Só executar no cliente após montagem
     setMounted(true);
-
-    // Carregar tema do localStorage de forma segura
-    const savedTheme = safeLocalStorage.getItem("theme") as Theme | null;
-    const initialTheme = savedTheme || "dark";
-
-    // Aplicar tema ao documentElement de forma segura
-    if (typeof document !== "undefined") {
-      const root = document.documentElement;
-      // Remover todas as classes de tema primeiro
-      root.classList.remove("dark", "light");
-      // Adicionar a classe correta
-      root.classList.add(initialTheme);
-    }
-
-    // Atualizar estado apenas se diferente
-    if (initialTheme !== theme) {
-      setThemeState(initialTheme);
-    }
-  }, [theme]);
-
-  const applyTheme = (newTheme: Theme) => {
-    if (typeof document !== "undefined") {
-      const root = document.documentElement;
-      console.log(`🎨 Applying theme ${newTheme} to document root`);
-      console.log(`🎨 Before: ${root.classList.toString()}`);
-      root.classList.remove("dark", "light");
-      root.classList.add(newTheme);
-      console.log(`🎨 After: ${root.classList.toString()}`);
-    }
-  };
+    const saved = safeLocalStorage.getItem("theme") as Theme | null;
+    const initial = saved === "light" || saved === "dark" ? saved : "dark";
+    setThemeState(initial);
+    applyThemeClass(initial);
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
-    console.log(`🎨 Setting theme to: ${newTheme}`);
     setThemeState(newTheme);
     safeLocalStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
+    applyThemeClass(newTheme);
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    console.log(`🎨 Toggling theme from ${theme} to ${newTheme}`);
-    setTheme(newTheme);
+    setThemeState(prev => {
+      const next = prev === "dark" ? "light" : "dark";
+      safeLocalStorage.setItem("theme", next);
+      applyThemeClass(next);
+      return next;
+    });
   };
 
-  // Renderizar com tema padrão até estar montado para evitar flash
   const contextValue = {
     theme: mounted ? theme : "dark",
     toggleTheme,

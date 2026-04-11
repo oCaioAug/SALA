@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    console.log("🎫 Buscando incidentes com filtros:", {
+    console.log("Buscando incidentes com filtros:", {
       status,
       priority,
       category,
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     console.log(
-      `✅ Encontrados ${incidents.length} incidentes de ${total} total`
+      ` Encontrados ${incidents.length} incidentes de ${total} total`
     );
 
     return NextResponse.json({
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ Erro ao buscar incidentes:", error);
+    console.error("Erro ao buscar incidentes:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       estimatedResolutionTime,
     } = body;
 
-    console.log("🎫 Criando novo incidente:", {
+    console.log("Criando novo incidente:", {
       title,
       description,
       priority,
@@ -274,11 +274,11 @@ export async function POST(request: NextRequest) {
     // TODO: Criar notificações para administradores
     // TODO: Se for incidente crítico, bloquear a sala/item
 
-    console.log(`✅ Incidente criado com ID: ${incident.id}`);
+    console.log(` Incidente criado com ID: ${incident.id}`);
 
     return NextResponse.json(incident, { status: 201 });
   } catch (error) {
-    console.error("❌ Erro ao criar incidente:", error);
+    console.error("Erro ao criar incidente:", error);
     return NextResponse.json(
       {
         error: "Erro interno do servidor",

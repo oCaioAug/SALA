@@ -20,8 +20,9 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/Calendar";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Modal } from "@/components/ui/Modal";
+import { Pagination } from "@/components/ui/Pagination";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { ReservationWithUser, Room, User } from "@/lib/types";
@@ -45,6 +46,8 @@ const AgendamentosPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [createReservationLoading, setCreateReservationLoading] =
     useState(false);
+  const [dayPage, setDayPage] = useState(1);
+  const [dayPageSize, setDayPageSize] = useState(12);
 
   const { showSuccess, showError } = useApp();
 
@@ -126,6 +129,25 @@ const AgendamentosPage: React.FC = () => {
     });
   };
 
+  const filteredIds = new Set(filteredReservations.map(r => r.id));
+  const reservationsForSelectedDay = getReservationsForDate(
+    selectedDate
+  ).filter(r => filteredIds.has(r.id));
+  const totalDayReservations = reservationsForSelectedDay.length;
+  const totalDayPages = Math.max(
+    1,
+    Math.ceil(totalDayReservations / dayPageSize)
+  );
+  const safeDayPage = Math.min(dayPage, totalDayPages);
+  const paginatedDayReservations = reservationsForSelectedDay.slice(
+    (safeDayPage - 1) * dayPageSize,
+    safeDayPage * dayPageSize
+  );
+
+  useEffect(() => {
+    setDayPage(1);
+  }, [selectedDate, searchTerm, statusFilter]);
+
   const handleReservationClick = (reservation: ReservationWithUser) => {
     setSelectedReservation(reservation);
     setIsDetailsModalOpen(true);
@@ -175,7 +197,7 @@ const AgendamentosPage: React.FC = () => {
       // Se for reserva recorrente, adicionar todas as instâncias
       if (responseData.isRecurring && responseData.reservations) {
         console.log(
-          `✅ Adicionando ${responseData.reservations.length} reservas recorrentes ao estado`
+          ` Adicionando ${responseData.reservations.length} reservas recorrentes ao estado`
         );
         setReservations(prev => [...responseData.reservations, ...prev]);
         showSuccess(
@@ -268,20 +290,6 @@ const AgendamentosPage: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <LoadingPage message={t("loading")} />;
-  }
-
-  if (error) {
-    return (
-      <ErrorPage
-        error={error}
-        onRetry={() => window.location.reload()}
-        retryLabel={t("retryLabel")}
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -289,6 +297,17 @@ const AgendamentosPage: React.FC = () => {
       isNavigating={isNavigating}
       onNotificationClick={() => {}}
     >
+      {loading ? (
+        <LoadingPage variant="embedded" message={t("loading")} />
+      ) : error ? (
+        <ErrorPage
+          variant="embedded"
+          error={error}
+          onRetry={() => window.location.reload()}
+          retryLabel={t("retryLabel")}
+        />
+      ) : (
+      <>
       {/* Header da página */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -367,7 +386,7 @@ const AgendamentosPage: React.FC = () => {
                 })}
               </CardTitle>
               <p className="text-slate-600 dark:text-gray-400 text-sm">
-                {getReservationsForDate(selectedDate).length}{" "}
+                {totalDayReservations}{" "}
                 {t("reservationsFound")}
               </p>
             </div>
@@ -375,7 +394,7 @@ const AgendamentosPage: React.FC = () => {
         </div>
 
         <CardContent className="p-6">
-          {getReservationsForDate(selectedDate).length === 0 ? (
+          {totalDayReservations === 0 ? (
             <EmptyState
               icon={
                 <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
@@ -385,7 +404,7 @@ const AgendamentosPage: React.FC = () => {
             />
           ) : (
             <div className="space-y-4">
-              {getReservationsForDate(selectedDate).map(reservation => (
+              {paginatedDayReservations.map(reservation => (
                 <div
                   key={reservation.id}
                   className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
@@ -443,13 +462,22 @@ const AgendamentosPage: React.FC = () => {
                   </div>
                 </div>
               ))}
+              <Pagination
+                page={safeDayPage}
+                pageSize={dayPageSize}
+                total={totalDayReservations}
+                onPageChange={setDayPage}
+                onPageSizeChange={size => {
+                  setDayPageSize(size);
+                  setDayPage(1);
+                }}
+              />
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Modal de detalhes da reserva */}
-      <Modal
+      <Drawer
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         title={t("modal.details")}
@@ -557,10 +585,9 @@ const AgendamentosPage: React.FC = () => {
             </div>
           </div>
         )}
-      </Modal>
+      </Drawer>
 
-      {/* Modal para criar reserva */}
-      <Modal
+      <Drawer
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title={t("modal.create")}
@@ -574,7 +601,9 @@ const AgendamentosPage: React.FC = () => {
           onCancel={() => setIsCreateModalOpen(false)}
           loading={createReservationLoading}
         />
-      </Modal>
+      </Drawer>
+      </>
+      )}
     </PageLayout>
   );
 };

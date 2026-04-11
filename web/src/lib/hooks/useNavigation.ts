@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+
+import { useRouter } from "@/navigation";
 
 interface UseNavigationProps {
   currentPage: string;
@@ -18,7 +19,6 @@ export const useNavigation = ({
     new Set()
   );
 
-  // Prefetch das páginas mais comuns
   useEffect(() => {
     const pagesToPrefetch = [
       "/configuracoes",
@@ -28,6 +28,8 @@ export const useNavigation = ({
       "/incidentes",
       "/users",
       "/profile",
+      "/salas",
+      "/dashboard",
     ];
 
     pagesToPrefetch.forEach(page => {
@@ -40,18 +42,16 @@ export const useNavigation = ({
 
   const navigate = useCallback(
     async (page: string) => {
-      // Evitar navegação desnecessária
       if (currentPage === page) return;
 
       setIsNavigating(true);
       onPageChange?.(page);
 
-      // Pequeno delay para feedback visual
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // Mapear páginas para rotas
       const routeMap: Record<string, string> = {
         dashboard: "/dashboard",
+        salas: "/salas",
         solicitacoes: "/solicitacoes",
         agendamentos: "/agendamentos",
         notificacoes: "/notificacoes",
@@ -62,11 +62,8 @@ export const useNavigation = ({
       };
 
       const route = routeMap[page] || "/dashboard";
-
-      // Navegar usando router.push
       router.push(route);
 
-      // Reset loading state após navegação
       setTimeout(() => setIsNavigating(false), 200);
     },
     [currentPage, router, onPageChange]

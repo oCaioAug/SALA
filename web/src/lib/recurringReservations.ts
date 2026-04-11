@@ -273,7 +273,7 @@ export async function checkRecurringConflicts(
     });
 
     if (conflict) {
-      console.log(`⚠️ Conflito detectado:`, {
+      console.log(` Conflito detectado:`, {
         tentativa: {
           start: reservation.startTime.toISOString(),
           end: reservation.endTime.toISOString(),

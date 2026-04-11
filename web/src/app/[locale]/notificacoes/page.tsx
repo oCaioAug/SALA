@@ -14,6 +14,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
+import { MdOutlineBugReport, MdOutlineScience, MdRefresh } from "react-icons/md";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -93,13 +94,13 @@ const NotificationPage: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("📨 Notificações recebidas:", data);
-      console.log("📊 Filtros aplicados:", { filter, typeFilter });
-      console.log("👤 Usuário logado:", session?.user?.email);
+      console.log("[notificacoes] Notificações recebidas:", data);
+      console.log("[notificacoes] Filtros aplicados:", { filter, typeFilter });
+      console.log("[notificacoes] Usuário logado:", session?.user?.email);
 
       // A API retorna as notificações diretamente, não em data.notifications
       const notificationsList = Array.isArray(data) ? data : [];
-      console.log("📋 Total de notificações:", notificationsList.length);
+      console.log("[notificacoes] Total de notificações:", notificationsList.length);
 
       setNotifications(notificationsList);
     } catch (err) {
@@ -396,20 +397,6 @@ const NotificationPage: React.FC = () => {
   };
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  if (loading) {
-    return <LoadingPage message={t("loading")} />;
-  }
-
-  if (error) {
-    return (
-      <ErrorPage
-        error={error}
-        onRetry={() => fetchNotifications()}
-        retryLabel={tCommon("retry")}
-      />
-    );
-  }
-
   return (
     <PageLayout
       currentPage={currentPage}
@@ -419,6 +406,17 @@ const NotificationPage: React.FC = () => {
       onNotificationItemClick={handleNotificationClick}
       notificationUpdateTrigger={notificationUpdateTrigger}
     >
+      {loading ? (
+        <LoadingPage variant="embedded" message={t("loading")} />
+      ) : error ? (
+        <ErrorPage
+          variant="embedded"
+          error={error}
+          onRetry={() => fetchNotifications()}
+          retryLabel={tCommon("retry")}
+        />
+      ) : (
+      <>
       {/* Header da página */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -447,43 +445,50 @@ const NotificationPage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="outline"
+              className="gap-2"
               onClick={() => {
-                console.log("🔄 Recarregando notificações...");
+                console.log("[notificacoes] Recarregando notificações...");
                 fetchNotifications();
               }}
             >
+              <MdRefresh className="h-4 w-4 shrink-0" aria-hidden />
               {t("actions.reload")}
             </Button>
             {session?.user?.role === "ADMIN" && (
               <>
                 <Button
                   variant="outline"
+                  className="gap-2"
                   onClick={async () => {
                     try {
                       console.log(
-                        "🔍 Verificando todas as notificações no banco..."
+                        "[notificacoes] Verificando todas as notificações no banco..."
                       );
                       const response = await fetch("/api/notifications/debug");
 
                       if (response.ok) {
                         const result = await response.json();
-                        console.log("📊 Debug das notificações:", result);
+                        console.log("[notificacoes] Debug das notificações:", result);
                         showSuccess(
-                          `📊 ${result.total} notificações encontradas no banco (veja o console)`
+                          t("feedback.debugSuccess", {
+                            count: result.total,
+                          })
                         );
                       } else {
                         showError("Erro ao buscar debug");
                       }
                     } catch (error) {
-                      console.error("❌ Erro no debug:", error);
+                      console.error("[notificacoes] Erro no debug:", error);
                       showError("Erro ao buscar debug");
                     }
                   }}
                 >
+                  <MdOutlineBugReport className="h-4 w-4 shrink-0" aria-hidden />
                   {t("actions.debug")}
                 </Button>
                 <Button
                   variant="outline"
+                  className="gap-2"
                   onClick={async () => {
                     try {
                       const response = await fetch(
@@ -499,22 +504,23 @@ const NotificationPage: React.FC = () => {
                         showSuccess(
                           t("feedback.testSuccess", { message: result.message })
                         );
-                        console.log("🧪 Resultado do teste:", result);
+                        console.log("[notificacoes] Resultado do teste:", result);
                         // Recarregar notificações
                         setTimeout(() => fetchNotifications(), 1000);
                       } else {
                         const errorData = await response
                           .json()
                           .catch(() => ({}));
-                        console.error("❌ Erro na resposta:", errorData);
+                        console.error("[notificacoes] Erro na resposta:", errorData);
                         showError(t("feedback.testError"));
                       }
                     } catch (error) {
-                      console.error("❌ Erro na requisição:", error);
+                      console.error("[notificacoes] Erro na requisição:", error);
                       showError(t("feedback.testError"));
                     }
                   }}
                 >
+                  <MdOutlineScience className="h-4 w-4 shrink-0" aria-hidden />
                   {t("actions.test")}
                 </Button>
               </>
@@ -752,6 +758,8 @@ const NotificationPage: React.FC = () => {
           ))
         )}
       </div>
+      </>
+      )}
     </PageLayout>
   );
 };

@@ -252,17 +252,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Usuário */}
       <div>
-        <label className="text-sm font-medium text-gray-300 mb-2 block">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
           {t("user")} *
         </label>
         <div className="relative">
-          <UserIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+          <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
           <select
             name="userId"
             value={formData.userId}
             onChange={handleInputChange}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.userId ? "border-red-500" : "border-gray-600"
+            className={`w-full rounded-lg border bg-white py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
+              errors.userId
+                ? "border-red-500"
+                : "border-slate-300 dark:border-slate-600"
             }`}
             required
           >
@@ -284,17 +286,19 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Sala */}
       <div>
-        <label className="text-sm font-medium text-gray-300 mb-2 block">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
           {t("room")} *
         </label>
         <div className="relative">
-          <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+          <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
           <select
             name="roomId"
             value={formData.roomId}
             onChange={handleInputChange}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.roomId ? "border-red-500" : "border-gray-600"
+            className={`w-full rounded-lg border bg-white py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
+              errors.roomId
+                ? "border-red-500"
+                : "border-slate-300 dark:border-slate-600"
             }`}
             required
           >
@@ -317,18 +321,20 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       {/* Horários */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium text-gray-300 mb-2 block">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
             {t("start")} *
           </label>
           <div className="relative">
-            <Clock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
             <input
               type="datetime-local"
               name="startTime"
               value={formData.startTime}
               onChange={handleInputChange}
-              className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.startTime ? "border-red-500" : "border-gray-600"
+              className={`w-full rounded-lg border bg-white py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
+                errors.startTime
+                  ? "border-red-500"
+                  : "border-slate-300 dark:border-slate-600"
               }`}
               required
             />
@@ -342,18 +348,20 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-300 mb-2 block">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
             {t("end")} *
           </label>
           <div className="relative">
-            <Clock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
             <input
               type="datetime-local"
               name="endTime"
               value={formData.endTime}
               onChange={handleInputChange}
-              className={`w-full pl-10 pr-4 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.endTime ? "border-red-500" : "border-gray-600"
+              className={`w-full rounded-lg border bg-white py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
+                errors.endTime
+                  ? "border-red-500"
+                  : "border-slate-300 dark:border-slate-600"
               }`}
               required
             />
@@ -381,7 +389,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Propósito */}
       <div>
-        <label className="text-sm font-medium text-gray-300 mb-2 block">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
           {t("purpose")}
         </label>
         <textarea
@@ -389,13 +397,13 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           value={formData.purpose}
           onChange={handleInputChange}
           placeholder={t("purposePlaceholder")}
-          className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-400"
           rows={3}
         />
       </div>
 
       {/* Recorrência */}
-      <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+      <div className="rounded-lg border border-slate-200 bg-slate-100/80 p-4 dark:border-slate-700 dark:bg-slate-800/50">
         <div className="flex items-center gap-3 mb-4">
           <input
             type="checkbox"
@@ -410,11 +418,11 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                   : [],
               }));
             }}
-            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+            className="h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700"
           />
           <label
             htmlFor="isRecurring"
-            className="text-sm font-medium text-gray-300 cursor-pointer"
+            className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
           >
             {t("recurring") || "Reserva Recorrente"}
           </label>
@@ -424,14 +432,14 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
           <div className="space-y-4 mt-4">
             {/* Padrão de recorrência */}
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                 {t("recurringPattern") || "Padrão de Recorrência"} *
               </label>
               <select
                 name="recurringPattern"
                 value={formData.recurringPattern}
                 onChange={handleInputChange}
-                className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
               >
                 <option value="DAILY">{t("daily") || "Diário"}</option>
                 <option value="WEEKLY">{t("weekly") || "Semanal"}</option>
@@ -442,7 +450,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
             {/* Dias da semana (apenas para padrão semanal) */}
             {formData.recurringPattern === "WEEKLY" && (
               <div>
-                <label className="text-sm font-medium text-gray-300 mb-2 block">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                   {t("recurringDays") || "Dias da Semana"} *
                 </label>
                 <div className="grid grid-cols-7 gap-2">
@@ -471,10 +479,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                           recurringDaysOfWeek: newDays,
                         }));
                       }}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                         formData.recurringDaysOfWeek.includes(day.value)
                           ? "bg-blue-600 text-white"
-                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                          : "bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                       }`}
                     >
                       {day.label}
@@ -492,7 +500,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
             {/* Data final */}
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                 {t("recurringEndDate") || "Data Final"} *
               </label>
               <input
@@ -505,8 +513,10 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                     ? formData.startTime.split("T")[0]
                     : undefined
                 }
-                className={`w-full px-3 py-3 bg-gray-700 border rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.recurringEndDate ? "border-red-500" : "border-gray-600"
+                className={`w-full rounded-lg border bg-white px-3 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
+                  errors.recurringEndDate
+                    ? "border-red-500"
+                    : "border-slate-300 dark:border-slate-600"
                 }`}
                 required={formData.isRecurring}
               />
@@ -522,11 +532,11 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
       </div>
 
       {/* Informações adicionais */}
-      <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-        <h4 className="text-sm font-medium text-gray-300 mb-2">
+      <div className="rounded-lg border border-slate-200 bg-slate-100/80 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+        <h4 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
           {t("importantInfo")}
         </h4>
-        <ul className="text-xs text-gray-400 space-y-1">
+        <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
           <li>• {t("info1")}</li>
           <li>• {t("info2")}</li>
           <li>• {t("info3")}</li>

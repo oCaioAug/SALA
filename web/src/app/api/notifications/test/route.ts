@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const { userId, title, message } = await request.json();
 
-    console.log("🧪 Criando notificação de teste:", { userId, title, message });
+    console.log("Criando notificação de teste:", { userId, title, message });
 
     if (!userId) {
       return NextResponse.json(
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("✅ Notificação de teste criada:", notification.id);
+    console.log("Notificação de teste criada:", notification.id);
 
     return NextResponse.json({
       success: true,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       message: "Notificação de teste criada com sucesso!",
     });
   } catch (error) {
-    console.error("❌ Erro ao criar notificação de teste:", error);
+    console.error("Erro ao criar notificação de teste:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }

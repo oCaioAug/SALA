@@ -20,7 +20,7 @@ import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Modal } from "@/components/ui/Modal";
+import { Drawer } from "@/components/ui/Drawer";
 import { useIncidents } from "@/hooks/useIncidents";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
@@ -369,18 +369,21 @@ export default function IncidentsPage() {
     return `${diffInYears} ${unit} ${t("time.ago")}`;
   };
 
-  // Loading state
-  if (status === "loading") {
-    return <LoadingPage message={t("loading")} />;
-  }
-
-  // Auth error state
   if (status === "unauthenticated") {
-    return <ErrorPage error={t("feedback.authError")} />;
+    return (
+      <ErrorPage variant="fullscreen" error={t("feedback.authError")} />
+    );
   }
 
   return (
-    <PageLayout currentPage={currentPage} onNavigate={navigate}>
+    <PageLayout
+      currentPage={currentPage}
+      onNavigate={navigate}
+      isNavigating={isNavigating}
+    >
+      {status === "loading" ? (
+        <LoadingPage variant="embedded" message={t("loading")} />
+      ) : (
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -715,8 +718,7 @@ export default function IncidentsPage() {
           </Card>
         )}
 
-        {/* Modal de Detalhes do Incidente */}
-        <Modal
+        <Drawer
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
           title={t("details.title")}
@@ -905,10 +907,9 @@ export default function IncidentsPage() {
               </div>
             </div>
           )}
-        </Modal>
+        </Drawer>
 
-        {/* Modal de Edição do Incidente */}
-        <Modal
+        <Drawer
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           title={t("form.update")}
@@ -1085,10 +1086,9 @@ export default function IncidentsPage() {
               </div>
             </form>
           )}
-        </Modal>
+        </Drawer>
 
-        {/* Modal de Criação de Incidente */}
-        <Modal
+        <Drawer
           isOpen={isCreateModalOpen}
           onClose={() => {
             setIsCreateModalOpen(false);
@@ -1324,8 +1324,9 @@ export default function IncidentsPage() {
               </Button>
             </div>
           </form>
-        </Modal>
+        </Drawer>
       </div>
+      )}
     </PageLayout>
   );
 }

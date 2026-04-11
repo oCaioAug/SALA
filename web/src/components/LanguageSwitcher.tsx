@@ -3,6 +3,7 @@
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
+import { FaCheck } from "react-icons/fa";
 
 import { locales } from "@/config";
 import { usePathname, useRouter } from "@/navigation";
@@ -74,9 +75,10 @@ export default function LanguageSwitcher() {
                 >
                   <span className="text-sm">{localeLabels[locale]}</span>
                   {locale === localeActive && (
-                    <span className="ml-auto text-blue-600 dark:text-blue-400">
-                      ✓
-                    </span>
+                    <FaCheck
+                      className="ml-auto h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400"
+                      aria-hidden
+                    />
                   )}
                 </button>
               ))}

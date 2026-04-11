@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { roomUpdateBodySchema } from "@/lib/validation/room";
 
 export async function GET(
   request: NextRequest,
@@ -60,16 +61,34 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
-    const { name, description, capacity, status } = body;
+    const json = await request.json();
+    const parsed = roomUpdateBodySchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Dados inválidos", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const data = parsed.data;
 
     const room = await prisma.room.update({
       where: { id },
       data: {
-        name,
-        description,
-        capacity: capacity ? parseInt(capacity) : null,
-        status,
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.description !== undefined && {
+          description: data.description,
+        }),
+        ...(data.capacity !== undefined && { capacity: data.capacity }),
+        ...(data.locationDescription !== undefined && {
+          locationDescription: data.locationDescription,
+        }),
+        ...(data.outletCount !== undefined && {
+          outletCount: data.outletCount,
+        }),
+        ...(data.climateControlled !== undefined && {
+          climateControlled: data.climateControlled,
+        }),
+        ...(data.status !== undefined && { status: data.status }),
       },
       include: {
         items: {

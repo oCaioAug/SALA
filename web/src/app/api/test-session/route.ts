@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    console.log("🔍 Testing session...");
+    console.log("Testing session...");
 
     const session = await getServerSession(authOptions);
     console.log("Session data:", {
