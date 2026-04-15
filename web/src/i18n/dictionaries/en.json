@@ -748,7 +748,11 @@
       "authError": "Authentication error:",
       "callbackError": "Google callback error. Check OAuth settings.",
       "noAccount": "Don't have an account?",
-      "createAccount": "Create one now"
+      "createAccount": "Create one now",
+      "legalConsent": "By signing in, you agree to our",
+      "legalAnd": "and our",
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy"
     }
   },
   "RoomDetail": {

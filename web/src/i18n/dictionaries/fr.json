@@ -748,7 +748,11 @@
       "authError": "Erreur d'authentification :",
       "callbackError": "Erreur callback Google.",
       "noAccount": "Pas de compte ?",
-      "createAccount": "Créer un compte"
+      "createAccount": "Créer un compte",
+      "legalConsent": "En vous connectant, vous acceptez nos",
+      "legalAnd": "et notre",
+      "termsOfService": "Conditions d'utilisation",
+      "privacyPolicy": "Politique de confidentialité"
     }
   },
   "RoomDetail": {

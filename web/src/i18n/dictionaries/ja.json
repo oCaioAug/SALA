@@ -747,7 +747,11 @@
       "authError": "認証エラー：",
       "callbackError": "Googleコールバックエラー。OAuth設定を確認してください。",
       "noAccount": "アカウントをお持ちではありませんか？",
-      "createAccount": "今すぐ作成"
+      "createAccount": "今すぐ作成",
+      "legalConsent": "サインインすることで、当社の",
+      "legalAnd": "および",
+      "termsOfService": "利用規約",
+      "privacyPolicy": "プライバシーポリシー》に同意したことになります"
     }
   },
   "RoomDetail": {
