@@ -8,7 +8,7 @@
 
 - **Descrição**: O sistema deve permitir que usuários façam login usando suas contas Google.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC1 (Autenticar)
+- **Casos de Uso Relacionados**: CDU1 (Autenticar)
 - **Critérios de Aceitação**:
   - Usuário pode fazer login com conta Google
   - Sistema cria automaticamente conta se não existir
@@ -19,7 +19,7 @@
 
 - **Descrição**: O sistema deve diferenciar permissões entre usuários ADMIN e USER.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC1, UC5, UC6, UC8, UC10
+- **Casos de Uso Relacionados**: CDU1, CDU5, CDU6, CDU8, CDU10
 - **Critérios de Aceitação**:
   - Apenas ADMIN pode aprovar/rejeitar reservas
   - Apenas ADMIN pode gerenciar salas e itens
@@ -30,7 +30,7 @@
 
 - **Descrição**: O sistema deve gerar tokens de autenticação para aplicativo mobile.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC1
+- **Casos de Uso Relacionados**: CDU1
 - **Critérios de Aceitação**:
   - API deve gerar token JWT para autenticação mobile
   - Token deve expirar após período determinado
@@ -40,7 +40,7 @@
 
 - **Descrição**: Usuário deve poder visualizar suas informações de perfil.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC2 (Gerenciar Perfil)
+- **Casos de Uso Relacionados**: CDU2 (Gerenciar Perfil)
 - **Critérios de Aceitação**:
   - Exibir nome, email e foto do perfil
   - Exibir role do usuário
@@ -50,7 +50,7 @@
 
 - **Descrição**: Usuário deve poder editar suas informações de perfil.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC2 (Gerenciar Perfil)
+- **Casos de Uso Relacionados**: CDU2 (Gerenciar Perfil)
 - **Critérios de Aceitação**:
   - Permitir alteração do nome
   - Permitir upload de foto de perfil
@@ -63,7 +63,7 @@
 
 - **Descrição**: Usuário deve poder criar solicitação de reserva de sala.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC3 (Criar Reserva)
+- **Casos de Uso Relacionados**: CDU3 (Criar Reserva)
 - **Critérios de Aceitação**:
   - Seleção de sala disponível
   - Definição de data e horário de início e fim
@@ -75,7 +75,7 @@
 
 - **Descrição**: Sistema deve suportar criação de reservas recorrentes (diárias, semanais, mensais).
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC3 (Criar Reserva)
+- **Casos de Uso Relacionados**: CDU3 (Criar Reserva)
 - **Critérios de Aceitação**:
   - Seleção de padrão de recorrência (DAILY, WEEKLY, MONTHLY)
   - Para WEEKLY: seleção de dias da semana
@@ -87,7 +87,7 @@
 
 - **Descrição**: Usuário deve poder visualizar suas reservas e administrador todas as reservas.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC4 (Visualizar Reservas)
+- **Casos de Uso Relacionados**: CDU4 (Visualizar / Cancelar Reservas)
 - **Critérios de Aceitação**:
   - Listagem de reservas com filtros (status, data, sala)
   - Visualização de detalhes da reserva
@@ -98,7 +98,7 @@
 
 - **Descrição**: Administrador deve poder aprovar ou rejeitar solicitações de reserva.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC5 (Aprovar/Rejeitar Reserva)
+- **Casos de Uso Relacionados**: CDU5 (Aprovar / Rejeitar Reserva)
 - **Critérios de Aceitação**:
   - Apenas ADMIN pode aprovar/rejeitar
   - Notificação automática ao usuário sobre decisão
@@ -109,7 +109,7 @@
 
 - **Descrição**: Sistema deve verificar automaticamente conflitos de horário ao criar reservas.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC3 (Criar Reserva)
+- **Casos de Uso Relacionados**: CDU3 (Criar Reserva)
 - **Critérios de Aceitação**:
   - Verificar sobreposição de horários
   - Impedir criação de reservas conflitantes
@@ -120,7 +120,7 @@
 
 - **Descrição**: Usuário deve poder cancelar suas próprias reservas.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC4 (Visualizar Reservas)
+- **Casos de Uso Relacionados**: CDU4 (Visualizar / Cancelar Reservas)
 - **Critérios de Aceitação**:
   - Usuário pode cancelar apenas suas reservas
   - Status alterado para CANCELLED
@@ -133,7 +133,7 @@
 
 - **Descrição**: Usuários devem poder visualizar lista de salas disponíveis.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC6 (Gerenciar Salas)
+- **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - Listagem de todas as salas
   - Informações: nome, descrição, capacidade, status
@@ -144,7 +144,7 @@
 
 - **Descrição**: Administrador deve poder criar, editar e gerenciar salas.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC6 (Gerenciar Salas)
+- **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - Criar nova sala com nome, descrição e capacidade
   - Editar informações da sala
@@ -155,7 +155,7 @@
 
 - **Descrição**: Administrador deve poder gerenciar itens/equipamentos das salas.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC6 (Gerenciar Salas)
+- **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - Adicionar itens a uma sala
   - Editar informações do item (nome, descrição, quantidade)
@@ -169,7 +169,7 @@
 
 - **Descrição**: Usuário deve poder reportar incidentes relacionados a salas ou itens.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC7 (Reportar Incidente)
+- **Casos de Uso Relacionados**: CDU7 (Reportar Incidente)
 - **Critérios de Aceitação**:
   - Seleção de sala ou item relacionado
   - Definição de título e descrição
@@ -181,7 +181,7 @@
 
 - **Descrição**: Administrador deve poder gerenciar o ciclo de vida dos incidentes.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC8 (Gerenciar Incidentes)
+- **Casos de Uso Relacionados**: CDU8 (Gerenciar Incidentes)
 - **Critérios de Aceitação**:
   - Visualizar lista de incidentes com filtros
   - Atribuir incidente a um usuário
@@ -194,7 +194,7 @@
 
 - **Descrição**: Sistema deve manter histórico de mudanças de status dos incidentes.
 - **Prioridade**: Baixa
-- **Casos de Uso Relacionados**: UC8 (Gerenciar Incidentes)
+- **Casos de Uso Relacionados**: CDU8 (Gerenciar Incidentes)
 - **Critérios de Aceitação**:
   - Registrar todas as mudanças de status
   - Armazenar usuário que fez a mudança
@@ -207,7 +207,7 @@
 
 - **Descrição**: Usuário deve poder visualizar suas notificações.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC9 (Visualizar Notificações)
+- **Casos de Uso Relacionados**: CDU9 (Visualizar Notificacoes)
 - **Critérios de Aceitação**:
   - Listagem de notificações recebidas
   - Diferenciação entre lidas e não lidas
@@ -218,7 +218,7 @@
 
 - **Descrição**: Usuário deve poder marcar notificações como lidas.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC9 (Visualizar Notificações)
+- **Casos de Uso Relacionados**: CDU9 (Visualizar Notificacoes)
 - **Critérios de Aceitação**:
   - Marcar notificação individual como lida
   - Marcar todas as notificações como lidas
@@ -226,15 +226,30 @@
 
 #### RF20 - Notificações Automáticas
 
-- **Descrição**: Sistema deve enviar notificações automáticas para eventos importantes.
+- **Descrição**: O sistema deve enviar notificações automáticas aos usuários como consequência de eventos de negócio disparados durante a execução dos casos de uso de reservas e incidentes.
 - **Prioridade**: Alta
-- **Casos de Uso Relacionados**: UC3, UC5, UC7, UC8
+- **Casos de Uso Relacionados**: CDU3, CDU4, CDU5, CDU7, CDU8 (comportamento interno disparado por estes CDUs, visível pelo ator em CDU9)
 - **Critérios de Aceitação**:
-  - Notificar quando reserva é criada (para admin)
-  - Notificar quando reserva é aprovada/rejeitada (para usuário)
-  - Notificar quando incidente é criado (para admin)
-  - Notificar quando incidente é atribuído (para usuário)
-  - Suporte a push notifications para mobile
+  - Notificação enviada ao(s) Administrador(es) quando uma reserva é criada por Usuario (CDU3)
+  - Notificação enviada ao solicitante quando reserva é aprovada ou rejeitada (CDU5)
+  - Notificação enviada ao solicitante quando reserva é cancelada (CDU4)
+  - Notificação enviada ao(s) Administrador(es) quando um incidente é reportado (CDU7)
+  - Notificação enviada ao responsavel designado quando incidente é atribuído (CDU8)
+  - Notificação enviada ao reportante quando status do incidente é alterado (CDU8)
+  - Quando o usuario possui PushToken ativo, a notificação também é entregue via push ao aplicativo mobile
+
+#### RF26 - Integração com Google Calendar
+
+- **Descrição**: O sistema deve sincronizar automaticamente os eventos de reserva no Google Calendar pessoal do usuário como consequência das operacões de criação, aprovação, rejeição e cancelamento de reservas.
+- **Prioridade**: Média
+- **Casos de Uso Relacionados**: CDU3, CDU4, CDU5 (comportamento interno disparado por estes CDUs)
+- **Critérios de Aceitação**:
+  - Evento criado no Google Calendar quando uma reserva e criada com status `PENDING`, `APPROVED` ou `ACTIVE` (CDU3)
+  - Evento atualizado no Google Calendar quando uma reserva e aprovada (CDU5)
+  - Evento removido do Google Calendar quando uma reserva e rejeitada (CDU5) ou cancelada (CDU4)
+  - ID do evento externo persistido em `Reservation.googleCalendarEventId`
+  - Access token OAuth2 renovado automaticamente via refresh token antes do vencimento
+  - Falhas na API do Google Calendar nao bloqueiam operacoes de reserva (comportamento best-effort)
 
 ### 1.7 Gestão de Usuários (Admin)
 
@@ -242,7 +257,7 @@
 
 - **Descrição**: Administrador deve poder visualizar lista de todos os usuários.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC10 (Gerenciar Usuários)
+- **Casos de Uso Relacionados**: CDU10 (Gerenciar Usuarios)
 - **Critérios de Aceitação**:
   - Listagem de todos os usuários cadastrados
   - Filtros por role e busca por nome/email
@@ -252,7 +267,7 @@
 
 - **Descrição**: Administrador deve poder alterar o role dos usuários.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC10 (Gerenciar Usuários)
+- **Casos de Uso Relacionados**: CDU10 (Gerenciar Usuarios)
 - **Critérios de Aceitação**:
   - Alterar entre ADMIN e USER
   - Validação de permissões
@@ -265,7 +280,7 @@
 
 - **Descrição**: Sistema deve exibir dashboard com informações resumidas.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC11 (Visualizar Dashboard)
+- **Casos de Uso Relacionados**: CDU11 (Visualizar Dashboard)
 - **Critérios de Aceitação**:
   - Estatísticas de reservas (pendentes, aprovadas, rejeitadas)
   - Estatísticas de incidentes por status
@@ -277,7 +292,7 @@
 
 - **Descrição**: Sistema deve disponibilizar estatísticas de reservas por usuário.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC11 (Visualizar Dashboard)
+- **Casos de Uso Relacionados**: CDU11 (Visualizar Dashboard)
 - **Critérios de Aceitação**:
   - Disponibilizar contagem de reservas por status para um usuário específico
   - Permitir filtragem por período
@@ -288,7 +303,7 @@
 
 - **Descrição**: Sistema deve fornecer visão consolidada de incidentes por categoria, prioridade e status.
 - **Prioridade**: Média
-- **Casos de Uso Relacionados**: UC8 (Gerenciar Incidentes), UC11 (Visualizar Dashboard)
+- **Casos de Uso Relacionados**: CDU8 (Gerenciar Incidentes), CDU11 (Visualizar Dashboard)
 - **Critérios de Aceitação**:
   - Apresentar contagem de incidentes agrupados por status e prioridade
   - Permitir filtros por período, sala e item
@@ -477,33 +492,34 @@
 
 ## 3. Matriz de Rastreabilidade: Requisitos x Casos de Uso
 
-| Requisito                        | Casos de Uso Relacionados | Prioridade |
-| -------------------------------- | ------------------------- | ---------- |
-| RF01 - Autenticação Google OAuth | UC1                       | Alta       |
-| RF02 - Controle de Acesso        | UC1, UC5, UC6, UC8, UC10  | Alta       |
-| RF03 - Token Mobile              | UC1                       | Média      |
-| RF04 - Visualizar Perfil         | UC2                       | Média      |
-| RF05 - Editar Perfil             | UC2                       | Média      |
-| RF06 - Criar Reserva             | UC3                       | Alta       |
-| RF07 - Reservas Recorrentes      | UC3                       | Média      |
-| RF08 - Visualizar Reservas       | UC4                       | Alta       |
-| RF09 - Aprovar/Rejeitar          | UC5                       | Alta       |
-| RF10 - Verificar Conflitos       | UC3                       | Alta       |
-| RF11 - Cancelar Reserva          | UC4                       | Média      |
-| RF12 - Visualizar Salas          | UC6                       | Alta       |
-| RF13 - Gestão de Salas           | UC6                       | Alta       |
-| RF14 - Gestão de Itens           | UC6                       | Média      |
-| RF15 - Reportar Incidente        | UC7                       | Alta       |
-| RF16 - Gestão de Incidentes      | UC8                       | Alta       |
-| RF17 - Histórico de Incidentes   | UC8                       | Baixa      |
-| RF18 - Visualizar Notificações   | UC9                       | Alta       |
-| RF19 - Marcar como Lida          | UC9                       | Média      |
-| RF20 - Notificações Automáticas  | UC3, UC5, UC7, UC8        | Alta       |
-| RF21 - Visualizar Usuários       | UC10                      | Média      |
-| RF22 - Alterar Role              | UC10                      | Média      |
-| RF23 - Dashboard                 | UC11                      | Média      |
-| RF24 - Estatísticas por Usuário  | UC11                      | Média      |
-| RF25 - Relatórios de Incidentes  | UC8, UC11                 | Média      |
+| Requisito                          | Casos de Uso Relacionados              | Prioridade |
+| ---------------------------------- | -------------------------------------- | ---------- |
+| RF01 - Autenticação Google OAuth   | CDU1                                   | Alta       |
+| RF02 - Controle de Acesso          | CDU1, CDU5, CDU6, CDU8, CDU10         | Alta       |
+| RF03 - Token Mobile                | CDU1                                   | Média      |
+| RF04 - Visualizar Perfil           | CDU2                                   | Média      |
+| RF05 - Editar Perfil               | CDU2                                   | Média      |
+| RF06 - Criar Reserva               | CDU3                                   | Alta       |
+| RF07 - Reservas Recorrentes        | CDU3                                   | Média      |
+| RF08 - Visualizar Reservas         | CDU4                                   | Alta       |
+| RF09 - Aprovar/Rejeitar            | CDU5                                   | Alta       |
+| RF10 - Verificar Conflitos         | CDU3                                   | Alta       |
+| RF11 - Cancelar Reserva            | CDU4                                   | Média      |
+| RF12 - Visualizar Salas            | CDU6                                   | Alta       |
+| RF13 - Gestão de Salas             | CDU6                                   | Alta       |
+| RF14 - Gestão de Itens             | CDU6                                   | Média      |
+| RF15 - Reportar Incidente          | CDU7                                   | Alta       |
+| RF16 - Gestão de Incidentes        | CDU8                                   | Alta       |
+| RF17 - Histórico de Incidentes     | CDU8                                   | Baixa      |
+| RF18 - Visualizar Notificações     | CDU9                                   | Alta       |
+| RF19 - Marcar como Lida            | CDU9                                   | Média      |
+| RF20 - Notificações Automáticas    | CDU3, CDU4, CDU5, CDU7, CDU8 → CDU9  | Alta       |
+| RF21 - Visualizar Usuários         | CDU10                                  | Média      |
+| RF22 - Alterar Role                | CDU10                                  | Média      |
+| RF23 - Dashboard                   | CDU11                                  | Média      |
+| RF24 - Estatísticas por Usuário    | CDU11                                  | Média      |
+| RF25 - Relatórios de Incidentes    | CDU8, CDU11                            | Média      |
+| RF26 - Integração Google Calendar  | CDU3, CDU4, CDU5                       | Média      |
 
 ## 4. Tecnologias e Ferramentas
 
