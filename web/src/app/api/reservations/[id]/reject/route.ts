@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
@@ -63,6 +64,9 @@ export async function POST(
       );
       // Não falhar a rejeição por causa da notificação
     }
+
+    // Atualizar Google Calendar (remoção do evento, se existir)
+    void syncReservationToGoogleCalendar(updatedReservation.id);
 
     return NextResponse.json(updatedReservation);
   } catch (error) {

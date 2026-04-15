@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
@@ -109,6 +110,9 @@ export async function PUT(
       });
     }
 
+    // Sincronizar alteração com Google Calendar (execução em background)
+    void syncReservationToGoogleCalendar(updatedReservation.id);
+
     return NextResponse.json(updatedReservation);
   } catch (error) {
     console.error("Erro ao atualizar reserva:", error);
@@ -141,20 +145,25 @@ export async function DELETE(
       );
     }
 
-    // Deletar a reserva
-    await prisma.reservation.delete({
-      where: { id },
-    });
-
     // Atualizar status da sala para LIVRE
     await prisma.room.update({
       where: { id: existingReservation.roomId },
       data: { status: "LIVRE" },
     });
 
+    // Marcar a reserva como CANCELLED antes de sincronizar com o calendário
+    const cancelledReservation = await prisma.reservation.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+      include: {
+        user: true,
+        room: true,
+      },
+    });
+
     // Criar notificação para o usuário sobre o cancelamento
     try {
-      await notificationService.reservationCancelled(existingReservation);
+      await notificationService.reservationCancelled(cancelledReservation);
     } catch (notificationError) {
       console.error(
         "Erro ao criar notificação de cancelamento:",
@@ -162,6 +171,16 @@ export async function DELETE(
       );
       // Não falhar o cancelamento por causa da notificação
     }
+
+    // Sincronizar remoção com Google Calendar (remoção do evento se existir)
+    // Aqui usamos await para garantir que a reserva ainda exista no banco
+    // enquanto buscamos seus dados para remover o evento do calendário.
+    await syncReservationToGoogleCalendar(cancelledReservation.id);
+
+    // Deletar a reserva após sincronizar com o Google Calendar
+    await prisma.reservation.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ message: "Reserva cancelada com sucesso" });
   } catch (error) {

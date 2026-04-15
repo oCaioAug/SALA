@@ -84,6 +84,7 @@ model Reservation {
   status              ReservationStatus @default(PENDING)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
+  googleCalendarEventId String?         // ID do evento no Google Calendar (quando sincronizado)
   
   // Campos de recorrência
   isRecurring         Boolean           @default(false)

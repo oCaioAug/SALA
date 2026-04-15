@@ -3,6 +3,7 @@ import { Role } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+import { syncUpcomingReservationsForUser } from "@/lib/googleCalendar";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
@@ -16,6 +17,9 @@ export const authOptions: NextAuthOptions = {
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
+          // Escopo ampliado para permitir integração com Google Calendar
+          scope:
+            "openid email profile https://www.googleapis.com/auth/calendar",
         },
       },
     }),
@@ -99,6 +103,12 @@ export const authOptions: NextAuthOptions = {
         email: user.email,
         provider: account?.provider,
       });
+
+      // Ao o usuário logar com Google (e possivelmente conceder permissão de calendário),
+      // sincronizar reservas futuras dele com o Google Calendar.
+      if (account?.provider === "google" && user.id) {
+        void syncUpcomingReservationsForUser(user.id);
+      }
     },
     async session({ session }) {
       console.log("🔄 Session event:", { email: session.user?.email });
@@ -113,6 +123,6 @@ export const authOptions: NextAuthOptions = {
     },
     debug(code, metadata) {
       console.log("🔵 NEXTAUTH DEBUG:", code, metadata);
-    }
-  }
+    },
+  },
 };

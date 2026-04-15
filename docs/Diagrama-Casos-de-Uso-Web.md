@@ -73,6 +73,18 @@ graph LR
     class CDU1,CDU2,CDU3,CDU4,CDU5,CDU6,CDU7,CDU8,CDU9,CDU10,CDU11 ucClass
 ```
 
+## Atores
+
+| Ator | Descrição |
+|------|-----------|
+| 👤 **Usuário** | Pessoa autenticada com role `USER`. Acessa reservas, salas, incidentes, notificações e dashboard. |
+| 👨‍💼 **Administrador** | Usuário com role `ADMIN`. Herda todos os casos de uso do Usuário e possui permissões exclusivas de gestão. |
+| ⚙️ **Sistema** | Ator autônomo que executa ações automaticamente em resposta a eventos de negócio, sem interação direta humana. |
+
+> **Nota de modelagem:** A relação de **generalização** entre Usuário e Administrador expressa que o Admin possui todas as capacidades do Usuário mais as suas exclusivas, refletindo o campo `role` no modelo `User` do Prisma.
+
+---
+
 > **Nota de modelagem:** Em UML, atores sao entidades **externas** ao sistema que interagem com ele. O sistema em si nunca e ator — comportamentos internos automaticos (envio de notificacoes, sincronizacao com Google Calendar) sao modelados como fluxos, pos-condicoes e regras de negocio dos casos de uso que os disparam, nao como casos de uso autonomos sem ator iniciador.
 
 ## Atores
