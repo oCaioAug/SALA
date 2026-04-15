@@ -16,10 +16,10 @@ export default function PrivacyPolicyPage() {
         {/* Header */}
         <div className="mb-10">
           <Link
-            href="/auth/login"
+            href="/"
             className="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-6 inline-block"
           >
-            ← Voltar ao login
+            ← Voltar ao início
           </Link>
           <h1 className="text-3xl font-bold text-white mt-2">
             Política de Privacidade
@@ -262,10 +262,10 @@ export default function PrivacyPolicyPage() {
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-800 text-center">
           <Link
-            href="/auth/login"
+            href="/"
             className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
           >
-            Voltar ao login
+            Página inicial
           </Link>
           <span className="text-gray-600 mx-3">·</span>
           <Link
