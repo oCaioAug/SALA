@@ -71,11 +71,20 @@ export async function GET() {
       },
     });
 
-    // Atualizar cache
-    roomsCache = rooms;
+    if (!Array.isArray(rooms)) {
+      throw new Error("Resposta inválida do serviço de salas");
+    }
+
+    // Garantir payload JSON-serializável (ex.: BigInt do Prisma) e cache estável
+    const serializable = JSON.parse(
+      JSON.stringify(rooms, (_key, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    ) as typeof rooms;
+    roomsCache = serializable;
     lastCacheTime = now;
 
-    return NextResponse.json(rooms);
+    return NextResponse.json(serializable);
   } catch (error) {
     console.error("Erro ao buscar salas:", error);
     return NextResponse.json(
@@ -90,8 +99,25 @@ export async function POST(request: NextRequest) {
     const json = await request.json();
     const parsed = roomCreateBodySchema.safeParse(json);
     if (!parsed.success) {
+      const flat = parsed.error.flatten();
+      const nameErr = flat.fieldErrors.name?.[0];
+      const firstOther =
+        Object.entries(flat.fieldErrors)
+          .filter(([key]) => key !== "name")
+          .flatMap(([, msgs]) => msgs ?? [])
+          .find((msg): msg is string => Boolean(msg)) ?? null;
+      const normalizedName =
+        nameErr &&
+        /expected string|received undefined|required/i.test(nameErr)
+          ? "Nome da sala é obrigatório"
+          : nameErr;
+      const errorMsg =
+        normalizedName ?? firstOther ?? "Dados inválidos";
       return NextResponse.json(
-        { error: "Dados inválidos", details: parsed.error.flatten() },
+        {
+          error: errorMsg,
+          details: flat,
+        },
         { status: 400 }
       );
     }

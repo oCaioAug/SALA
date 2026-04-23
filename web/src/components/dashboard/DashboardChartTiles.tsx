@@ -35,7 +35,7 @@ type RoomLite = { status: string };
 
 const cardEmbed = (embedded: boolean) =>
   cn(
-    "flex min-h-0 flex-col overflow-hidden",
+    "flex min-h-0 flex-col overflow-x-hidden overflow-y-auto",
     embedded && "h-full !p-3"
   );
 
@@ -50,7 +50,7 @@ const descEmbed = (embedded: boolean) =>
 
 const contentEmbed = (embedded: boolean) =>
   cn(
-    "flex min-h-0 flex-col overflow-hidden",
+    "flex min-h-0 flex-col overflow-x-hidden overflow-y-auto",
     embedded && "!p-0 pt-0"
   );
 

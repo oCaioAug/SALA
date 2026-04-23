@@ -217,44 +217,52 @@ function WidgetShell({
   return (
     <div
       className={cn(
-        "flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-sm dark:border-slate-700/90 dark:bg-slate-950/80",
+        "relative h-full min-h-0 w-full min-w-0 overflow-hidden",
+        !editMode && "rounded-2xl border-0 bg-transparent shadow-none",
         className
       )}
     >
-      {editMode ? (
-        <div className="flex shrink-0 items-stretch justify-between gap-1 border-b border-slate-200/80 dark:border-slate-700/80">
-          <div
-            className="dashboard-widget-drag flex min-w-0 flex-1 cursor-grab items-center gap-2 px-3 py-2 active:cursor-grabbing"
-            title={dragLabel}
-          >
-            <GripVertical
-              className="h-4 w-4 shrink-0 text-slate-400"
-              aria-hidden
-            />
-            <span className="select-none truncate text-xs font-medium text-slate-500 dark:text-slate-400">
-              {dragLabel}
-            </span>
-          </div>
-          {onRemoveFromDashboard ? (
-            <button
-              type="button"
-              className="dashboard-widget-no-drag my-1 mr-2 shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400"
-              onClick={onRemoveFromDashboard}
-              aria-label={removeLabel ?? "Remove"}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden />
-            </button>
-          ) : null}
-        </div>
-      ) : null}
       <div
         className={cn(
-          "flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-hidden p-2 sm:p-3",
-          editMode ? "pt-1.5" : "pt-2"
+          "flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden",
+          editMode ? "overflow-y-auto" : "overflow-y-hidden"
         )}
       >
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+        {children}
       </div>
+
+      {editMode ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-2 pt-2">
+          <div
+            className="pointer-events-auto flex w-full min-w-0 items-stretch justify-between gap-1 rounded-lg border border-slate-200/90 bg-slate-50/95 px-2 py-1 shadow-md backdrop-blur-sm dark:border-slate-600/70 dark:bg-slate-800/95 dark:shadow-lg dark:backdrop-blur-sm"
+            role="toolbar"
+            aria-label={dragLabel}
+          >
+            <div
+              className="dashboard-widget-drag flex min-w-0 flex-1 cursor-grab items-center gap-2 py-0.5 active:cursor-grabbing"
+              title={dragLabel}
+            >
+              <GripVertical
+                className="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500"
+                aria-hidden
+              />
+              <span className="select-none truncate text-xs font-medium text-slate-600 dark:text-slate-400">
+                {dragLabel}
+              </span>
+            </div>
+            {onRemoveFromDashboard ? (
+              <button
+                type="button"
+                className="dashboard-widget-no-drag shrink-0 rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400"
+                onClick={onRemoveFromDashboard}
+                aria-label={removeLabel ?? "Remove"}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

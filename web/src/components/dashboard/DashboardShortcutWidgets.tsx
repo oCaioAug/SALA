@@ -27,7 +27,7 @@ function ShortcutCard({
     <Link href={href} className="block h-full min-h-0 min-w-0">
       <Card
         variant="elevated"
-        className="group flex h-full min-h-0 flex-col justify-between gap-3 overflow-hidden p-4 transition-shadow hover:shadow-xl"
+        className="group flex h-full min-h-0 flex-col justify-between gap-3 overflow-x-hidden overflow-y-auto p-4 transition-shadow hover:shadow-xl"
       >
         <div
           className={cn(

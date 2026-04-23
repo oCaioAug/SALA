@@ -81,18 +81,19 @@ describe("Rooms [id] API", () => {
       );
     });
 
-    it("should set capacity to null when not provided", async () => {
+    it("should update only fields present in the body", async () => {
       prismaMock.room.update.mockResolvedValue(mockRoom as any);
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1", {
         method: "PUT",
-        body: JSON.stringify({ name: "Sala 1" }), // No capacity
+        body: JSON.stringify({ name: "Sala 1" }), // Sem capacity: não altera capacidade
       });
       await PUT(req, mockParams("room-1"));
 
       expect(prismaMock.room.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ capacity: null }),
+          where: { id: "room-1" },
+          data: { name: "Sala 1" },
         })
       );
     });

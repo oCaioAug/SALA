@@ -175,7 +175,7 @@ export async function DELETE(
     // Sincronizar remoção com Google Calendar (remoção do evento se existir)
     // Aqui usamos await para garantir que a reserva ainda exista no banco
     // enquanto buscamos seus dados para remover o evento do calendário.
-    await syncReservationToGoogleCalendar(cancelledReservation.id);
+    await syncReservationToGoogleCalendar(id);
 
     // Deletar a reserva após sincronizar com o Google Calendar
     await prisma.reservation.delete({

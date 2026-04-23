@@ -45,7 +45,9 @@ describe("Rooms API (List and Create)", () => {
       // Reset modules to get a fresh module instance with empty cache
       jest.resetModules();
       const { GET: FreshGET } = await import("../route");
-      prismaMock.room.findMany.mockRejectedValue(new Error("DB error"));
+      prismaMock.room.findMany.mockImplementation(() =>
+        Promise.reject(new Error("DB error"))
+      );
 
       const response = await FreshGET();
 

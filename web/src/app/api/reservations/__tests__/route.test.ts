@@ -1,7 +1,16 @@
 /**
  * @jest-environment node
  */
+jest.mock("next-auth", () => ({
+  getServerSession: jest.fn(),
+}));
+
+jest.mock("@/lib/googleCalendar", () => ({
+  syncReservationToGoogleCalendar: jest.fn().mockResolvedValue(undefined),
+}));
+
 import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
 
 import { notificationService } from "@/lib/notifications";
 import * as recurringReservations from "@/lib/recurringReservations";
@@ -26,6 +35,9 @@ jest.mock("@/lib/recurringReservations", () => ({
 describe("Reservations API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (getServerSession as jest.Mock).mockResolvedValue({
+      user: { email: "api-tester@test.com", name: "API Tester" },
+    });
   });
 
   describe("GET /api/reservations", () => {

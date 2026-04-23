@@ -21,7 +21,7 @@ function StatCardShell({
     <Card
       variant="elevated"
       className={cn(
-        "group flex h-full min-h-0 flex-col justify-center overflow-hidden p-3 sm:p-4",
+        "group flex h-full min-h-0 flex-col justify-center overflow-x-hidden overflow-y-auto p-3 sm:p-4",
         className
       )}
     >

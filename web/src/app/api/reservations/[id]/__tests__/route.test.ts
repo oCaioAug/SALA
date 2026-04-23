@@ -14,6 +14,10 @@ jest.mock("@/lib/notifications", () => ({
   },
 }));
 
+jest.mock("@/lib/googleCalendar", () => ({
+  syncReservationToGoogleCalendar: jest.fn().mockResolvedValue(undefined),
+}));
+
 const mockParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
 const mockReservation = {
@@ -166,6 +170,13 @@ describe("Reservation [id] API", () => {
 
   // ==================== DELETE ====================
   describe("DELETE /api/reservations/[id]", () => {
+    beforeEach(() => {
+      prismaMock.reservation.update.mockResolvedValue({
+        ...mockReservation,
+        status: "CANCELLED",
+      } as any);
+    });
+
     it("should return 404 if reservation not found", async () => {
       prismaMock.reservation.findUnique.mockResolvedValue(null);
 

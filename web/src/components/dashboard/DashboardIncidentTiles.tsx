@@ -30,7 +30,7 @@ type Props = {
 
 const cardEmbed = (embedded: boolean) =>
   cn(
-    "flex min-h-0 flex-col overflow-hidden",
+    "flex min-h-0 flex-col overflow-x-hidden overflow-y-auto",
     embedded && "h-full !p-3"
   );
 
@@ -131,7 +131,7 @@ export function DashboardIncidentTile({
       </CardHeader>
       <CardContent
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-0",
+          "flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto pt-0",
           embedded && "!px-0"
         )}
       >
@@ -254,7 +254,7 @@ export function DashboardSolicitationsTile({
       </CardHeader>
       <CardContent
         className={cn(
-          "flex min-h-0 flex-1 flex-col justify-between gap-4 overflow-hidden pt-0",
+          "flex min-h-0 flex-1 flex-col justify-between gap-4 overflow-x-hidden overflow-y-auto pt-0",
           embedded && "!px-0"
         )}
       >
