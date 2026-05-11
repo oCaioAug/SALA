@@ -86,7 +86,7 @@ const LoginContent: React.FC = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-white mb-2">
-            {t("title")}
+            SALA
           </CardTitle>
           <p className="text-gray-400">{t("subtitle")}</p>
         </CardHeader>
@@ -163,6 +163,25 @@ const LoginContent: React.FC = () => {
               </p>
             </div> */}
           </div>
+
+          {/* Legal footer */}
+          <p className="mt-6 text-center text-xs text-gray-500 leading-relaxed">
+            {t("legalConsent")}{" "}
+            <a
+              href="/terms-of-service"
+              className="text-blue-400 hover:text-blue-300 underline transition-colors"
+            >
+              {t("termsOfService")}
+            </a>{" "}
+            {t("legalAnd")}{" "}
+            <a
+              href="/privacy-policy"
+              className="text-blue-400 hover:text-blue-300 underline transition-colors"
+            >
+              {t("privacyPolicy")}
+            </a>
+            .
+          </p>
         </CardContent>
       </Card>
     </div>
