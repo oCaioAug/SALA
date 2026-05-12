@@ -236,6 +236,10 @@
       "configuracoes": {
         "label": "Configurações",
         "description": "Configurações do sistema"
+      },
+      "vision": {
+        "label": "Visão Computacional",
+        "description": "Automações e Auditorias com IA"
       }
     }
   },
@@ -1088,6 +1092,80 @@
       "reservationCancelled": "A reserva da sala \"{roomName}\" foi cancelada.",
       "purposePrefix": " Finalidade: {purpose}",
       "reasonPrefix": " Motivo: {reason}"
+    }
+  },
+  "Vision": {
+    "title": "Visão Computacional e Automação",
+    "description": "Automatize a gestão de salas, realize auditorias em tempo real e faça provisionamento de itens com Inteligência Artificial.",
+    "tabs": {
+      "occupancy": "Ocupação de Sala",
+      "audit": "Auditoria de Itens",
+      "provision": "Provisionamento de Itens"
+    },
+    "provider": {
+      "title": "Motor de Inteligência Artificial",
+      "mock": "Simulador Offline (Alta Fidelidade)",
+      "real": "Roboflow API (Nuvem Real)",
+      "usingEnv": "Usando Chaves Globais (.env)",
+      "notConfigured": "Não Configurado (Simulador Ativo)"
+    },
+    "credentials": {
+      "title": "Configurações Administrativas do Roboflow",
+      "apiKey": "Chave de API do Roboflow",
+      "apiKeyPlaceholder": "Insira sua Chave Privada do Roboflow...",
+      "modelId": "ID do Modelo (Model ID)",
+      "modelIdPlaceholder": "Ex: yolov8n, s-a-l-a-detector/1",
+      "save": "Criptografar e Salvar no Banco",
+      "clear": "Remover do Banco (Reverter)",
+      "saved": "Credenciais criptografadas e salvas com sucesso!",
+      "cleared": "Credenciais removidas do banco de dados.",
+      "onlyAdmins": "Apenas administradores podem gerenciar chaves de API.",
+      "securedLabel": "Armazenamento Criptografado AES-256-GCM ativo no Servidor"
+    },
+    "console": {
+      "title": "Terminal de Automação de Negócio",
+      "subtitle": "Logs de Eventos em Tempo Real",
+      "waiting": "Aguardando envio de imagem para processamento..."
+    },
+    "controls": {
+      "selectRoom": "Selecione uma Sala",
+      "selectRoomPlaceholder": "Selecione...",
+      "uploadTitle": "Enviar Foto para Análise",
+      "uploadSubtitle": "Arraste uma foto ou clique para fazer upload",
+      "analyzeBtn": "Executar Análise com IA",
+      "analyzing": "Analisando...",
+      "camera": "Webcam do Laboratório",
+      "capture": "Capturar Foto",
+      "presets": "Cenários de Teste (Presets)",
+      "presetsSubtitle": "Clique em um cenário abaixo para carregar imagens pré-configuradas imediatamente:",
+      "presetEmpty": "Laboratório Vazio",
+      "presetFull": "Laboratório em Uso",
+      "presetAudit": "Falta de Equipamentos",
+      "presetProvision": "Nova Sala para Provisionar"
+    },
+    "auditTable": {
+      "item": "Equipamento",
+      "expected": "Registrado no Banco",
+      "detected": "Detectado pela IA",
+      "status": "Status da Auditoria",
+      "statusOk": "OK",
+      "statusMissing": "Faltando!",
+      "statusExcess": "Excesso",
+      "auditSummary": "Resumo da Auditoria",
+      "noDiscrepancy": "Nenhuma discrepância encontrada. Todos os equipamentos estão em ordem!",
+      "discrepancyFound": "Discrepâncias detectadas! {count} equipamento(s) cadastrado(s) não foram identificados.",
+      "incidentGenerated": "Incidente automático gerado com sucesso pelo SALA-BOT!",
+      "viewIncident": "Ver Chamado Gerado"
+    },
+    "provisionPanel": {
+      "title": "Revisão de Provisionamento",
+      "description": "Edite e confirme as quantidades sugeridas pela Visão Computacional para esta sala antes de salvar.",
+      "nameCol": "Nome do Ativo",
+      "qtyCol": "Quantidade Sugerida",
+      "iconCol": "Ícone",
+      "saveBtn": "Confirmar e Cadastrar no Banco",
+      "success": "Sala provisionada com sucesso! {count} itens foram criados.",
+      "empty": "Nenhum item detectado para provisionamento. Tente carregar outra foto."
     }
   }
 }

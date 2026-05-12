@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ClipboardList,
   DoorOpen,
+  Eye,
   LayoutDashboard,
   Settings,
   User,
@@ -74,6 +75,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: t("menuItems.incidentes.description"),
       active: currentPage === "incidentes",
     },
+    {
+      id: "vision",
+      label: t("menuItems.vision.label"),
+      icon: Eye,
+      description: t("menuItems.vision.description"),
+      active: currentPage === "vision",
+    },
     // Menu de usuários apenas para administradores
     ...(isAdmin
       ? [
@@ -119,22 +127,22 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
     >
       {variant !== "mobile" && (
-      <div className="border-b border-slate-200 p-6 dark:border-slate-700/50">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Building2 className="w-6 h-6 text-white" />
+        <div className="border-b border-slate-200 p-6 dark:border-slate-700/50">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {tCommon("systemName")}
+              </h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                {tCommon("systemDescription")}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {tCommon("systemName")}
-            </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-              {tCommon("systemDescription")}
-            </p>
-          </div>
+          <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-slate-400 to-transparent dark:via-slate-600"></div>
         </div>
-        <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-slate-400 to-transparent dark:via-slate-600"></div>
-      </div>
       )}
 
       <nav

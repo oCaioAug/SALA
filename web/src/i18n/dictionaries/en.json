@@ -236,6 +236,10 @@
       "configuracoes": {
         "label": "Settings",
         "description": "System settings"
+      },
+      "vision": {
+        "label": "Computer Vision",
+        "description": "AI Automations and Audits"
       }
     }
   },
@@ -1065,6 +1069,80 @@
       "reservationCancelled": "The reservation of room \"{roomName}\" was cancelled.",
       "purposePrefix": " Purpose: {purpose}",
       "reasonPrefix": " Reason: {reason}"
+    }
+  },
+  "Vision": {
+    "title": "Computer Vision & Automation",
+    "description": "Automate room status management, run inventory audits, and auto-provision equipment with AI.",
+    "tabs": {
+      "occupancy": "Room Occupancy",
+      "audit": "Equipment Audit",
+      "provision": "Auto Provisioning"
+    },
+    "provider": {
+      "title": "Artificial Intelligence Engine",
+      "mock": "Offline Simulator (High Fidelity)",
+      "real": "Roboflow API (Real Cloud)",
+      "usingEnv": "Using Global Keys (.env)",
+      "notConfigured": "Not Configured (Simulator Active)"
+    },
+    "credentials": {
+      "title": "Roboflow Admin Configurations",
+      "apiKey": "Roboflow API Key",
+      "apiKeyPlaceholder": "Enter your Roboflow private key...",
+      "modelId": "Model ID",
+      "modelIdPlaceholder": "E.g. yolov8n, s-a-l-a-detector/1",
+      "save": "Encrypt & Save to DB",
+      "clear": "Clear from DB (Revert)",
+      "saved": "Credentials encrypted and saved successfully!",
+      "cleared": "Credentials removed from database.",
+      "onlyAdmins": "Only administrators can manage API keys.",
+      "securedLabel": "AES-256-GCM Server-Side Encrypted Storage Active"
+    },
+    "console": {
+      "title": "Business Automation Terminal",
+      "subtitle": "Real-time Event Logs",
+      "waiting": "Awaiting image upload for processing..."
+    },
+    "controls": {
+      "selectRoom": "Select a Room",
+      "selectRoomPlaceholder": "Select...",
+      "uploadTitle": "Upload Image for Analysis",
+      "uploadSubtitle": "Drag and drop or click to upload a photo",
+      "analyzeBtn": "Run AI Prediction",
+      "analyzing": "Analyzing...",
+      "camera": "Lab Webcam",
+      "capture": "Capture Photo",
+      "presets": "Simulation Scenarios (Presets)",
+      "presetsSubtitle": "Click a scenario preset below to load predefined test images instantly:",
+      "presetEmpty": "Empty Laboratory",
+      "presetFull": "Class in Session",
+      "presetAudit": "Missing Equipment",
+      "presetProvision": "New Lab Onboarding"
+    },
+    "auditTable": {
+      "item": "Equipment",
+      "expected": "Registered in DB",
+      "detected": "Detected by AI",
+      "status": "Audit Status",
+      "statusOk": "OK",
+      "statusMissing": "Missing!",
+      "statusExcess": "Excess",
+      "auditSummary": "Audit Summary",
+      "noDiscrepancy": "No discrepancies found. All room equipment is present!",
+      "discrepancyFound": "Discrepancies found! {count} registered item(s) are missing.",
+      "incidentGenerated": "Incident ticket automatically created by S.A.L.A.-Bot!",
+      "viewIncident": "View Created Incident"
+    },
+    "provisionPanel": {
+      "title": "Provisioning Review",
+      "description": "Review and edit the AI suggested quantities before persisting them to S.A.L.A.'s database.",
+      "nameCol": "Asset Name",
+      "qtyCol": "Suggested Qty",
+      "iconCol": "Icon",
+      "saveBtn": "Confirm & Persist to Database",
+      "success": "Room successfully provisioned! {count} items created.",
+      "empty": "No assets detected for onboarding. Try uploading a different photo."
     }
   }
 }

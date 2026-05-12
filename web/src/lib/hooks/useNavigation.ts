@@ -57,6 +57,7 @@ export const useNavigation = ({
         notificacoes: "/notificacoes",
         incidentes: "/incidentes",
         configuracoes: "/configuracoes",
+        vision: "/vision",
         users: "/users",
         profile: "/profile",
       };

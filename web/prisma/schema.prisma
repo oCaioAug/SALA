@@ -225,6 +225,20 @@ model VerificationToken {
   @@map("verificationtokens")
 }
 
+model ApiCredential {
+  id           String   @id @default(cuid())
+  provider     String   @unique // "ROBOFLOW"
+  encryptedKey String   @map("encrypted_key")
+  iv           String
+  tag          String
+  modelId      String?  @map("model_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("api_credentials")
+}
+
+
 enum Role {
   ADMIN
   USER
