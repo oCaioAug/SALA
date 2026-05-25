@@ -19,8 +19,36 @@ export class RoboflowService extends VisionService {
       // Remove o prefixo do Data URL (ex: "data:image/png;base64,") se estiver presente
       const base64Clean = base64Image.replace(/^data:image\/\w+;base64,/, "");
 
-      // Endpoint oficial da Hosted Inference API do Roboflow
-      const url = `https://detect.roboflow.com/${this.modelId}?api_key=${this.apiKey}`;
+      let cleanModelId = this.modelId;
+      if (this.modelId.includes("app.roboflow.com")) {
+        try {
+          const urlObj = new URL(this.modelId);
+          const parts = urlObj.pathname.split("/").filter(Boolean);
+          // Formato padrão do painel: /workspace-id/project-id ou /workspace-id/project-id/version
+          if (parts.length >= 2) {
+            const project = parts[1];
+            const version = parts[2] || "1";
+            cleanModelId = `${project}/${version}`;
+            console.log(`🧹 [Roboflow] Extraído ID de modelo do painel: ${cleanModelId}`);
+          }
+        } catch (e) {
+          console.error("❌ Erro ao analisar URL do painel do Roboflow:", e);
+        }
+      }
+
+      // Permite usar uma URL base customizada via variável de ambiente (ex: https://serverless.roboflow.com)
+      const baseUrl = process.env.ROBOFLOW_API_URL || "https://detect.roboflow.com";
+      const cleanBaseUrl = baseUrl.replace(/\/$/, "");
+
+      let url = "";
+      if (cleanModelId.startsWith("http://") || cleanModelId.startsWith("https://")) {
+        // Se o cleanModelId já for uma URL completa da API (ex: serverless.roboflow.com), usa ela
+        const parsedUrl = new URL(cleanModelId);
+        parsedUrl.searchParams.set("api_key", this.apiKey);
+        url = parsedUrl.toString();
+      } else {
+        url = `${cleanBaseUrl}/${cleanModelId}?api_key=${this.apiKey}`;
+      }
 
       console.log(
         `📡 [Roboflow] Iniciando requisição para o modelo: ${this.modelId}`

@@ -95,6 +95,7 @@ export default function VisionPage() {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [detectedSummary, setDetectedSummary] = useState<Record<string, number>>({});
   const [aiProvider, setAiProvider] = useState<string>("MOCK");
+  const [imageNaturalSize, setImageNaturalSize] = useState<{ width: number; height: number }>({ width: 800, height: 500 });
   
   // --- Estados de Auditoria ---
   const [auditComparisons, setAuditComparisons] = useState<AuditComparison[]>([]);
@@ -284,9 +285,18 @@ export default function VisionPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    setImageNaturalSize({
+      width: img.naturalWidth || 800,
+      height: img.naturalHeight || 500,
+    });
+  };
+
   // --- Selecionar Cenários de Presets de Teste ---
   const loadPreset = (presetKey: string, name: string) => {
     setWebcamActive(false);
+    setAiProvider("MOCK");
     // Cria uma base64 falsa contendo a tag correspondente para que o Mock reconheça
     const dummyBase64 = `data:image/jpeg;base64,preset-${presetKey}-dummy-base64-data-image-classroom-assets-glowing`;
     setBase64Image(dummyBase64);
@@ -596,93 +606,97 @@ export default function VisionPage() {
 
               {/* Renderização de Imagem Analisada com Canvas/Bounding Boxes sobrepostos */}
               {!webcamActive && imagePreviewUrl && (
-                <div className="relative w-full flex items-center justify-center overflow-hidden group">
-                  <img
-                    src={imagePreviewUrl}
-                    alt="Preview de laboratório"
-                    className="w-full h-auto max-h-[480px] object-contain select-none"
-                  />
+                <div className="w-full flex items-center justify-center overflow-hidden group p-2">
+                  <div className="relative inline-block max-w-full max-h-[480px]">
+                    <img
+                      src={imagePreviewUrl}
+                      alt="Preview de laboratório"
+                      onLoad={handleImageLoad}
+                      className="max-h-[480px] w-auto h-auto block select-none rounded-lg"
+                    />
 
-                  {/* SVG Overlay para Bounding Boxes Inteligentes e Responsivos */}
-                  <svg
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                    viewBox="0 0 800 500"
-                    preserveAspectRatio="none"
-                  >
-                    {predictions.map((pred, idx) => {
-                      // Cores personalizadas dinâmicas baseadas na classe do item detectado (SOLID)
-                      let boxColor = "rgba(16, 185, 129, 1)"; // emerald para computadores/laptops
-                      let bgColor = "rgba(16, 185, 129, 0.15)";
-                      if (pred.class === "person") {
-                        boxColor = "rgba(239, 68, 68, 1)"; // vermelho para pessoas
-                        bgColor = "rgba(239, 68, 68, 0.15)";
-                      } else if (pred.class === "projector") {
-                        boxColor = "rgba(245, 158, 11, 1)"; // âmbar para projetor
-                        bgColor = "rgba(245, 158, 11, 0.15)";
-                      } else if (pred.class === "chair") {
-                        boxColor = "rgba(99, 102, 241, 1)"; // indigo para cadeiras
-                        bgColor = "rgba(99, 102, 241, 0.15)";
-                      }
-
-                      // Roboflow retorna centro x, y e dimensões na escala original de 800x500
-                      const rectX = pred.x - pred.width / 2;
-                      const rectY = pred.y - pred.height / 2;
-
-                      return (
-                        <g key={idx} className="animate-fade-in">
-                          {/* Caixa delimitadora neon brilhante */}
-                          <rect
-                            x={rectX}
-                            y={rectY}
-                            width={pred.width}
-                            height={pred.height}
-                            fill={bgColor}
-                            stroke={boxColor}
-                            strokeWidth="3"
-                            rx="4"
-                            style={{ filter: "drop-shadow(0px 0px 4px var(--tw-shadow-color))" }}
-                            className="transition-all duration-300 shadow-indigo-500"
-                          />
-                          {/* Aba com o nome do item e nível de certeza de acerto da IA */}
-                          <rect
-                            x={rectX}
-                            y={Math.max(0, rectY - 22)}
-                            width={pred.class.length * 9 + 48}
-                            height="22"
-                            fill={boxColor}
-                            rx="3"
-                          />
-                          <text
-                            x={rectX + 6}
-                            y={Math.max(14, rectY - 6)}
-                            fill="white"
-                            fontSize="11"
-                            fontWeight="bold"
-                            fontFamily="monospace"
-                          >
-                            {pred.class} {Math.round(pred.confidence * 100)}%
-                          </text>
-                        </g>
-                      );
-                    })}
-                  </svg>
-
-                  {/* Ações Rápidas por cima da imagem */}
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <button
-                      onClick={() => {
-                        setBase64Image("");
-                        setImagePreviewUrl("");
-                        setPredictions([]);
-                        setAuditComparisons([]);
-                        setProvisionSuggestions([]);
-                        setCreatedIncidentId(null);
-                      }}
-                      className="p-2 bg-slate-950/80 hover:bg-slate-900 text-white rounded-lg backdrop-blur-md transition-all shadow-lg"
-                      title="Deletar imagem atual"
+                    {/* SVG Overlay para Bounding Boxes Inteligentes e Responsivos */}
+                    <svg
+                      className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                      viewBox={`0 0 ${aiProvider === "MOCK" ? 800 : imageNaturalSize.width} ${
+                        aiProvider === "MOCK" ? 500 : imageNaturalSize.height
+                      }`}
                     >
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </button>
+                      {predictions.map((pred, idx) => {
+                        // Cores personalizadas dinâmicas baseadas na classe do item detectado (SOLID)
+                        let boxColor = "rgba(16, 185, 129, 1)"; // emerald para computadores/laptops
+                        let bgColor = "rgba(16, 185, 129, 0.15)";
+                        if (pred.class === "person") {
+                          boxColor = "rgba(239, 68, 68, 1)"; // vermelho para pessoas
+                          bgColor = "rgba(239, 68, 68, 0.15)";
+                        } else if (pred.class === "projector") {
+                          boxColor = "rgba(245, 158, 11, 1)"; // âmbar para projetor
+                          bgColor = "rgba(245, 158, 11, 0.15)";
+                        } else if (pred.class === "chair") {
+                          boxColor = "rgba(99, 102, 241, 1)"; // indigo para cadeiras
+                          bgColor = "rgba(99, 102, 241, 0.15)";
+                        }
+
+                        // Roboflow retorna centro x, y e dimensões na escala original
+                        const rectX = pred.x - pred.width / 2;
+                        const rectY = pred.y - pred.height / 2;
+
+                        return (
+                          <g key={idx} className="animate-fade-in">
+                            {/* Caixa delimitadora neon brilhante */}
+                            <rect
+                              x={rectX}
+                              y={rectY}
+                              width={pred.width}
+                              height={pred.height}
+                              fill={bgColor}
+                              stroke={boxColor}
+                              strokeWidth="3"
+                              rx="4"
+                              style={{ filter: "drop-shadow(0px 0px 4px var(--tw-shadow-color))" }}
+                              className="transition-all duration-300 shadow-indigo-500"
+                            />
+                            {/* Aba com o nome do item e nível de certeza de acerto da IA */}
+                            <rect
+                              x={rectX}
+                              y={Math.max(0, rectY - 22)}
+                              width={pred.class.length * 9 + 48}
+                              height="22"
+                              fill={boxColor}
+                              rx="3"
+                            />
+                            <text
+                              x={rectX + 6}
+                              y={Math.max(14, rectY - 6)}
+                              fill="white"
+                              fontSize="11"
+                              fontWeight="bold"
+                              fontFamily="monospace"
+                            >
+                              {pred.class} {Math.round(pred.confidence * 100)}%
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Ações Rápidas por cima da imagem */}
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      <button
+                        onClick={() => {
+                          setBase64Image("");
+                          setImagePreviewUrl("");
+                          setPredictions([]);
+                          setAuditComparisons([]);
+                          setProvisionSuggestions([]);
+                          setCreatedIncidentId(null);
+                        }}
+                        className="p-2 bg-slate-950/80 hover:bg-slate-900 text-white rounded-lg backdrop-blur-md transition-all shadow-lg"
+                        title="Deletar imagem atual"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
