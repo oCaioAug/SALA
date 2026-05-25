@@ -7,11 +7,15 @@ import { VisionService } from "./VisionService";
 export class RoboflowService extends VisionService {
   private apiKey: string;
   private modelId: string;
+  private confidence?: number;
+  private overlap?: number;
 
-  constructor(apiKey: string, modelId: string) {
+  constructor(apiKey: string, modelId: string, confidence?: number, overlap?: number) {
     super();
     this.apiKey = apiKey;
     this.modelId = modelId;
+    this.confidence = confidence;
+    this.overlap = overlap;
   }
 
   async analyzeImage(base64Image: string): Promise<VisionAnalysisResult> {
@@ -45,9 +49,24 @@ export class RoboflowService extends VisionService {
         // Se o cleanModelId já for uma URL completa da API (ex: serverless.roboflow.com), usa ela
         const parsedUrl = new URL(cleanModelId);
         parsedUrl.searchParams.set("api_key", this.apiKey);
+        if (this.confidence !== undefined) {
+          parsedUrl.searchParams.set("confidence", this.confidence.toString());
+        }
+        if (this.overlap !== undefined) {
+          parsedUrl.searchParams.set("overlap", this.overlap.toString());
+        }
         url = parsedUrl.toString();
       } else {
-        url = `${cleanBaseUrl}/${cleanModelId}?api_key=${this.apiKey}`;
+        const queryParams = new URLSearchParams({
+          api_key: this.apiKey,
+        });
+        if (this.confidence !== undefined) {
+          queryParams.set("confidence", this.confidence.toString());
+        }
+        if (this.overlap !== undefined) {
+          queryParams.set("overlap", this.overlap.toString());
+        }
+        url = `${cleanBaseUrl}/${cleanModelId}?${queryParams.toString()}`;
       }
 
       console.log(

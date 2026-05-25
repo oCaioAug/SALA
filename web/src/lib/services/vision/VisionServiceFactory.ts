@@ -17,6 +17,9 @@ export class VisionServiceFactory {
         where: { provider: "ROBOFLOW" },
       });
 
+      const confidence = process.env.ROBOFLOW_CONFIDENCE ? parseFloat(process.env.ROBOFLOW_CONFIDENCE) : undefined;
+      const overlap = process.env.ROBOFLOW_OVERLAP ? parseFloat(process.env.ROBOFLOW_OVERLAP) : undefined;
+
       if (dbCredential) {
         console.log(
           "🗝️ [VisionFactory] Credencial do Roboflow localizada no banco. Descriptografando..."
@@ -31,9 +34,9 @@ export class VisionServiceFactory {
           const modelId = dbCredential.modelId || "yolov8n";
 
           console.log(
-            `🚀 [VisionFactory] Ativando RoboflowService via Banco de Dados (Modelo: ${modelId})`
+            `🚀 [VisionFactory] Ativando RoboflowService via Banco de Dados (Modelo: ${modelId}, Confiança: ${confidence ?? "padrão"}, Overlap: ${overlap ?? "padrão"})`
           );
-          return new RoboflowService(decryptedKey, modelId);
+          return new RoboflowService(decryptedKey, modelId, confidence, overlap);
         } catch (decryptError) {
           console.error(
             "❌ [VisionFactory] Erro ao descriptografar chave do banco. Tentando fallback...",
@@ -49,9 +52,9 @@ export class VisionServiceFactory {
       if (envApiKey) {
         const modelId = envModelId || "yolov8n";
         console.log(
-          `🚀 [VisionFactory] Ativando RoboflowService via variáveis de ambiente (Modelo: ${modelId})`
+          `🚀 [VisionFactory] Ativando RoboflowService via variáveis de ambiente (Modelo: ${modelId}, Confiança: ${confidence ?? "padrão"}, Overlap: ${overlap ?? "padrão"})`
         );
-        return new RoboflowService(envApiKey, modelId);
+        return new RoboflowService(envApiKey, modelId, confidence, overlap);
       }
 
       // 3. Fallback Final: Ativar o Simulador de Alta Fidelidade (Mock)
