@@ -16,10 +16,7 @@ const DEFAULT_TIMEZONE =
 async function getGoogleAccessTokenForUser(
   userId: string
 ): Promise<string | null> {
-  console.log(
-    "[GoogleCalendar] Buscando conta Google para usuário:",
-    userId
-  );
+  console.log("[GoogleCalendar] Buscando conta Google para usuário:", userId);
 
   const account = await prisma.account.findFirst({
     where: {
@@ -156,10 +153,7 @@ async function getGoogleAccessTokenForUser(
 
       return updatedAccount.access_token ?? null;
     } catch (error) {
-      console.error(
-        "Erro ao tentar renovar token de acesso do Google:",
-        error
-      );
+      console.error("Erro ao tentar renovar token de acesso do Google:", error);
       return account.access_token ?? null;
     }
   }
@@ -273,10 +267,7 @@ async function createOrUpdateCalendarEvent(
   const data = (await response.json()) as { id?: string };
 
   if (!data.id) {
-    console.error(
-      "Resposta do Google Calendar não contém ID do evento",
-      data
-    );
+    console.error("Resposta do Google Calendar não contém ID do evento", data);
     return null;
   }
 

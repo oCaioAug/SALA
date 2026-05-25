@@ -1,133 +1,154 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { OrganizationRole } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 
-import { authOptions } from "@/lib/auth";
+import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
-// Força renderização dinâmica
 export const dynamic = "force-dynamic";
 
-// GET /api/incidents/stats - Buscar estatísticas de incidentes
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const user = ctx.user;
+    const isAdmin = isOrgAdmin({
+      platformRole: user.platformRole,
+      organizationRole: user.organizationRole,
     });
 
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
-    }
+    const orgFilter = { organizationId: ctx.organizationId };
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    console.log("Buscando estatísticas de incidentes");
+    const baseWhere = isAdmin
+      ? orgFilter
+      : {
+          ...orgFilter,
+          OR: [{ reportedById: user.id }, { assignedToId: user.id }],
+        };
 
-    // Estatísticas básicas
     const [
       totalIncidents,
       reportedIncidents,
       inAnalysisIncidents,
       inProgressIncidents,
       resolvedIncidents,
+      criticalIncidents,
+      highIncidents,
+      mediumIncidents,
+      lowIncidents,
+      incidentsByCategory,
+      resolvedIncidentsWithTime,
+      affectedRooms,
+      affectedItems,
     ] = await Promise.all([
-      prisma.incident.count(),
-      prisma.incident.count({ where: { status: "REPORTED" } }),
-      prisma.incident.count({ where: { status: "IN_ANALYSIS" } }),
-      prisma.incident.count({ where: { status: "IN_PROGRESS" } }),
-      prisma.incident.count({ where: { status: "RESOLVED" } }),
+      prisma.incident.count({ where: baseWhere }),
+      prisma.incident.count({ where: { ...baseWhere, status: "REPORTED" } }),
+      prisma.incident.count({ where: { ...baseWhere, status: "IN_ANALYSIS" } }),
+      prisma.incident.count({ where: { ...baseWhere, status: "IN_PROGRESS" } }),
+      prisma.incident.count({ where: { ...baseWhere, status: "RESOLVED" } }),
+      prisma.incident.count({
+        where: {
+          ...baseWhere,
+          priority: "CRITICAL",
+          status: { not: "RESOLVED" },
+        },
+      }),
+      prisma.incident.count({
+        where: { ...baseWhere, priority: "HIGH", status: { not: "RESOLVED" } },
+      }),
+      prisma.incident.count({
+        where: {
+          ...baseWhere,
+          priority: "MEDIUM",
+          status: { not: "RESOLVED" },
+        },
+      }),
+      prisma.incident.count({
+        where: { ...baseWhere, priority: "LOW", status: { not: "RESOLVED" } },
+      }),
+      prisma.incident.groupBy({
+        by: ["category"],
+        _count: { _all: true },
+        where: { ...orgFilter, createdAt: { gte: thirtyDaysAgo } },
+      }),
+      prisma.incident.findMany({
+        where: {
+          ...orgFilter,
+          status: "RESOLVED",
+          actualResolutionTime: { not: null },
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        select: { createdAt: true, actualResolutionTime: true },
+      }),
+      prisma.incident.groupBy({
+        by: ["roomId"],
+        _count: { roomId: true },
+        where: {
+          ...orgFilter,
+          roomId: { not: null },
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        orderBy: { _count: { roomId: "desc" } },
+        take: 5,
+      }),
+      prisma.incident.groupBy({
+        by: ["itemId"],
+        _count: { itemId: true },
+        where: {
+          ...orgFilter,
+          itemId: { not: null },
+          createdAt: { gte: thirtyDaysAgo },
+        },
+        orderBy: { _count: { itemId: "desc" } },
+        take: 5,
+      }),
     ]);
 
-    // Estatísticas por prioridade
-    const [criticalIncidents, highIncidents, mediumIncidents, lowIncidents] =
-      await Promise.all([
-        prisma.incident.count({
-          where: {
-            priority: "CRITICAL",
-            status: { not: "RESOLVED" },
-          },
-        }),
-        prisma.incident.count({
-          where: {
-            priority: "HIGH",
-            status: { not: "RESOLVED" },
-          },
-        }),
-        prisma.incident.count({
-          where: {
-            priority: "MEDIUM",
-            status: { not: "RESOLVED" },
-          },
-        }),
-        prisma.incident.count({
-          where: {
-            priority: "LOW",
-            status: { not: "RESOLVED" },
-          },
-        }),
-      ]);
-
-    // Estatísticas pessoais (se não for admin)
     let personalStats = null;
-    if (currentUser.role !== "ADMIN") {
+    if (!isAdmin) {
       personalStats = {
         reported: await prisma.incident.count({
-          where: { reportedById: currentUser.id },
+          where: { ...orgFilter, reportedById: user.id },
         }),
         assigned: await prisma.incident.count({
           where: {
-            assignedToId: currentUser.id,
+            ...orgFilter,
+            assignedToId: user.id,
             status: { not: "RESOLVED" },
           },
         }),
         assignedResolved: await prisma.incident.count({
           where: {
-            assignedToId: currentUser.id,
+            ...orgFilter,
+            assignedToId: user.id,
             status: "RESOLVED",
           },
         }),
       };
     }
 
-    // Incidentes por categoria (últimos 30 dias)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    const incidentsByCategory = await prisma.incident.groupBy({
-      by: ["category"],
-      _count: { _all: true },
-      where: {
-        createdAt: { gte: thirtyDaysAgo },
-      },
-    });
-
-    // Tempo médio de resolução (últimos 30 dias)
-    const resolvedIncidentsWithTime = await prisma.incident.findMany({
-      where: {
-        status: "RESOLVED",
-        actualResolutionTime: { not: null },
-        createdAt: { gte: thirtyDaysAgo },
-      },
-      select: {
-        createdAt: true,
-        actualResolutionTime: true,
-      },
-    });
-
     let averageResolutionTimeHours = 0;
     if (resolvedIncidentsWithTime.length > 0) {
       const totalResolutionTime = resolvedIncidentsWithTime.reduce(
         (sum, incident) => {
           if (incident.actualResolutionTime) {
-            const diff =
-              incident.actualResolutionTime.getTime() -
-              incident.createdAt.getTime();
-            return sum + diff;
+            return (
+              sum +
+              (incident.actualResolutionTime.getTime() -
+                incident.createdAt.getTime())
+            );
           }
           return sum;
         },
@@ -140,31 +161,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Salas/itens mais afetados (últimos 30 dias)
-    const [affectedRooms, affectedItems] = await Promise.all([
-      prisma.incident.groupBy({
-        by: ["roomId"],
-        _count: { roomId: true },
-        where: {
-          roomId: { not: null },
-          createdAt: { gte: thirtyDaysAgo },
-        },
-        orderBy: { _count: { roomId: "desc" } },
-        take: 5,
-      }),
-      prisma.incident.groupBy({
-        by: ["itemId"],
-        _count: { itemId: true },
-        where: {
-          itemId: { not: null },
-          createdAt: { gte: thirtyDaysAgo },
-        },
-        orderBy: { _count: { itemId: "desc" } },
-        take: 5,
-      }),
-    ]);
-
-    // Buscar nomes das salas e itens
     const roomIds = affectedRooms
       .map(r => r.roomId)
       .filter((id): id is string => id !== null);
@@ -175,7 +171,7 @@ export async function GET(request: NextRequest) {
     const [roomNames, itemNames] = await Promise.all([
       roomIds.length > 0
         ? prisma.room.findMany({
-            where: { id: { in: roomIds } },
+            where: { id: { in: roomIds }, organizationId: ctx.organizationId },
             select: { id: true, name: true },
           })
         : [],
@@ -190,7 +186,7 @@ export async function GET(request: NextRequest) {
     const roomNameMap = Object.fromEntries(roomNames.map(r => [r.id, r.name]));
     const itemNameMap = Object.fromEntries(itemNames.map(i => [i.id, i.name]));
 
-    const stats = {
+    return NextResponse.json({
       overview: {
         total: totalIncidents,
         reported: reportedIncidents,
@@ -227,19 +223,9 @@ export async function GET(request: NextRequest) {
           incidents: item._count.itemId,
         })),
       },
-    };
-
-    console.log("Estatísticas de incidentes calculadas");
-
-    return NextResponse.json(stats);
+    });
   } catch (error) {
     console.error("Erro ao buscar estatísticas de incidentes:", error);
-    return NextResponse.json(
-      {
-        error: "Erro interno do servidor",
-        details: error instanceof Error ? error.message : "Erro desconhecido",
-      },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

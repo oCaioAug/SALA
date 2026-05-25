@@ -1,22 +1,34 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
-// GET /api/notifications - Buscar notificações do usuário
+function notificationOrgFilter(organizationId: string) {
+  return {
+    OR: [{ organizationId }, { organizationId: null }],
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
     const isRead = searchParams.get("isRead");
     const type = searchParams.get("type");
     const limit = searchParams.get("limit");
-
-    console.log("Buscando notificações com filtros:", {
-      userId,
-      isRead,
-      type,
-      limit,
-    });
 
     if (!userId) {
       return NextResponse.json(
@@ -25,34 +37,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar usuário por ID ou email
     let user;
     if (userId.includes("@")) {
-      // Se contém @, é um email
-      console.log("Buscando usuário por email:", userId);
-      user = await prisma.user.findUnique({
-        where: { email: userId },
-      });
+      user = await prisma.user.findUnique({ where: { email: userId } });
     } else {
-      // Senão, é um ID
-      console.log("Buscando usuário por ID:", userId);
-      user = await prisma.user.findUnique({
-        where: { id: userId },
-      });
+      user = await prisma.user.findUnique({ where: { id: userId } });
     }
 
     if (!user) {
-      console.log(` Usuário não encontrado: ${userId}`);
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
-    console.log(` Usuário encontrado: ${user.email} (${user.role})`);
+    if (
+      user.id !== ctx.user.id &&
+      !isOrgAdmin({
+        platformRole: ctx.user.platformRole,
+        organizationRole: ctx.user.organizationRole,
+      })
+    ) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+    }
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId: user.id,
+      ...notificationOrgFilter(ctx.organizationId),
     };
 
     if (isRead !== null) {
@@ -65,35 +73,17 @@ export async function GET(request: NextRequest) {
 
     const notifications = await prisma.notification.findMany({
       where,
-      include: {
-        user: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: limit ? parseInt(limit) : undefined,
+      include: { user: true },
+      orderBy: { createdAt: "desc" },
+      take: limit ? parseInt(limit, 10) : undefined,
     });
-
-    console.log(
-      ` Encontradas ${notifications.length} notificações para ${user.email}`
-    );
-
-    // Log detalhado das notificações
-    if (notifications.length > 0) {
-      console.log("Notificações encontradas:");
-      notifications.forEach((notif, index) => {
-        console.log(
-          `  ${index + 1}. [${notif.type}] ${notif.title} - ${notif.isRead ? "Lida" : "Não lida"} - ${notif.createdAt}`
-        );
-      });
-    }
 
     return NextResponse.json(notifications);
   } catch (error) {
     console.error("Erro ao buscar notificações:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
@@ -101,13 +91,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/notifications - Criar nova notificação
 export async function POST(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const body = await request.json();
     const { userId, type, title, message, data } = body;
-
-    console.log("Criando notificação:", { userId, type, title });
 
     if (!userId || !type || !title || !message) {
       return NextResponse.json(
@@ -116,14 +109,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar se o tipo é válido
     const validTypes = [
       "RESERVATION_CREATED",
       "RESERVATION_APPROVED",
       "RESERVATION_REJECTED",
       "RESERVATION_CANCELLED",
       "RESERVATION_CONFLICT",
-      "RESERVATION_REMINDER", // Adicionado para suportar lembretes do mobile
+      "RESERVATION_REMINDER",
       "ROOM_STATUS_CHANGED",
       "SYSTEM_ANNOUNCEMENT",
     ];
@@ -137,24 +129,21 @@ export async function POST(request: NextRequest) {
     const notification = await prisma.notification.create({
       data: {
         userId,
+        organizationId: ctx.organizationId,
         type,
         title,
         message,
         data: data || null,
       },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
-
-    console.log(` Notificação criada com ID: ${notification.id}`);
 
     return NextResponse.json(notification, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar notificação:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

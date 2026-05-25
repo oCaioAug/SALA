@@ -1,7 +1,13 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { isOrgAdmin, toLegacySessionRole } from "@/lib/auth/roles";
 import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 
@@ -27,23 +33,26 @@ export async function GET(
         id: true,
         name: true,
         email: true,
-        role: true,
         image: true,
         createdAt: true,
         updatedAt: true,
+        memberships: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { role: true, organizationId: true },
+        },
       },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     // Verificar permissões
     const currentUser = auth.user!;
-    const canView = currentUser.id === userId || currentUser.role === "ADMIN";
+    const canView =
+      currentUser.id === userId ||
+      isOrgAdmin({ organizationRole: currentUser.organizationRole ?? null });
 
     if (!canView) {
       return NextResponse.json(
@@ -52,13 +61,17 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(user);
+    const membership = user.memberships[0];
+    const { memberships: _m, ...userData } = user;
+
+    return NextResponse.json({
+      ...userData,
+      organizationRole: membership?.role ?? null,
+      role: toLegacySessionRole({ organizationRole: membership?.role ?? null }),
+    });
   } catch (error) {
     console.error("Erro ao buscar usuário:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
@@ -97,15 +110,14 @@ export async function PATCH(
     });
 
     if (!userToUpdate) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     // Verificar permissões
     const currentUser = auth.user!;
-    const canEdit = currentUser.id === userId || currentUser.role === "ADMIN";
+    const canEdit =
+      currentUser.id === userId ||
+      isOrgAdmin({ organizationRole: currentUser.organizationRole ?? null });
 
     if (!canEdit) {
       return NextResponse.json(
@@ -139,19 +151,27 @@ export async function PATCH(
         id: true,
         name: true,
         email: true,
-        role: true,
         image: true,
         createdAt: true,
         updatedAt: true,
+        memberships: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { role: true },
+        },
       },
     });
 
-    return NextResponse.json(updatedUser);
+    const membership = updatedUser.memberships[0];
+    const { memberships: _m, ...userData } = updatedUser;
+
+    return NextResponse.json({
+      ...userData,
+      organizationRole: membership?.role ?? null,
+      role: toLegacySessionRole({ organizationRole: membership?.role ?? null }),
+    });
   } catch (error) {
     console.error("Erro ao atualizar usuário:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

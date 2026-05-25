@@ -1,11 +1,16 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { toLegacySessionRole } from "@/lib/auth/roles";
 import { generateMobileToken } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-// POST - Gerar token para mobile
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
@@ -17,26 +22,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar se o usuário existe
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
         id: true,
         email: true,
         name: true,
-        role: true,
         image: true,
+        platformRole: true,
+        memberships: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { role: true },
+        },
       },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
-    // Gerar token
+    const membership = user.memberships[0];
     const token = generateMobileToken(user.email);
 
     return NextResponse.json({
@@ -45,15 +51,16 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        organizationRole: membership?.role ?? null,
+        role: toLegacySessionRole({
+          platformRole: user.platformRole,
+          organizationRole: membership?.role ?? null,
+        }),
         avatar: user.image,
       },
     });
   } catch (error) {
     console.error("Erro ao gerar token:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

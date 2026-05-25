@@ -3,6 +3,10 @@
  */
 import { NextRequest } from "next/server";
 
+import {
+  mockGetRoomInOrganization,
+  TEST_ORG_ID,
+} from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { DELETE, GET, PUT } from "../route";
 
@@ -14,6 +18,8 @@ const mockRoom = {
   description: "Desc",
   capacity: 10,
   status: "LIVRE",
+  organizationId: TEST_ORG_ID,
+  deletedAt: null,
   items: [],
   reservations: [],
 };
@@ -21,10 +27,9 @@ const mockRoom = {
 describe("Rooms [id] API", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  // ==================== GET ====================
   describe("GET /api/rooms/[id]", () => {
     it("should return a room when found", async () => {
-      prismaMock.room.findUnique.mockResolvedValue(mockRoom as any);
+      prismaMock.room.findFirst.mockResolvedValue(mockRoom as any);
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1");
       const response = await GET(req, mockParams("room-1"));
@@ -35,7 +40,7 @@ describe("Rooms [id] API", () => {
     });
 
     it("should return 404 when room is not found", async () => {
-      prismaMock.room.findUnique.mockResolvedValue(null);
+      prismaMock.room.findFirst.mockResolvedValue(null);
 
       const req = new NextRequest("http://localhost:3000/api/rooms/bad-id");
       const response = await GET(req, mockParams("bad-id"));
@@ -46,7 +51,7 @@ describe("Rooms [id] API", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      prismaMock.room.findUnique.mockRejectedValue(new Error("DB error"));
+      prismaMock.room.findFirst.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1");
       const response = await GET(req, mockParams("room-1"));
@@ -55,7 +60,6 @@ describe("Rooms [id] API", () => {
     });
   });
 
-  // ==================== PUT ====================
   describe("PUT /api/rooms/[id]", () => {
     it("should update room successfully", async () => {
       const updatedRoom = { ...mockRoom, name: "Sala Atualizada" };
@@ -86,7 +90,7 @@ describe("Rooms [id] API", () => {
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1", {
         method: "PUT",
-        body: JSON.stringify({ name: "Sala 1" }), // Sem capacity: não altera capacidade
+        body: JSON.stringify({ name: "Sala 1" }),
       });
       await PUT(req, mockParams("room-1"));
 
@@ -96,6 +100,18 @@ describe("Rooms [id] API", () => {
           data: { name: "Sala 1" },
         })
       );
+    });
+
+    it("should return 404 when room is not in organization", async () => {
+      mockGetRoomInOrganization.mockResolvedValueOnce(null);
+
+      const req = new NextRequest("http://localhost:3000/api/rooms/bad-id", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Sala 1" }),
+      });
+      const response = await PUT(req, mockParams("bad-id"));
+
+      expect(response.status).toBe(404);
     });
 
     it("should return 500 on unexpected DB error", async () => {
@@ -111,10 +127,9 @@ describe("Rooms [id] API", () => {
     });
   });
 
-  // ==================== DELETE ====================
   describe("DELETE /api/rooms/[id]", () => {
-    it("should delete room and return success message", async () => {
-      prismaMock.room.delete.mockResolvedValue({} as any);
+    it("should soft-delete room and return success message", async () => {
+      prismaMock.room.update.mockResolvedValue({} as any);
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1", {
         method: "DELETE",
@@ -124,13 +139,16 @@ describe("Rooms [id] API", () => {
 
       expect(response.status).toBe(200);
       expect(data.message).toContain("deletada com sucesso");
-      expect(prismaMock.room.delete).toHaveBeenCalledWith({
-        where: { id: "room-1" },
-      });
+      expect(prismaMock.room.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "room-1" },
+          data: { deletedAt: expect.any(Date) },
+        })
+      );
     });
 
     it("should return 500 on DB error", async () => {
-      prismaMock.room.delete.mockRejectedValue(new Error("DB error"));
+      prismaMock.room.update.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1", {
         method: "DELETE",

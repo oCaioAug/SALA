@@ -1,18 +1,19 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 
-import { authOptions } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth/platform";
+import { isOrgAdmin, toLegacySessionRole } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
-
-// Force dynamic behavior to prevent static optimization
-export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticação
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const sessionUser = await getAuthUser();
+    if (!sessionUser) {
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const { searchParams } = new URL(request.url);
@@ -25,14 +26,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verificar se o usuário pode acessar este perfil
-    if (email !== session.user.email) {
-      const currentUser = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: { role: true },
-      });
-
-      if (!currentUser || currentUser.role !== "ADMIN") {
+    if (email !== sessionUser.email) {
+      if (
+        !isOrgAdmin({
+          platformRole: sessionUser.platformRole,
+          organizationRole: sessionUser.organizationRole,
+        })
+      ) {
         return NextResponse.json(
           { error: "Você não tem permissão para acessar este perfil" },
           { status: 403 }
@@ -46,26 +46,31 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        role: true,
         image: true,
         createdAt: true,
         updatedAt: true,
+        memberships: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { role: true },
+        },
       },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
-    return NextResponse.json(user);
+    const membership = user.memberships[0];
+    const { memberships: _memberships, ...profile } = user;
+
+    return NextResponse.json({
+      ...profile,
+      organizationRole: membership?.role ?? null,
+      role: toLegacySessionRole({ organizationRole: membership?.role ?? null }),
+    });
   } catch (error) {
     console.error("Erro ao buscar perfil do usuário:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

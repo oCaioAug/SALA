@@ -27,6 +27,7 @@ import { Card, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { getIntlLocale } from "@/lib/utils";
 
 interface UserData {
@@ -67,8 +68,7 @@ const UserProfilePage: React.FC = () => {
     onPageChange: setCurrentPage,
   });
 
-  // Verificar se é admin
-  const isAdmin = session?.user?.role === "ADMIN";
+  const { isOrgAdmin: isAdmin } = useOrgPermissions();
   const isOwnProfile = session?.user?.id === userId;
 
   // Carregar dados do usuário

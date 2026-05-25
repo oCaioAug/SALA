@@ -9,16 +9,29 @@ describe("Users Route API", () => {
 
   describe("GET /api/users", () => {
     it("should return all users", async () => {
-      const mockUsers = [
-        { id: "user-1", name: "João", email: "joao@example.com", role: "USER" },
+      const mockMembers = [
         {
-          id: "admin-1",
-          name: "Admin",
-          email: "admin@example.com",
+          role: "MEMBER",
+          user: {
+            id: "user-1",
+            name: "João",
+            email: "joao@example.com",
+            role: "USER",
+          },
+        },
+        {
           role: "ADMIN",
+          user: {
+            id: "admin-1",
+            name: "Admin",
+            email: "admin@example.com",
+            role: "ADMIN",
+          },
         },
       ];
-      prismaMock.user.findMany.mockResolvedValue(mockUsers as any);
+      prismaMock.organizationMember.findMany.mockResolvedValue(
+        mockMembers as any
+      );
 
       const response = await GET();
       const data = await response.json();
@@ -28,7 +41,9 @@ describe("Users Route API", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      prismaMock.user.findMany.mockRejectedValue(new Error("DB error"));
+      prismaMock.organizationMember.findMany.mockRejectedValue(
+        new Error("DB error")
+      );
 
       const response = await GET();
 

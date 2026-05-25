@@ -57,7 +57,11 @@ describe("Reservations API", () => {
       expect(response.status).toBe(200);
       expect(data).toEqual(mockReservations);
       expect(prismaMock.reservation.findMany).toHaveBeenCalledWith({
-        where: { roomId: "room-1", status: "APPROVED" },
+        where: {
+          organizationId: "org-test",
+          roomId: "room-1",
+          status: "APPROVED",
+        },
         include: { user: true, room: true },
         orderBy: { startTime: "desc" },
       });
@@ -98,11 +102,25 @@ describe("Reservations API", () => {
     };
 
     beforeEach(() => {
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: "user-1",
-        role: "USER",
+      prismaMock.user.findUnique.mockImplementation(
+        ({ where, include }: any) => {
+          if (include?.memberships) {
+            return Promise.resolve({
+              id: "user-1",
+              platformRole: "NONE",
+              memberships: [{ role: "MEMBER", organizationId: "org-1" }],
+            } as any);
+          }
+          return Promise.resolve({
+            id: where.id ?? "user-1",
+            role: "USER",
+          } as any);
+        }
+      );
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: "room-1",
+        organizationId: "org-1",
       } as any);
-      prismaMock.room.findUnique.mockResolvedValue({ id: "room-1" } as any);
     });
 
     it("should fail if missing required fields", async () => {
@@ -307,11 +325,25 @@ describe("Reservations API", () => {
     });
 
     it("should auto-approve reservation for ADMIN users", async () => {
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: "admin-1",
-        role: "ADMIN",
+      prismaMock.user.findUnique.mockImplementation(
+        ({ where, include }: any) => {
+          if (include?.memberships) {
+            return Promise.resolve({
+              id: "admin-1",
+              platformRole: "NONE",
+              memberships: [{ role: "ADMIN", organizationId: "org-1" }],
+            } as any);
+          }
+          return Promise.resolve({
+            id: where.id ?? "admin-1",
+            role: "ADMIN",
+          } as any);
+        }
+      );
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: "room-1",
+        organizationId: "org-1",
       } as any);
-      prismaMock.room.findUnique.mockResolvedValue({ id: "room-1" } as any);
       prismaMock.reservation.findFirst.mockResolvedValue(null);
       prismaMock.reservation.create.mockResolvedValue({
         id: "new-res",

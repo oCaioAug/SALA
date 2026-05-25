@@ -5,8 +5,8 @@ import { AlertTriangle, ArrowRight, Calendar, DoorOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/Card";
-import { Link } from "@/navigation";
 import { cn } from "@/lib/utils";
+import { Link } from "@/navigation";
 
 function ShortcutCard({
   href,

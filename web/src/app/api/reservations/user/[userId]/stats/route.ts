@@ -1,21 +1,33 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse } from "@/lib/auth/platform";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { getOrgMemberUserIds } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
-) {
+type RouteParams = { params: Promise<{ userId: string }> };
+
+export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { userId } = await params;
+    const memberIds = await getOrgMemberUserIds(ctx.organizationId);
+    if (!memberIds.includes(userId)) {
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
+    }
 
-    console.log("Buscando estatísticas para usuário:", userId);
-
-    // Buscar todas as reservas do usuário
     const reservations = await prisma.reservation.findMany({
-      where: {
-        userId: userId,
-      },
+      where: { userId, organizationId: ctx.organizationId },
       select: {
         id: true,
         status: true,
@@ -25,11 +37,7 @@ export async function GET(
       },
     });
 
-    console.log("Reservas encontradas:", reservations.length);
-
-    // Calcular estatísticas
     const now = new Date();
-
     const stats = {
       total: reservations.length,
       completed: reservations.filter(r => {
@@ -45,14 +53,9 @@ export async function GET(
       rejected: reservations.filter(r => r.status === "REJECTED").length,
     };
 
-    console.log("Estatísticas calculadas:", stats);
-
     return NextResponse.json(stats);
   } catch (error) {
     console.error("Erro ao buscar estatísticas de reservas:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

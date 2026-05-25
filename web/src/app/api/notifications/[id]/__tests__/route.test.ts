@@ -3,6 +3,7 @@
  */
 import { NextRequest } from "next/server";
 
+import { TEST_ORG_ID, TEST_USER_ID } from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { DELETE, PUT } from "../route";
 
@@ -11,9 +12,12 @@ const mockParams = (id: string) => ({ params: Promise.resolve({ id }) });
 describe("Notification [id] API", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  // ==================== PUT ====================
   describe("PUT /api/notifications/[id]", () => {
     it("should mark a notification as read", async () => {
+      prismaMock.notification.findFirst.mockResolvedValue({
+        id: "notif-1",
+        userId: TEST_USER_ID,
+      } as any);
       const updatedNotif = {
         id: "notif-1",
         isRead: true,
@@ -23,9 +27,7 @@ describe("Notification [id] API", () => {
 
       const req = new NextRequest(
         "http://localhost:3000/api/notifications/notif-1",
-        {
-          method: "PUT",
-        }
+        { method: "PUT" }
       );
       const response = await PUT(req, mockParams("notif-1"));
       const data = await response.json();
@@ -39,14 +41,28 @@ describe("Notification [id] API", () => {
       expect(data.isRead).toBe(true);
     });
 
+    it("should return 404 when notification is not found", async () => {
+      prismaMock.notification.findFirst.mockResolvedValue(null);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/notifications/notif-1",
+        { method: "PUT" }
+      );
+      const response = await PUT(req, mockParams("notif-1"));
+
+      expect(response.status).toBe(404);
+    });
+
     it("should return 500 on DB error", async () => {
+      prismaMock.notification.findFirst.mockResolvedValue({
+        id: "notif-1",
+        userId: TEST_USER_ID,
+      } as any);
       prismaMock.notification.update.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest(
         "http://localhost:3000/api/notifications/notif-1",
-        {
-          method: "PUT",
-        }
+        { method: "PUT" }
       );
       const response = await PUT(req, mockParams("notif-1"));
 
@@ -54,16 +70,17 @@ describe("Notification [id] API", () => {
     });
   });
 
-  // ==================== DELETE ====================
   describe("DELETE /api/notifications/[id]", () => {
     it("should delete a notification", async () => {
+      prismaMock.notification.findFirst.mockResolvedValue({
+        id: "notif-1",
+        userId: TEST_USER_ID,
+      } as any);
       prismaMock.notification.delete.mockResolvedValue({} as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/notifications/notif-1",
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
       const response = await DELETE(req, mockParams("notif-1"));
       const data = await response.json();
@@ -76,13 +93,15 @@ describe("Notification [id] API", () => {
     });
 
     it("should return 500 on DB error", async () => {
+      prismaMock.notification.findFirst.mockResolvedValue({
+        id: "notif-1",
+        userId: TEST_USER_ID,
+      } as any);
       prismaMock.notification.delete.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest(
         "http://localhost:3000/api/notifications/notif-1",
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
       const response = await DELETE(req, mockParams("notif-1"));
 

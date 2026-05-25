@@ -1,7 +1,11 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 
-import { authOptions } from "@/lib/auth";
+import { serializeUserWithLegacyRole } from "@/lib/auth/roles";
 import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 import {
@@ -30,20 +34,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     const formData = await request.formData();
     const file = formData.get("avatar") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "Nenhuma imagem fornecida" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.NO_IMAGE, 400);
     }
 
     // Validar imagem
@@ -73,26 +71,27 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        role: true,
         image: true,
         createdAt: true,
         updatedAt: true,
+        memberships: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { role: true },
+        },
       },
     });
 
     return NextResponse.json({
       success: true,
-      user: updatedUser,
+      user: serializeUserWithLegacyRole(updatedUser),
       imagePath: originalPath,
       thumbnailPath,
       message: "Avatar atualizado com sucesso!",
     });
   } catch (error) {
     console.error("Erro ao fazer upload do avatar:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
@@ -114,10 +113,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     // Remover o avatar do usuário
@@ -128,23 +124,24 @@ export async function DELETE(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        role: true,
         image: true,
         createdAt: true,
         updatedAt: true,
+        memberships: {
+          take: 1,
+          orderBy: { createdAt: "asc" },
+          select: { role: true },
+        },
       },
     });
 
     return NextResponse.json({
       success: true,
-      user: updatedUser,
+      user: serializeUserWithLegacyRole(updatedUser),
       message: "Avatar removido com sucesso!",
     });
   } catch (error) {
     console.error("Erro ao remover avatar:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

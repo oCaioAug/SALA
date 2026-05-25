@@ -1,10 +1,28 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
 import { authOptions } from "@/lib/auth";
+import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { pushNotificationService } from "@/lib/push-notification-service";
+import { locales, type Locale } from "@/config";
+
+function resolveLocaleFromRequest(req: NextRequest): Locale {
+  const header =
+    req.headers.get("x-next-intl-locale") ??
+    req.headers.get("accept-language")?.split(",")[0]?.trim().slice(0, 2);
+  if (header && (locales as readonly string[]).includes(header)) {
+    return header as Locale;
+  }
+  return "pt";
+}
 
 const approveReservationSchema = z.object({
   reservationId: z.string().min(1, "ID da reserva é obrigatório"),
@@ -17,54 +35,31 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado" },
-        { status: 401 }
-      );
+      return apiErrorResponse(ApiErrorCode.NOT_AUTHENTICATED, 401);
     }
 
-    // Verificar se o usuário é admin
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user || user.role !== "ADMIN") {
-      return NextResponse.json(
-        {
-          error:
-            "Acesso negado. Apenas administradores podem aprovar reservas.",
-        },
-        { status: 403 }
-      );
+    const auth = await requireOrgAdmin();
+    if (isNextResponse(auth)) return auth;
+    if (!auth.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
+    const locale = resolveLocaleFromRequest(req);
     const body = await req.json();
     const { reservationId, approved, reason } =
       approveReservationSchema.parse(body);
 
-    // Buscar a reserva com informações completas
-    const reservation = await prisma.reservation.findUnique({
-      where: { id: reservationId },
-      include: {
-        room: true,
-        user: true,
-      },
+    const reservation = await prisma.reservation.findFirst({
+      where: { id: reservationId, organizationId: auth.organizationId },
+      include: { room: true, user: true },
     });
 
     if (!reservation) {
-      return NextResponse.json(
-        { error: "Reserva não encontrada" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.RESERVATION_NOT_FOUND, 404);
     }
 
     if (reservation.status !== "PENDING") {
-      return NextResponse.json(
-        {
-          error: "Apenas reservas pendentes podem ser aprovadas ou rejeitadas",
-        },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.RESERVATION_NOT_PENDING, 400);
     }
 
     // Atualizar status da reserva
@@ -75,6 +70,7 @@ export async function POST(req: NextRequest) {
       // Buscar todas as reservas com o mesmo recurringTemplateId
       const allRecurringReservations = await prisma.reservation.findMany({
         where: {
+          organizationId: auth.organizationId,
           recurringTemplateId: reservation.recurringTemplateId,
           status: "PENDING",
         },
@@ -105,35 +101,20 @@ export async function POST(req: NextRequest) {
       });
 
       if (!updatedReservation) {
-        return NextResponse.json(
-          { error: "Reserva não encontrada após atualização" },
-          { status: 404 }
-        );
+        return apiErrorResponse(ApiErrorCode.RESERVATION_NOT_FOUND, 404);
       }
 
-      // Criar notificação para cada instância (ou uma notificação consolidada)
-      for (const recurringReservation of allRecurringReservations) {
-        await prisma.notification.create({
-          data: {
-            userId: recurringReservation.userId,
-            type: approved ? "RESERVATION_APPROVED" : "RESERVATION_REJECTED",
-            title: approved
-              ? "Reserva Recorrente Aprovada!"
-              : "Reserva Recorrente Rejeitada",
-            message: approved
-              ? `Suas reservas recorrentes da ${recurringReservation.room.name} foram aprovadas!`
-              : `Suas reservas recorrentes da ${recurringReservation.room.name} foram rejeitadas${reason ? `. Motivo: ${reason}` : "."}`,
-            data: {
-              reservationId: recurringReservation.id,
-              roomName: recurringReservation.room.name,
-              startTime: recurringReservation.startTime.toISOString(),
-              endTime: recurringReservation.endTime.toISOString(),
-              reason: reason || null,
-              isRecurring: true,
-              recurringInstances: allRecurringReservations.length,
-            },
-          },
-        });
+      if (approved) {
+        await notificationService.reservationApproved(
+          updatedReservation,
+          locale
+        );
+      } else {
+        await notificationService.reservationRejected(
+          updatedReservation,
+          reason,
+          locale
+        );
       }
 
       // Enviar notificação push (uma para todas as instâncias)
@@ -145,7 +126,8 @@ export async function POST(req: NextRequest) {
               roomName: reservation.room.name,
               startTime: reservation.startTime,
               endTime: reservation.endTime,
-            }
+            },
+            locale
           );
         } else {
           await pushNotificationService.sendReservationRejectionNotification(
@@ -154,17 +136,12 @@ export async function POST(req: NextRequest) {
               roomName: reservation.room.name,
               startTime: reservation.startTime,
               reason: reason,
-            }
+            },
+            locale
           );
         }
-        console.log(
-          `[approve] Notificação push enviada para usuário ${reservation.userId}`
-        );
       } catch (pushError) {
-        console.error(
-          "[approve] Erro ao enviar notificação push:",
-          pushError
-        );
+        console.error("[approve] Erro ao enviar notificação push:", pushError);
       }
 
       return NextResponse.json({
@@ -188,26 +165,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Criar notificação no banco
-    await prisma.notification.create({
-      data: {
-        userId: reservation.userId,
-        type: approved ? "RESERVATION_APPROVED" : "RESERVATION_REJECTED",
-        title: approved ? "Reserva Aprovada!" : "Reserva Rejeitada",
-        message: approved
-          ? `Sua reserva da ${reservation.room.name} foi aprovada!`
-          : `Sua reserva da ${reservation.room.name} foi rejeitada${reason ? `. Motivo: ${reason}` : "."}`,
-        data: {
-          reservationId: reservationId,
-          roomName: reservation.room.name,
-          startTime: reservation.startTime.toISOString(),
-          endTime: reservation.endTime.toISOString(),
-          reason: reason || null,
-        },
-      },
-    });
+    if (approved) {
+      await notificationService.reservationApproved(updatedReservation, locale);
+    } else {
+      await notificationService.reservationRejected(
+        updatedReservation,
+        reason,
+        locale
+      );
+    }
 
-    // Enviar notificação push
     try {
       if (approved) {
         await pushNotificationService.sendReservationApprovalNotification(
@@ -216,7 +183,8 @@ export async function POST(req: NextRequest) {
             roomName: reservation.room.name,
             startTime: reservation.startTime,
             endTime: reservation.endTime,
-          }
+          },
+          locale
         );
       } else {
         await pushNotificationService.sendReservationRejectionNotification(
@@ -225,18 +193,12 @@ export async function POST(req: NextRequest) {
             roomName: reservation.room.name,
             startTime: reservation.startTime,
             reason: reason,
-          }
+          },
+          locale
         );
       }
-      console.log(
-        `[approve] Notificação push enviada para usuário ${reservation.userId}`
-      );
     } catch (pushError) {
-      console.error(
-        "[approve] Erro ao enviar notificação push:",
-        pushError
-      );
-      // Não falhar a requisição se a notificação push falhar
+      console.error("[approve] Erro ao enviar notificação push:", pushError);
     }
 
     return NextResponse.json({
@@ -251,15 +213,11 @@ export async function POST(req: NextRequest) {
     console.error("Erro ao processar aprovação de reserva:", error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Dados inválidos", details: error.issues },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400, {
+        details: error.issues,
+      });
     }
 
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

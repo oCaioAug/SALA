@@ -12,6 +12,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import Image from "next/image";
+import { OrganizationRole, PlatformRole } from "@prisma/client";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
@@ -40,6 +41,17 @@ const Header: React.FC<HeaderProps> = ({
   const t = useTranslations("Header");
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
+
+  const tenantRoleLabel = (() => {
+    const orgRole = session?.user?.organizationRole;
+    if (orgRole === OrganizationRole.OWNER) return t("roles.owner");
+    if (orgRole === OrganizationRole.ADMIN) return t("roles.admin");
+    if (orgRole === OrganizationRole.MEMBER) return t("roles.member");
+    if (session?.user?.platformRole === PlatformRole.SUPER_ADMIN) {
+      return t("roles.platformSuperAdmin");
+    }
+    return tCommon("user");
+  })();
   const { theme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
@@ -48,14 +60,12 @@ const Header: React.FC<HeaderProps> = ({
   // Buscar contador de notificações
   const fetchNotificationCount = useCallback(async () => {
     if (!session?.user?.email) {
-      console.log("No user email available for fetching notifications");
       return;
     }
 
-    console.log(
-      "Header: Buscando contador de notificações para:",
-      session.user.email
-    );
+    if (session.user.platformRole === PlatformRole.SUPER_ADMIN) {
+      return;
+    }
 
     try {
       const controller = new AbortController();
@@ -68,19 +78,9 @@ const Header: React.FC<HeaderProps> = ({
 
       clearTimeout(timeoutId);
 
-      console.log(
-        "Header: Resposta do contador:",
-        response.status,
-        response.ok
-      );
-
       if (response.ok) {
         const data = await response.json();
-        console.log("Header: Contador atualizado:", data.count);
         setNotificationCount(data.count);
-      } else {
-        console.error("Header: Erro ao buscar contador:", response.status);
-        // Em caso de erro, manter o valor anterior
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -244,8 +244,8 @@ const Header: React.FC<HeaderProps> = ({
                   <p className="text-slate-900 dark:text-white font-medium text-sm">
                     {session.user.name || tCommon("user")}
                   </p>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs capitalize">
-                    {session.user.role || tCommon("user")}
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">
+                    {tenantRoleLabel}
                   </p>
                 </div>
 

@@ -1,5 +1,11 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { toLegacySessionRole } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
@@ -17,7 +23,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Credenciais fixas para desenvolvimento
     const validCredentials = {
       email: "admin@sala.com",
       password: "123456",
@@ -29,23 +34,31 @@ export async function POST(request: NextRequest) {
     ) {
       console.log("Credenciais válidas, buscando usuário...");
 
-      // Buscar usuário admin existente
       console.log("Buscando usuário com email:", email);
       const user = await prisma.user.findUnique({
         where: { email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          platformRole: true,
+          memberships: {
+            take: 1,
+            orderBy: { createdAt: "asc" },
+            select: { role: true },
+          },
+        },
       });
 
       console.log(
         "Usuário encontrado:",
-        user
-          ? { id: user.id, email: user.email, createdAt: user.createdAt }
-          : "Nenhum usuário encontrado"
+        user ? { id: user.id, email: user.email } : "Nenhum usuário encontrado"
       );
 
-      // Verificar se há outros usuários com o mesmo email
       const allUsersWithEmail = await prisma.user.findMany({
         where: { email },
         orderBy: { createdAt: "desc" },
+        select: { id: true, createdAt: true },
       });
       console.log(
         "Todos os usuários com este email:",
@@ -60,6 +73,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const membership = user.memberships[0];
       console.log("Login bem-sucedido para:", {
         id: user.id,
         email: user.email,
@@ -71,21 +85,22 @@ export async function POST(request: NextRequest) {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          organizationRole: membership?.role ?? null,
+          role: toLegacySessionRole({
+            platformRole: user.platformRole,
+            organizationRole: membership?.role ?? null,
+          }),
         },
       });
-    } else {
-      console.log("Credenciais inválidas");
-      return NextResponse.json(
-        { error: "Email ou senha incorretos" },
-        { status: 401 }
-      );
     }
+
+    console.log("Credenciais inválidas");
+    return NextResponse.json(
+      { error: "Email ou senha incorretos" },
+      { status: 401 }
+    );
   } catch (error) {
     console.error("Erro no login:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

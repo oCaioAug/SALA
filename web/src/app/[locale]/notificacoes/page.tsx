@@ -14,7 +14,11 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
-import { MdOutlineBugReport, MdOutlineScience, MdRefresh } from "react-icons/md";
+import {
+  MdOutlineBugReport,
+  MdOutlineScience,
+  MdRefresh,
+} from "react-icons/md";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -24,6 +28,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { getIntlLocale } from "@/lib/utils";
 
@@ -50,6 +55,7 @@ const NotificationPage: React.FC = () => {
   const locale = useLocale();
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
+  const { isOrgAdmin } = useOrgPermissions();
   const [currentPage, setCurrentPage] = useState("notificacoes");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +106,10 @@ const NotificationPage: React.FC = () => {
 
       // A API retorna as notificações diretamente, não em data.notifications
       const notificationsList = Array.isArray(data) ? data : [];
-      console.log("[notificacoes] Total de notificações:", notificationsList.length);
+      console.log(
+        "[notificacoes] Total de notificações:",
+        notificationsList.length
+      );
 
       setNotifications(notificationsList);
     } catch (err) {
@@ -416,349 +425,375 @@ const NotificationPage: React.FC = () => {
           retryLabel={tCommon("retry")}
         />
       ) : (
-      <>
-      {/* Header da página */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-              <Bell className="w-8 h-8 text-blue-400" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                {t("title")}
-              </h1>
-              <p className="text-slate-600 dark:text-gray-400">
-                {unreadCount > 0
-                  ? t("description.unreadCount", {
-                      unread: unreadCount,
-                      total: notifications.length,
-                      plural: unreadCount > 1 ? "s" : "",
-                    })
-                  : notifications.length > 0
-                    ? t("description.allRead", { total: notifications.length })
-                    : t("description.none")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => {
-                console.log("[notificacoes] Recarregando notificações...");
-                fetchNotifications();
-              }}
-            >
-              <MdRefresh className="h-4 w-4 shrink-0" aria-hidden />
-              {t("actions.reload")}
-            </Button>
-            {session?.user?.role === "ADMIN" && (
-              <>
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={async () => {
-                    try {
-                      console.log(
-                        "[notificacoes] Verificando todas as notificações no banco..."
-                      );
-                      const response = await fetch("/api/notifications/debug");
-
-                      if (response.ok) {
-                        const result = await response.json();
-                        console.log("[notificacoes] Debug das notificações:", result);
-                        showSuccess(
-                          t("feedback.debugSuccess", {
-                            count: result.total,
+        <>
+          {/* Header da página */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
+                  <Bell className="w-8 h-8 text-blue-400" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    {t("title")}
+                  </h1>
+                  <p className="text-slate-600 dark:text-gray-400">
+                    {unreadCount > 0
+                      ? t("description.unreadCount", {
+                          unread: unreadCount,
+                          total: notifications.length,
+                          plural: unreadCount > 1 ? "s" : "",
+                        })
+                      : notifications.length > 0
+                        ? t("description.allRead", {
+                            total: notifications.length,
                           })
-                        );
-                      } else {
-                        showError("Erro ao buscar debug");
-                      }
-                    } catch (error) {
-                      console.error("[notificacoes] Erro no debug:", error);
-                      showError("Erro ao buscar debug");
-                    }
-                  }}
-                >
-                  <MdOutlineBugReport className="h-4 w-4 shrink-0" aria-hidden />
-                  {t("actions.debug")}
-                </Button>
+                        : t("description.none")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
                 <Button
                   variant="outline"
                   className="gap-2"
-                  onClick={async () => {
-                    try {
-                      const response = await fetch(
-                        "/api/notifications/test-reservation",
-                        {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                        }
-                      );
-
-                      if (response.ok) {
-                        const result = await response.json();
-                        showSuccess(
-                          t("feedback.testSuccess", { message: result.message })
-                        );
-                        console.log("[notificacoes] Resultado do teste:", result);
-                        // Recarregar notificações
-                        setTimeout(() => fetchNotifications(), 1000);
-                      } else {
-                        const errorData = await response
-                          .json()
-                          .catch(() => ({}));
-                        console.error("[notificacoes] Erro na resposta:", errorData);
-                        showError(t("feedback.testError"));
-                      }
-                    } catch (error) {
-                      console.error("[notificacoes] Erro na requisição:", error);
-                      showError(t("feedback.testError"));
-                    }
+                  onClick={() => {
+                    console.log("[notificacoes] Recarregando notificações...");
+                    fetchNotifications();
                   }}
                 >
-                  <MdOutlineScience className="h-4 w-4 shrink-0" aria-hidden />
-                  {t("actions.test")}
+                  <MdRefresh className="h-4 w-4 shrink-0" aria-hidden />
+                  {t("actions.reload")}
                 </Button>
-              </>
-            )}
-            {unreadCount > 0 && (
-              <Button onClick={markAllAsRead}>
-                <CheckCheck className="w-4 h-4 mr-2" />
-                {t("actions.markAllRead")}
-              </Button>
-            )}
-          </div>
-        </div>
+                {isOrgAdmin && (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={async () => {
+                        try {
+                          console.log(
+                            "[notificacoes] Verificando todas as notificações no banco..."
+                          );
+                          const response = await fetch(
+                            "/api/notifications/debug"
+                          );
 
-        {/* Estatísticas rápidas */}
-        {notifications.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card variant="elevated" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
-                  <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {notifications.length}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-gray-400">
-                    {t("stats.total")}
-                  </p>
-                </div>
+                          if (response.ok) {
+                            const result = await response.json();
+                            console.log(
+                              "[notificacoes] Debug das notificações:",
+                              result
+                            );
+                            showSuccess(
+                              t("feedback.debugSuccess", {
+                                count: result.total,
+                              })
+                            );
+                          } else {
+                            showError("Erro ao buscar debug");
+                          }
+                        } catch (error) {
+                          console.error("[notificacoes] Erro no debug:", error);
+                          showError("Erro ao buscar debug");
+                        }
+                      }}
+                    >
+                      <MdOutlineBugReport
+                        className="h-4 w-4 shrink-0"
+                        aria-hidden
+                      />
+                      {t("actions.debug")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(
+                            "/api/notifications/test-reservation",
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                            }
+                          );
+
+                          if (response.ok) {
+                            const result = await response.json();
+                            showSuccess(
+                              t("feedback.testSuccess", {
+                                message: result.message,
+                              })
+                            );
+                            console.log(
+                              "[notificacoes] Resultado do teste:",
+                              result
+                            );
+                            // Recarregar notificações
+                            setTimeout(() => fetchNotifications(), 1000);
+                          } else {
+                            const errorData = await response
+                              .json()
+                              .catch(() => ({}));
+                            console.error(
+                              "[notificacoes] Erro na resposta:",
+                              errorData
+                            );
+                            showError(t("feedback.testError"));
+                          }
+                        } catch (error) {
+                          console.error(
+                            "[notificacoes] Erro na requisição:",
+                            error
+                          );
+                          showError(t("feedback.testError"));
+                        }
+                      }}
+                    >
+                      <MdOutlineScience
+                        className="h-4 w-4 shrink-0"
+                        aria-hidden
+                      />
+                      {t("actions.test")}
+                    </Button>
+                  </>
+                )}
+                {unreadCount > 0 && (
+                  <Button onClick={markAllAsRead}>
+                    <CheckCheck className="w-4 h-4 mr-2" />
+                    {t("actions.markAllRead")}
+                  </Button>
+                )}
               </div>
-            </Card>
+            </div>
 
-            <Card variant="elevated" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 dark:bg-orange-500/20 rounded-lg">
-                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {unreadCount}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-gray-400">
-                    {t("stats.unread")}
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            <Card variant="elevated" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 dark:bg-green-500/20 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {notifications.filter(n => n.isRead).length}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-gray-400">
-                    {t("stats.read")}
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            <Card variant="elevated" className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
-                  <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {
-                      notifications.filter(
-                        n => n.type === "RESERVATION_CREATED"
-                      ).length
-                    }
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-gray-400">
-                    Novas Reservas
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Filtros melhorados */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-slate-500 dark:text-gray-400" />
-            <select
-              value={filter}
-              onChange={e =>
-                setFilter(e.target.value as "all" | "unread" | "read")
-              }
-              className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">{t("filters.all")}</option>
-              <option value="unread">
-                {t("filters.unread")} ({unreadCount})
-              </option>
-              <option value="read">
-                {t("filters.read")} (
-                {notifications.filter(n => n.isRead).length})
-              </option>
-            </select>
-          </div>
-
-          <select
-            value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
-            className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">{t("types.all")}</option>
-            <option value="SYSTEM_ANNOUNCEMENT">
-              {t("types.SYSTEM_ANNOUNCEMENT")}
-            </option>
-            <option value="RESERVATION_CREATED">
-              {t("types.RESERVATION_CREATED")}
-            </option>
-            <option value="RESERVATION_APPROVED">
-              {t("types.RESERVATION_APPROVED")}
-            </option>
-            <option value="RESERVATION_REJECTED">
-              {t("types.RESERVATION_REJECTED")}
-            </option>
-            <option value="RESERVATION_CANCELLED">
-              {t("types.RESERVATION_CANCELLED")}
-            </option>
-            <option value="RESERVATION_REMINDER">
-              {t("types.RESERVATION_REMINDER")}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      {/* Lista de Notificações */}
-      <div className="space-y-4">
-        {notifications.length === 0 ? (
-          <EmptyState
-            icon={
-              <Bell className="w-8 h-8 text-slate-500 dark:text-gray-400" />
-            }
-            title={t("empty.title")}
-            description={t("empty.description")}
-          />
-        ) : (
-          notifications.map(notification => (
-            <Card
-              key={notification.id}
-              variant="elevated"
-              hover
-              className={`p-6 transition-all duration-200 cursor-pointer ${getNotificationBorderColor(notification.type, notification.isRead)} ${
-                !notification.isRead
-                  ? "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-500/10 dark:to-transparent"
-                  : ""
-              }`}
-              onClick={() => handleNotificationClick(notification)}
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 relative">
-                  {getNotificationIcon(notification.type)}
-                  {!notification.isRead && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800"></div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3
-                          className={`font-semibold ${!notification.isRead ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-gray-300"}`}
-                        >
-                          {getNotificationTitle(notification)}
-                        </h3>
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            notification.type === "SYSTEM_ANNOUNCEMENT"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
-                              : notification.type === "RESERVATION_CREATED"
-                                ? "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300"
-                                : notification.type === "RESERVATION_APPROVED"
-                                  ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
-                                  : notification.type === "RESERVATION_REJECTED"
-                                    ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
-                                    : notification.type ===
-                                        "RESERVATION_CANCELLED"
-                                      ? "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300"
-                                      : "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300"
-                          }`}
-                        >
-                          {getNotificationTypeLabel(notification.type)}
-                        </span>
-                      </div>
-
-                      <p className="text-slate-700 dark:text-gray-300 mb-4 leading-relaxed">
-                        {getNotificationMessage(notification)}
+            {/* Estatísticas rápidas */}
+            {notifications.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card variant="elevated" className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                      <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {notifications.length}
                       </p>
+                      <p className="text-sm text-slate-600 dark:text-gray-400">
+                        {t("stats.total")}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
 
-                      <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-gray-400">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {formatDate(notification.createdAt)}
-                        </span>
+                <Card variant="elevated" className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 dark:bg-orange-500/20 rounded-lg">
+                      <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {unreadCount}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-gray-400">
+                        {t("stats.unread")}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card variant="elevated" className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 dark:bg-green-500/20 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {notifications.filter(n => n.isRead).length}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-gray-400">
+                        {t("stats.read")}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card variant="elevated" className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
+                      <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {
+                          notifications.filter(
+                            n => n.type === "RESERVATION_CREATED"
+                          ).length
+                        }
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-gray-400">
+                        Novas Reservas
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            {/* Filtros melhorados */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-slate-500 dark:text-gray-400" />
+                <select
+                  value={filter}
+                  onChange={e =>
+                    setFilter(e.target.value as "all" | "unread" | "read")
+                  }
+                  className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">{t("filters.all")}</option>
+                  <option value="unread">
+                    {t("filters.unread")} ({unreadCount})
+                  </option>
+                  <option value="read">
+                    {t("filters.read")} (
+                    {notifications.filter(n => n.isRead).length})
+                  </option>
+                </select>
+              </div>
+
+              <select
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value)}
+                className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t("types.all")}</option>
+                <option value="SYSTEM_ANNOUNCEMENT">
+                  {t("types.SYSTEM_ANNOUNCEMENT")}
+                </option>
+                <option value="RESERVATION_CREATED">
+                  {t("types.RESERVATION_CREATED")}
+                </option>
+                <option value="RESERVATION_APPROVED">
+                  {t("types.RESERVATION_APPROVED")}
+                </option>
+                <option value="RESERVATION_REJECTED">
+                  {t("types.RESERVATION_REJECTED")}
+                </option>
+                <option value="RESERVATION_CANCELLED">
+                  {t("types.RESERVATION_CANCELLED")}
+                </option>
+                <option value="RESERVATION_REMINDER">
+                  {t("types.RESERVATION_REMINDER")}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          {/* Lista de Notificações */}
+          <div className="space-y-4">
+            {notifications.length === 0 ? (
+              <EmptyState
+                icon={
+                  <Bell className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+                }
+                title={t("empty.title")}
+                description={t("empty.description")}
+              />
+            ) : (
+              notifications.map(notification => (
+                <Card
+                  key={notification.id}
+                  variant="elevated"
+                  hover
+                  className={`p-6 transition-all duration-200 cursor-pointer ${getNotificationBorderColor(notification.type, notification.isRead)} ${
+                    !notification.isRead
+                      ? "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-500/10 dark:to-transparent"
+                      : ""
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 relative">
+                      {getNotificationIcon(notification.type)}
+                      {!notification.isRead && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-slate-800"></div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3
+                              className={`font-semibold ${!notification.isRead ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-gray-300"}`}
+                            >
+                              {getNotificationTitle(notification)}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                notification.type === "SYSTEM_ANNOUNCEMENT"
+                                  ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                                  : notification.type === "RESERVATION_CREATED"
+                                    ? "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300"
+                                    : notification.type ===
+                                        "RESERVATION_APPROVED"
+                                      ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
+                                      : notification.type ===
+                                          "RESERVATION_REJECTED"
+                                        ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
+                                        : notification.type ===
+                                            "RESERVATION_CANCELLED"
+                                          ? "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300"
+                                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300"
+                              }`}
+                            >
+                              {getNotificationTypeLabel(notification.type)}
+                            </span>
+                          </div>
+
+                          <p className="text-slate-700 dark:text-gray-300 mb-4 leading-relaxed">
+                            {getNotificationMessage(notification)}
+                          </p>
+
+                          <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-gray-400">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {formatDate(notification.createdAt)}
+                            </span>
+                            {!notification.isRead && (
+                              <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                Não lida
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
                         {!notification.isRead && (
-                          <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            Não lida
-                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={e => {
+                              e.stopPropagation();
+                              markAsRead(notification.id);
+                            }}
+                            className="shrink-0"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Marcar como lida
+                          </Button>
                         )}
                       </div>
                     </div>
-
-                    {!notification.isRead && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={e => {
-                          e.stopPropagation();
-                          markAsRead(notification.id);
-                        }}
-                        className="shrink-0"
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        Marcar como lida
-                      </Button>
-                    )}
                   </div>
-                </div>
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
-      </>
+                </Card>
+              ))
+            )}
+          </div>
+        </>
       )}
     </PageLayout>
   );

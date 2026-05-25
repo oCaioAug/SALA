@@ -12,7 +12,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
@@ -28,18 +27,16 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/Card";
 import { Drawer } from "@/components/ui/Drawer";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { Item, Room, RoomWithItems } from "@/lib/types";
 import { Link, useRouter } from "@/navigation";
 
 const RoomDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
-  const { data: session } = useSession();
   const t = useTranslations("RoomDetail");
   const roomId = params.id as string;
-
-  // Verificar se o usuário é admin
-  const isAdmin = session?.user?.role === "ADMIN";
+  const { isOrgAdmin: isAdmin } = useOrgPermissions();
 
   const [currentPage, setCurrentPage] = useState("salas");
   const [room, setRoom] = useState<RoomWithItems | null>(null);
@@ -79,7 +76,10 @@ const RoomDetailPage: React.FC = () => {
   }, [roomId]);
 
   const handleUpdateRoom = async (
-    roomData: Omit<Room, "id" | "createdAt" | "updatedAt">
+    roomData: Omit<
+      Room,
+      "id" | "createdAt" | "updatedAt" | "organizationId" | "deletedAt"
+    >
   ) => {
     try {
       const response = await fetch(`/api/rooms/${roomId}`, {
@@ -103,7 +103,7 @@ const RoomDetailPage: React.FC = () => {
   };
 
   const handleAddItem = async (
-    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    itemData: Omit<Item, "id" | "createdAt" | "updatedAt" | "organizationId">,
     imageData?: any
   ) => {
     try {
@@ -161,7 +161,7 @@ const RoomDetailPage: React.FC = () => {
 
   // Atualizar item
   const handleUpdateItem = async (
-    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    itemData: Omit<Item, "id" | "createdAt" | "updatedAt" | "organizationId">,
     imageData?: any
   ) => {
     if (!editingItem) return;
@@ -197,7 +197,7 @@ const RoomDetailPage: React.FC = () => {
           method: "POST",
           body: uploadFormData,
         });
-      } 
+      }
       // Se a imagem foi removida, deletar da API
       else if (imageData && imageData.removeImage) {
         await fetch(`/api/items/${editingItem.id}/remove-image`, {
@@ -259,300 +259,307 @@ const RoomDetailPage: React.FC = () => {
           retryLabel={t("backToDashboard")}
         />
       ) : (
-      <>
-      {/* Header da sala */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/salas">
-            <Button variant="outline" size="sm" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              {t("back")}
-            </Button>
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              {room.name}
-            </h1>
-            <div className="flex items-center gap-4">
-              <StatusBadge status={room.status} />
-              {room.capacity && (
-                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                  <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
-                    <HiUsers
-                      className="h-3 w-3 text-slate-600 dark:text-slate-400"
-                      aria-hidden
-                    />
-                  </div>
-                  <span>{t("capacity", { count: room.capacity })}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => router.push(`/salas/${roomId}/agendamentos`)}
-              className="gap-2"
-            >
-              <CalendarIcon className="w-4 h-4" />
-              {t("viewReservations")}
-            </Button>
-            {isAdmin && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="gap-2"
-                >
-                  <Edit className="w-4 h-4" />
-                  {t("editRoom")}
+        <>
+          {/* Header da sala */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-6">
+              <Link href="/salas">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  {t("back")}
                 </Button>
-                <Button
-                  onClick={() => setIsAddItemModalOpen(true)}
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  {t("addItem")}
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+              </Link>
+            </div>
 
-      {/* Descrição */}
-      {room.description && (
-        <Card className="mb-6">
-          <CardTitle className="text-lg mb-2">{t("description")}</CardTitle>
-          <p className="text-slate-700 dark:text-gray-300">
-            {room.description}
-          </p>
-        </Card>
-      )}
-
-      <Card className="mb-6">
-        <CardTitle className="mb-4 text-lg">{t("infoTitle")}</CardTitle>
-        <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
-          <div className="flex gap-3">
-            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
-            <div>
-              <p className="font-medium text-slate-900 dark:text-white">
-                {t("location")}
-              </p>
-              <p>{room.locationDescription?.trim() || "—"}</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <Plug className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-            <div>
-              <p className="font-medium text-slate-900 dark:text-white">
-                {t("outlets")}
-              </p>
-              <p>
-                {room.outletCount != null && room.outletCount !== undefined
-                  ? room.outletCount
-                  : "—"}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <Snowflake className="mt-0.5 h-5 w-5 shrink-0 text-cyan-500" />
-            <div>
-              <p className="font-medium text-slate-900 dark:text-white">
-                {room.climateControlled ? t("climateYes") : t("climateNo")}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Itens da sala */}
-      <Card variant="elevated">
-        <div className="mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <Package className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <CardTitle className="text-xl">{t("roomItems")}</CardTitle>
-              <CardDescription>
-                {t(room.items.length === 1 ? "itemsRegisteredOne" : "itemsRegistered", { count: room.items.length })}
-              </CardDescription>
-            </div>
-          </div>
-        </div>
-
-        {room.items.length === 0 ? (
-          <div className="text-center py-12 bg-slate-100 dark:bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600/50">
-            <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-slate-500 dark:text-slate-400" />
-            </div>
-            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-              {t("empty.title")}
-            </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
-              {isAdmin 
-                ? t("empty.descriptionAdmin")
-                : t("empty.descriptionUser")
-              }
-            </p>
-            {isAdmin && (
-              <Button
-                onClick={() => setIsAddItemModalOpen(true)}
-                className="gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                {t("empty.addFirstItem")}
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {room.items.map((item: any) => {
-              const itemImage =
-                item.images && item.images.length > 0
-                  ? item.images[0].path.replace(
-                      "/api/uploads/items/images/original_",
-                      "/api/uploads/items/images/thumb_"
-                    )
-                  : null;
-
-              return (
-                <Card
-                  key={item.id}
-                  variant="default"
-                  hover
-                  className="group overflow-hidden"
-                >
-                  {/* Imagem do item */}
-                  {itemImage ? (
-                    <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={itemImage}
-                        alt={item.name}
-                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                      {item.icon ? (
-                        <span className="text-4xl">{item.icon}</span>
-                      ) : (
-                        <MdInventory2 className="h-16 w-16 text-slate-500 dark:text-slate-400" />
-                      )}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  {room.name}
+                </h1>
+                <div className="flex items-center gap-4">
+                  <StatusBadge status={room.status} />
+                  {room.capacity && (
+                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                      <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
+                        <HiUsers
+                          className="h-3 w-3 text-slate-600 dark:text-slate-400"
+                          aria-hidden
+                        />
+                      </div>
+                      <span>{t("capacity", { count: room.capacity })}</span>
                     </div>
                   )}
+                </div>
+              </div>
 
-                  <div className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-400 transition-colors duration-300">
-                          {item.name}
-                        </h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          {t("item.quantity", { count: item.quantity })}
-                        </p>
-                      </div>
-                      {isAdmin && (
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingItem(item)}
-                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/salas/${roomId}/agendamentos`)}
+                  className="gap-2"
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                  {t("viewReservations")}
+                </Button>
+                {isAdmin && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="gap-2"
+                    >
+                      <Edit className="w-4 h-4" />
+                      {t("editRoom")}
+                    </Button>
+                    <Button
+                      onClick={() => setIsAddItemModalOpen(true)}
+                      className="gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      {t("addItem")}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
 
-                    {item.description && (
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
-                        {item.description}
-                      </p>
+          {/* Descrição */}
+          {room.description && (
+            <Card className="mb-6">
+              <CardTitle className="text-lg mb-2">{t("description")}</CardTitle>
+              <p className="text-slate-700 dark:text-gray-300">
+                {room.description}
+              </p>
+            </Card>
+          )}
+
+          <Card className="mb-6">
+            <CardTitle className="mb-4 text-lg">{t("infoTitle")}</CardTitle>
+            <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+              <div className="flex gap-3">
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {t("location")}
+                  </p>
+                  <p>{room.locationDescription?.trim() || "—"}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Plug className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {t("outlets")}
+                  </p>
+                  <p>
+                    {room.outletCount != null && room.outletCount !== undefined
+                      ? room.outletCount
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Snowflake className="mt-0.5 h-5 w-5 shrink-0 text-cyan-500" />
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {room.climateControlled ? t("climateYes") : t("climateNo")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Itens da sala */}
+          <Card variant="elevated">
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Package className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">{t("roomItems")}</CardTitle>
+                  <CardDescription>
+                    {t(
+                      room.items.length === 1
+                        ? "itemsRegisteredOne"
+                        : "itemsRegistered",
+                      { count: room.items.length }
                     )}
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
 
-                    {item.specifications && item.specifications.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
-                          {t("item.specifications")}
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {item.specifications
-                            .slice(0, 2)
-                            .map((spec: string, index: number) => (
-                              <span
-                                key={index}
-                                className="text-xs bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-slate-300 px-2 py-1 rounded"
-                              >
-                                {spec}
-                              </span>
-                            ))}
-                          {item.specifications.length > 2 && (
-                            <span className="text-xs text-slate-600 dark:text-slate-500">
-                              {t("item.more", { count: item.specifications.length - 2 })}
-                            </span>
+            {room.items.length === 0 ? (
+              <div className="text-center py-12 bg-slate-100 dark:bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600/50">
+                <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Package className="w-8 h-8 text-slate-500 dark:text-slate-400" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+                  {t("empty.title")}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-6">
+                  {isAdmin
+                    ? t("empty.descriptionAdmin")
+                    : t("empty.descriptionUser")}
+                </p>
+                {isAdmin && (
+                  <Button
+                    onClick={() => setIsAddItemModalOpen(true)}
+                    className="gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t("empty.addFirstItem")}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {room.items.map((item: any) => {
+                  const itemImage =
+                    item.images && item.images.length > 0
+                      ? item.images[0].path.replace(
+                          "/api/uploads/items/images/original_",
+                          "/api/uploads/items/images/thumb_"
+                        )
+                      : null;
+
+                  return (
+                    <Card
+                      key={item.id}
+                      variant="default"
+                      hover
+                      className="group overflow-hidden"
+                    >
+                      {/* Imagem do item */}
+                      {itemImage ? (
+                        <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                          <img
+                            src={itemImage}
+                            alt={item.name}
+                            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                          {item.icon ? (
+                            <span className="text-4xl">{item.icon}</span>
+                          ) : (
+                            <MdInventory2 className="h-16 w-16 text-slate-500 dark:text-slate-400" />
                           )}
                         </div>
+                      )}
+
+                      <div className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-400 transition-colors duration-300">
+                              {item.name}
+                            </h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                              {t("item.quantity", { count: item.quantity })}
+                            </p>
+                          </div>
+                          {isAdmin && (
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingItem(item)}
+                                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+
+                        {item.description && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                            {item.description}
+                          </p>
+                        )}
+
+                        {item.specifications &&
+                          item.specifications.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-medium text-slate-600 dark:text-slate-500">
+                                {t("item.specifications")}
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {item.specifications
+                                  .slice(0, 2)
+                                  .map((spec: string, index: number) => (
+                                    <span
+                                      key={index}
+                                      className="text-xs bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-slate-300 px-2 py-1 rounded"
+                                    >
+                                      {spec}
+                                    </span>
+                                  ))}
+                                {item.specifications.length > 2 && (
+                                  <span className="text-xs text-slate-600 dark:text-slate-500">
+                                    {t("item.more", {
+                                      count: item.specifications.length - 2,
+                                    })}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
                       </div>
-                    )}
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
 
-      {/* Modal para editar sala */}
-      <Drawer
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title={t("modals.editRoom")}
-      >
-        <RoomForm
-          room={room}
-          onSubmit={handleUpdateRoom}
-          onCancel={() => setIsEditModalOpen(false)}
-        />
-      </Drawer>
+          {/* Modal para editar sala */}
+          <Drawer
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            title={t("modals.editRoom")}
+          >
+            <RoomForm
+              room={room}
+              onSubmit={handleUpdateRoom}
+              onCancel={() => setIsEditModalOpen(false)}
+            />
+          </Drawer>
 
-      <Drawer
-        isOpen={isAddItemModalOpen}
-        onClose={() => setIsAddItemModalOpen(false)}
-        title={t("modals.addItem")}
-      >
-        <ItemForm
-          onSubmit={handleAddItem}
-          onCancel={() => setIsAddItemModalOpen(false)}
-        />
-      </Drawer>
+          <Drawer
+            isOpen={isAddItemModalOpen}
+            onClose={() => setIsAddItemModalOpen(false)}
+            title={t("modals.addItem")}
+          >
+            <ItemForm
+              onSubmit={handleAddItem}
+              onCancel={() => setIsAddItemModalOpen(false)}
+            />
+          </Drawer>
 
-      <Drawer
-        isOpen={!!editingItem}
-        onClose={() => setEditingItem(null)}
-        title={t("modals.editItem")}
-      >
-        <ItemForm
-          item={editingItem}
-          onSubmit={handleUpdateItem}
-          onCancel={() => setEditingItem(null)}
-        />
-      </Drawer>
-      </>
+          <Drawer
+            isOpen={!!editingItem}
+            onClose={() => setEditingItem(null)}
+            title={t("modals.editItem")}
+          >
+            <ItemForm
+              item={editingItem}
+              onSubmit={handleUpdateItem}
+              onCancel={() => setEditingItem(null)}
+            />
+          </Drawer>
+        </>
       )}
     </PageLayout>
   );
@@ -562,7 +569,7 @@ const RoomDetailPage: React.FC = () => {
 const ItemForm: React.FC<{
   item?: Item | null;
   onSubmit: (
-    item: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    item: Omit<Item, "id" | "createdAt" | "updatedAt" | "organizationId">,
     imageData?: any
   ) => void;
   onCancel: () => void;
@@ -586,10 +593,12 @@ const ItemForm: React.FC<{
   // useEffect para definir preview da imagem existente
   React.useEffect(() => {
     if (existingImagePath && !selectedImage) {
-      setImagePreview(existingImagePath.replace(
-        "/api/uploads/items/images/original_",
-        "/api/uploads/items/images/thumb_"
-      ));
+      setImagePreview(
+        existingImagePath.replace(
+          "/api/uploads/items/images/original_",
+          "/api/uploads/items/images/thumb_"
+        )
+      );
     }
   }, [existingImagePath, selectedImage]);
 
@@ -736,12 +745,11 @@ const ItemForm: React.FC<{
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1" disabled={uploading}>
-          {uploading 
+          {uploading
             ? t("form.saving")
-            : item 
+            : item
               ? t("form.updateItem")
-              : t("form.addItem")
-          }
+              : t("form.addItem")}
         </Button>
         <Button
           type="button"

@@ -1,8 +1,21 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { IncidentPriority, IncidentStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { isNextResponse } from "@/lib/auth/platform";
+import {
+  isOrgAdmin,
+  mapIncidentRelatedUsers,
+  userWithMembershipSelect,
+} from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { getIncidentInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
 
 // Força renderização dinâmica
@@ -14,18 +27,27 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { id } = await params;
 
-    console.log(` Buscando incidente ${id}`);
+    const exists = await getIncidentInOrganization(id, ctx.organizationId);
+    if (!exists) {
+      return apiErrorResponse(ApiErrorCode.INCIDENT_NOT_FOUND, 404);
+    }
 
     const incident = await prisma.incident.findUnique({
       where: { id },
       include: {
         reportedBy: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(ctx.organizationId),
         },
         assignedTo: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(ctx.organizationId),
         },
         room: {
           select: { id: true, name: true, description: true, status: true },
@@ -45,18 +67,15 @@ export async function GET(
     });
 
     if (!incident) {
-      return NextResponse.json(
-        { error: "Incidente não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.INCIDENT_NOT_FOUND, 404);
     }
 
-    return NextResponse.json(incident);
+    return NextResponse.json(mapIncidentRelatedUsers(incident!));
   } catch (error) {
     console.error(` Erro ao buscar incidente:`, error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
@@ -72,7 +91,7 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const { id } = await params;
@@ -87,35 +106,28 @@ export async function PUT(
       resolutionNotes,
     } = body;
 
-    console.log(` Atualizando incidente ${id}:`, body);
-
-    // Buscar usuário atual
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
-    // Buscar incidente atual
-    const currentIncident = await prisma.incident.findUnique({
-      where: { id },
+    const currentUser = ctx.user;
+
+    const currentIncident = await prisma.incident.findFirst({
+      where: { id, organizationId: ctx.organizationId },
       include: { assignedTo: true, reportedBy: true },
     });
 
     if (!currentIncident) {
-      return NextResponse.json(
-        { error: "Incidente não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.INCIDENT_NOT_FOUND, 404);
     }
 
     // Verificar permissões
-    const isAdmin = currentUser.role === "ADMIN";
+    const isAdmin = isOrgAdmin({
+      platformRole: currentUser.platformRole,
+      organizationRole: currentUser.organizationRole,
+    });
     const isAssigned = currentIncident.assignedToId === currentUser.id;
     const isReporter = currentIncident.reportedById === currentUser.id;
 
@@ -159,10 +171,10 @@ export async function PUT(
       data: updateData,
       include: {
         reportedBy: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(ctx.organizationId),
         },
         assignedTo: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(ctx.organizationId),
         },
         room: {
           select: { id: true, name: true, description: true, status: true },
@@ -219,12 +231,12 @@ export async function PUT(
     // TODO: Enviar notificações para usuários relevantes
     // TODO: Se status mudou para RESOLVED, reativar sala/item se necessário
 
-    return NextResponse.json(updatedIncident);
+    return NextResponse.json(mapIncidentRelatedUsers(updatedIncident));
   } catch (error) {
     console.error(` Erro ao atualizar incidente:`, error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
@@ -240,35 +252,36 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const { id } = await params;
 
-    console.log(` Tentativa de deletar incidente ${id}`);
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
 
-    // Buscar usuário atual
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const currentUser = ctx.user;
+    const isOrgAdminUser = isOrgAdmin({
+      platformRole: currentUser.platformRole,
+      organizationRole: currentUser.organizationRole,
     });
 
-    if (!currentUser || currentUser.role !== "ADMIN") {
+    if (!isOrgAdminUser) {
       return NextResponse.json(
         { error: "Apenas administradores podem deletar incidentes" },
         { status: 403 }
       );
     }
 
-    // Verificar se incidente existe
-    const incident = await prisma.incident.findUnique({
-      where: { id },
+    const incident = await prisma.incident.findFirst({
+      where: { id, organizationId: ctx.organizationId },
     });
 
     if (!incident) {
-      return NextResponse.json(
-        { error: "Incidente não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.INCIDENT_NOT_FOUND, 404);
     }
 
     // Deletar incidente (cascade deletará o histórico)
@@ -283,7 +296,7 @@ export async function DELETE(
     console.error(` Erro ao deletar incidente:`, error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
@@ -299,29 +312,22 @@ export async function PATCH(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const { id } = await params;
     const body = await request.json();
 
-    console.log(` Atualizando incidente ${id}:`, body);
-
-    // Buscar usuário atual primeiro
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
-    // Buscar o incidente atual
-    const existingIncident = await prisma.incident.findUnique({
-      where: { id },
+    const currentUser = ctx.user;
+
+    const existingIncident = await prisma.incident.findFirst({
+      where: { id, organizationId: ctx.organizationId },
       include: {
         reportedBy: { select: { id: true } },
         assignedTo: { select: { id: true } },
@@ -329,14 +335,14 @@ export async function PATCH(
     });
 
     if (!existingIncident) {
-      return NextResponse.json(
-        { error: "Incidente não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.INCIDENT_NOT_FOUND, 404);
     }
 
     // Verificar permissões
-    const isAdmin = currentUser.role === "ADMIN";
+    const isAdmin = isOrgAdmin({
+      platformRole: currentUser.platformRole,
+      organizationRole: currentUser.organizationRole,
+    });
     const isAssigned = existingIncident.assignedTo?.id === currentUser.id;
     const isReporter = existingIncident.reportedBy.id === currentUser.id;
 
@@ -438,10 +444,10 @@ export async function PATCH(
       data: updateData,
       include: {
         reportedBy: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(ctx.organizationId),
         },
         assignedTo: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(ctx.organizationId),
         },
         room: {
           select: { id: true, name: true, description: true, status: true },
@@ -476,11 +482,13 @@ export async function PATCH(
       );
     }
 
-    // Preparar resposta com avisos se houver campos ignorados
-    const response: any = updatedIncident;
+    const response = mapIncidentRelatedUsers(updatedIncident);
     if (ignoredFields.length > 0) {
-      response.warnings = warnings;
-      response.ignoredFields = ignoredFields;
+      return NextResponse.json({
+        ...response,
+        warnings,
+        ignoredFields,
+      });
     }
 
     return NextResponse.json(response);
@@ -496,7 +504,7 @@ export async function PATCH(
 
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

@@ -32,7 +32,7 @@ export function DashboardWidgetPalette({
         {tGrid("paletteHint")}
       </p>
       <ul className="flex flex-col gap-2">
-        {DASHBOARD_WIDGET_IDS.map((id) => {
+        {DASHBOARD_WIDGET_IDS.map(id => {
           const title = tGrid(DASHBOARD_WIDGET_GRID_KEY[id]);
           const isHidden = hiddenIds.has(id);
 
@@ -41,7 +41,7 @@ export function DashboardWidgetPalette({
               <div
                 draggable
                 className="flex cursor-grab items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3 active:cursor-grabbing dark:border-slate-600 dark:bg-slate-900/60"
-                onDragStart={(e) => {
+                onDragStart={e => {
                   onPaletteDragStart(id);
                   e.dataTransfer.effectAllowed = "copy";
                   e.dataTransfer.setData(WIDGET_DRAG_MIME, id);
@@ -67,7 +67,7 @@ export function DashboardWidgetPalette({
                   <button
                     type="button"
                     className="dashboard-widget-no-drag shrink-0 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    onClick={(ev) => {
+                    onClick={ev => {
                       ev.stopPropagation();
                       onAddClick(id);
                     }}

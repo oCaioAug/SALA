@@ -1,9 +1,23 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse } from "@/lib/auth/platform";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const body = await request.json();
     const { roomId, startTime, endTime, excludeReservationId } = body;
 
@@ -14,14 +28,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar reservas conflitantes (apenas ACTIVE e APPROVED)
+    const room = await getRoomInOrganization(roomId, ctx.organizationId);
+    if (!room) {
+      return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+    }
+
     const conflictingReservations = await prisma.reservation.findMany({
       where: {
+        organizationId: ctx.organizationId,
         roomId,
         id: excludeReservationId ? { not: excludeReservationId } : undefined,
-        status: {
-          in: ["ACTIVE", "APPROVED"], // Apenas reservas ativas ou aprovadas
-        },
+        status: { in: ["ACTIVE", "APPROVED"] },
         OR: [
           {
             AND: [
@@ -44,34 +61,18 @@ export async function POST(request: NextRequest) {
         ],
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        room: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        user: { select: { id: true, name: true, email: true } },
+        room: { select: { id: true, name: true } },
       },
     });
 
-    const hasConflict = conflictingReservations.length > 0;
-
     return NextResponse.json({
-      hasConflict,
+      hasConflict: conflictingReservations.length > 0,
       conflictingReservations,
       conflictCount: conflictingReservations.length,
     });
   } catch (error) {
     console.error("Erro ao verificar conflitos:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

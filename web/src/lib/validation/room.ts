@@ -24,12 +24,7 @@ function optionalIntUpdate() {
 }
 
 export const roomCreateBodySchema = z.object({
-  name: z
-    .string({
-      required_error: "Nome da sala é obrigatório",
-      invalid_type_error: "Nome da sala é obrigatório",
-    })
-    .min(1, "Nome da sala é obrigatório"),
+  name: z.string().min(1, "Nome da sala é obrigatório"),
   description: z.string().nullable().optional(),
   capacity: optionalIntCreate(),
   locationDescription: z.string().nullable().optional(),

@@ -3,68 +3,19 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { Suspense, useState } from "react";
+import React, { Suspense } from "react";
 import { FcGoogle } from "react-icons/fc";
 
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
+import { Link } from "@/navigation";
 
 const LoginContent: React.FC = () => {
   const t = useTranslations("Auth.login");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Verificar se há erro na URL
   const urlError = searchParams.get("error");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Salvar dados do usuário no localStorage apenas no lado do cliente
-        if (typeof window !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
-        router.push("/dashboard");
-      } else {
-        alert(data.error || t("error"));
-      }
-    } catch (error) {
-      console.error("Erro no login:", error);
-      alert(t("connectionError"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
 
   const handleLoginWithGoogleClick = async () => {
     try {
@@ -72,7 +23,7 @@ const LoginContent: React.FC = () => {
 
       // Usar redirect: true para que o NextAuth handle o redirecionamento automaticamente
       await signIn("google", {
-        callbackUrl: "/dashboard",
+        callbackUrl: "/inicio",
         redirect: true,
       });
     } catch (error) {
@@ -167,19 +118,19 @@ const LoginContent: React.FC = () => {
           {/* Legal footer */}
           <p className="mt-6 text-center text-xs text-gray-500 leading-relaxed">
             {t("legalConsent")}{" "}
-            <a
+            <Link
               href="/terms-of-service"
               className="text-blue-400 hover:text-blue-300 underline transition-colors"
             >
               {t("termsOfService")}
-            </a>{" "}
+            </Link>{" "}
             {t("legalAnd")}{" "}
-            <a
+            <Link
               href="/privacy-policy"
               className="text-blue-400 hover:text-blue-300 underline transition-colors"
             >
               {t("privacyPolicy")}
-            </a>
+            </Link>
             .
           </p>
         </CardContent>

@@ -52,10 +52,7 @@ export function DashboardCharts({
           />
         </div>
         <div className="lg:col-span-8">
-          <DashboardChartWeeklyTile
-            stats={stats}
-            statsLoading={statsLoading}
-          />
+          <DashboardChartWeeklyTile stats={stats} statsLoading={statsLoading} />
         </div>
         <div className="lg:col-span-6">
           <DashboardChartReservationStatusTile

@@ -1,66 +1,71 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
 import { roomUpdateBodySchema } from "@/lib/validation/room";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type RouteParams = { params: Promise<{ id: string }> };
+
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+    }
+
     const { id } = await params;
-    const room = await prisma.room.findUnique({
-      where: { id },
+    const room = await prisma.room.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
       include: {
         items: {
           include: {
             images: {
-              select: {
-                id: true,
-                filename: true,
-                path: true,
-              },
+              select: { id: true, filename: true, path: true },
               take: 1,
-              orderBy: {
-                createdAt: "desc",
-              },
+              orderBy: { createdAt: "desc" },
             },
           },
         },
         reservations: {
-          where: {
-            status: "ACTIVE",
-          },
-          include: {
-            user: true,
-          },
+          where: { status: "ACTIVE" },
+          include: { user: true },
         },
       },
     });
 
     if (!room) {
-      return NextResponse.json(
-        { error: "Sala não encontrada" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
     }
 
     return NextResponse.json(room);
   } catch (error) {
     console.error("Erro ao buscar sala:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const auth = await requireOrgAdmin();
+    if (isNextResponse(auth)) return auth;
+    if (!auth.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { id } = await params;
+    const existing = await getRoomInOrganization(id, auth.organizationId);
+    if (!existing) {
+      return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+    }
+
     const json = await request.json();
     const parsed = roomUpdateBodySchema.safeParse(json);
     if (!parsed.success) {
@@ -94,15 +99,9 @@ export async function PUT(
         items: {
           include: {
             images: {
-              select: {
-                id: true,
-                filename: true,
-                path: true,
-              },
+              select: { id: true, filename: true, path: true },
               take: 1,
-              orderBy: {
-                createdAt: "desc",
-              },
+              orderBy: { createdAt: "desc" },
             },
           },
         },
@@ -112,29 +111,32 @@ export async function PUT(
     return NextResponse.json(room);
   } catch (error) {
     console.error("Erro ao atualizar sala:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
+    const auth = await requireOrgAdmin();
+    if (isNextResponse(auth)) return auth;
+    if (!auth.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { id } = await params;
-    await prisma.room.delete({
+    const existing = await getRoomInOrganization(id, auth.organizationId);
+    if (!existing) {
+      return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+    }
+
+    await prisma.room.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
 
     return NextResponse.json({ message: "Sala deletada com sucesso" });
   } catch (error) {
     console.error("Erro ao deletar sala:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

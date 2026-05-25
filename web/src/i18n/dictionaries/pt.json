@@ -191,7 +191,104 @@
     "error": "Erro",
     "success": "Sucesso",
     "warning": "Atenção",
-    "info": "Informação"
+    "info": "Informação",
+    "redirectingToLogin": "Redirecionando para login...",
+    "a11y": {
+      "closePanel": "Fechar painel",
+      "close": "Fechar"
+    }
+  },
+  "Invites": {
+    "title": "Convidar membros",
+    "emailPlaceholder": "email@empresa.com",
+    "sending": "Enviando...",
+    "sendInvite": "Enviar convite",
+    "copyLink": "Copiar link",
+    "pendingTitle": "Convites pendentes",
+    "expires": "{role} · expira {date}",
+    "cancelInvite": "Cancelar convite"
+  },
+  "AvatarUpload": {
+    "invalidFormat": "Formato não suportado. Use JPG, PNG ou WebP.",
+    "tooLarge": "Imagem muito grande. Máximo 15MB.",
+    "uploadError": "Erro ao fazer upload do avatar",
+    "uploading": "Enviando...",
+    "change": "Alterar",
+    "upload": "Enviar",
+    "removing": "Removendo...",
+    "remove": "Remover",
+    "hint": "JPG, PNG ou WebP · Máximo 15MB",
+    "previewAlt": "Preview do avatar"
+  },
+  "Admin": {
+    "brand": "SALA Admin",
+    "subtitle": "Painel da Plataforma",
+    "nav": {
+      "dashboard": "Dashboard",
+      "organizations": "Organizações",
+      "users": "Usuários",
+      "plans": "Planos",
+      "audit": "Audit Log",
+      "home": "Início",
+      "myOrganizations": "Minhas Organizações",
+      "logout": "Sair"
+    },
+    "charts": {
+      "usageTitle": "Uso ao longo do tempo (30d)",
+      "noHistory": "Sem histórico materializado. Use \"Atualizar métricas diárias\" no dashboard.",
+      "reservations": "Reservas",
+      "activeUsers": "Usuários ativos",
+      "openIncidents": "Incidentes abertos"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Visão geral da plataforma",
+      "loadError": "Falha ao carregar estatísticas",
+      "unknownError": "Erro desconhecido",
+      "refreshMetrics": "Atualizar métricas diárias",
+      "refreshing": "Atualizando...",
+      "activeOrgs": "Organizações ativas",
+      "totalUsers": "Usuários",
+      "totalRooms": "Salas",
+      "reservations30d": "Reservas (30d)",
+      "openIncidents": "Incidentes abertos",
+      "weeklyOrgs": "Novas organizações por semana",
+      "weeklyUsers": "Novos usuários por semana",
+      "topOrgs": "Top organizações por reservas",
+      "orgsByPlan": "Organizações por plano",
+      "expiringTrials": "Trials expirando",
+      "inactiveOrgs": "Organizações inativas",
+      "viewAllOrgs": "Ver todas as organizações",
+      "retention": "Retenção (30d)",
+      "activeOrgs30d": "Orgs ativas (30d)",
+      "analyticsDescription": "Analytics global da plataforma SALA"
+    },
+    "organizations": {
+      "title": "Organizações",
+      "description": "Gerencie os clientes da plataforma",
+      "emptyTitle": "Nenhuma organização encontrada",
+      "emptyDesc": "Crie a primeira organização para começar",
+      "newTitle": "Nova organização",
+      "newDesc": "Cadastre um novo cliente na plataforma",
+      "detailTitle": "Organização",
+      "notFound": "Organização não encontrada",
+      "noPlan": "Sem plano",
+      "saveRole": "Salvar"
+    },
+    "users": {
+      "title": "Usuários",
+      "description": "Visão cross-org de todos os usuários da plataforma",
+      "emptyTitle": "Nenhum usuário",
+      "emptyDesc": "Nenhum usuário cadastrado na plataforma"
+    },
+    "plans": {
+      "title": "Planos",
+      "description": "Limites e pacotes comerciais da plataforma"
+    },
+    "audit": {
+      "title": "Audit Log",
+      "description": "Trilha de ações administrativas na plataforma"
+    }
   },
   "ErrorBoundary": {
     "title": "Oops! Algo deu errado",
@@ -200,6 +297,7 @@
   },
   "Sidebar": {
     "navigation": "Navegação",
+    "footer": "Conta",
     "menuItems": {
       "dashboard": {
         "label": "Visão Geral",
@@ -236,10 +334,83 @@
       "configuracoes": {
         "label": "Configurações",
         "description": "Configurações do sistema"
+      },
+      "inicio": {
+        "label": "Minhas Organizações",
+        "description": "Trocar ou escolher organização"
+      },
+      "explorar": {
+        "label": "Explorar salas",
+        "description": "Encontrar salas disponíveis"
+      },
+      "agendamentosMember": {
+        "label": "Meus agendamentos",
+        "description": "Suas reservas de salas"
+      },
+      "incidentesMember": {
+        "label": "Reportar problema",
+        "description": "Informar problemas nas salas"
       }
     }
   },
+  "InicioPage": {
+    "greeting": "Olá",
+    "title": "Para onde você quer ir?",
+    "subtitle": "Escolha o ambiente que deseja acessar nesta sessão",
+    "signOut": "Sair",
+    "enter": "Acessar",
+    "inviteError": "Erro ao aceitar convite",
+    "superAdminOrgHint": "Como administrador da plataforma, gerencie organizações pelo painel da plataforma. O painel da organização no app é para membros e admins do tenant.",
+    "platform": {
+      "title": "Painel da plataforma",
+      "description": "Gerenciar todas as organizações, planos, usuários e auditoria do SALA",
+      "badge": "Super Admin"
+    },
+    "organization": {
+      "adminTitle": "Painel da organização",
+      "adminDescription": "Salas, reservas, usuários e configurações da sua organização",
+      "memberTitle": "Explorar salas",
+      "memberDescription": "Ver salas disponíveis, agendar e reportar problemas",
+      "namedTitle": "{name}"
+    },
+    "createOrg": {
+      "title": "Criar organização",
+      "description": "Configure uma nova empresa ou equipe no SALA"
+    },
+    "anotherOrg": {
+      "title": "Outra organização",
+      "description": "Criar nova organização ou aceitar convites"
+    },
+    "invites": {
+      "title": "Convites pendentes",
+      "role": "Papel: {role}",
+      "accept": "Aceitar convite"
+    }
+  },
+  "ExplorarPage": {
+    "title": "Explorar salas",
+    "subtitle": "Encontre salas livres, veja quem está usando e confira os materiais disponíveis",
+    "loading": "Carregando salas...",
+    "errorLoad": "Erro ao carregar salas",
+    "retry": "Tentar novamente",
+    "bookRoom": "Agendar sala",
+    "statsTotal": "Total de salas",
+    "recommended": "Recomendadas para você",
+    "searchPlaceholder": "Buscar por nome, descrição ou local...",
+    "equipmentPlaceholder": "Filtrar por equipamento (ex: projetor)",
+    "emptyTitle": "Nenhuma sala encontrada",
+    "emptyDesc": "Tente ajustar os filtros ou a busca",
+    "climate": "Climatizada",
+    "inUseBy": "Em uso por {name}",
+    "viewDetails": "Ver detalhes"
+  },
   "Header": {
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrador",
+      "member": "Membro",
+      "platformSuperAdmin": "Super Admin (plataforma)"
+    },
     "breadcrumb": {
       "dashboard": "Dashboard",
       "overview": "Visão Geral"
@@ -519,7 +690,14 @@
     "purpose": "Propósito",
     "status": "Status",
     "close": "Fechar",
-    "cancelReservation": "Cancelar Reserva"
+    "cancelReservation": "Cancelar Reserva",
+    "roomContext": {
+      "back": "Voltar",
+      "listView": "Lista",
+      "calendarView": "Calendário",
+      "searchPlaceholder": "Buscar por usuário ou propósito...",
+      "statusAll": "Todos os Status"
+    }
   },
   "SettingsPage": {
     "title": "Configurações",
@@ -883,6 +1061,84 @@
       "legalAnd": "e nossa",
       "termsOfService": "Termos de Serviço",
       "privacyPolicy": "Política de Privacidade"
+    },
+    "errorPage": {
+      "title": "Erro de Autenticação",
+      "tryAgain": "Tentar Novamente",
+      "goDashboard": "Ir para Dashboard",
+      "loading": "Carregando...",
+      "errorCodeLabel": "Código do erro:",
+      "errorDescriptionLabel": "Descrição:",
+      "troubleshootTitle": "Se o problema persistir, verifique:",
+      "troubleshootOAuth": "Configuração do Google OAuth",
+      "troubleshootRedirect": "Redirect URIs autorizados",
+      "troubleshootEnv": "Variáveis de ambiente",
+      "errors": {
+        "Configuration": "Erro de configuração do provedor de autenticação.",
+        "AccessDenied": "Acesso negado. Você cancelou o login ou não tem permissão.",
+        "Verification": "Token de verificação inválido ou expirado.",
+        "Default": "Ocorreu um erro durante a autenticação.",
+        "Callback": "Erro no callback do Google. Verifique se o redirect URI está configurado corretamente.",
+        "unknown": "Erro desconhecido durante a autenticação."
+      }
+    }
+  },
+  "OnboardingPage": {
+    "title": "Bem-vindo ao SALA",
+    "subtitle": "Crie sua organização ou aceite um convite para começar",
+    "createOrgTitle": "Criar organização",
+    "orgNamePlaceholder": "Nome da sua empresa ou equipe",
+    "trialHint": "Você será o owner. Plano trial de 30 dias incluído.",
+    "creating": "Criando...",
+    "createOrg": "Criar organização",
+    "pendingInvitesTitle": "Convites pendentes",
+    "noInvites": "Nenhum convite pendente para {email}",
+    "role": "Papel: {role}",
+    "invitedBy": "convidado por {name}",
+    "acceptInvite": "Aceitar convite",
+    "errors": {
+      "createOrg": "Erro ao criar organização",
+      "acceptInvite": "Erro ao aceitar convite"
+    }
+  },
+  "InvitePage": {
+    "invalidInvite": "Convite inválido",
+    "notFound": "Convite não encontrado",
+    "goOnboarding": "Ir para onboarding",
+    "title": "Convite para {org}",
+    "invitedAs": "Você foi convidado para participar como {role}.",
+    "inviteEmail": "Email do convite: {email}",
+    "sentBy": "Enviado por: {name}",
+    "expiresAt": "Expira em: {date}",
+    "loginGoogle": "Entrar com Google para aceitar",
+    "wrongAccount": "Você está logado como {current}, mas o convite foi enviado para {expected}.",
+    "switchAccount": "Trocar conta",
+    "alreadyInOrg": "Você já pertence a uma organização.",
+    "accepting": "Aceitando...",
+    "acceptInvite": "Aceitar convite",
+    "createOwnOrg": "Criar minha própria organização",
+    "errors": {
+      "acceptInvite": "Erro ao aceitar convite"
+    }
+  },
+  "RoomItemsPage": {
+    "title": "Itens da Sala",
+    "back": "Voltar",
+    "addItem": "Adicionar Item",
+    "noItems": "Nenhum item cadastrado",
+    "edit": "Editar",
+    "delete": "Deletar",
+    "drawerAddTitle": "Adicionar Item",
+    "drawerEditTitle": "Editar Item",
+    "namePlaceholder": "Ex: Computador",
+    "loading": "Carregando itens...",
+    "errors": {
+      "roomNotFound": "Sala não encontrada",
+      "loadItems": "Erro ao carregar itens",
+      "unknown": "Erro desconhecido",
+      "addItem": "Erro ao adicionar item",
+      "updateItem": "Erro ao atualizar item",
+      "deleteItem": "Erro ao deletar item"
     }
   },
   "RoomDetail": {
@@ -1045,6 +1301,7 @@
     "backToUsers": "Voltar para a lista de usuários"
   },
   "NotificationModal": {
+    "loadError": "Erro ao carregar notificações",
     "title": "Notificações",
     "description": "Visualize e gerencie suas notificações",
     "markAllAsRead": "Marcar todas como lidas",
@@ -1089,5 +1346,266 @@
       "purposePrefix": " Finalidade: {purpose}",
       "reasonPrefix": " Motivo: {reason}"
     }
+  },
+  "Legal": {
+    "terms": {
+      "backLink": "← Voltar ao início",
+      "title": "Termos de Serviço",
+      "lastUpdatedLabel": "Última atualização",
+      "lastUpdated": "15 de abril de 2026",
+      "sections": {
+        "s1": {
+          "title": "1. Aceitação dos Termos",
+          "body": "Ao acessar ou utilizar o SALA (Sistema de Gerenciamento de Salas), você concorda com estes Termos de Serviço. Caso não concorde, não utilize o sistema."
+        },
+        "s2": {
+          "title": "2. Descrição do Serviço",
+          "body": "O SALA é uma plataforma institucional para reserva de salas, gestão de itens/equipamentos, fluxo de aprovação de reservas, incidentes e notificações."
+        },
+        "s3": {
+          "title": "3. Contas e Acesso",
+          "body": "O acesso é realizado via autenticação Google (OAuth). Você é responsável pela segurança da sua conta institucional e pelas ações realizadas após o login."
+        },
+        "s4": {
+          "title": "4. Uso Aceitável",
+          "body": "É proibido usar o sistema para fins ilícitos, tentar acessar dados de outras organizações, interferir na operação da plataforma ou compartilhar credenciais."
+        },
+        "s5": {
+          "title": "5. Reservas e Aprovações",
+          "body": "Reservas podem exigir aprovação de administradores. A instituição define regras de uso dos espaços; o SALA registra solicitações, decisões e histórico."
+        },
+        "s6": {
+          "title": "6. Disponibilidade",
+          "body": "Buscamos alta disponibilidade, mas não garantimos operação ininterrupta. Manutenções e indisponibilidades podem ocorrer sem aviso prévio."
+        },
+        "s7": {
+          "title": "7. Propriedade Intelectual",
+          "body": "O software, marca e interface do SALA pertencem aos titulares do projeto. Conteúdos inseridos pelos usuários permanecem sob responsabilidade das respectivas organizações."
+        },
+        "s8": {
+          "title": "8. Limitação de Responsabilidade",
+          "body": "O SALA é fornecido como está, dentro dos limites da lei. Não nos responsabilizamos por danos indiretos decorrentes do uso ou impossibilidade de uso do serviço."
+        },
+        "s9": {
+          "title": "9. Alterações",
+          "body": "Podemos atualizar estes termos. A data de última atualização será revisada nesta página. O uso continuado após alterações constitui aceitação."
+        },
+        "s10": {
+          "title": "10. Contato",
+          "body": "Dúvidas sobre estes termos devem ser encaminhadas ao administrador da sua organização ou ao suporte institucional responsável pelo SALA."
+        }
+      }
+    },
+    "privacy": {
+      "backLink": "← Voltar ao início",
+      "title": "Política de Privacidade",
+      "lastUpdatedLabel": "Última atualização",
+      "lastUpdated": "15 de abril de 2026",
+      "sections": {
+        "s1": {
+          "title": "1. Introdução",
+          "body": "Esta política descreve como o SALA trata dados pessoais de usuários em conformidade com a LGPD e boas práticas de privacidade."
+        },
+        "s2": {
+          "title": "2. Dados Coletados",
+          "body": "Coletamos nome, e-mail, foto de perfil (quando disponível via Google), organização, reservas, incidentes e registros de uso necessários ao funcionamento do sistema."
+        },
+        "s3": {
+          "title": "3. Finalidade",
+          "body": "Os dados são usados para autenticação, gestão de salas e reservas, notificações, segurança, suporte e melhoria do serviço."
+        },
+        "s4": {
+          "title": "4. Base Legal",
+          "body": "O tratamento baseia-se em execução de contrato ou política institucional, legítimo interesse da organização e consentimento quando aplicável."
+        },
+        "s5": {
+          "title": "5. Compartilhamento",
+          "body": "Dados podem ser processados por provedores de infraestrutura (hospedagem, banco de dados, e-mail/push) sob contratos e medidas de segurança adequadas."
+        },
+        "s6": {
+          "title": "6. Retenção",
+          "body": "Mantemos dados enquanto necessário para as finalidades descritas e obrigações legais. Organizações podem solicitar exclusão conforme política interna."
+        },
+        "s7": {
+          "title": "7. Direitos do Titular",
+          "body": "Você pode solicitar acesso, correção, exclusão, portabilidade e informações sobre tratamento ao administrador da sua organização."
+        },
+        "s8": {
+          "title": "8. Segurança",
+          "body": "Adotamos medidas técnicas e organizacionais para proteger dados, incluindo controle de acesso, criptografia em trânsito e monitoramento."
+        },
+        "s9": {
+          "title": "9. Cookies e Sessão",
+          "body": "Utilizamos cookies de sessão para autenticação. Não utilizamos cookies de publicidade comportamental."
+        },
+        "s10": {
+          "title": "10. Alterações e Contato",
+          "body": "Esta política pode ser atualizada. Para questões de privacidade, contate o administrador da organização ou o encarregado de dados (DPO) institucional."
+        }
+      }
+    }
+  },
+  "LandingPage": {
+    "nav": {
+      "terms": "Termos de Serviço",
+      "privacy": "Privacidade",
+      "login": "Entrar"
+    },
+    "hero": {
+      "badge": "Sistema Institucional",
+      "titleLine1": "S.A.L.A.",
+      "titleLine2": "Gerenciamento inteligente",
+      "titleLine3": "de espaços",
+      "subtitleBold": "Sistema de Agendamento e Locação de Ambientes.",
+      "subtitle": "Uma plataforma institucional para reserva de salas, controle de equipamentos e gestão de incidentes — tudo em um só lugar.",
+      "ctaLogin": "Acessar o sistema →",
+      "ctaFeatures": "Conhecer recursos"
+    },
+    "features": {
+      "title": "Tudo que sua instituição precisa",
+      "subtitle": "O S.A.L.A. facilita o gerenciamento de espaços físicos para escolas, universidades e organizações institucionais.",
+      "f1": {
+        "aria": "Calendário",
+        "title": "Reserva de Salas",
+        "desc": "Agende salas com calendário e reservas recorrentes."
+      },
+      "f2": {
+        "aria": "Aprovação",
+        "title": "Fluxo de Aprovação",
+        "desc": "Solicitações passam por aprovação de administradores."
+      },
+      "f3": {
+        "aria": "Incidentes",
+        "title": "Gestão de Incidentes",
+        "desc": "Reporte e acompanhe problemas em salas e equipamentos."
+      },
+      "f4": {
+        "aria": "Notificações",
+        "title": "Notificações em Tempo Real",
+        "desc": "Alertas sobre aprovações, rejeições e lembretes."
+      },
+      "f5": {
+        "aria": "Google Calendar",
+        "title": "Integração Google Calendar",
+        "desc": "Sincronize reservas aprovadas com sua agenda."
+      },
+      "f6": {
+        "aria": "Autenticação",
+        "title": "Login com Google",
+        "desc": "Acesso seguro via OAuth 2.0 institucional."
+      }
+    },
+    "howItWorks": {
+      "title": "Como funciona",
+      "subtitle": "Em poucos passos, sua instituição tem controle total dos espaços.",
+      "step1": {
+        "title": "Entre com sua conta Google",
+        "desc": "Login institucional sem cadastro manual."
+      },
+      "step2": {
+        "title": "Visualize e reserve uma sala",
+        "desc": "Veja disponibilidade e escolha horários."
+      },
+      "step3": {
+        "title": "Aguarde a aprovação",
+        "desc": "Administradores aprovam ou rejeitam com notificação."
+      },
+      "step4": {
+        "title": "Use o espaço",
+        "desc": "Com a reserva aprovada, utilize o espaço e reporte incidentes."
+      }
+    },
+    "cta": {
+      "title": "Pronto para organizar os espaços da sua instituição?",
+      "subtitle": "Faça login com sua conta Google institucional.",
+      "button": "Acessar o S.A.L.A. →"
+    },
+    "footer": {
+      "brand": "S.A.L.A. — Sistema de Agendamento e Locação de Ambientes",
+      "terms": "Termos de Serviço",
+      "privacy": "Política de Privacidade",
+      "login": "Login"
+    }
+  },
+  "ApiErrors": {
+    "NO_ORGANIZATION": "Sem organização",
+    "UNAUTHORIZED": "Não autorizado",
+    "ACCESS_DENIED": "Acesso negado",
+    "INTERNAL_ERROR": "Erro interno do servidor",
+    "INVALID_DATA": "Dados inválidos",
+    "ROOM_NOT_FOUND": "Sala não encontrada",
+    "USER_NOT_FOUND": "Usuário não encontrado",
+    "ITEM_NOT_FOUND": "Item não encontrado",
+    "INCIDENT_NOT_FOUND": "Incidente não encontrado",
+    "RESERVATION_NOT_FOUND": "Reserva não encontrada",
+    "INVITE_NOT_FOUND": "Convite não encontrado",
+    "INVITE_EXPIRED": "Convite expirado ou já utilizado",
+    "INVITE_ALREADY_MEMBER": "Este usuário já é membro da organização",
+    "INVITE_PENDING_EXISTS": "Já existe um convite pendente para este email",
+    "ORGANIZATION_NOT_FOUND": "Organização não encontrada",
+    "PLAN_NOT_FOUND": "Plano não encontrado",
+    "SLUG_IN_USE": "Slug já em uso",
+    "ALREADY_IN_ORGANIZATION": "Você já pertence a uma organização",
+    "TENANT_UNAVAILABLE": "Acesso tenant indisponível para super admin",
+    "NOT_AUTHENTICATED": "Usuário não autenticado",
+    "INVALID_ROLE": "Permissão inválida. Use ADMIN ou USER.",
+    "CANNOT_CHANGE_OWN_ROLE": "Você não pode alterar sua própria permissão",
+    "CANNOT_CHANGE_OWNER_ROLE": "Não é possível alterar o papel do owner",
+    "MEMBER_NOT_FOUND": "Membro não encontrado",
+    "OWNER_TRANSFER_REQUIRED": "Use transferência de ownership para definir owner",
+    "CANNOT_REMOVE_OWNER": "Não é possível remover o owner da organização",
+    "ITEM_NAME_REQUIRED": "Nome do item é obrigatório",
+    "REQUIRED_FIELDS": "Todos os campos obrigatórios devem ser preenchidos",
+    "INVALID_RECURRENCE": "Padrão de recorrência inválido",
+    "INVALID_DATE_RANGE": "A data final deve ser posterior à data inicial",
+    "RESERVATION_CONFLICT": "Já existe uma reserva com estes dados",
+    "INVALID_USER_OR_ROOM": "Usuário ou sala inválidos",
+    "RECURRING_CREATE_FAILED": "Erro ao criar reservas recorrentes",
+    "RESERVATION_NOT_PENDING": "Apenas reservas pendentes podem ser aprovadas ou rejeitadas",
+    "CONFLICT_CHECK_MISSING_DATA": "Dados obrigatórios não fornecidos",
+    "INCIDENT_REQUIRES_TARGET": "Um incidente deve ser relacionado a uma sala ou um item",
+    "ROOM_NOT_IN_ORG": "Sala não pertence à sua organização",
+    "ITEM_NOT_IN_ORG": "Item não pertence à sua organização",
+    "NO_PERMISSION_UPDATE_INCIDENT": "Sem permissão para atualizar este incidente",
+    "NO_PERMISSION_DELETE_INCIDENT": "Apenas administradores podem deletar incidentes",
+    "NO_PERMISSION_EDIT_INCIDENT": "Sem permissão para editar este incidente",
+    "INCIDENT_RESOLVED_READONLY": "Não é possível editar incidentes já resolvidos",
+    "NO_FIELDS_TO_UPDATE": "Nenhum dado para atualizar",
+    "ADMIN_LIST_USERS_ONLY": "Apenas administradores podem listar usuários",
+    "PROFILE_FORBIDDEN": "Você não tem permissão para acessar este perfil",
+    "EMAIL_REQUIRED": "Email é obrigatório",
+    "EMAIL_INVALID": "Email inválido",
+    "EMAIL_IN_USE": "Este email já está sendo usado por outro usuário",
+    "NO_IMAGE": "Nenhuma imagem fornecida",
+    "LOGIN_CREDENTIALS_REQUIRED": "Email e senha são obrigatórios",
+    "LOGIN_INVALID": "Email ou senha incorretos",
+    "ADMIN_USER_NOT_FOUND": "Usuário admin não encontrado. Execute o seed primeiro.",
+    "CANNOT_REMOVE_OWN_SUPER_ADMIN": "Você não pode remover seu próprio acesso de super admin",
+    "SUBSCRIPTION_NO_PLAN": "Organização sem assinatura. Informe planId.",
+    "USER_ID_REQUIRED": "userId é obrigatório",
+    "MEMBER_ALREADY_EXISTS": "Usuário já é membro desta organização",
+    "PLAN_LIMIT_ROOMS": "Limite de salas atingido ({max}). Faça upgrade do plano.",
+    "PLAN_LIMIT_USERS": "Limite de usuários atingido ({max}). Faça upgrade do plano.",
+    "PLAN_LIMIT_RESERVATIONS": "Limite de reservas mensais atingido ({max}). Faça upgrade do plano.",
+    "UPLOAD_INVALID_FORMAT": "Formato de imagem não suportado. Use JPG, PNG ou WebP.",
+    "UPLOAD_TOO_LARGE": "Imagem muito grande. Tamanho máximo: 15MB",
+    "UNKNOWN": "Ocorreu um erro inesperado"
+  },
+  "Metadata": {
+    "appTitle": "SALA - Sistema de Gerenciamento de Salas",
+    "appDescription": "Sistema completo para gerenciamento de salas, itens e reservas",
+    "adminTitle": "SALA Admin - Painel da Plataforma",
+    "adminDescription": "Gestão global da plataforma SALA",
+    "landingTitle": "S.A.L.A. — Sistema de Agendamento e Locação de Ambientes",
+    "landingDescription": "Sistema institucional para gerenciamento de reservas de salas e espaços.",
+    "termsTitle": "Termos de Serviço - SALA",
+    "termsDescription": "Termos de Serviço do Sistema SALA.",
+    "privacyTitle": "Política de Privacidade - SALA",
+    "privacyDescription": "Política de Privacidade do Sistema SALA."
+  },
+  "NotFound": {
+    "title": "404 - Página não encontrada",
+    "description": "A página que você procura não existe ou foi movida.",
+    "backHome": "Voltar para o início"
   }
 }

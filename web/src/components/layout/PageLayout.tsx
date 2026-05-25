@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { TenantGuard } from "@/components/auth/TenantGuard";
 import { Drawer } from "@/components/ui/Drawer";
 
 import { Header } from "./Header";
@@ -42,46 +43,48 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
   return (
     <ProtectedRoute>
-      <div className="page-container flex min-h-screen">
-        {showSidebar && (
-          <>
-            <Sidebar
-              variant="desktop"
-              currentPage={currentPage}
-              onNavigate={onNavigate}
-              isNavigating={isNavigating}
-            />
-            <Drawer
-              side="left"
-              isOpen={mobileNavOpen}
-              onClose={() => setMobileNavOpen(false)}
-              title={tHeader("menuTitle")}
-              size="md"
-            >
+      <TenantGuard>
+        <div className="page-container flex min-h-screen">
+          {showSidebar && (
+            <>
               <Sidebar
-                variant="mobile"
+                variant="desktop"
                 currentPage={currentPage}
-                onNavigate={handleNavigate}
+                onNavigate={onNavigate}
                 isNavigating={isNavigating}
               />
-            </Drawer>
-          </>
-        )}
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          {showHeader && (
-            <Header
-              onNotificationClick={onNotificationClick || (() => {})}
-              onNotificationItemClick={onNotificationItemClick}
-              notificationUpdateTrigger={notificationUpdateTrigger}
-              showMobileNavTrigger={showSidebar}
-              onMobileNavOpen={() => setMobileNavOpen(true)}
-            />
+              <Drawer
+                side="left"
+                isOpen={mobileNavOpen}
+                onClose={() => setMobileNavOpen(false)}
+                title={tHeader("menuTitle")}
+                size="md"
+              >
+                <Sidebar
+                  variant="mobile"
+                  currentPage={currentPage}
+                  onNavigate={handleNavigate}
+                  isNavigating={isNavigating}
+                />
+              </Drawer>
+            </>
           )}
 
-          <main className="flex-1 p-4 sm:p-6">{children}</main>
+          <div className="flex min-w-0 flex-1 flex-col">
+            {showHeader && (
+              <Header
+                onNotificationClick={onNotificationClick || (() => {})}
+                onNotificationItemClick={onNotificationItemClick}
+                notificationUpdateTrigger={notificationUpdateTrigger}
+                showMobileNavTrigger={showSidebar}
+                onMobileNavOpen={() => setMobileNavOpen(true)}
+              />
+            )}
+
+            <main className="flex-1 p-4 sm:p-6">{children}</main>
+          </div>
         </div>
-      </div>
+      </TenantGuard>
     </ProtectedRoute>
   );
 };

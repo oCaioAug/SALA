@@ -1,8 +1,10 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Role } from "@prisma/client";
+import { PlatformRole } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+import { toLegacySessionRole } from "@/lib/auth/roles";
+import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
 import { syncUpcomingReservationsForUser } from "@/lib/googleCalendar";
 import { prisma } from "@/lib/prisma";
 
@@ -32,13 +34,19 @@ export const authOptions: NextAuthOptions = {
       });
       if (session?.user) {
         session.user.id = user.id;
-        // Buscar informações adicionais do usuário no banco
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true },
+          select: { platformRole: true },
         });
-        session.user.role = dbUser?.role || Role.USER;
-        console.log("Session configurada com role:", session.user.role);
+        const resolved = await resolvePrimaryOrganization(user.id);
+        session.user.platformRole = dbUser?.platformRole ?? PlatformRole.NONE;
+        session.user.organizationId = resolved?.organizationId ?? null;
+        session.user.organizationRole = resolved?.organizationRole ?? null;
+        session.user.organizationName = resolved?.organizationName ?? null;
+        session.user.role = toLegacySessionRole({
+          platformRole: session.user.platformRole,
+          organizationRole: session.user.organizationRole,
+        });
       }
       return session;
     },
@@ -53,7 +61,6 @@ export const authOptions: NextAuthOptions = {
           console.error("Email não fornecido pelo Google");
           return false;
         }
-        console.log("Login Google autorizado para:", user.email);
         return true;
       }
 
@@ -61,32 +68,19 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      console.log("Redirect callback chamado:", { url, baseUrl });
-
-      // Se é um callback do Google OAuth, redirecionar para dashboard
       if (url.includes("/api/auth/callback/google")) {
-        console.log("Redirecionando após Google OAuth para /dashboard");
-        return `${baseUrl}/dashboard`;
+        return `${baseUrl}/inicio`;
       }
 
-      // Se a URL é relativa, usar baseUrl
       if (url.startsWith("/")) {
-        console.log(
-          "URL relativa, redirecionando para:",
-          `${baseUrl}${url}`
-        );
         return `${baseUrl}${url}`;
       }
 
-      // Se é da mesma origem, permitir
       if (new URL(url).origin === baseUrl) {
-        console.log("Mesma origem, permitindo:", url);
         return url;
       }
 
-      // Caso contrário, redirecionar para dashboard
-      console.log("Redirecionamento padrão para /dashboard");
-      return `${baseUrl}/dashboard`;
+      return `${baseUrl}/inicio`;
     },
   },
   pages: {

@@ -177,9 +177,7 @@ export function DashboardIncidentTile({
                       width={embedded ? 76 : 104}
                       tick={{ fontSize: 11 }}
                       tickFormatter={value =>
-                        t(
-                          `incidentStatus.${value}` as Parameters<typeof t>[0]
-                        )
+                        t(`incidentStatus.${value}` as Parameters<typeof t>[0])
                       }
                     />
                     <XAxis type="number" hide />

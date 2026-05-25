@@ -1,8 +1,14 @@
 import { IncidentStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 
-import { authOptions } from "@/lib/auth";
+import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -10,29 +16,25 @@ const WEEKS = 8;
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    const user = ctx.user;
+    const isAdmin = isOrgAdmin({
+      platformRole: user.platformRole,
+      organizationRole: user.organizationRole,
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
-    }
-
-    const isAdmin = user.role === "ADMIN";
     const now = new Date();
     const horizon = new Date(now.getTime() - WEEKS * WEEK_MS);
 
     const reservations = await prisma.reservation.findMany({
       where: {
         startTime: { gte: horizon },
+        organizationId: ctx.organizationId,
         ...(isAdmin ? {} : { userId: user.id }),
       },
       select: {
@@ -92,14 +94,14 @@ export async function GET() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    const incidentWhere = isAdmin
-      ? {}
-      : {
-          OR: [
-            { reportedById: user.id },
-            { assignedToId: user.id },
-          ],
-        };
+    const incidentWhere = {
+      organizationId: ctx.organizationId,
+      ...(isAdmin
+        ? {}
+        : {
+            OR: [{ reportedById: user.id }, { assignedToId: user.id }],
+          }),
+    };
 
     const OPEN_STATUSES: IncidentStatus[] = [
       "REPORTED",
@@ -124,6 +126,7 @@ export async function GET() {
         prisma.reservation.count({
           where: {
             status: "PENDING",
+            organizationId: ctx.organizationId,
             ...(isAdmin ? {} : { userId: user.id }),
           },
         }),
@@ -162,9 +165,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[dashboard/stats] Erro:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

@@ -39,8 +39,7 @@ const cardEmbed = (embedded: boolean) =>
     embedded && "h-full !p-3"
   );
 
-const headerEmbed = (embedded: boolean) =>
-  cn(embedded && "space-y-1 !pb-2");
+const headerEmbed = (embedded: boolean) => cn(embedded && "space-y-1 !pb-2");
 
 const titleEmbed = (embedded: boolean) =>
   cn(embedded && "!text-base leading-tight");
@@ -296,8 +295,9 @@ export function DashboardChartReservationStatusTile({
       "var(--color-chart-5)",
     ];
     statuses.forEach((row, i) => {
-      const labelKey =
-        `reservationStatus.${row.status}` as Parameters<typeof t>[0];
+      const labelKey = `reservationStatus.${row.status}` as Parameters<
+        typeof t
+      >[0];
       cfg[row.status] = {
         label: t(labelKey),
         color: palette[i % palette.length],
@@ -333,7 +333,10 @@ export function DashboardChartReservationStatusTile({
       </CardHeader>
       <CardContent className={contentEmbed(embedded)}>
         {hasStatus ? (
-          <ChartContainer config={reservationStatusConfig} className={chartBox(embedded)}>
+          <ChartContainer
+            config={reservationStatusConfig}
+            className={chartBox(embedded)}
+          >
             <BarChart
               accessibilityLayer
               data={reservationStatusData}
@@ -388,8 +391,7 @@ export function DashboardChartTopRoomsTile({
     return [...stats.topRooms]
       .sort((a, b) => a.count - b.count)
       .map(r => ({
-        name:
-          r.name.length > 22 ? `${r.name.slice(0, 20).trimEnd()}…` : r.name,
+        name: r.name.length > 22 ? `${r.name.slice(0, 20).trimEnd()}…` : r.name,
         count: r.count,
       }));
   }, [stats?.topRooms]);
@@ -416,7 +418,10 @@ export function DashboardChartTopRoomsTile({
       </CardHeader>
       <CardContent className={contentEmbed(embedded)}>
         {hasTopRooms ? (
-          <ChartContainer config={topRoomsConfig} className={chartBox(embedded)}>
+          <ChartContainer
+            config={topRoomsConfig}
+            className={chartBox(embedded)}
+          >
             <BarChart
               accessibilityLayer
               data={topRoomsData}

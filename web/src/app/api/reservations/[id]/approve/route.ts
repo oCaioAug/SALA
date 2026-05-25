@@ -1,16 +1,27 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { getReservationInOrganization } from "@/lib/auth/tenant-queries";
 import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id: reservationId } = await params;
+type RouteParams = { params: Promise<{ id: string }> };
 
+export async function POST(_request: NextRequest, { params }: RouteParams) {
+  try {
+    const auth = await requireOrgAdmin();
+    if (isNextResponse(auth)) return auth;
+    if (!auth.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
+    const { id: reservationId } = await params;
     if (!reservationId) {
       return NextResponse.json(
         { error: "ID da reserva não fornecido" },
@@ -18,20 +29,13 @@ export async function POST(
       );
     }
 
-    // Buscar a reserva
-    const reservation = await prisma.reservation.findUnique({
-      where: { id: reservationId },
-      include: {
-        user: true,
-        room: true,
-      },
-    });
+    const reservation = await getReservationInOrganization(
+      reservationId,
+      auth.organizationId
+    );
 
     if (!reservation) {
-      return NextResponse.json(
-        { error: "Reserva não encontrada" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.RESERVATION_NOT_FOUND, 404);
     }
 
     if (reservation.status !== "PENDING") {
@@ -41,49 +45,26 @@ export async function POST(
       );
     }
 
-    // Atualizar status para APPROVED
     const updatedReservation = await prisma.reservation.update({
       where: { id: reservationId },
-      data: {
-        status: "APPROVED",
-        updatedAt: new Date(),
-      },
-      include: {
-        user: true,
-        room: true,
-      },
+      data: { status: "APPROVED", updatedAt: new Date() },
+      include: { user: true, room: true },
     });
-
-    // Criar notificação para o usuário sobre a aprovação
-    console.log(
-      ` Iniciando criação de notificação para aprovação da reserva ${reservationId}`
-    );
-    console.log(
-      ` Usuário que receberá notificação: ${updatedReservation.user.email} (ID: ${updatedReservation.userId})`
-    );
 
     try {
       await notificationService.reservationApproved(updatedReservation);
-      console.log(
-        ` Notificação de aprovação criada com sucesso para ${updatedReservation.user.email}`
-      );
     } catch (notificationError) {
       console.error(
         "Erro ao criar notificação de aprovação:",
         notificationError
       );
-      // Não falhar a aprovação por causa da notificação
     }
 
-    // Sincronizar com Google Calendar (execução em background)
     void syncReservationToGoogleCalendar(updatedReservation.id);
 
     return NextResponse.json(updatedReservation);
   } catch (error) {
     console.error("Erro ao aprovar reserva:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

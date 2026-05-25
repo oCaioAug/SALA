@@ -36,9 +36,7 @@ export async function GET() {
         ? "configurado"
         : "nao_configurado",
       nextAuthUrl: process.env.NEXTAUTH_URL || "Não configurado",
-      databaseUrl: process.env.DATABASE_URL
-        ? "configurado"
-        : "nao_configurado",
+      databaseUrl: process.env.DATABASE_URL ? "configurado" : "nao_configurado",
       nodeEnv: process.env.NODE_ENV,
       currentSession: session ? "logado" : "nao_logado",
       sessionData: session,

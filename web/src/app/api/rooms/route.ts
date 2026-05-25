@@ -1,24 +1,39 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { OrganizationRole, Role } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { assertCanAddRoom } from "@/lib/organization/plan-limits";
 import { prisma } from "@/lib/prisma";
 import { roomCreateBodySchema } from "@/lib/validation/room";
 
-// Cache simples em memória
-let roomsCache: any[] | null = null;
-let lastCacheTime = 0;
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutos
+const roomsCacheByOrg = new Map<
+  string,
+  { data: unknown[]; timestamp: number }
+>();
+const CACHE_DURATION = 2 * 60 * 1000;
 
 export async function GET() {
   try {
-    const now = Date.now();
-
-    // Verificar cache
-    if (roomsCache && now - lastCacheTime < CACHE_DURATION) {
-      return NextResponse.json(roomsCache);
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin) {
+      return apiErrorResponse(ApiErrorCode.TENANT_UNAVAILABLE, 403);
     }
 
-    // Consulta otimizada - apenas dados essenciais
+    const now = Date.now();
+    const cached = roomsCacheByOrg.get(ctx.organizationId);
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
+      return NextResponse.json(cached.data);
+    }
+
     const rooms = await prisma.room.findMany({
+      where: { organizationId: ctx.organizationId, deletedAt: null },
       select: {
         id: true,
         name: true,
@@ -43,59 +58,56 @@ export async function GET() {
                 path: true,
               },
               take: 1,
-              orderBy: {
-                createdAt: "desc",
-              },
+              orderBy: { createdAt: "desc" },
             },
           },
         },
         reservations: {
-          where: {
-            status: "ACTIVE",
-          },
+          where: { status: "ACTIVE" },
           select: {
             id: true,
             startTime: true,
             endTime: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            user: { select: { id: true, name: true } },
           },
         },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     });
 
-    if (!Array.isArray(rooms)) {
-      throw new Error("Resposta inválida do serviço de salas");
-    }
-
-    // Garantir payload JSON-serializável (ex.: BigInt do Prisma) e cache estável
     const serializable = JSON.parse(
       JSON.stringify(rooms, (_key, value) =>
         typeof value === "bigint" ? value.toString() : value
       )
-    ) as typeof rooms;
-    roomsCache = serializable;
-    lastCacheTime = now;
+    );
+
+    roomsCacheByOrg.set(ctx.organizationId, {
+      data: serializable,
+      timestamp: now,
+    });
 
     return NextResponse.json(serializable);
   } catch (error) {
     console.error("Erro ao buscar salas:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireOrgAdmin();
+    if (isNextResponse(auth)) return auth;
+    if (!auth.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
+    const roomLimit = await assertCanAddRoom(auth.organizationId);
+    if (!roomLimit.ok) {
+      return apiErrorResponse(roomLimit.errorCode, 403, {
+        max: roomLimit.max,
+      });
+    }
+
     const json = await request.json();
     const parsed = roomCreateBodySchema.safeParse(json);
     if (!parsed.success) {
@@ -107,20 +119,16 @@ export async function POST(request: NextRequest) {
           .flatMap(([, msgs]) => msgs ?? [])
           .find((msg): msg is string => Boolean(msg)) ?? null;
       const normalizedName =
-        nameErr &&
-        /expected string|received undefined|required/i.test(nameErr)
+        nameErr && /expected string|received undefined|required/i.test(nameErr)
           ? "Nome da sala é obrigatório"
           : nameErr;
-      const errorMsg =
-        normalizedName ?? firstOther ?? "Dados inválidos";
+      const errorMsg = normalizedName ?? firstOther ?? "Dados inválidos";
       return NextResponse.json(
-        {
-          error: errorMsg,
-          details: flat,
-        },
+        { error: errorMsg, details: flat },
         { status: 400 }
       );
     }
+
     const {
       name,
       description,
@@ -140,22 +148,16 @@ export async function POST(request: NextRequest) {
         outletCount,
         climateControlled: climateControlled ?? false,
         status: status ?? "LIVRE",
+        organizationId: auth.organizationId,
       },
-      include: {
-        items: true,
-      },
+      include: { items: true },
     });
 
-    // Invalidar cache
-    roomsCache = null;
-    lastCacheTime = 0;
+    roomsCacheByOrg.delete(auth.organizationId);
 
     return NextResponse.json(room, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar sala:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

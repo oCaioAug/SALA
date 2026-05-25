@@ -159,7 +159,7 @@ export const INCIDENT_CATEGORIES = [
   "INFRASTRUCTURE",
   "SOFTWARE",
   "SAFETY",
-  "MAINTENANCE", 
+  "MAINTENANCE",
   "ELECTRICAL",
   "NETWORK",
   "OTHER",
@@ -184,7 +184,7 @@ export const INCIDENT_PRIORITY_LABELS = {
 
 export const INCIDENT_CATEGORY_LABELS = {
   EQUIPMENT_FAILURE: "Falha de Equipamento",
-  INFRASTRUCTURE: "Infraestrutura", 
+  INFRASTRUCTURE: "Infraestrutura",
   SOFTWARE: "Software",
   SAFETY: "Segurança",
   MAINTENANCE: "Manutenção",

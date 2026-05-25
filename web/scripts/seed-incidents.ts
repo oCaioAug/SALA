@@ -18,6 +18,14 @@ async function main() {
       return;
     }
 
+    const organizationId = rooms[0]?.organizationId;
+    if (!organizationId) {
+      console.log(
+        "[seed-incidents] Nenhuma organização encontrada. Execute o seed principal primeiro."
+      );
+      return;
+    }
+
     // Criar alguns incidentes de teste
     const incidentsData = [
       {
@@ -121,7 +129,7 @@ async function main() {
       console.log(`Creating incident: ${incidentData.title}`);
 
       const incident = await prisma.incident.create({
-        data: incidentData,
+        data: { ...incidentData, organizationId },
       });
 
       // Criar histórico de status

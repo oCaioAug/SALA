@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import ProductionErrorLogger from "@/components/ui/ProductionErrorLogger";
@@ -21,11 +21,6 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "SALA - Sistema de Gerenciamento de Salas",
-  description: "Sistema completo para gerenciamento de salas, itens e reservas",
-};
-
 interface LocaleLayoutProps {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
@@ -33,6 +28,17 @@ interface LocaleLayoutProps {
 
 export function generateStaticParams() {
   return routing.locales.map(locale => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: LocaleLayoutProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  return {
+    title: t("appTitle"),
+    description: t("appDescription"),
+  };
 }
 
 export default async function LocaleLayout({

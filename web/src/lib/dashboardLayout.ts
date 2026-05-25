@@ -1,4 +1,8 @@
-import type { Layout, LayoutItem, ResponsiveLayouts } from "react-grid-layout/legacy";
+import type {
+  Layout,
+  LayoutItem,
+  ResponsiveLayouts,
+} from "react-grid-layout/legacy";
 
 export const DASHBOARD_WIDGET_IDS = [
   "stat-total",
@@ -212,7 +216,7 @@ export function getDefaultLayoutItem(
   id: DashboardWidgetId,
   bp: DashboardBreakpoint
 ): LayoutItem | undefined {
-  return DEFAULT_DASHBOARD_LAYOUTS[bp]?.find((d) => d.i === id);
+  return DEFAULT_DASHBOARD_LAYOUTS[bp]?.find(d => d.i === id);
 }
 
 export function clampLayoutItemToCols(
@@ -242,7 +246,7 @@ export function filterLayoutsByHidden(
   const out: ResponsiveLayouts = {};
   for (const bp of BP) {
     out[bp] = (layouts[bp] ?? []).filter(
-      (it) => !hidden.has(it.i as DashboardWidgetId)
+      it => !hidden.has(it.i as DashboardWidgetId)
     );
   }
   return out;

@@ -37,14 +37,8 @@ export function DashboardIncidentsRequests({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <DashboardIncidentTile
-          stats={stats}
-          statsLoading={statsLoading}
-        />
-        <DashboardSolicitationsTile
-          stats={stats}
-          statsLoading={statsLoading}
-        />
+        <DashboardIncidentTile stats={stats} statsLoading={statsLoading} />
+        <DashboardSolicitationsTile stats={stats} statsLoading={statsLoading} />
       </div>
     </div>
   );

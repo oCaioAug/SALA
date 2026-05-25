@@ -1,3 +1,8 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -14,19 +19,19 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const intNonNeg = z.preprocess((v) => {
+const intNonNeg = z.preprocess(v => {
   const n = Number(v);
   if (!Number.isFinite(n)) return v;
   return Math.max(0, Math.round(n));
 }, z.number().int().nonnegative());
 
-const intPos = z.preprocess((v) => {
+const intPos = z.preprocess(v => {
   const n = Number(v);
   if (!Number.isFinite(n)) return v;
   return Math.max(1, Math.round(n));
 }, z.number().int().positive());
 
-const intPosOpt = z.preprocess((v) => {
+const intPosOpt = z.preprocess(v => {
   if (v === undefined || v === null) return undefined;
   const n = Number(v);
   if (!Number.isFinite(n)) return undefined;
@@ -66,7 +71,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const user = await prisma.user.findUnique({
@@ -75,10 +80,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     const raw = user.dashboardLayout as StoredDashboardLayout | null;
@@ -106,10 +108,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[dashboard/layout] GET:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
@@ -117,7 +116,7 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const json = await request.json().catch(() => null);
@@ -146,9 +145,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ ok: true, layout: payload });
   } catch (error) {
     console.error("[dashboard/layout] PUT:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
