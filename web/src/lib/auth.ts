@@ -8,8 +8,18 @@ import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organizat
 import { syncUpcomingReservationsForUser } from "@/lib/googleCalendar";
 import { prisma } from "@/lib/prisma";
 
+const adapter = PrismaAdapter(prisma);
+const originalLinkAccount = adapter.linkAccount;
+if (originalLinkAccount) {
+  adapter.linkAccount = (account) => {
+    // Google returns refresh_token_expires_in which is not in our Prisma schema
+    const { refresh_token_expires_in, ...cleanAccount } = account as any;
+    return originalLinkAccount(cleanAccount);
+  };
+}
+
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
