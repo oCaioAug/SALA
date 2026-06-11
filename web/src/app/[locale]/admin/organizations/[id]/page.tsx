@@ -4,7 +4,7 @@ import {
   OrganizationRole,
   OrganizationStatus,
   SubscriptionStatus,
-} from "@prisma/client";
+} from "@/lib/auth/roles";
 import { ArrowLeft, Building2, DoorOpen, Mail, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";

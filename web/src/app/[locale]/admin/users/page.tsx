@@ -1,6 +1,6 @@
 "use client";
 
-import { PlatformRole } from "@prisma/client";
+import { PlatformRole } from "@/lib/auth/roles";
 import { Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";

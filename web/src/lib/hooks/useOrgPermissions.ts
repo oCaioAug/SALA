@@ -1,6 +1,5 @@
 "use client";
 
-import { PlatformRole } from "@prisma/client";
 import { useSession } from "next-auth/react";
 
 import { isOrgAdminRole, isPlatformSuperAdmin } from "@/lib/auth/roles";

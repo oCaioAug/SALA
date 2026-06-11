@@ -1,6 +1,6 @@
 "use client";
 
-import { OrganizationStatus } from "@prisma/client";
+import { OrganizationStatus } from "@/lib/auth/roles";
 import { Building2, Plus, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";

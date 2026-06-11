@@ -1,6 +1,6 @@
 "use client";
 
-import { OrganizationStatus } from "@prisma/client";
+import { OrganizationStatus } from "@/lib/auth/roles";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 

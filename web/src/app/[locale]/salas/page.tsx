@@ -92,7 +92,7 @@ const SalasPage: React.FC = () => {
         const now = Date.now();
         const cacheExpiry = 5 * 60 * 1000;
 
-        if (roomsCache.length > 0 && now - lastFetchTime < cacheExpiry) {
+        if (lastFetchTime > 0 && now - lastFetchTime < cacheExpiry) {
           setRooms(roomsCache);
           setLoading(false);
           return;

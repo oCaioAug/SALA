@@ -1,6 +1,6 @@
 "use client";
 
-import { PlatformRole } from "@prisma/client";
+import { PlatformRole } from "@/lib/auth/roles";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";

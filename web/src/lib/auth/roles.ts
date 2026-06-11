@@ -1,4 +1,36 @@
-import { OrganizationRole, PlatformRole, Role } from "@prisma/client";
+export const PlatformRole = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+  NONE: "NONE",
+} as const;
+export type PlatformRole = typeof PlatformRole[keyof typeof PlatformRole];
+
+export const OrganizationRole = {
+  OWNER: "OWNER",
+  ADMIN: "ADMIN",
+  MEMBER: "MEMBER",
+} as const;
+export type OrganizationRole = typeof OrganizationRole[keyof typeof OrganizationRole];
+
+export const Role = {
+  ADMIN: "ADMIN",
+  USER: "USER",
+} as const;
+export type Role = typeof Role[keyof typeof Role];
+
+export const OrganizationStatus = {
+  ACTIVE: "ACTIVE",
+  SUSPENDED: "SUSPENDED",
+  TRIAL: "TRIAL",
+} as const;
+export type OrganizationStatus = typeof OrganizationStatus[keyof typeof OrganizationStatus];
+
+export const SubscriptionStatus = {
+  ACTIVE: "ACTIVE",
+  PAST_DUE: "PAST_DUE",
+  CANCELLED: "CANCELLED",
+  TRIALING: "TRIALING",
+} as const;
+export type SubscriptionStatus = typeof SubscriptionStatus[keyof typeof SubscriptionStatus];
 
 export type RoleContext = {
   platformRole?: PlatformRole | null;

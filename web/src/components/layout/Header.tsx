@@ -12,7 +12,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import Image from "next/image";
-import { OrganizationRole, PlatformRole } from "@prisma/client";
+import { OrganizationRole, PlatformRole } from "@/lib/auth/roles";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
