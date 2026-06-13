@@ -16,14 +16,14 @@ export function AdminPageHeader({
   return (
     <header
       className={cn(
-        "flex flex-col gap-4 border-b border-white/5 px-8 py-6 sm:flex-row sm:items-start sm:justify-between",
+        "flex flex-col gap-4 border-b border-border px-8 py-6 sm:flex-row sm:items-start sm:justify-between",
         className
       )}
     >
       <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-bold text-white">{title}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
         {description && (
-          <p className="mt-1 text-sm text-gray-400">{description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}
       </div>
       {actions && (

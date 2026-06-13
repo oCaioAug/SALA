@@ -2,6 +2,7 @@
 
 import { Filter, Search } from "lucide-react";
 
+import { adminInputClass, adminSurfaceClass } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
 
 export interface AdminFilterOption {
@@ -40,29 +41,24 @@ export function AdminFilterBar({
   const showSearch = onSearchChange !== undefined;
 
   return (
-    <div
-      className={cn(
-        "rounded-xl border border-white/10 bg-white/5 p-4 shadow-lg shadow-black/10",
-        className
-      )}
-    >
+    <div className={cn(adminSurfaceClass, className)}>
       <div className="flex flex-col gap-4">
         {showSearch && (
           <div className="flex flex-col gap-2">
             {searchTitle && (
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-300">
-                <Search className="h-4 w-4 text-gray-500" />
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Search className="h-4 w-4 text-muted-foreground" />
                 {searchTitle}
               </label>
             )}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={e => onSearchChange(e.target.value)}
-                className="w-full rounded-lg border border-white/10 bg-gray-950/50 py-2 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:border-violet-500 focus:outline-none"
+                className={cn(adminInputClass, "w-full py-2 pl-10 pr-4")}
               />
             </div>
           </div>
@@ -76,16 +72,16 @@ export function AdminFilterBar({
                   <div key={filter.id} className="flex flex-col gap-2">
                     <label
                       htmlFor={`admin-filter-${filter.id}`}
-                      className="flex items-center gap-2 text-sm font-medium text-gray-300"
+                      className="flex items-center gap-2 text-sm font-medium text-foreground"
                     >
-                      <Filter className="h-3.5 w-3.5 text-gray-500" />
+                      <Filter className="h-3.5 w-3.5 text-muted-foreground" />
                       {filter.label}
                     </label>
                     <select
                       id={`admin-filter-${filter.id}`}
                       value={filter.value}
                       onChange={e => filter.onChange(e.target.value)}
-                      className="rounded-lg border border-white/10 bg-gray-950/50 px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none"
+                      className={adminInputClass}
                     >
                       <option value="">
                         {filter.allLabel ?? "Todos"}

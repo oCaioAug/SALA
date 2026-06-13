@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
         ) : (
           <div className="space-y-3">
             {users.map(user => (
-              <Card key={user.id} className="border-white/10 bg-white/5">
+              <Card key={user.id} className="border-border bg-card">
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <MotionlessUserBlock user={user} />
                   <div className="flex flex-wrap gap-2">
@@ -232,13 +232,13 @@ function MotionlessUserBlock({ user }: { user: AdminUserDetail }) {
   return (
     <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p className="flex flex-wrap items-center gap-2 font-medium text-white">
+        <p className="flex flex-wrap items-center gap-2 font-medium text-foreground">
           {user.name ?? user.email}
           <AdminStatusBadge status={user.platformRole} kind="platformRole" />
         </p>
-        <p className="text-sm text-gray-500">{user.email}</p>
+        <p className="text-sm text-muted-foreground">{user.email}</p>
       </div>
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-muted-foreground">
         {user.memberships.length === 0
           ? "Sem organização"
           : user.memberships

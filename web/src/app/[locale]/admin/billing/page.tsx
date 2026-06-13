@@ -173,14 +173,14 @@ export default function AdminBillingPage() {
         {stats && stats.orgsWithoutSubscription > 0 && (
           <Card className="mb-6 border-amber-500/20 bg-amber-500/5">
             <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-amber-200">
+              <p className="text-sm text-amber-900 dark:text-amber-200">
                 {t("orgsWithoutSubscription", {
                   count: stats.orgsWithoutSubscription,
                 })}
               </p>
               <Link
                 href="/admin/organizations"
-                className="text-sm text-violet-300 hover:text-violet-200"
+                className="text-sm text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
               >
                 {t("viewOrganizations")}
               </Link>
@@ -255,7 +255,7 @@ export default function AdminBillingPage() {
                   return (
                     <Card
                       key={sub.id}
-                      className="border-white/10 bg-white/5 transition-colors hover:border-violet-500/30"
+                      className="border-border bg-card transition-colors hover:border-violet-500/30"
                     >
                       <CardContent className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
                         <div className="min-w-0 flex-1">
@@ -264,7 +264,7 @@ export default function AdminBillingPage() {
                               status={sub.status}
                               kind="subscription"
                             />
-                            <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-gray-300">
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                               {sub.plan.name}
                             </span>
                             {expiring &&
@@ -277,11 +277,11 @@ export default function AdminBillingPage() {
                           </div>
                           <Link
                             href={`/admin/organizations/${sub.organization.id}`}
-                            className="font-medium text-white hover:text-violet-200"
+                            className="font-medium text-foreground hover:text-violet-600 dark:hover:text-violet-200"
                           >
                             {sub.organization.name}
                           </Link>
-                          <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-gray-500">
+                          <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-muted-foreground">
                             <span>
                               {t("renewsOn")}{" "}
                               {new Date(

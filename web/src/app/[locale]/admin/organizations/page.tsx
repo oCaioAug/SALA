@@ -217,30 +217,30 @@ export default function OrganizationsPage() {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {organizations.map(org => (
                 <Link key={org.id} href={`/admin/organizations/${org.id}`}>
-                  <Card className="border-white/10 bg-white/5 transition-colors hover:border-violet-500/30 hover:bg-white/10">
+                  <Card className="border-border bg-card transition-colors hover:border-violet-500/30 hover:bg-muted">
                     <CardContent className="p-5">
                       <div className="mb-3 flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h3 className="truncate font-semibold text-white">
+                          <h3 className="truncate font-semibold text-foreground">
                             {org.name}
                           </h3>
-                          <p className="text-xs text-gray-500">{org.slug}</p>
+                          <p className="text-xs text-muted-foreground">{org.slug}</p>
                         </div>
                         <AdminStatusBadge
                           status={org.status}
                           kind="organization"
                         />
                       </div>
-                      <div className="space-y-1 text-sm text-gray-400">
+                      <div className="space-y-1 text-sm text-muted-foreground">
                         <p>
                           Owner:{" "}
-                          <span className="text-gray-300">
+                          <span className="text-muted-foreground">
                             {org.owner.name ?? org.owner.email}
                           </span>
                         </p>
                         <p>
                           Plano:{" "}
-                          <span className="text-gray-300">
+                          <span className="text-muted-foreground">
                             {org.plan?.name ?? t("noPlan")}
                           </span>
                         </p>

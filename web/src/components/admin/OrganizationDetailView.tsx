@@ -188,20 +188,20 @@ export function OrganizationDetailView({
 
       <AdminTabPanel tabId="general" activeTab={activeTab}>
         <div className="space-y-6 pt-6">
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Building2 className="h-5 w-5" />
                 {t("tabs.general")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm text-gray-500">Status atual:</span>
+                <span className="text-sm text-muted-foreground">Status atual:</span>
                 <AdminStatusBadge status={org.status} kind="organization" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">{t("changeStatus")}</p>
+                <p className="text-sm text-muted-foreground">{t("changeStatus")}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(
                     [
@@ -226,30 +226,30 @@ export function OrganizationDetailView({
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Owner</p>
-                <div className="mt-1 flex items-center gap-2 text-gray-200">
-                  <Mail className="h-4 w-4 text-gray-500" />
+                <p className="text-sm text-muted-foreground">Owner</p>
+                <div className="mt-1 flex items-center gap-2 text-foreground">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   {org.owner.name ?? org.owner.email}
-                  <span className="text-gray-500">({org.owner.email})</span>
+                  <span className="text-muted-foreground">({org.owner.email})</span>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-500">{t("orgContactEmail")}</p>
-                <div className="mt-1 flex items-center gap-2 text-gray-200">
-                  <Mail className="h-4 w-4 text-gray-500" />
+                <p className="text-sm text-muted-foreground">{t("orgContactEmail")}</p>
+                <div className="mt-1 flex items-center gap-2 text-foreground">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   {org.email ?? "—"}
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-500">{t("orgContactPhone")}</p>
-                <div className="mt-1 flex items-center gap-2 text-gray-200">
-                  <Phone className="h-4 w-4 text-gray-500" />
+                <p className="text-sm text-muted-foreground">{t("orgContactPhone")}</p>
+                <div className="mt-1 flex items-center gap-2 text-foreground">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
                   {org.phone ? maskPhone(org.phone) : "—"}
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-500">{t("createdAt")}</p>
-                <p className="text-gray-200">
+                <p className="text-sm text-muted-foreground">{t("createdAt")}</p>
+                <p className="text-foreground">
                   {new Date(org.createdAt).toLocaleDateString("pt-BR")}
                 </p>
               </div>
@@ -261,9 +261,9 @@ export function OrganizationDetailView({
       </AdminTabPanel>
 
       <AdminTabPanel tabId="members" activeTab={activeTab}>
-        <Card className="mt-6 border-white/10 bg-white/5">
+        <Card className="mt-6 border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-white">{t("tabs.members")}</CardTitle>
+            <CardTitle className="text-foreground">{t("tabs.members")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={addMember} className="flex gap-2">
@@ -272,7 +272,7 @@ export function OrganizationDetailView({
                 placeholder={t("addMemberPlaceholder")}
                 value={memberEmail}
                 onChange={e => setMemberEmail(e.target.value)}
-                className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"
+                className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
               />
               <Button type="submit" size="sm">
                 {t("addMember")}
@@ -282,16 +282,16 @@ export function OrganizationDetailView({
               {org.members.map(member => (
                 <div
                   key={member.id}
-                  className="flex flex-col gap-3 rounded-lg bg-white/5 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-lg bg-muted/50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-200">
+                    <p className="text-sm font-medium text-foreground">
                       {member.user.name ?? member.user.email}
                     </p>
-                    <p className="text-xs text-gray-500">{member.user.email}</p>
+                    <p className="text-xs text-muted-foreground">{member.user.email}</p>
                   </div>
                   {member.role === OrganizationRole.OWNER ? (
-                    <span className="text-xs font-medium text-violet-300">
+                    <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
                       Owner
                     </span>
                   ) : (
@@ -305,7 +305,7 @@ export function OrganizationDetailView({
                               .value as OrganizationRole,
                           }))
                         }
-                        className="rounded border border-white/10 bg-gray-900 px-2 py-1 text-xs text-white"
+                        className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground"
                       >
                         <option value="ADMIN">{roleLabels.ADMIN}</option>
                         <option value="MEMBER">{roleLabels.MEMBER}</option>
@@ -342,9 +342,9 @@ export function OrganizationDetailView({
       </AdminTabPanel>
 
       <AdminTabPanel tabId="rooms" activeTab={activeTab}>
-        <Card className="mt-6 border-white/10 bg-white/5">
+        <Card className="mt-6 border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-foreground">
               {t("tabs.rooms")} ({org.rooms.length})
             </CardTitle>
           </CardHeader>
@@ -360,10 +360,10 @@ export function OrganizationDetailView({
                 {org.rooms.map(room => (
                   <div
                     key={room.id}
-                    className="rounded-lg bg-white/5 px-4 py-3 text-sm"
+                    className="rounded-lg bg-muted/50 px-4 py-3 text-sm"
                   >
-                    <p className="font-medium text-gray-200">{room.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-medium text-foreground">{room.name}</p>
+                    <p className="text-xs text-muted-foreground">
                       {room.status}
                       {room.capacity ? ` · ${room.capacity} lugares` : ""}
                     </p>
@@ -377,9 +377,9 @@ export function OrganizationDetailView({
 
       <AdminTabPanel tabId="usage" activeTab={activeTab}>
         <div className="space-y-6 pt-6">
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-white">
+              <CardTitle className="text-foreground">
                 {t("usageVsLimits")}
               </CardTitle>
             </CardHeader>
@@ -388,12 +388,12 @@ export function OrganizationDetailView({
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-white">{t("planSubscription")}</CardTitle>
+              <CardTitle className="text-foreground">{t("planSubscription")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-200">
+              <p className="text-foreground">
                 {org.plan?.name ?? t("noPlan")}
                 {org.subscription && (
                   <>
@@ -403,7 +403,7 @@ export function OrganizationDetailView({
                       kind="subscription"
                       className="ml-2"
                     />
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span className="ml-2 text-xs text-muted-foreground">
                       {t("renewsOn")}{" "}
                       {new Date(
                         org.subscription.currentPeriodEnd
@@ -416,7 +416,7 @@ export function OrganizationDetailView({
                 <div>
                   <label
                     htmlFor="org-plan-select"
-                    className="mb-2 block text-sm text-gray-500"
+                    className="mb-2 block text-sm text-muted-foreground"
                   >
                     {t("changePlan")}
                   </label>
@@ -425,7 +425,7 @@ export function OrganizationDetailView({
                     disabled={updating}
                     value={org.planId ?? ""}
                     onChange={e => updatePlan(e.target.value)}
-                    className="w-full max-w-sm rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                    className="w-full max-w-sm rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     {plans.map(plan => (
                       <option key={plan.id} value={plan.id}>
@@ -489,7 +489,7 @@ function UsageBar({
 
   return (
     <div>
-      <div className="flex justify-between text-xs text-gray-400">
+      <div className="flex justify-between text-xs text-muted-foreground">
         <span>{label}</span>
         <span>
           {current}
@@ -497,7 +497,7 @@ function UsageBar({
         </span>
       </div>
       {max != null && (
-        <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
           <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
         </div>
       )}

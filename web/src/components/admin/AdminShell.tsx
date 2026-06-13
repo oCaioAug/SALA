@@ -10,7 +10,7 @@ interface AdminShellProps {
 export function AdminShell({ children }: AdminShellProps) {
   return (
     <SuperAdminRoute>
-      <div className="flex min-h-screen bg-gray-950 text-gray-100">
+      <div className="flex min-h-screen bg-background text-foreground">
         <AdminSidebar />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>

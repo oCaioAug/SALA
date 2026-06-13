@@ -67,9 +67,9 @@ export function OrganizationDailyStatsChart({
   }, [organizationId, locale]);
 
   return (
-    <Card className="border-white/10 bg-white/5">
+    <Card className="border-border bg-card">
       <CardHeader>
-        <CardTitle className="text-white">{t("usageTitle")}</CardTitle>
+        <CardTitle className="text-foreground">{t("usageTitle")}</CardTitle>
       </CardHeader>
       <CardContent className="h-72">
         {loading ? (
@@ -77,7 +77,7 @@ export function OrganizationDailyStatsChart({
             <LoadingSpinner />
           </div>
         ) : data.length === 0 ? (
-          <p className="text-sm text-gray-500">{t("noHistory")}</p>
+          <p className="text-sm text-muted-foreground">{t("noHistory")}</p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>

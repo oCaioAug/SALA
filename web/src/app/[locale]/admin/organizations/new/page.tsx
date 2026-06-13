@@ -63,9 +63,9 @@ export default function NewOrganizationPage() {
     <>
       <AdminPageHeader title={t("newTitle")} description={t("newDesc")} />
       <AdminPageContent>
-      <Card className="mx-auto max-w-xl border-white/10 bg-white/5">
+      <Card className="mx-auto max-w-xl border-border bg-card">
         <CardHeader>
-          <CardTitle className="text-white">Dados da organização</CardTitle>
+          <CardTitle className="text-foreground">Dados da organização</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -92,7 +92,7 @@ export default function NewOrganizationPage() {
             />
 
             <div>
-              <label className="mb-1 block text-sm text-gray-400">Status</label>
+              <label className="mb-1 block text-sm text-muted-foreground">Status</label>
               <select
                 value={form.status}
                 onChange={e =>
@@ -101,7 +101,7 @@ export default function NewOrganizationPage() {
                     status: e.target.value as OrganizationStatus,
                   }))
                 }
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground"
               >
                 <option value="ACTIVE">Ativa</option>
                 <option value="TRIAL">Trial</option>

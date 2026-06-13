@@ -14,6 +14,10 @@ import {
 import { useTranslations } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
 
+import {
+  adminNavActiveClass,
+  adminNavInactiveClass,
+} from "@/components/admin/admin-styles";
 import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Link, usePathname } from "@/navigation";
 import { cn } from "@/lib/utils";
@@ -76,15 +80,15 @@ export function AdminSidebar() {
   ];
 
   return (
-    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-violet-900/30 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
-      <div className="border-b border-violet-900/30 p-6">
+    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-border bg-card">
+      <div className="border-b border-border p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-blue-600">
             <span className="text-sm font-bold text-white">S</span>
           </div>
           <div>
-            <p className="font-bold text-white">{t("brand")}</p>
-            <p className="text-xs text-violet-300/70">{t("subtitle")}</p>
+            <p className="font-bold text-foreground">{t("brand")}</p>
+            <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
           </div>
         </div>
       </div>
@@ -101,26 +105,26 @@ export function AdminSidebar() {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
-                  active
-                    ? "bg-violet-600/20 text-violet-200 shadow-lg shadow-violet-900/20"
-                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                  active ? adminNavActiveClass : adminNavInactiveClass
                 )}
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 <span className="flex-1">{item.label}</span>
-                {active && <ChevronRight className="h-4 w-4 text-violet-400" />}
+                {active && (
+                  <ChevronRight className="h-4 w-4 text-violet-500 dark:text-violet-400" />
+                )}
               </Link>
             );
           })}
         </div>
-        <div className="mt-4 shrink-0 border-t border-violet-900/30 pt-4">
+        <div className="mt-4 shrink-0 border-t border-border pt-4">
           <Link
             href="/organizations"
             className={cn(
               "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
               pathname.includes("/organizations")
-                ? "bg-violet-600/20 text-violet-200"
-                : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                ? adminNavActiveClass
+                : adminNavInactiveClass
             )}
           >
             <Building2 className="h-5 w-5 shrink-0" />
@@ -129,18 +133,22 @@ export function AdminSidebar() {
           </Link>
         </div>
       </nav>
-      <div className="border-t border-violet-900/30 p-4">
+      <div className="border-t border-border p-4">
         <AppPreferencesControls
           variant="marketing"
           className="mb-4 justify-center"
+          languageDropdownPlacement="auto"
         />
-        <p className="mb-3 truncate text-sm text-gray-300">
+        <p className="mb-3 truncate text-sm text-foreground">
           {session?.user?.name ?? session?.user?.email}
         </p>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/auth/login" })}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition-colors hover:bg-white/5 hover:text-gray-200"
+          className={cn(
+            "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+            adminNavInactiveClass
+          )}
         >
           <LogOut className="h-4 w-4" />
           {t("nav.logout")}

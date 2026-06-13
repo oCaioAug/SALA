@@ -25,15 +25,15 @@ const organizationStatusConfig: Record<
 > = {
   ACTIVE: {
     label: "Ativa",
-    className: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
+    className: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
   },
   SUSPENDED: {
     label: "Suspensa",
-    className: "bg-red-500/20 text-red-300 ring-red-500/30",
+    className: "bg-red-500/20 text-red-800 ring-red-500/30 dark:text-red-300",
   },
   TRIAL: {
     label: "Trial",
-    className: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
+    className: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   },
 };
 
@@ -43,11 +43,11 @@ const platformRoleConfig: Record<
 > = {
   SUPER_ADMIN: {
     label: "Super Admin",
-    className: "bg-violet-500/20 text-violet-300 ring-violet-500/30",
+    className: "bg-violet-500/20 text-violet-700 dark:text-violet-300 ring-violet-500/30",
   },
   NONE: {
     label: "Usuário",
-    className: "bg-gray-500/20 text-gray-300 ring-gray-500/30",
+    className: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
   },
 };
 
@@ -57,19 +57,19 @@ const subscriptionStatusConfig: Record<
 > = {
   ACTIVE: {
     label: "Ativa",
-    className: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
+    className: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
   },
   TRIALING: {
     label: "Trial",
-    className: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
+    className: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   },
   PAST_DUE: {
     label: "Inadimplente",
-    className: "bg-orange-500/20 text-orange-300 ring-orange-500/30",
+    className: "bg-orange-500/20 text-orange-800 ring-orange-500/30 dark:text-orange-300",
   },
   CANCELLED: {
     label: "Cancelada",
-    className: "bg-red-500/20 text-red-300 ring-red-500/30",
+    className: "bg-red-500/20 text-red-800 ring-red-500/30 dark:text-red-300",
   },
 };
 
@@ -79,23 +79,23 @@ const incidentStatusConfig: Record<
 > = {
   REPORTED: {
     label: "Reportado",
-    className: "bg-blue-500/20 text-blue-300 ring-blue-500/30",
+    className: "bg-blue-500/20 text-blue-800 ring-blue-500/30 dark:text-blue-300",
   },
   IN_ANALYSIS: {
     label: "Em análise",
-    className: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
+    className: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   },
   IN_PROGRESS: {
     label: "Em progresso",
-    className: "bg-violet-500/20 text-violet-300 ring-violet-500/30",
+    className: "bg-violet-500/20 text-violet-700 dark:text-violet-300 ring-violet-500/30",
   },
   RESOLVED: {
     label: "Resolvido",
-    className: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
+    className: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
   },
   CANCELLED: {
     label: "Cancelado",
-    className: "bg-gray-500/20 text-gray-300 ring-gray-500/30",
+    className: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
   },
 };
 
@@ -105,19 +105,19 @@ const incidentPriorityConfig: Record<
 > = {
   LOW: {
     label: "Baixa",
-    className: "bg-gray-500/20 text-gray-300 ring-gray-500/30",
+    className: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
   },
   MEDIUM: {
     label: "Média",
-    className: "bg-blue-500/20 text-blue-300 ring-blue-500/30",
+    className: "bg-blue-500/20 text-blue-800 ring-blue-500/30 dark:text-blue-300",
   },
   HIGH: {
     label: "Alta",
-    className: "bg-orange-500/20 text-orange-300 ring-orange-500/30",
+    className: "bg-orange-500/20 text-orange-800 ring-orange-500/30 dark:text-orange-300",
   },
   CRITICAL: {
     label: "Crítica",
-    className: "bg-red-500/20 text-red-300 ring-red-500/30",
+    className: "bg-red-500/20 text-red-800 ring-red-500/30 dark:text-red-300",
   },
 };
 
@@ -132,10 +132,10 @@ const variantFallback: Record<
   >,
   string
 > = {
-  neutral: "bg-gray-500/20 text-gray-300 ring-gray-500/30",
-  success: "bg-emerald-500/20 text-emerald-300 ring-emerald-500/30",
-  warning: "bg-amber-500/20 text-amber-300 ring-amber-500/30",
-  danger: "bg-red-500/20 text-red-300 ring-red-500/30",
+  neutral: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
+  success: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
+  warning: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
+  danger: "bg-red-500/20 text-red-800 ring-red-500/30 dark:text-red-300",
 };
 
 interface AdminStatusBadgeProps {

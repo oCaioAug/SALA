@@ -330,7 +330,59 @@
     },
     "plans": {
       "title": "Planos",
-      "description": "Limites e pacotes comerciais da plataforma"
+      "description": "Limites e pacotes comerciais da plataforma",
+      "createButton": "Criar novo plano",
+      "createTitle": "Criar novo plano",
+      "createSubtitle": "Defina identificação, limites de uso e disponibilidade do pacote.",
+      "summaryPlanOne": "plano cadastrado",
+      "summaryPlanMany": "planos cadastrados",
+      "summaryActiveOne": "ativo",
+      "summaryActiveMany": "ativos",
+      "emptyTitle": "Nenhum plano cadastrado",
+      "emptyDescription": "Crie o primeiro plano com limites de espaços, usuários e reservas para as organizações.",
+      "sections": {
+        "identity": "Identificação",
+        "limits": "Limites de uso",
+        "availability": "Disponibilidade"
+      },
+      "fields": {
+        "name": "Nome do plano",
+        "nameHint": "Nome exibido no cadastro e no painel da organização.",
+        "namePlaceholder": "Ex.: Starter, Business, Enterprise",
+        "slug": "Identificador (slug)",
+        "slugHint": "Usado internamente e em integrações. Apenas letras minúsculas, números e hífen.",
+        "slugPlaceholder": "ex.: starter",
+        "maxRooms": "Quantidade de espaços",
+        "maxRoomsHint": "Número máximo de salas ou espaços reserváveis por organização.",
+        "maxUsers": "Quantidade de usuários",
+        "maxUsersHint": "Membros permitidos em cada organização neste plano.",
+        "maxReservations": "Reservas por mês",
+        "maxReservationsHint": "Opcional. Deixe vazio para reservas ilimitadas.",
+        "maxReservationsPlaceholder": "Ilimitado",
+        "isActive": "Plano ativo",
+        "isActiveHint": "Planos inativos não ficam disponíveis para novos cadastros."
+      },
+      "card": {
+        "spaces": "Espaços",
+        "users": "Usuários",
+        "reservations": "Reservas/mês",
+        "unlimited": "Ilimitado",
+        "organizations": "Organizações",
+        "subscriptions": "assinaturas",
+        "active": "Ativo",
+        "inactive": "Inativo",
+        "activate": "Ativar plano",
+        "deactivate": "Desativar plano"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Criar plano",
+        "saving": "Salvando...",
+        "editSlug": "editar"
+      },
+      "errors": {
+        "createFailed": "Não foi possível criar o plano. Verifique os dados e tente novamente."
+      }
     },
     "audit": {
       "title": "Audit Log",

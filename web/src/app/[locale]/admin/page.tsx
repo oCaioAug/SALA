@@ -23,6 +23,7 @@ import {
 import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
 import { Link } from "@/navigation";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
+import { useTheme } from "@/lib/providers/ThemeProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -59,6 +60,13 @@ interface AdminStats {
 export default function AdminDashboardPage() {
   const t = useTranslations("Admin.dashboard");
   const { fromResponse } = useApiErrorMessage();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const chartGrid = isDark ? "#374151" : "#e2e8f0";
+  const chartTick = isDark ? "#9ca3af" : "#64748b";
+  const chartTooltipStyle = isDark
+    ? { background: "#111827", border: "1px solid #374151", color: "#f3f4f6" }
+    : { background: "#ffffff", border: "1px solid #e2e8f0", color: "#0f172a" };
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,35 +130,35 @@ export default function AdminDashboardPage() {
       value: stats.organizations.total,
       sub: `${stats.organizations.active} ativas`,
       icon: Building2,
-      color: "text-violet-400",
+      color: "text-violet-600 dark:text-violet-400",
     },
     {
       label: "Usuários",
       value: stats.totalUsers,
       sub: "Cadastrados na plataforma",
       icon: Users,
-      color: "text-blue-400",
+      color: "text-blue-600 dark:text-blue-400",
     },
     {
       label: "Salas",
       value: stats.totalRooms,
       sub: "Em todas as orgs",
       icon: DoorOpen,
-      color: "text-emerald-400",
+      color: "text-emerald-600 dark:text-emerald-400",
     },
     {
       label: "Reservas (30d)",
       value: stats.reservationsLast30Days,
       sub: "Últimos 30 dias",
       icon: Calendar,
-      color: "text-amber-400",
+      color: "text-amber-600 dark:text-amber-400",
     },
     {
       label: "Incidentes abertos",
       value: stats.openIncidents,
       sub: "Requerem atenção",
       icon: AlertTriangle,
-      color: "text-orange-400",
+      color: "text-orange-600 dark:text-orange-400",
     },
   ];
 
@@ -164,7 +172,7 @@ export default function AdminDashboardPage() {
             type="button"
             onClick={refreshDailyStats}
             disabled={refreshing}
-            className="rounded-lg bg-violet-600 px-4 py-2 text-sm text-white hover:bg-violet-500 disabled:opacity-50"
+            className="rounded-lg bg-violet-600 px-4 py-2 text-sm text-foreground hover:bg-violet-500 disabled:opacity-50"
           >
             {refreshing ? "Atualizando..." : "Atualizar métricas diárias"}
           </button>
@@ -172,7 +180,7 @@ export default function AdminDashboardPage() {
       />
       <AdminPageContent>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Retenção (30d): {stats.retentionRate}% · Orgs ativas:{" "}
           {stats.activeOrganizationsLast30Days}/{stats.organizations.total}
         </p>
@@ -184,16 +192,16 @@ export default function AdminDashboardPage() {
             return (
               <Card
                 key={card.label}
-                className="border-white/10 bg-white/5 backdrop-blur"
+                className="border-border bg-card backdrop-blur"
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-gray-400">{card.label}</p>
-                      <p className="mt-1 text-3xl font-bold text-white">
+                      <p className="text-sm text-muted-foreground">{card.label}</p>
+                      <p className="mt-1 text-3xl font-bold text-foreground">
                         {card.value}
                       </p>
-                      <p className="mt-1 text-xs text-gray-500">{card.sub}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{card.sub}</p>
                     </div>
                     <Icon className={`h-8 w-8 ${card.color}`} />
                   </div>
@@ -204,9 +212,9 @@ export default function AdminDashboardPage() {
         </div>
 
         <MotionlessChartsGrid>
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <TrendingUp className="h-5 w-5 text-violet-400" />
                 Novas organizações por semana
               </CardTitle>
@@ -214,27 +222,22 @@ export default function AdminDashboardPage() {
             <CardContent className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.weeklyNewOrganizations}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: "#9ca3af", fontSize: 11 }}
+                    tick={{ fill: chartTick, fontSize: 11 }}
                   />
-                  <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#111827",
-                      border: "1px solid #374151",
-                    }}
-                  />
+                  <YAxis tick={{ fill: chartTick, fontSize: 11 }} />
+                  <Tooltip contentStyle={chartTooltipStyle} />
                   <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Users className="h-5 w-5 text-blue-400" />
                 Novos usuários por semana
               </CardTitle>
@@ -242,18 +245,13 @@ export default function AdminDashboardPage() {
             <CardContent className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.weeklyNewUsers}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
                   <XAxis
                     dataKey="label"
-                    tick={{ fill: "#9ca3af", fontSize: 11 }}
+                    tick={{ fill: chartTick, fontSize: 11 }}
                   />
-                  <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#111827",
-                      border: "1px solid #374151",
-                    }}
-                  />
+                  <YAxis tick={{ fill: chartTick, fontSize: 11 }} />
+                  <Tooltip contentStyle={chartTooltipStyle} />
                   <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -262,51 +260,51 @@ export default function AdminDashboardPage() {
         </MotionlessChartsGrid>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-white">
+              <CardTitle className="text-foreground">
                 Distribuição por plano
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {stats.organizationsByPlan.length === 0 ? (
-                <p className="text-sm text-gray-500">Sem dados</p>
+                <p className="text-sm text-muted-foreground">Sem dados</p>
               ) : (
                 stats.organizationsByPlan.map(row => (
                   <div
                     key={row.planId ?? "none"}
-                    className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-sm"
+                    className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm"
                   >
-                    <span className="text-gray-200">{row.planName}</span>
-                    <span className="text-gray-400">{row.count} orgs</span>
+                    <span className="text-foreground">{row.planName}</span>
+                    <span className="text-muted-foreground">{row.count} orgs</span>
                   </div>
                 ))
               )}
             </CardContent>
           </Card>
 
-          <Card className="border-white/10 bg-white/5">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-white">
+              <CardTitle className="text-foreground">
                 Trials expirando (7d)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {stats.expiringTrials.length === 0 ? (
-                <p className="text-sm text-gray-500">Nenhum trial expirando</p>
+                <p className="text-sm text-muted-foreground">Nenhum trial expirando</p>
               ) : (
                 stats.expiringTrials.map(trial => (
                   <div
                     key={trial.organizationId}
-                    className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-sm"
+                    className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm"
                   >
                     <Link
                       href={`/admin/organizations/${trial.organizationId}`}
-                      className="text-gray-200 hover:text-white"
+                      className="text-foreground hover:text-foreground"
                     >
                       {trial.organizationName}
                     </Link>
-                    <span className="text-gray-500">
+                    <span className="text-muted-foreground">
                       {new Date(trial.currentPeriodEnd).toLocaleDateString(
                         "pt-BR"
                       )}
@@ -321,7 +319,7 @@ export default function AdminDashboardPage() {
         {stats.inactiveOrganizations.length > 0 && (
           <Card className="border-amber-500/20 bg-amber-500/5">
             <CardHeader>
-              <CardTitle className="text-amber-200">
+              <CardTitle className="text-amber-900 dark:text-amber-200">
                 Organizações sem atividade (30d)
               </CardTitle>
             </CardHeader>
@@ -329,15 +327,15 @@ export default function AdminDashboardPage() {
               {stats.inactiveOrganizations.map(org => (
                 <div
                   key={org.id}
-                  className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-sm"
+                  className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm"
                 >
                   <Link
                     href={`/admin/organizations/${org.id}`}
-                    className="text-gray-200 hover:text-white"
+                    className="text-foreground hover:text-foreground"
                   >
                     {org.name}
                   </Link>
-                  <span className="text-gray-500">
+                  <span className="text-muted-foreground">
                     criada em{" "}
                     {new Date(org.createdAt).toLocaleDateString("pt-BR")}
                   </span>
@@ -347,21 +345,21 @@ export default function AdminDashboardPage() {
           </Card>
         )}
 
-        <Card className="border-white/10 bg-white/5">
+        <Card className="border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-white">
+            <CardTitle className="text-foreground">
               Top organizações por reservas (30d)
             </CardTitle>
             <Link
               href="/admin/organizations"
-              className="text-sm text-violet-400 hover:text-violet-300"
+              className="text-sm text-violet-600 hover:text-violet-500 dark:text-violet-400 dark:hover:text-violet-700 dark:text-violet-300"
             >
               Ver todas
             </Link>
           </CardHeader>
           <CardContent>
             {stats.topOrganizationsByReservations.length === 0 ? (
-              <p className="text-sm text-gray-500">Nenhuma reserva recente</p>
+              <p className="text-sm text-muted-foreground">Nenhuma reserva recente</p>
             ) : (
               <MotionlessTopOrgsList
                 orgs={stats.topOrganizationsByReservations}
@@ -397,20 +395,20 @@ function MotionlessTopOrgsList({
       {orgs.map((org, i) => (
         <div
           key={org.id}
-          className="flex items-center justify-between rounded-lg bg-white/5 px-4 py-3"
+          className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-600/20 text-xs font-bold text-violet-300">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-600/20 text-xs font-bold text-violet-700 dark:text-violet-300">
               {i + 1}
             </span>
             <Link
               href={`/admin/organizations/${org.id}`}
-              className="font-medium text-gray-200 hover:text-white"
+              className="font-medium text-foreground hover:text-foreground"
             >
               {org.name}
             </Link>
           </div>
-          <span className="text-sm text-gray-400">{org.count} reservas</span>
+          <span className="text-sm text-muted-foreground">{org.count} reservas</span>
         </div>
       ))}
     </div>

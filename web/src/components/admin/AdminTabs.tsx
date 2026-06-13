@@ -2,6 +2,11 @@
 
 import type { LucideIcon } from "lucide-react";
 
+import {
+  adminCardClass,
+  adminTabActiveClass,
+  adminTabInactiveClass,
+} from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
 
 export interface AdminTabItem {
@@ -24,14 +29,9 @@ export function AdminTabs({
   className,
 }: AdminTabsProps) {
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-xl border border-white/10 bg-white/5",
-        className
-      )}
-    >
+    <div className={cn("overflow-hidden rounded-xl", adminCardClass, className)}>
       <div
-        className="flex overflow-x-auto border-b border-white/10"
+        className="flex overflow-x-auto border-b border-border"
         role="tablist"
       >
         {tabs.map(tab => {
@@ -46,9 +46,7 @@ export function AdminTabs({
               onClick={() => onTabChange(tab.id)}
               className={cn(
                 "flex min-w-0 flex-1 items-center justify-center gap-2 px-4 py-4 text-sm font-medium transition-colors",
-                active
-                  ? "bg-violet-600/20 text-violet-200"
-                  : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                active ? adminTabActiveClass : adminTabInactiveClass
               )}
             >
               {Icon && <Icon className="h-4 w-4 shrink-0" />}

@@ -1568,7 +1568,8 @@
       "incidents": "Incidentes",
       "billing": "Billing",
       "home": "Início",
-      "logout": "Sair"
+      "logout": "Sair",
+      "myOrganizations": "My Organizations"
     },
     "charts": {
       "usageTitle": "Uso ao longo do tempo (30d)",
@@ -1664,8 +1665,62 @@
       }
     },
     "plans": {
-      "title": "Planos",
-      "description": "Limites e pacotes comerciais da plataforma"
+      "title": "Plans",
+      "description": "Platform limits and commercial packages",
+      "createButton": "Create new plan",
+      "createTitle": "Create new plan",
+      "createSubtitle": "Set identification, usage limits, and availability for the package.",
+      "emptyTitle": "No plans yet",
+      "emptyDescription": "Create the first plan with space, user, and reservation limits for organizations.",
+      "sections": {
+        "identity": "Identification",
+        "limits": "Usage limits",
+        "availability": "Availability"
+      },
+      "fields": {
+        "name": "Plan name",
+        "nameHint": "Displayed during registration and in the organization dashboard.",
+        "namePlaceholder": "E.g.: Starter, Business, Enterprise",
+        "slug": "Identifier (slug)",
+        "slugHint": "Used internally and in integrations. Lowercase letters, numbers, and hyphens only.",
+        "slugPlaceholder": "e.g.: starter",
+        "maxRooms": "Number of spaces",
+        "maxRoomsHint": "Maximum bookable rooms or spaces per organization.",
+        "maxUsers": "Number of users",
+        "maxUsersHint": "Members allowed per organization on this plan.",
+        "maxReservations": "Reservations per month",
+        "maxReservationsHint": "Optional. Leave empty for unlimited reservations.",
+        "maxReservationsPlaceholder": "Unlimited",
+        "reservationsShort": "Res./mo",
+        "slugPreview": "slug: {slug} · edit",
+        "isActive": "Active plan",
+        "isActiveHint": "Inactive plans are not available for new sign-ups."
+      },
+      "card": {
+        "spaces": "Spaces",
+        "users": "Users",
+        "reservations": "Reservations/mo",
+        "unlimited": "Unlimited",
+        "organizations": "Organizations",
+        "subscriptions": "subscriptions",
+        "active": "Active",
+        "inactive": "Inactive",
+        "activate": "Activate plan",
+        "deactivate": "Deactivate plan"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create plan",
+        "saving": "Saving...",
+        "editSlug": "edit"
+      },
+      "errors": {
+        "createFailed": "Could not create the plan. Check the data and try again."
+      },
+      "summaryPlanOne": "plan registered",
+      "summaryPlanMany": "plans registered",
+      "summaryActiveOne": "active",
+      "summaryActiveMany": "active"
     },
     "audit": {
       "title": "Audit Log",
@@ -1871,5 +1926,9 @@
       "updateItem": "Erro ao atualizar item",
       "deleteItem": "Erro ao deletar item"
     }
+  },
+  "Preferences": {
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
   }
 }

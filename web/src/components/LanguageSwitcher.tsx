@@ -2,10 +2,11 @@
 
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useLayoutEffect, useRef, useState, useTransition } from "react";
 import { FaCheck } from "react-icons/fa";
 
 import {
+  type DropdownPlacement,
   preferencesDropdownClass,
   preferencesMenuItemClass,
   preferencesTriggerClass,
@@ -17,14 +18,21 @@ import { usePathname, useRouter } from "@/navigation";
 type LanguageSwitcherProps = {
   variant?: PreferencesVariant;
   showLabel?: boolean;
+  dropdownPlacement?: DropdownPlacement;
 };
+
+const MENU_ITEM_HEIGHT = 44;
+const MENU_VERTICAL_PADDING = 16;
 
 export default function LanguageSwitcher({
   variant = "tenant",
   showLabel = true,
+  dropdownPlacement = "auto",
 }: LanguageSwitcherProps) {
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPlacement, setMenuPlacement] = useState<"top" | "bottom">("bottom");
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const localeActive = useLocale();
@@ -38,6 +46,33 @@ export default function LanguageSwitcher({
     fr: t("french"),
     ja: t("japanese"),
   };
+
+  useLayoutEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+
+    if (dropdownPlacement === "top") {
+      setMenuPlacement("top");
+      return;
+    }
+
+    if (dropdownPlacement === "bottom") {
+      setMenuPlacement("bottom");
+      return;
+    }
+
+    const rect = triggerRef.current.getBoundingClientRect();
+    const menuHeight = locales.length * MENU_ITEM_HEIGHT + MENU_VERTICAL_PADDING;
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+
+    if (spaceBelow >= menuHeight) {
+      setMenuPlacement("bottom");
+    } else if (spaceAbove >= menuHeight) {
+      setMenuPlacement("top");
+    } else {
+      setMenuPlacement(spaceAbove > spaceBelow ? "top" : "bottom");
+    }
+  }, [isOpen, dropdownPlacement]);
 
   const handleLocaleChange = (nextLocale: string) => {
     if (nextLocale === localeActive) {
@@ -54,10 +89,12 @@ export default function LanguageSwitcher({
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={preferencesTriggerClass(variant)}
         aria-label={t("changeLanguage")}
+        aria-expanded={isOpen}
         disabled={isPending}
       >
         <Languages className="h-5 w-5" />
@@ -76,7 +113,7 @@ export default function LanguageSwitcher({
             aria-hidden="true"
           />
 
-          <div className={preferencesDropdownClass(variant)}>
+          <div className={preferencesDropdownClass(variant, menuPlacement)}>
             <div className="py-2">
               {locales.map(locale => (
                 <button

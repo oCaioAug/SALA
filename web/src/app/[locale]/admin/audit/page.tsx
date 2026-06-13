@@ -69,21 +69,21 @@ export default function AdminAuditPage() {
           <LoadingSpinner size="lg" />
         </div>
       ) : logs.length === 0 ? (
-        <p className="text-sm text-gray-500">Nenhum registro encontrado</p>
+        <p className="text-sm text-muted-foreground">Nenhum registro encontrado</p>
       ) : (
         <div className="space-y-3">
           {logs.map(log => (
-            <Card key={log.id} className="border-white/10 bg-white/5">
+            <Card key={log.id} className="border-border bg-card">
               <CardContent className="p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="font-medium text-white">{log.action}</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="font-medium text-foreground">{log.action}</p>
+                    <p className="text-sm text-muted-foreground">
                       {log.entityType}
                       {log.entityId ? ` · ${log.entityId}` : ""}
                     </p>
                     {log.organization && (
-                      <p className="text-xs text-violet-300">
+                      <p className="text-xs text-violet-700 dark:text-violet-300">
                         {log.organization.name}
                       </p>
                     )}
@@ -102,7 +102,7 @@ export default function AdminAuditPage() {
 
 function MotionlessActorMeta({ log }: { log: AuditLogEntry }) {
   return (
-    <div className="text-right text-sm text-gray-500">
+    <div className="text-right text-sm text-muted-foreground">
       <p>{log.actor.name ?? log.actor.email}</p>
       <p className="text-xs">
         {new Date(log.createdAt).toLocaleString("pt-BR")}

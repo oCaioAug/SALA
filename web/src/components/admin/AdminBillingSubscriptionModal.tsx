@@ -135,10 +135,10 @@ export function AdminBillingSubscriptionModal({
         aria-label={t("closeModal")}
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-gray-950 shadow-2xl">
-        <div className="flex items-start justify-between border-b border-white/10 px-6 py-5">
+      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+        <div className="flex items-start justify-between border-b border-border px-6 py-5">
           <div>
-            <p className="text-lg font-bold text-white">
+            <p className="text-lg font-bold text-foreground">
               {loading
                 ? t("loading")
                 : (subscription?.organization.name ?? t("notFound"))}
@@ -154,7 +154,7 @@ export function AdminBillingSubscriptionModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -166,7 +166,7 @@ export function AdminBillingSubscriptionModal({
               <LoadingSpinner size="lg" />
             </div>
           ) : !subscription ? (
-            <p className="text-sm text-gray-500">{t("notFound")}</p>
+            <p className="text-sm text-muted-foreground">{t("notFound")}</p>
           ) : (
             <div className="space-y-5">
               <MetaField
@@ -175,7 +175,7 @@ export function AdminBillingSubscriptionModal({
                 value={
                   <Link
                     href={`/admin/organizations/${subscription.organization.id}`}
-                    className="text-violet-300 hover:text-violet-200"
+                    className="text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
                     onClick={onClose}
                   >
                     {subscription.organization.name}
@@ -204,7 +204,7 @@ export function AdminBillingSubscriptionModal({
               />
 
               <div>
-                <label className="mb-1 block text-sm text-gray-400">
+                <label className="mb-1 block text-sm text-muted-foreground">
                   {t("status")}
                 </label>
                 <select
@@ -212,7 +212,7 @@ export function AdminBillingSubscriptionModal({
                   onChange={e =>
                     setStatusDraft(e.target.value as SubscriptionStatus)
                   }
-                  className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 >
                   {Object.values(SubscriptionStatus).map(value => (
                     <option key={value} value={value}>
@@ -223,13 +223,13 @@ export function AdminBillingSubscriptionModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm text-gray-400">
+                <label className="mb-1 block text-sm text-muted-foreground">
                   {t("changePlan")}
                 </label>
                 <select
                   value={planDraft}
                   onChange={e => setPlanDraft(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 >
                   {plans.map(plan => (
                     <option key={plan.id} value={plan.id}>
@@ -240,19 +240,19 @@ export function AdminBillingSubscriptionModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm text-gray-400">
+                <label className="mb-1 block text-sm text-muted-foreground">
                   {t("periodEnd")}
                 </label>
                 <input
                   type="datetime-local"
                   value={periodEndDraft}
                   onChange={e => setPeriodEndDraft(e.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
 
               {subscription.externalId && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {t("externalId")}: {subscription.externalId}
                 </p>
               )}
@@ -261,7 +261,7 @@ export function AdminBillingSubscriptionModal({
         </div>
 
         {subscription && (
-          <div className="flex gap-2 border-t border-white/10 p-4">
+          <div className="flex gap-2 border-t border-border p-4">
             <Button
               type="button"
               variant="outline"
@@ -295,12 +295,12 @@ function MetaField({
   value: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg bg-white/5 px-3 py-2">
-      <p className="mb-1 flex items-center gap-1.5 text-xs text-gray-500">
+    <div className="rounded-lg bg-muted/50 px-3 py-2">
+      <p className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon className="h-3.5 w-3.5" />
         {label}
       </p>
-      <div className="text-sm text-gray-200">{value}</div>
+      <div className="text-sm text-foreground">{value}</div>
     </div>
   );
 }

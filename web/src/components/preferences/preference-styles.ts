@@ -2,6 +2,8 @@ import { cn } from "@/lib/utils";
 
 export type PreferencesVariant = "tenant" | "marketing";
 
+export type DropdownPlacement = "auto" | "top" | "bottom";
+
 export function preferencesTriggerClass(variant: PreferencesVariant) {
   return cn(
     "inline-flex items-center gap-2 rounded-xl transition-all duration-300 disabled:opacity-50",
@@ -11,9 +13,13 @@ export function preferencesTriggerClass(variant: PreferencesVariant) {
   );
 }
 
-export function preferencesDropdownClass(variant: PreferencesVariant) {
+export function preferencesDropdownClass(
+  variant: PreferencesVariant,
+  placement: "top" | "bottom" = "bottom"
+) {
   return cn(
-    "absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border shadow-2xl transition-colors duration-300",
+    "absolute right-0 z-50 w-48 overflow-hidden rounded-xl border shadow-2xl transition-colors duration-300",
+    placement === "bottom" ? "top-full mt-2" : "bottom-full mb-2",
     variant === "tenant"
       ? "border-slate-200 bg-white dark:border-slate-600/50 dark:bg-slate-800"
       : "border-border bg-popover text-popover-foreground"

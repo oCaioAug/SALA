@@ -261,7 +261,7 @@ export default function AdminIncidentsPage() {
                 {incidents.map(incident => (
                   <Card
                     key={incident.id}
-                    className="border-white/10 bg-white/5 transition-colors hover:border-violet-500/30"
+                    className="border-border bg-card transition-colors hover:border-violet-500/30"
                   >
                     <CardContent className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
                       <div className="min-w-0 flex-1">
@@ -274,20 +274,20 @@ export default function AdminIncidentsPage() {
                             status={incident.priority}
                             kind="incidentPriority"
                           />
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {incident.category}
                           </span>
                         </div>
-                        <h3 className="font-medium text-white">
+                        <h3 className="font-medium text-foreground">
                           {incident.title}
                         </h3>
-                        <p className="mt-1 line-clamp-2 text-sm text-gray-400">
+                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                           {incident.description}
                         </p>
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           <Link
                             href={`/admin/organizations/${incident.organization.id}`}
-                            className="text-violet-300 hover:text-violet-200"
+                            className="text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
                           >
                             {incident.organization.name}
                           </Link>

@@ -157,10 +157,10 @@ export function AdminIncidentDetailModal({
         aria-label={t("closeModal")}
         onClick={onClose}
       />
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-950 shadow-2xl">
-        <div className="flex items-start justify-between border-b border-white/10 px-6 py-5">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+        <div className="flex items-start justify-between border-b border-border px-6 py-5">
           <div className="min-w-0 pr-4">
-            <p className="text-lg font-bold text-white">
+            <p className="text-lg font-bold text-foreground">
               {loading ? t("loading") : (incident?.title ?? t("notFound"))}
             </p>
             {incident && (
@@ -179,7 +179,7 @@ export function AdminIncidentDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <X className="h-5 w-5" />
           </button>
@@ -191,10 +191,10 @@ export function AdminIncidentDetailModal({
               <LoadingSpinner size="lg" />
             </div>
           ) : !incident ? (
-            <p className="text-sm text-gray-500">{t("notFound")}</p>
+            <p className="text-sm text-muted-foreground">{t("notFound")}</p>
           ) : (
             <div className="space-y-6">
-              <p className="text-sm text-gray-300">{incident.description}</p>
+              <p className="text-sm text-muted-foreground">{incident.description}</p>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <MetaField
@@ -203,7 +203,7 @@ export function AdminIncidentDetailModal({
                   value={
                     <Link
                       href={`/admin/organizations/${incident.organization.id}`}
-                      className="text-violet-300 hover:text-violet-200"
+                      className="text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
                       onClick={onClose}
                     >
                       {incident.organization.name}
@@ -233,7 +233,7 @@ export function AdminIncidentDetailModal({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm text-gray-400">
+                  <label className="mb-1 block text-sm text-muted-foreground">
                     {t("status")}
                   </label>
                   <select
@@ -241,7 +241,7 @@ export function AdminIncidentDetailModal({
                     onChange={e =>
                       setStatusDraft(e.target.value as IncidentStatus)
                     }
-                    className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     {Object.values(IncidentStatus).map(value => (
                       <option key={value} value={value}>
@@ -251,7 +251,7 @@ export function AdminIncidentDetailModal({
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-400">
+                  <label className="mb-1 block text-sm text-muted-foreground">
                     {t("priority")}
                   </label>
                   <select
@@ -259,7 +259,7 @@ export function AdminIncidentDetailModal({
                     onChange={e =>
                       setPriorityDraft(e.target.value as IncidentPriority)
                     }
-                    className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     {Object.values(IncidentPriority).map(value => (
                       <option key={value} value={value}>
@@ -271,29 +271,29 @@ export function AdminIncidentDetailModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm text-gray-400">
+                <label className="mb-1 block text-sm text-muted-foreground">
                   {t("resolutionNotes")}
                 </label>
                 <textarea
                   value={notesDraft}
                   onChange={e => setNotesDraft(e.target.value)}
                   rows={3}
-                  className="w-full rounded-lg border border-white/10 bg-gray-900 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
 
               {incident.statusHistory.length > 0 && (
                 <div>
-                  <p className="mb-2 text-sm font-medium text-gray-300">
+                  <p className="mb-2 text-sm font-medium text-muted-foreground">
                     {t("history")}
                   </p>
                   <ul className="max-h-40 space-y-2 overflow-y-auto">
                     {incident.statusHistory.map(entry => (
                       <li
                         key={entry.id}
-                        className="rounded-lg bg-white/5 px-3 py-2 text-xs text-gray-400"
+                        className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground"
                       >
-                        <span className="text-gray-200">
+                        <span className="text-foreground">
                           {entry.fromStatus ?? "—"} → {entry.toStatus}
                         </span>
                         {" · "}
@@ -301,7 +301,7 @@ export function AdminIncidentDetailModal({
                         {" · "}
                         {new Date(entry.createdAt).toLocaleString("pt-BR")}
                         {entry.notes && (
-                          <p className="mt-1 text-gray-500">{entry.notes}</p>
+                          <p className="mt-1 text-muted-foreground">{entry.notes}</p>
                         )}
                       </li>
                     ))}
@@ -313,7 +313,7 @@ export function AdminIncidentDetailModal({
         </div>
 
         {incident && (
-          <div className="flex flex-col gap-2 border-t border-white/10 p-4 sm:flex-row">
+          <div className="flex flex-col gap-2 border-t border-border p-4 sm:flex-row">
             <Button
               type="button"
               variant="outline"
@@ -358,12 +358,12 @@ function MetaField({
   value: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg bg-white/5 px-3 py-2">
-      <p className="mb-1 flex items-center gap-1.5 text-xs text-gray-500">
+    <div className="rounded-lg bg-muted/50 px-3 py-2">
+      <p className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Icon className="h-3.5 w-3.5" />
         {label}
       </p>
-      <div className="text-sm text-gray-200">{value}</div>
+      <div className="text-sm text-foreground">{value}</div>
     </div>
   );
 }
