@@ -8,7 +8,13 @@ interface TenantGuardProps {
   children: React.ReactNode;
 }
 
-const EXEMPT_PATH_SEGMENTS = ["/inicio", "/onboarding", "/invite/", "/auth/"];
+const EXEMPT_PATH_SEGMENTS = [
+  "/organizations",
+  "/inicio",
+  "/onboarding",
+  "/invite/",
+  "/auth/",
+];
 
 export function TenantGuard({ children }: TenantGuardProps) {
   const { data: session, status } = useSession();
@@ -24,7 +30,7 @@ export function TenantGuard({ children }: TenantGuardProps) {
     if (isExempt) return;
 
     if (!session.user.organizationId) {
-      router.replace("/inicio");
+      router.replace("/organizations");
     }
   }, [session, status, pathname, router]);
 

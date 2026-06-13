@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -85,7 +85,9 @@ export default function AdminPlansPage() {
   };
 
   return (
-    <AdminLayout title={t("title")} description={t("description")}>
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
+      <AdminPageContent>
       <div className="grid gap-8 lg:grid-cols-2">
         <Card className="border-white/10 bg-white/5">
           <CardHeader>
@@ -185,6 +187,7 @@ export default function AdminPlansPage() {
           )}
         </div>
       </div>
-    </AdminLayout>
+      </AdminPageContent>
+    </>
   );
 }

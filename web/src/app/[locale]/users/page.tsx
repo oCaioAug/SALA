@@ -220,7 +220,7 @@ const UsersPage: React.FC = () => {
               {t("accessDenied")}
             </h2>
             <p className="text-gray-400 mb-6">{t("accessDeniedDescription")}</p>
-            <Link href="/inicio">
+            <Link href="/organizations">
               <Button>{t("backToDashboard")}</Button>
             </Link>
           </div>

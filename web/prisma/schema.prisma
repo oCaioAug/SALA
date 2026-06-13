@@ -28,6 +28,10 @@ model Plan {
 model Organization {
   id        String             @id @default(cuid())
   name      String
+  legalName String?
+  cnpj      String?            @unique
+  email     String?
+  phone     String?
   slug      String             @unique
   status    OrganizationStatus @default(ACTIVE)
   logo      String?
@@ -156,6 +160,9 @@ model User {
   name            String?
   email           String       @unique
   emailVerified   DateTime?
+  passwordHash    String?
+  cpf             String?      @unique
+  phone           String?
   image           String?
   /// @deprecated Derivar de OrganizationMember.role — mantido para compatibilidade
   role            Role         @default(USER)

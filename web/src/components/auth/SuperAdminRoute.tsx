@@ -20,7 +20,7 @@ export function SuperAdminRoute({ children }: SuperAdminRouteProps) {
       return;
     }
     if (session?.user?.platformRole !== PlatformRole.SUPER_ADMIN) {
-      router.replace("/inicio");
+      router.replace("/organizations");
     }
   }, [session, status, router]);
 

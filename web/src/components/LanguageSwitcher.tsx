@@ -5,10 +5,24 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { FaCheck } from "react-icons/fa";
 
+import {
+  preferencesDropdownClass,
+  preferencesMenuItemClass,
+  preferencesTriggerClass,
+  type PreferencesVariant,
+} from "@/components/preferences/preference-styles";
 import { locales } from "@/config";
 import { usePathname, useRouter } from "@/navigation";
 
-export default function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  variant?: PreferencesVariant;
+  showLabel?: boolean;
+};
+
+export default function LanguageSwitcher({
+  variant = "tenant",
+  showLabel = true,
+}: LanguageSwitcherProps) {
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
@@ -40,45 +54,44 @@ export default function LanguageSwitcher() {
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-300"
+        className={preferencesTriggerClass(variant)}
         aria-label={t("changeLanguage")}
         disabled={isPending}
       >
-        <Languages className="w-5 h-5" />
-        <span className="text-sm font-medium hidden sm:inline">
-          {localeLabels[localeActive] || localeActive}
-        </span>
+        <Languages className="h-5 w-5" />
+        {showLabel && (
+          <span className="hidden text-sm font-medium sm:inline">
+            {localeLabels[localeActive] || localeActive}
+          </span>
+        )}
       </button>
 
       {isOpen && (
         <>
-          {/* Overlay para fechar ao clicar fora */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
+            aria-hidden="true"
           />
 
-          {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden transition-colors duration-300">
+          <div className={preferencesDropdownClass(variant)}>
             <div className="py-2">
               {locales.map(locale => (
                 <button
                   key={locale}
+                  type="button"
                   onClick={() => handleLocaleChange(locale)}
                   disabled={isPending}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors duration-200 ${
+                  className={preferencesMenuItemClass(
+                    variant,
                     locale === localeActive
-                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium"
-                      : ""
-                  }`}
+                  )}
                 >
-                  <span className="text-sm">{localeLabels[locale]}</span>
+                  <span>{localeLabels[locale]}</span>
                   {locale === localeActive && (
-                    <FaCheck
-                      className="ml-auto h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400"
-                      aria-hidden
-                    />
+                    <FaCheck className="ml-auto h-4 w-4 shrink-0" aria-hidden />
                   )}
                 </button>
               ))}

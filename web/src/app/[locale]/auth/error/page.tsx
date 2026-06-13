@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import React, { Suspense } from "react";
 
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Link } from "@/navigation";
@@ -25,8 +26,12 @@ const AuthErrorContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative min-h-screen bg-background p-4 text-foreground">
+      <div className="absolute right-4 top-4">
+        <AppPreferencesControls variant="marketing" />
+      </div>
+      <div className="flex min-h-screen items-center justify-center">
+      <Card className="w-full max-w-md border-border bg-card">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-red-400 mb-2">
             {t("title")}
@@ -74,6 +79,7 @@ const AuthErrorContent: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
@@ -84,8 +90,8 @@ const AuthErrorPage: React.FC = () => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-white">{t("loading")}</div>
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="text-muted-foreground">{t("loading")}</div>
         </div>
       }
     >

@@ -76,7 +76,7 @@ export default function ExplorarPage() {
 
   useEffect(() => {
     if (!permLoading && isSuperAdmin && !hasOrganization) {
-      router.replace("/inicio");
+      router.replace("/organizations");
       return;
     }
     if (!permLoading && isOrgAdmin) {

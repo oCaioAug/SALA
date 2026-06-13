@@ -3,7 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminFilterBar } from "@/components/admin/AdminFilterBar";
+import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -43,11 +45,23 @@ export default function AdminAuditPage() {
   }, [fetchLogs]);
 
   return (
-    <AdminLayout title={t("title")} description={t("description")}>
-      <MotionlessFilterBar
-        value={actionFilter}
-        onChange={setActionFilter}
-        onRefresh={fetchLogs}
+    <>
+      <AdminPageHeader title={t("title")} description={t("description")} />
+      <AdminPageContent>
+      <AdminFilterBar
+        className="mb-6"
+        searchPlaceholder="Filtrar por ação..."
+        searchValue={actionFilter}
+        onSearchChange={setActionFilter}
+        actions={
+          <Button
+            type="button"
+            onClick={fetchLogs}
+            className="bg-violet-600 hover:bg-violet-500"
+          >
+            Atualizar
+          </Button>
+        }
       />
 
       {loading ? (
@@ -81,36 +95,8 @@ export default function AdminAuditPage() {
           ))}
         </div>
       )}
-    </AdminLayout>
-  );
-}
-
-function MotionlessFilterBar({
-  value,
-  onChange,
-  onRefresh,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  onRefresh: () => void;
-}) {
-  return (
-    <div className="mb-6 flex flex-wrap gap-3">
-      <input
-        type="text"
-        placeholder="Filtrar por ação..."
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-gray-500"
-      />
-      <button
-        type="button"
-        onClick={onRefresh}
-        className="rounded-lg bg-violet-600 px-4 py-2 text-sm text-white hover:bg-violet-500"
-      >
-        Atualizar
-      </button>
-    </div>
+      </AdminPageContent>
+    </>
   );
 }
 

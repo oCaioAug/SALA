@@ -29,7 +29,7 @@ export const useNavigation = ({
       "/users",
       "/profile",
       "/salas",
-      "/inicio",
+      "/organizations",
       "/explorar",
     ];
 
@@ -51,7 +51,8 @@ export const useNavigation = ({
       await new Promise(resolve => setTimeout(resolve, 50));
 
       const routeMap: Record<string, string> = {
-        inicio: "/inicio",
+        inicio: "/organizations",
+        organizations: "/organizations",
         dashboard: "/dashboard",
         explorar: "/explorar",
         salas: "/salas",

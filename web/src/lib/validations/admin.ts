@@ -1,10 +1,17 @@
 import {
+  IncidentPriority,
+  IncidentStatus,
   OrganizationRole,
   OrganizationStatus,
   PlatformRole,
   SubscriptionStatus,
 } from "@prisma/client";
 import { z } from "zod";
+
+import {
+  organizationEmailSchema,
+  organizationPhoneSchema,
+} from "@/lib/validations/organization";
 
 export const createOrganizationSchema = z.object({
   name: z.string().min(2).max(120),
@@ -30,6 +37,8 @@ export const updateOrganizationSchema = z.object({
   status: z.nativeEnum(OrganizationStatus).optional(),
   logo: z.string().url().nullable().optional(),
   planId: z.string().min(1).optional(),
+  email: organizationEmailSchema.nullable().optional(),
+  phone: organizationPhoneSchema.nullable().optional(),
 });
 
 export const updateMemberRoleSchema = z.object({
@@ -83,6 +92,33 @@ export const adminUsersQuerySchema = z.object({
 export const organizationListQuerySchema = z.object({
   search: z.string().optional(),
   status: z.nativeEnum(OrganizationStatus).optional(),
+  planId: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export const adminIncidentsQuerySchema = z.object({
+  search: z.string().optional(),
+  status: z.nativeEnum(IncidentStatus).optional(),
+  priority: z.nativeEnum(IncidentPriority).optional(),
+  organizationId: z.string().optional(),
+  scope: z.enum(["open", "resolved", "all"]).default("open"),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+export const adminIncidentUpdateSchema = z.object({
+  status: z.nativeEnum(IncidentStatus).optional(),
+  priority: z.nativeEnum(IncidentPriority).optional(),
+  assignedToId: z.string().nullable().optional(),
+  resolutionNotes: z.string().max(5000).nullable().optional(),
+});
+
+export const adminBillingQuerySchema = z.object({
+  search: z.string().optional(),
+  status: z.nativeEnum(SubscriptionStatus).optional(),
+  planId: z.string().optional(),
+  scope: z.enum(["all", "active", "attention", "cancelled"]).default("all"),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });

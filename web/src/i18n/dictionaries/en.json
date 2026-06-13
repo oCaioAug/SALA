@@ -283,7 +283,8 @@
     },
     "createOrg": {
       "title": "Create organization",
-      "description": "Set up a new company or team on SALA"
+      "description": "Set up a new company or team on SALA",
+      "action": "Create"
     },
     "anotherOrg": {
       "title": "Another organization",
@@ -294,6 +295,105 @@
       "role": "Role: {role}",
       "accept": "Accept invite"
     }
+  },
+  "OrganizationsPage": {
+    "greeting": "Hello",
+    "title": "Your organizations",
+    "subtitle": "Choose where to work, accept invites, or register a new organization",
+    "hubBadge": "Access hub",
+    "signOut": "Sign out",
+    "enter": "Open",
+    "enterAdmin": "Open dashboard",
+    "enterMember": "Explore rooms",
+    "activeOrg": "Active",
+    "inviteError": "Failed to accept invite",
+    "completeProfileHint": "Complete your profile (CPF and phone) before creating an organization, or accept an invite below.",
+    "superAdminOrgHint": "As a platform administrator, manage organizations from the platform panel.",
+    "sections": {
+      "organizations": "Your organizations",
+      "organizationsDesc": "Select an organization to continue",
+      "actions": "Quick actions",
+      "actionsDesc": "Register a new organization or open the platform panel"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "status": {
+      "active": "Active",
+      "trial": "Trial",
+      "suspended": "Suspended"
+    },
+    "stats": {
+      "members": "{count, plural, one {# member} other {# members}}",
+      "rooms": "{count, plural, one {# room} other {# rooms}}"
+    },
+    "empty": {
+      "title": "No organizations yet",
+      "description": "Create your first organization to start managing rooms and reservations on SALA.",
+      "cta": "Create organization"
+    },
+    "platform": {
+      "title": "Platform panel",
+      "description": "Manage all organizations, plans, users, and SALA platform audit",
+      "badge": "Super Admin"
+    },
+    "organization": {
+      "adminTitle": "Organization panel",
+      "adminDescription": "Rooms, reservations, users, and organization settings",
+      "memberTitle": "Explore rooms",
+      "memberDescription": "Find available rooms, book, and report issues",
+      "namedTitle": "{name}"
+    },
+    "createOrg": {
+      "title": "Create organization",
+      "description": "Set up a new company or team on SALA",
+      "action": "Create"
+    },
+    "anotherOrg": {
+      "title": "Another organization",
+      "description": "Register a new organization on SALA"
+    },
+    "invites": {
+      "title": "Pending invites",
+      "subtitle": "Accept to join an existing team",
+      "role": "Role: {role}",
+      "invitedBy": "Invited by {name}",
+      "accept": "Accept invite"
+    }
+  },
+  "ProfileSetup": {
+    "title": "Complete your profile",
+    "subtitle": "Enter your CPF and phone to continue. This identifies the account owner.",
+    "sections": {
+      "account": "Account",
+      "personal": "Personal details"
+    },
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "cpf": "CPF",
+      "phone": "Phone"
+    },
+    "placeholders": {
+      "cpf": "000.000.000-00",
+      "phone": "(00) 00000-0000"
+    },
+    "submit": "Continue",
+    "messages": {
+      "fixErrors": "Fix the highlighted fields"
+    },
+    "errors": {
+      "generic": "Failed to save profile. Please try again."
+    }
+  },
+  "OrganizationSetup": {
+    "title": "Set up your account",
+    "subtitle": "Complete your profile and create your first organization",
+    "backToHub": "Back to organizations",
+    "hintProfile": "Step 1: complete your profile with CPF and phone.",
+    "hintOrganization": "Step 2: register your organization and choose a plan."
   },
   "ExplorarPage": {
     "title": "Explore rooms",
@@ -347,6 +447,10 @@
     "spanish": "Español",
     "french": "Français",
     "japanese": "日本語"
+  },
+  "Preferences": {
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
   },
   "LoadingPage": {
     "loading": "Loading..."
@@ -952,6 +1056,16 @@
     }
   },
   "Auth": {
+    "shell": {
+      "badge": "Smart room management",
+      "headline": "Organize bookings,",
+      "headlineAccent": "teams and spaces.",
+      "description": "A complete platform for companies to manage rooms, reservations and incidents in one place.",
+      "highlight1": "Multi-organization with access control",
+      "highlight2": "Bookings and integrated calendar",
+      "highlight3": "30-day trial to get started",
+      "backHome": "Back to home"
+    },
     "login": {
       "title": "S.A.L.A",
       "subtitle": "Room Management System",
@@ -969,11 +1083,124 @@
       "authError": "Authentication error:",
       "callbackError": "Google callback error. Check OAuth settings.",
       "noAccount": "Don't have an account?",
-      "createAccount": "Create one now",
+      "createAccount": "Sign up",
+      "or": "or",
+      "invalidCredentials": "Incorrect email or password. Google accounts must use the button above.",
+      "oauthAccountNotLinked": "This account uses a different sign-in method. Try Google or email and password.",
+      "googleHint": "Accounts created with Google must use the Sign in with Google button.",
+      "registeredSuccess": "Account created successfully. Sign in to continue.",
       "legalConsent": "By signing in, you agree to our",
       "legalAnd": "and our",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Register your organization and start using SALA",
+      "subtitles": {
+        "step1": "Enter your personal and organization details",
+        "step2": "Choose the best plan for your team",
+        "step3": "Review everything before continuing",
+        "step4": "Accept the terms and complete registration"
+      },
+      "steps": {
+        "step1": "Details",
+        "step2": "Plan",
+        "step3": "Summary",
+        "step4": "Confirm"
+      },
+      "buttons": {
+        "next": "Continue",
+        "back": "Back"
+      },
+      "messages": {
+        "fixErrors": "Fix the highlighted fields to continue",
+        "acceptTerms": "You must accept the terms of service"
+      },
+      "sections": {
+        "personal": "Personal details",
+        "organization": "Organization details"
+      },
+      "fields": {
+        "name": "Full name",
+        "email": "Email",
+        "cpf": "CPF",
+        "phone": "Phone",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "organizationName": "Trade name",
+        "legalName": "Legal name",
+        "cnpj": "CNPJ",
+        "organizationEmail": "Organization email",
+        "organizationPhone": "Organization phone"
+      },
+      "placeholders": {
+        "name": "Your full name",
+        "email": "your@email.com",
+        "cpf": "000.000.000-00",
+        "phone": "(00) 00000-0000",
+        "password": "Minimum 8 characters",
+        "confirmPassword": "Repeat password",
+        "organizationName": "Your organization name",
+        "legalName": "Full legal name",
+        "cnpj": "00.000.000/0000-00",
+        "organizationEmail": "contact@company.com",
+        "organizationPhone": "(00) 00000-0000"
+      },
+      "trialHint": "You will be the administrator. 30-day trial plan included.",
+      "step2": {
+        "title": "Choose your plan",
+        "subtitle": "All plans include a 30-day free trial",
+        "loading": "Loading plans...",
+        "error": "Could not load plans. Please try again.",
+        "empty": "No plans available at the moment.",
+        "selectPlan": "Select a plan to continue",
+        "select": "Select",
+        "selected": "Selected",
+        "rooms": "Up to {count} rooms",
+        "users": "Up to {count} users",
+        "reservations": "Up to {count} reservations/month",
+        "unlimitedReservations": "Unlimited reservations",
+        "trialDays": "30-day trial included"
+      },
+      "step3": {
+        "title": "Review your details",
+        "subtitle": "Verify the information before confirming",
+        "personal": "Personal details",
+        "organization": "Organization",
+        "plan": "Selected plan",
+        "fields": {
+          "name": "Name",
+          "email": "Email",
+          "cpf": "CPF",
+          "phone": "Phone",
+          "organizationName": "Trade name",
+          "legalName": "Legal name",
+          "cnpj": "CNPJ",
+          "organizationEmail": "Organization email",
+          "organizationPhone": "Organization phone",
+          "planName": "Plan",
+          "planLimits": "Limits",
+          "trial": "Trial period"
+        },
+        "planLimitsValue": "{rooms} rooms · {users} users",
+        "trialValue": "30 days"
+      },
+      "step4": {
+        "title": "Confirm registration",
+        "subtitle": "Final step before creating your account",
+        "readyMessage": "Your organization {organization} will be created with the {plan} plan.",
+        "acceptTermsPrefix": "I have read and accept the"
+      },
+      "acceptTermsPrefix": "I have read and accept the",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "googleSignUp": "Sign up with Google",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "errors": {
+        "generic": "Failed to create account. Check your data and try again."
+      }
     },
     "errorPage": {
       "title": "Erro de Autenticação",
@@ -1253,6 +1480,10 @@
     "EMAIL_REQUIRED": "Email is required",
     "EMAIL_INVALID": "Invalid email",
     "EMAIL_IN_USE": "This email is already in use",
+    "CPF_IN_USE": "This CPF is already registered",
+    "PROFILE_INCOMPLETE": "Complete your profile with CPF and phone before continuing",
+    "CNPJ_IN_USE": "This CNPJ is already registered",
+    "OAUTH_ONLY_ACCOUNT": "This account was created with Google. Use the Sign in with Google button.",
     "NO_IMAGE": "No image provided",
     "LOGIN_CREDENTIALS_REQUIRED": "Email and password are required",
     "LOGIN_INVALID": "Incorrect email or password",
@@ -1496,6 +1727,8 @@
       "users": "Usuários",
       "plans": "Planos",
       "audit": "Audit Log",
+      "incidents": "Incidents",
+      "billing": "Billing",
       "home": "Início",
       "myOrganizations": "My Organizations",
       "logout": "Sair"
@@ -1531,22 +1764,67 @@
       "analyticsDescription": "Analytics global da plataforma SALA"
     },
     "organizations": {
-      "title": "Organizações",
-      "description": "Gerencie os clientes da plataforma",
-      "emptyTitle": "Nenhuma organização encontrada",
-      "emptyDesc": "Crie a primeira organização para começar",
-      "newTitle": "Nova organização",
-      "newDesc": "Cadastre um novo cliente na plataforma",
-      "detailTitle": "Organização",
-      "notFound": "Organização não encontrada",
-      "noPlan": "Sem plano",
-      "saveRole": "Save"
+      "title": "Organizations",
+      "description": "Manage platform customers",
+      "emptyTitle": "No organizations found",
+      "emptyDesc": "Create the first organization to get started",
+      "newTitle": "New organization",
+      "newDesc": "Register a new customer on the platform",
+      "detailTitle": "Organization",
+      "notFound": "Organization not found",
+      "noPlan": "No plan",
+      "saveRole": "Save",
+      "backToList": "Back to organizations",
+      "changeStatus": "Change status",
+      "createdAt": "Created at",
+      "orgContactEmail": "Organization email",
+      "orgContactPhone": "Organization phone",
+      "addMember": "Add",
+      "addMemberPlaceholder": "Add member by email",
+      "removeMember": "Remove",
+      "removeMemberConfirm": "Remove this member from the organization?",
+      "usageVsLimits": "Usage vs plan limits",
+      "planSubscription": "Plan and subscription",
+      "renewsOn": "Renews on",
+      "changePlan": "Change plan",
+      "noRoomsTitle": "No rooms",
+      "noRoomsDesc": "This organization has no rooms yet",
+      "tabs": {
+        "general": "General",
+        "members": "Members",
+        "rooms": "Rooms",
+        "usage": "Usage and plan"
+      }
     },
     "users": {
-      "title": "Usuários",
-      "description": "Visão cross-org de todos os usuários da plataforma",
-      "emptyTitle": "Nenhum usuário",
-      "emptyDesc": "Nenhum usuário cadastrado na plataforma"
+      "title": "Users",
+      "description": "Cross-org view of all platform users",
+      "emptyTitle": "No users",
+      "emptyDesc": "No users registered on the platform",
+      "searchTitle": "Search user",
+      "searchPlaceholder": "Name or email...",
+      "roleFilter": "Platform role",
+      "allRoles": "All roles",
+      "regularUsers": "Regular users",
+      "superAdmins": "Super admins",
+      "viewDetails": "View details",
+      "closeModal": "Close",
+      "platformRole": "Platform role",
+      "memberSince": "Registered on",
+      "organizations": "Organizations",
+      "noOrganizations": "No organization membership",
+      "promoteSuperAdmin": "Promote SUPER_ADMIN",
+      "removeSuperAdmin": "Remove SUPER_ADMIN",
+      "stats": {
+        "total": "Total",
+        "totalSub": "Users on the platform",
+        "superAdmins": "Super admins",
+        "superAdminsSub": "Panel access",
+        "withOrg": "With organization",
+        "withOrgSub": "Active members",
+        "withoutOrg": "Without organization",
+        "withoutOrgSub": "No membership"
+      }
     },
     "plans": {
       "title": "Planos",
@@ -1555,6 +1833,162 @@
     "audit": {
       "title": "Audit Log",
       "description": "Trilha de ações administrativas na plataforma"
+    },
+    "incidents": {
+      "title": "Incidents",
+      "description": "Cross-org view of incidents reported in organizations",
+      "searchTitle": "Search incident",
+      "searchPlaceholder": "Title, description or organization...",
+      "organizationFilter": "Organization",
+      "allOrganizations": "All organizations",
+      "statusFilter": "Status",
+      "allStatuses": "All statuses",
+      "priorityFilter": "Priority",
+      "allPriorities": "All priorities",
+      "emptyTitle": "No incidents found",
+      "emptyDesc": "No incidents match the selected filters",
+      "viewDetails": "View details",
+      "closeModal": "Close",
+      "loading": "Loading...",
+      "notFound": "Incident not found",
+      "organization": "Organization",
+      "reportedBy": "Reported by",
+      "createdAt": "Created at",
+      "target": "Room / item",
+      "noTarget": "—",
+      "status": "Status",
+      "priority": "Priority",
+      "resolutionNotes": "Resolution notes",
+      "history": "Status history",
+      "resolve": "Mark resolved",
+      "saveChanges": "Save changes",
+      "saving": "Saving...",
+      "tabs": {
+        "open": "Open",
+        "resolved": "Resolved / cancelled"
+      },
+      "stats": {
+        "open": "Open",
+        "openSub": "Need attention",
+        "critical": "Critical open",
+        "criticalSub": "Highest priority",
+        "resolved": "Closed",
+        "resolvedSub": "Resolved or cancelled",
+        "total": "Total",
+        "totalSub": "All incidents"
+      }
+    },
+    "billing": {
+      "title": "Billing",
+      "description": "Centralized subscription and renewal management for organizations",
+      "searchTitle": "Search subscription",
+      "searchPlaceholder": "Organization, plan or external ID...",
+      "statusFilter": "Status",
+      "allStatuses": "All statuses",
+      "planFilter": "Plan",
+      "allPlans": "All plans",
+      "emptyTitle": "No subscriptions found",
+      "emptyDesc": "No subscriptions match the selected filters",
+      "manage": "Manage",
+      "closeModal": "Close",
+      "loading": "Loading...",
+      "notFound": "Subscription not found",
+      "organization": "Organization",
+      "owner": "Owner",
+      "currentPlan": "Current plan",
+      "periodStart": "Period start",
+      "periodEnd": "Period end / renewal",
+      "status": "Status",
+      "changePlan": "Change plan",
+      "externalId": "External ID",
+      "saveChanges": "Save changes",
+      "saving": "Saving...",
+      "renewsOn": "Renews on",
+      "expiringSoon": "Expires within 7 days",
+      "orgsWithoutSubscription": "{count} organization(s) without a subscription",
+      "viewOrganizations": "View organizations",
+      "tabs": {
+        "all": "All",
+        "active": "Active / trial",
+        "attention": "Needs attention",
+        "cancelled": "Cancelled"
+      },
+      "stats": {
+        "active": "Active",
+        "activeSub": "ACTIVE + TRIALING",
+        "attention": "Attention",
+        "attentionSub": "Past due or expiring",
+        "cancelled": "Cancelled",
+        "cancelledSub": "Closed subscriptions",
+        "total": "Total",
+        "totalSub": "{count} org(s) without subscription"
+      }
+    }
+  },
+  "CreateOrganizationPage": {
+    "title": "New organization",
+    "subtitle": "Register a company or team and choose a plan",
+    "backToInicio": "Back to home",
+    "backToHub": "Back to organizations",
+    "sections": {
+      "organization": "Organization details",
+      "plan": "Selected plan"
+    },
+    "fields": {
+      "name": "Trade name",
+      "legalName": "Legal name",
+      "cnpj": "CNPJ",
+      "email": "Organization email",
+      "phone": "Organization phone",
+      "planName": "Plan",
+      "planLimits": "Limits",
+      "trial": "Trial period"
+    },
+    "placeholders": {
+      "name": "Organization name",
+      "legalName": "Full legal name",
+      "cnpj": "00.000.000/0000-00",
+      "email": "contact@company.com",
+      "phone": "(00) 00000-0000"
+    },
+    "steps": {
+      "step1": "Organization",
+      "step2": "Plan",
+      "step3": "Confirm"
+    },
+    "buttons": {
+      "next": "Continue",
+      "back": "Back",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "fixErrors": "Fix the highlighted fields to continue"
+    },
+    "step2": {
+      "title": "Choose your plan",
+      "subtitle": "All plans include a 30-day free trial",
+      "loading": "Loading plans...",
+      "error": "Could not load plans. Please try again.",
+      "empty": "No plans available at the moment.",
+      "selectPlan": "Select a plan to continue",
+      "select": "Select",
+      "selected": "Selected",
+      "rooms": "Up to {count} rooms",
+      "users": "Up to {count} users",
+      "reservations": "Up to {count} reservations/month",
+      "unlimitedReservations": "Unlimited reservations",
+      "trialDays": "30-day trial included"
+    },
+    "step3": {
+      "title": "Review details",
+      "subtitle": "Verify the information before creating the organization",
+      "planLimitsValue": "{rooms} rooms · {users} users",
+      "trialValue": "30 days"
+    },
+    "submit": "Create organization",
+    "submitting": "Creating...",
+    "errors": {
+      "generic": "Failed to create organization. Check your data and try again."
     }
   },
   "OnboardingPage": {

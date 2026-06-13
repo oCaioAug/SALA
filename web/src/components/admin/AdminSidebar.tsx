@@ -1,17 +1,20 @@
 "use client";
 
 import {
+  AlertTriangle,
   Building2,
   ChevronRight,
   ClipboardList,
   CreditCard,
   LayoutDashboard,
   LogOut,
+  Receipt,
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
 
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Link, usePathname } from "@/navigation";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +50,20 @@ export function AdminSidebar() {
       label: t("nav.plans"),
       href: "/admin/plans" as const,
       icon: CreditCard,
+      exact: false,
+    },
+    {
+      id: "billing",
+      label: t("nav.billing"),
+      href: "/admin/billing" as const,
+      icon: Receipt,
+      exact: false,
+    },
+    {
+      id: "incidents",
+      label: t("nav.incidents"),
+      href: "/admin/incidents" as const,
+      icon: AlertTriangle,
       exact: false,
     },
     {
@@ -98,10 +115,10 @@ export function AdminSidebar() {
         </div>
         <div className="mt-4 shrink-0 border-t border-violet-900/30 pt-4">
           <Link
-            href="/inicio"
+            href="/organizations"
             className={cn(
               "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
-              pathname.includes("/inicio")
+              pathname.includes("/organizations")
                 ? "bg-violet-600/20 text-violet-200"
                 : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
             )}
@@ -113,6 +130,10 @@ export function AdminSidebar() {
         </div>
       </nav>
       <div className="border-t border-violet-900/30 p-4">
+        <AppPreferencesControls
+          variant="marketing"
+          className="mb-4 justify-center"
+        />
         <p className="mb-3 truncate text-sm text-gray-300">
           {session?.user?.name ?? session?.user?.email}
         </p>

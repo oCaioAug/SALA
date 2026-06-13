@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Link } from "@/navigation";
 
 type LegalDocType = "terms" | "privacy";
@@ -27,25 +28,31 @@ export function LegalDocumentView({ type }: LegalDocumentViewProps) {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <div className="mb-10">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-6 py-4">
           <Link
             href="/"
-            className="text-sm text-blue-400 hover:text-blue-300 transition-colors mb-6 inline-block"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("backLink")}
           </Link>
-          <h1 className="text-3xl font-bold text-white mt-2">{t("title")}</h1>
-          <p className="text-gray-400 mt-2 text-sm">
+          <AppPreferencesControls variant="marketing" />
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-3xl px-6 py-16">
+        <div className="mb-10">
+          <h1 className="mt-2 text-3xl font-bold text-foreground">{t("title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             {t("lastUpdatedLabel")}: {t("lastUpdated")}
           </p>
         </div>
 
-        <div className="space-y-8 text-gray-300 leading-relaxed">
+        <div className="space-y-8 leading-relaxed text-muted-foreground">
           {sectionKeys.map(key => (
             <section key={key}>
-              <h2 className="text-xl font-semibold text-white mb-3">
+              <h2 className="mb-3 text-xl font-semibold text-foreground">
                 {t(`sections.${key}.title`)}
               </h2>
               <p>{t(`sections.${key}.body`)}</p>

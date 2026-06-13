@@ -1,41 +1,45 @@
 "use client";
 
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { SuperAdminRoute } from "@/components/auth/SuperAdminRoute";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminShell } from "@/components/admin/AdminShell";
+
+export { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  title?: string;
+  title: string;
   description?: string;
+  actions?: React.ReactNode;
 }
 
+/**
+ * Wrapper de conveniência para páginas fora do layout consolidado.
+ * Preferir AdminPageHeader + conteúdo quando AdminShell já envolve a rota.
+ */
 export function AdminLayout({
   children,
   title,
   description,
+  actions,
 }: AdminLayoutProps) {
   return (
-    <SuperAdminRoute>
-      <div className="flex min-h-screen bg-gray-950 text-gray-100">
-        <AdminSidebar />
-        <main className="flex-1 overflow-y-auto">
-          {(title || description) && (
-            <header className="border-b border-white/5 px-8 py-6">
-              {title && (
-                <h1 className="text-2xl font-bold text-white">{title}</h1>
-              )}
-              {description && (
-                <p className="mt-1 text-sm text-gray-400">{description}</p>
-              )}
-            </header>
-          )}
-          <MotionlessAdminContent>{children}</MotionlessAdminContent>
-        </main>
-      </div>
-    </SuperAdminRoute>
+    <AdminShell>
+      <AdminPageHeader
+        title={title}
+        description={description}
+        actions={actions}
+      />
+      <div className="p-8">{children}</div>
+    </AdminShell>
   );
 }
 
-function MotionlessAdminContent({ children }: { children: React.ReactNode }) {
-  return <div className="p-8">{children}</div>;
+export function AdminPageContent({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={className ?? "p-8"}>{children}</div>;
 }

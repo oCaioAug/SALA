@@ -5,10 +5,8 @@ import {
   ChevronDown,
   LogOut,
   Menu,
-  Moon,
   Search,
   Settings,
-  Sun,
   User as UserIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -17,9 +15,8 @@ import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
 
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { NotificationModal } from "@/components/ui/NotificationModal";
-import { useTheme } from "@/lib/providers/ThemeProvider";
 import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 import { Link } from "@/navigation";
 
@@ -52,7 +49,6 @@ const Header: React.FC<HeaderProps> = ({
     }
     return tCommon("user");
   })();
-  const { theme, toggleTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -197,21 +193,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Seletor de idioma */}
-          <LanguageSwitcher />
-
-          {/* Toggle de tema */}
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-300"
-            aria-label={t("userMenu.ariaLabel")}
-          >
-            {theme === "dark" ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </button>
+          <AppPreferencesControls variant="tenant" showLabels />
 
           {session?.user ? (
             <div className="relative">

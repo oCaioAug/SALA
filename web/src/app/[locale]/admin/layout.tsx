@@ -1,7 +1,7 @@
 import { PlatformRole } from "@prisma/client";
-import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
+import { AdminShell } from "@/components/admin/AdminShell";
 import { authOptions } from "@/lib/auth";
 import { redirect as localeRedirect } from "@/navigation";
 
@@ -24,8 +24,8 @@ export default async function AdminLayout({
   }
 
   if (session!.user.platformRole !== PlatformRole.SUPER_ADMIN) {
-    localeRedirect({ href: "/inicio", locale });
+    localeRedirect({ href: "/organizations", locale });
   }
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

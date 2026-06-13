@@ -20,7 +20,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
 import { Link } from "@/navigation";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -96,17 +96,23 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <AdminLayout title={t("title")} description={t("description")}>
-        <MotionlessLoading />
-      </AdminLayout>
+      <>
+        <AdminPageHeader title={t("title")} description={t("description")} />
+        <AdminPageContent>
+          <MotionlessLoading />
+        </AdminPageContent>
+      </>
     );
   }
 
   if (error || !stats) {
     return (
-      <AdminLayout title={t("title")}>
-        <p className="text-red-400">{error ?? "Erro ao carregar dados"}</p>
-      </AdminLayout>
+      <>
+        <AdminPageHeader title={t("title")} />
+        <AdminPageContent>
+          <p className="text-red-400">{error ?? "Erro ao carregar dados"}</p>
+        </AdminPageContent>
+      </>
     );
   }
 
@@ -149,20 +155,27 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <AdminLayout title={t("title")} description={t("analyticsDescription")}>
+    <>
+      <AdminPageHeader
+        title={t("title")}
+        description={t("analyticsDescription")}
+        actions={
+          <button
+            type="button"
+            onClick={refreshDailyStats}
+            disabled={refreshing}
+            className="rounded-lg bg-violet-600 px-4 py-2 text-sm text-white hover:bg-violet-500 disabled:opacity-50"
+          >
+            {refreshing ? "Atualizando..." : "Atualizar métricas diárias"}
+          </button>
+        }
+      />
+      <AdminPageContent>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-gray-400">
           Retenção (30d): {stats.retentionRate}% · Orgs ativas:{" "}
           {stats.activeOrganizationsLast30Days}/{stats.organizations.total}
         </p>
-        <button
-          type="button"
-          onClick={refreshDailyStats}
-          disabled={refreshing}
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm text-white hover:bg-violet-500 disabled:opacity-50"
-        >
-          {refreshing ? "Atualizando..." : "Atualizar métricas diárias"}
-        </button>
       </div>
       <div className="space-y-8">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -357,7 +370,8 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+      </AdminPageContent>
+    </>
   );
 }
 

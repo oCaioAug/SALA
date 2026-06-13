@@ -125,3 +125,15 @@ ALTER TABLE "public"."accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "public"."sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Recurring reservations (merged from 20250128000000)
+CREATE TYPE "public"."RecurringPattern" AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY');
+
+ALTER TABLE "public"."reservations" ADD COLUMN "isRecurring" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "public"."reservations" ADD COLUMN "recurringPattern" "public"."RecurringPattern";
+ALTER TABLE "public"."reservations" ADD COLUMN "recurringDaysOfWeek" INTEGER[] DEFAULT ARRAY[]::INTEGER[];
+ALTER TABLE "public"."reservations" ADD COLUMN "recurringEndDate" TIMESTAMP(3);
+ALTER TABLE "public"."reservations" ADD COLUMN "parentReservationId" TEXT;
+ALTER TABLE "public"."reservations" ADD COLUMN "recurringTemplateId" TEXT;
+
+ALTER TABLE "public"."reservations" ADD CONSTRAINT "reservations_parentReservationId_fkey" FOREIGN KEY ("parentReservationId") REFERENCES "public"."reservations"("id") ON DELETE CASCADE ON UPDATE CASCADE;

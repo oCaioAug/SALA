@@ -895,6 +895,16 @@
     }
   },
   "Auth": {
+    "shell": {
+      "badge": "Gestión inteligente de salas",
+      "headline": "Organice reservas,",
+      "headlineAccent": "equipos y espacios.",
+      "description": "Plataforma completa para empresas que gestionan salas, reservas e incidentes en un solo lugar.",
+      "highlight1": "Multi-organización con control de acceso",
+      "highlight2": "Reservas y calendario integrados",
+      "highlight3": "Prueba de 30 días para empezar",
+      "backHome": "Volver al inicio"
+    },
     "login": {
       "title": "S.A.L.A",
       "subtitle": "Sistema de Gestión de Salas",
@@ -912,11 +922,124 @@
       "authError": "Error de autenticación:",
       "callbackError": "Error de callback de Google. Verifique la configuración OAuth.",
       "noAccount": "¿No tiene una cuenta?",
-      "createAccount": "Cree una ahora",
+      "createAccount": "Registrarse",
+      "or": "o",
+      "invalidCredentials": "Correo o contraseña incorrectos. Las cuentas de Google deben usar el botón de arriba.",
+      "oauthAccountNotLinked": "Esta cuenta usa otro método de inicio de sesión. Intente con Google o correo y contraseña.",
+      "googleHint": "Las cuentas creadas con Google deben usar el botón Entrar con Google.",
+      "registeredSuccess": "Cuenta creada con éxito. Inicie sesión para continuar.",
       "legalConsent": "Al iniciar sesión, acepta nuestros",
       "legalAnd": "y nuestra",
       "termsOfService": "Términos de Servicio",
       "privacyPolicy": "Política de Privacidad"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Registre su organización y comience a usar SALA",
+      "subtitles": {
+        "step1": "Ingrese sus datos personales y de la organización",
+        "step2": "Elija el plan ideal para su equipo",
+        "step3": "Revise que todo esté correcto antes de continuar",
+        "step4": "Acepte los términos y finalice su registro"
+      },
+      "steps": {
+        "step1": "Datos",
+        "step2": "Plan",
+        "step3": "Resumen",
+        "step4": "Confirmar"
+      },
+      "buttons": {
+        "next": "Continuar",
+        "back": "Volver"
+      },
+      "messages": {
+        "fixErrors": "Corrija los campos destacados para continuar",
+        "acceptTerms": "Debe aceptar los términos de servicio"
+      },
+      "sections": {
+        "personal": "Datos personales",
+        "organization": "Datos de la organización"
+      },
+      "fields": {
+        "name": "Nombre completo",
+        "email": "Correo electrónico",
+        "cpf": "CPF",
+        "phone": "Teléfono",
+        "password": "Contraseña",
+        "confirmPassword": "Confirmar contraseña",
+        "organizationName": "Nombre comercial",
+        "legalName": "Razón social",
+        "cnpj": "CNPJ",
+        "organizationEmail": "Email de la organización",
+        "organizationPhone": "Teléfono de la organización"
+      },
+      "placeholders": {
+        "name": "Su nombre completo",
+        "email": "tu@email.com",
+        "cpf": "000.000.000-00",
+        "phone": "(00) 00000-0000",
+        "password": "Mínimo 8 caracteres",
+        "confirmPassword": "Repita la contraseña",
+        "organizationName": "Nombre de su organización",
+        "legalName": "Razón social completa",
+        "cnpj": "00.000.000/0000-00",
+        "organizationEmail": "contacto@empresa.com",
+        "organizationPhone": "(00) 00000-0000"
+      },
+      "trialHint": "Será el administrador. Plan de prueba de 30 días incluido.",
+      "step2": {
+        "title": "Elija su plan",
+        "subtitle": "Todos los planes incluyen 30 días de prueba gratuita",
+        "loading": "Cargando planes...",
+        "error": "No se pudieron cargar los planes. Intente de nuevo.",
+        "empty": "No hay planes disponibles en este momento.",
+        "selectPlan": "Seleccione un plan para continuar",
+        "select": "Seleccionar",
+        "selected": "Seleccionado",
+        "rooms": "Hasta {count} salas",
+        "users": "Hasta {count} usuarios",
+        "reservations": "Hasta {count} reservas/mes",
+        "unlimitedReservations": "Reservas ilimitadas",
+        "trialDays": "30 días de prueba incluidos"
+      },
+      "step3": {
+        "title": "Revise sus datos",
+        "subtitle": "Verifique la información antes de confirmar",
+        "personal": "Datos personales",
+        "organization": "Organización",
+        "plan": "Plan seleccionado",
+        "fields": {
+          "name": "Nombre",
+          "email": "Correo",
+          "cpf": "CPF",
+          "phone": "Teléfono",
+          "organizationName": "Nombre comercial",
+          "legalName": "Razón social",
+          "cnpj": "CNPJ",
+          "organizationEmail": "Email de la organización",
+          "organizationPhone": "Teléfono de la organización",
+          "planName": "Plan",
+          "planLimits": "Límites",
+          "trial": "Período de prueba"
+        },
+        "planLimitsValue": "{rooms} salas · {users} usuarios",
+        "trialValue": "30 días"
+      },
+      "step4": {
+        "title": "Confirmar registro",
+        "subtitle": "Último paso antes de crear su cuenta",
+        "readyMessage": "Su organización {organization} se creará con el plan {plan}.",
+        "acceptTermsPrefix": "He leído y acepto los"
+      },
+      "acceptTermsPrefix": "He leído y acepto los",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta...",
+      "googleSignUp": "Registrarse con Google",
+      "hasAccount": "¿Ya tiene una cuenta?",
+      "loginLink": "Iniciar sesión",
+      "errors": {
+        "generic": "Error al crear la cuenta. Verifique los datos e intente de nuevo."
+      }
     },
     "errorPage": {
       "title": "Erro de Autenticação",
@@ -1196,6 +1319,9 @@
     "EMAIL_REQUIRED": "El correo es obligatorio",
     "EMAIL_INVALID": "Correo inválido",
     "EMAIL_IN_USE": "Este correo ya está en uso",
+    "CPF_IN_USE": "Este CPF ya está registrado",
+    "CNPJ_IN_USE": "Este CNPJ ya está registrado",
+    "OAUTH_ONLY_ACCOUNT": "Esta cuenta fue creada con Google. Use el botón Entrar con Google.",
     "NO_IMAGE": "No se proporcionó imagen",
     "LOGIN_CREDENTIALS_REQUIRED": "Correo y contraseña son obligatorios",
     "LOGIN_INVALID": "Correo o contraseña incorrectos",
@@ -1439,6 +1565,8 @@
       "users": "Usuários",
       "plans": "Planos",
       "audit": "Audit Log",
+      "incidents": "Incidentes",
+      "billing": "Billing",
       "home": "Início",
       "logout": "Sair"
     },
@@ -1481,13 +1609,59 @@
       "newDesc": "Cadastre um novo cliente na plataforma",
       "detailTitle": "Organização",
       "notFound": "Organização não encontrada",
-      "noPlan": "Sem plano"
+      "noPlan": "Sem plano",
+      "saveRole": "Salvar",
+      "backToList": "Voltar para organizações",
+      "changeStatus": "Alterar status",
+      "createdAt": "Criada em",
+      "orgContactEmail": "Email da organização",
+      "orgContactPhone": "Telefone da organização",
+      "addMember": "Adicionar",
+      "addMemberPlaceholder": "Adicionar membro por e-mail",
+      "removeMember": "Remover",
+      "removeMemberConfirm": "Remover este membro da organização?",
+      "usageVsLimits": "Uso vs limites do plano",
+      "planSubscription": "Plano e assinatura",
+      "renewsOn": "Renova em",
+      "changePlan": "Alterar plano",
+      "noRoomsTitle": "Nenhuma sala",
+      "noRoomsDesc": "Esta organização ainda não possui salas cadastradas",
+      "tabs": {
+        "general": "Geral",
+        "members": "Membros",
+        "rooms": "Salas",
+        "usage": "Uso e plano"
+      }
     },
     "users": {
       "title": "Usuários",
       "description": "Visão cross-org de todos os usuários da plataforma",
       "emptyTitle": "Nenhum usuário",
-      "emptyDesc": "Nenhum usuário cadastrado na plataforma"
+      "emptyDesc": "Nenhum usuário cadastrado na plataforma",
+      "searchTitle": "Buscar usuário",
+      "searchPlaceholder": "Nome ou e-mail...",
+      "roleFilter": "Papel na plataforma",
+      "allRoles": "Todos os papéis",
+      "regularUsers": "Usuários comuns",
+      "superAdmins": "Super admins",
+      "viewDetails": "Ver detalhes",
+      "closeModal": "Fechar",
+      "platformRole": "Papel na plataforma",
+      "memberSince": "Cadastrado em",
+      "organizations": "Organizações",
+      "noOrganizations": "Sem membership em nenhuma organização",
+      "promoteSuperAdmin": "Promover SUPER_ADMIN",
+      "removeSuperAdmin": "Remover SUPER_ADMIN",
+      "stats": {
+        "total": "Total",
+        "totalSub": "Usuários na plataforma",
+        "superAdmins": "Super admins",
+        "superAdminsSub": "Acesso ao painel",
+        "withOrg": "Com organização",
+        "withOrgSub": "Membros ativos",
+        "withoutOrg": "Sem organização",
+        "withoutOrgSub": "Sem membership"
+      }
     },
     "plans": {
       "title": "Planos",
@@ -1496,6 +1670,96 @@
     "audit": {
       "title": "Audit Log",
       "description": "Trilha de ações administrativas na plataforma"
+    },
+    "incidents": {
+      "title": "Incidentes",
+      "description": "Visão cross-org de incidentes reportados nas organizações",
+      "searchTitle": "Buscar incidente",
+      "searchPlaceholder": "Título, descrição ou organização...",
+      "organizationFilter": "Organização",
+      "allOrganizations": "Todas as organizações",
+      "statusFilter": "Status",
+      "allStatuses": "Todos os status",
+      "priorityFilter": "Prioridade",
+      "allPriorities": "Todas as prioridades",
+      "emptyTitle": "Nenhum incidente encontrado",
+      "emptyDesc": "Não há incidentes com os filtros selecionados",
+      "viewDetails": "Ver detalhes",
+      "closeModal": "Fechar",
+      "loading": "Carregando...",
+      "notFound": "Incidente não encontrado",
+      "organization": "Organização",
+      "reportedBy": "Reportado por",
+      "createdAt": "Criado em",
+      "target": "Sala / item",
+      "noTarget": "—",
+      "status": "Status",
+      "priority": "Prioridade",
+      "resolutionNotes": "Notas de resolução",
+      "history": "Histórico de status",
+      "resolve": "Marcar resolvido",
+      "saveChanges": "Salvar alterações",
+      "saving": "Salvando...",
+      "tabs": {
+        "open": "Abertos",
+        "resolved": "Resolvidos / cancelados"
+      },
+      "stats": {
+        "open": "Abertos",
+        "openSub": "Requerem acompanhamento",
+        "critical": "Críticos abertos",
+        "criticalSub": "Prioridade máxima",
+        "resolved": "Encerrados",
+        "resolvedSub": "Resolvidos ou cancelados",
+        "total": "Total",
+        "totalSub": "Todos os incidentes"
+      }
+    },
+    "billing": {
+      "title": "Billing",
+      "description": "Gestão centralizada de assinaturas e renovações das organizações",
+      "searchTitle": "Buscar assinatura",
+      "searchPlaceholder": "Organização, plano ou ID externo...",
+      "statusFilter": "Status",
+      "allStatuses": "Todos os status",
+      "planFilter": "Plano",
+      "allPlans": "Todos os planos",
+      "emptyTitle": "Nenhuma assinatura encontrada",
+      "emptyDesc": "Não há assinaturas com os filtros selecionados",
+      "manage": "Gerenciar",
+      "closeModal": "Fechar",
+      "loading": "Carregando...",
+      "notFound": "Assinatura não encontrada",
+      "organization": "Organização",
+      "owner": "Owner",
+      "currentPlan": "Plano atual",
+      "periodStart": "Início do período",
+      "periodEnd": "Fim do período / renovação",
+      "status": "Status",
+      "changePlan": "Alterar plano",
+      "externalId": "ID externo",
+      "saveChanges": "Salvar alterações",
+      "saving": "Salvando...",
+      "renewsOn": "Renova em",
+      "expiringSoon": "Expira em 7 dias",
+      "orgsWithoutSubscription": "{count} organização(ões) sem assinatura cadastrada",
+      "viewOrganizations": "Ver organizações",
+      "tabs": {
+        "all": "Todas",
+        "active": "Ativas / trial",
+        "attention": "Atenção",
+        "cancelled": "Canceladas"
+      },
+      "stats": {
+        "active": "Ativas",
+        "activeSub": "ACTIVE + TRIALING",
+        "attention": "Atenção",
+        "attentionSub": "Inadimplentes ou expirando",
+        "cancelled": "Canceladas",
+        "cancelledSub": "Assinaturas encerradas",
+        "total": "Total",
+        "totalSub": "{count} org(s) sem assinatura"
+      }
     }
   },
   "InicioPage": {
@@ -1520,7 +1784,8 @@
     },
     "createOrg": {
       "title": "Criar organização",
-      "description": "Configure uma nova empresa ou equipe no SALA"
+      "description": "Configure uma nova empresa ou equipe no SALA",
+      "action": "Registrar"
     },
     "anotherOrg": {
       "title": "Outra organização",

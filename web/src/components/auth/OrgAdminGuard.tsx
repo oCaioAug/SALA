@@ -17,7 +17,7 @@ export function OrgAdminGuard({ children }: OrgAdminGuardProps) {
   useEffect(() => {
     if (isLoading) return;
     if (!hasOrganization) {
-      router.replace("/inicio");
+      router.replace("/organizations");
       return;
     }
     if (!isOrgAdmin) {

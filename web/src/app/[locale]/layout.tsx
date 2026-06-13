@@ -8,6 +8,7 @@ import { getMessages, getTranslations } from "next-intl/server";
 
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import ProductionErrorLogger from "@/components/ui/ProductionErrorLogger";
+import { ThemeScript } from "@/components/preferences/ThemeScript";
 import { ToastProvider } from "@/components/ui/Toast";
 import { AppProvider } from "@/lib/hooks/useApp";
 import { ThemeProvider } from "@/lib/providers/ThemeProvider";
@@ -76,6 +77,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <meta name="color-scheme" content="dark light" />
         {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && (
           <meta
@@ -88,7 +90,7 @@ export default async function LocaleLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <ProductionErrorLogger />
           <ErrorBoundary>
             <ThemeProvider>

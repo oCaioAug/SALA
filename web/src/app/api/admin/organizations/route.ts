@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const query = organizationListQuerySchema.parse({
       search: searchParams.get("search") ?? undefined,
       status: searchParams.get("status") ?? undefined,
+      planId: searchParams.get("planId") ?? undefined,
       page: searchParams.get("page") ?? undefined,
       pageSize: searchParams.get("pageSize") ?? undefined,
     });
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
     const where = {
       deletedAt: null,
       ...(query.status ? { status: query.status } : {}),
+      ...(query.planId ? { planId: query.planId } : {}),
       ...(query.search
         ? {
             OR: [
@@ -66,6 +68,9 @@ export async function GET(request: NextRequest) {
         include: {
           owner: {
             select: { id: true, name: true, email: true, image: true },
+          },
+          plan: {
+            select: { id: true, name: true, slug: true },
           },
           _count: { select: { members: true, rooms: true } },
         },

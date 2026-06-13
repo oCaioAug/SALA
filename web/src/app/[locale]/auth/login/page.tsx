@@ -3,12 +3,22 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { Suspense } from "react";
-import { FcGoogle } from "react-icons/fc";
+import React, { Suspense, useState } from "react";
 
-import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import {
+  AuthCard,
+  AuthDivider,
+  AuthError,
+  AuthField,
+  AuthFooterLink,
+  AuthGoogleButton,
+  AuthLegalFooter,
+  AuthPrimaryButton,
+} from "@/components/auth/AuthForm";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { authInputClass, authInputErrorClass } from "@/components/auth/auth-styles";
 import { Link } from "@/navigation";
+import { cn } from "@/lib/utils";
 
 const LoginContent: React.FC = () => {
   const t = useTranslations("Auth.login");
@@ -16,126 +26,152 @@ const LoginContent: React.FC = () => {
   const searchParams = useSearchParams();
 
   const urlError = searchParams.get("error");
+  const registered = searchParams.get("registered");
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setFormError(null);
+
+    try {
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+        callbackUrl: "/organizations",
+      });
+
+      if (result?.error) {
+        setFormError(t("invalidCredentials"));
+        return;
+      }
+
+      router.push("/organizations");
+    } catch {
+      setFormError(t("connectionError"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLoginWithGoogleClick = async () => {
     try {
-      console.log("Iniciando login com Google...");
-
-      // Usar redirect: true para que o NextAuth handle o redirecionamento automaticamente
       await signIn("google", {
-        callbackUrl: "/inicio",
+        callbackUrl: "/organizations",
         redirect: true,
       });
-    } catch (error) {
-      console.error("Erro ao tentar fazer login:", error);
+    } catch {
       router.push("/auth/error?error=Default");
     }
   };
 
+  const resolveUrlError = () => {
+    if (!urlError) return null;
+    if (urlError === "Callback") return t("callbackError");
+    if (urlError === "OAuthAccountNotLinked") return t("oauthAccountNotLinked");
+    return urlError;
+  };
+
+  const showError = urlError || formError;
+  const inputClass = (hasError?: boolean) =>
+    cn(authInputClass, hasError && authInputErrorClass);
+
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-white mb-2">
-            SALA
-          </CardTitle>
-          <p className="text-gray-400">{t("subtitle")}</p>
-        </CardHeader>
+    <AuthShell>
+      <AuthCard title={t("title")} subtitle={t("subtitle")}>
+        {registered === "1" && (
+          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            {t("registeredSuccess")}
+          </div>
+        )}
 
-        <CardContent>
-          {urlError && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm">
-              <strong>{t("authError")}</strong>{" "}
-              {urlError === "Callback" ? t("callbackError") : urlError}
-            </div>
-          )}
+        {showError && (
+          <AuthError>
+            <strong>{t("authError")}</strong> {formError ?? resolveUrlError()}
+          </AuthError>
+        )}
 
-          {/* <form onSubmit={handleSubmit} className="space-y-6 mb-3">
-            <Input
-              label={t("email")}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <AuthField label={t("email")} required>
+            <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
               placeholder={t("emailPlaceholder")}
               required
+              autoComplete="email"
+              className={inputClass()}
             />
+          </AuthField>
 
-            <Input
-              label={t("password")}
+          <AuthField label={t("password")} required>
+            <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
               placeholder={t("passwordPlaceholder")}
               required
+              autoComplete="current-password"
+              className={inputClass()}
             />
+          </AuthField>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-gray-300">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={e => setRememberMe(e.target.checked)}
-                  className="rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500"
-                />
-                {t("rememberMe")}
-              </label>
+          <AuthPrimaryButton loading={isLoading}>
+            {isLoading ? t("loading") : t("login")}
+          </AuthPrimaryButton>
+        </form>
 
-              <button
-                type="button"
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                {t("forgotPassword")}
-              </button>
-            </div>
+        <AuthDivider label={t("or")} />
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? t("loading") : t("login")}
-            </Button>
-          </form> */}
+        <div className="space-y-4">
+          <AuthGoogleButton
+            label={t("loginWithGoogle")}
+            onClick={handleLoginWithGoogleClick}
+            disabled={isLoading}
+          />
+          <p className="text-center text-xs text-slate-500">{t("googleHint")}</p>
+        </div>
 
-          <div className="space-y-3">
-            <Button
-              onClick={handleLoginWithGoogleClick}
-              variant="outline"
-              className="w-full flex items-center justify-center gap-3 py-3 border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              <FcGoogle className="w-5 h-5 mt" />
-              {t("loginWithGoogle")}
-            </Button>
+        <AuthFooterLink>
+          {t("noAccount")}{" "}
+          <Link
+            href="/auth/register"
+            className="font-medium text-violet-400 transition-colors hover:text-violet-300"
+          >
+            {t("createAccount")}
+          </Link>
+        </AuthFooterLink>
 
-            {/* <div className="text-center">
-              <p className="text-sm text-gray-400">
-                {t("noAccount")}{" "}
-                <button className="text-blue-400 hover:text-blue-300 transition-colors">
-                  {t("createAccount")}
-                </button>
-              </p>
-            </div> */}
-          </div>
-
-          {/* Legal footer */}
-          <p className="mt-6 text-center text-xs text-gray-500 leading-relaxed">
-            {t("legalConsent")}{" "}
-            <Link
-              href="/terms-of-service"
-              className="text-blue-400 hover:text-blue-300 underline transition-colors"
-            >
-              {t("termsOfService")}
-            </Link>{" "}
-            {t("legalAnd")}{" "}
-            <Link
-              href="/privacy-policy"
-              className="text-blue-400 hover:text-blue-300 underline transition-colors"
-            >
-              {t("privacyPolicy")}
-            </Link>
-            .
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+        <AuthLegalFooter>
+          {t("legalConsent")}{" "}
+          <Link
+            href="/terms-of-service"
+            className="text-violet-400/90 underline-offset-2 hover:text-violet-300 hover:underline"
+          >
+            {t("termsOfService")}
+          </Link>{" "}
+          {t("legalAnd")}{" "}
+          <Link
+            href="/privacy-policy"
+            className="text-violet-400/90 underline-offset-2 hover:text-violet-300 hover:underline"
+          >
+            {t("privacyPolicy")}
+          </Link>
+          .
+        </AuthLegalFooter>
+      </AuthCard>
+    </AuthShell>
   );
 };
 
@@ -144,8 +180,8 @@ const LoginPage: React.FC = () => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-white">{t("loading")}</div>
+        <div className="flex min-h-screen items-center justify-center bg-gray-950">
+          <div className="text-muted-foreground">{t("loading")}</div>
         </div>
       }
     >

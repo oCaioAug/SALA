@@ -18,3 +18,13 @@ declare module "next-auth" {
     platformRole?: PlatformRole;
   }
 }
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    platformRole?: PlatformRole;
+    organizationId?: string | null;
+    organizationRole?: OrganizationRole | null;
+    organizationName?: string | null;
+    role?: Role;
+  }
+}

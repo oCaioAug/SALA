@@ -1,6 +1,2 @@
--- AlterEnum
--- Adiciona o novo tipo RESERVATION_REMINDER ao enum NotificationType
--- Esta operação é segura e não apaga dados existentes
-
-ALTER TYPE "public"."NotificationType" ADD VALUE 'RESERVATION_REMINDER';
-
+-- No-op: RESERVATION_REMINDER foi incluído na criação do enum em 20251116154821.
+-- Esta migration existia com timestamp anterior à criação do tipo e quebrava o shadow database.

@@ -4,7 +4,7 @@ import { OrganizationStatus } from "@/lib/auth/roles";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -60,7 +60,9 @@ export default function NewOrganizationPage() {
   };
 
   return (
-    <AdminLayout title={t("newTitle")} description={t("newDesc")}>
+    <>
+      <AdminPageHeader title={t("newTitle")} description={t("newDesc")} />
+      <AdminPageContent>
       <Card className="mx-auto max-w-xl border-white/10 bg-white/5">
         <CardHeader>
           <CardTitle className="text-white">Dados da organização</CardTitle>
@@ -145,6 +147,7 @@ export default function NewOrganizationPage() {
           </form>
         </CardContent>
       </Card>
-    </AdminLayout>
+      </AdminPageContent>
+    </>
   );
 }

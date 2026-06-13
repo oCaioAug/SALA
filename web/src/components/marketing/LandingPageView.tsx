@@ -2,7 +2,27 @@
 
 import { useTranslations } from "next-intl";
 
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Link } from "@/navigation";
+import { cn } from "@/lib/utils";
+
+const featureBorders = [
+  "hover:border-violet-500/40",
+  "hover:border-blue-500/40",
+  "hover:border-emerald-500/40",
+  "hover:border-amber-500/40",
+  "hover:border-pink-500/40",
+  "hover:border-cyan-500/40",
+] as const;
+
+const stepBadgeClass = {
+  violet:
+    "bg-violet-500/15 text-violet-700 dark:text-violet-300",
+  blue: "bg-blue-500/15 text-blue-700 dark:text-blue-300",
+  emerald:
+    "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  amber: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+} as const;
 
 export function LandingPageView() {
   const t = useTranslations("LandingPage");
@@ -10,43 +30,36 @@ export function LandingPageView() {
   const steps = ["step1", "step2", "step3", "step4"] as const;
   const stepColors = ["violet", "blue", "emerald", "amber"] as const;
   const features = ["f1", "f2", "f3", "f4", "f5", "f6"] as const;
-  const featureBorders = [
-    "hover:border-violet-500/30",
-    "hover:border-blue-500/30",
-    "hover:border-emerald-500/30",
-    "hover:border-amber-500/30",
-    "hover:border-pink-500/30",
-    "hover:border-cyan-500/30",
-  ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/80 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-background text-foreground">
+      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-blue-600">
+              <span className="text-sm font-bold text-white">S</span>
             </div>
-            <span className="font-bold text-white text-lg tracking-tight">
+            <span className="text-lg font-bold tracking-tight text-foreground">
               S.A.L.A.
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/terms-of-service"
-              className="text-sm text-gray-400 hover:text-gray-200 transition-colors hidden sm:block"
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
             >
               {t("nav.terms")}
             </Link>
             <Link
               href="/privacy-policy"
-              className="text-sm text-gray-400 hover:text-gray-200 transition-colors hidden sm:block"
+              className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
             >
               {t("nav.privacy")}
             </Link>
+            <AppPreferencesControls variant="marketing" />
             <Link
               href="/auth/login"
-              className="text-sm bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
             >
               {t("nav.login")}
             </Link>
@@ -54,41 +67,40 @@ export function LandingPageView() {
         </div>
       </nav>
 
-      <section className="pt-32 pb-24 px-6 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-violet-600/10 rounded-full blur-3xl" />
+      <section className="relative overflow-hidden px-6 pb-24 pt-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div className="absolute left-1/2 top-1/4 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/10 blur-3xl dark:bg-violet-600/20" />
         </div>
-        <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm px-4 py-1.5 rounded-full mb-8">
-            <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+        <div className="relative mx-auto max-w-4xl text-center">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-sm text-violet-800 dark:text-violet-200">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-violet-500" />
             {t("hero.badge")}
           </div>
-          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-            <span className="text-white">{t("hero.titleLine1")}</span>
+          <h1 className="mb-6 text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl">
+            <span className="text-foreground">{t("hero.titleLine1")}</span>
             <br />
-            <span className="bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent dark:from-violet-400 dark:to-blue-400">
               {t("hero.titleLine2")}
             </span>
             <br />
-            <span className="text-white">{t("hero.titleLine3")}</span>
+            <span className="text-foreground">{t("hero.titleLine3")}</span>
           </h1>
-          <p className="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            <strong className="text-gray-200">{t("hero.subtitleBold")}</strong>{" "}
+          <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+            <strong className="font-semibold text-foreground">
+              {t("hero.subtitleBold")}
+            </strong>{" "}
             {t("hero.subtitle")}
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/auth/login"
-              className="w-full sm:w-auto bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 text-base"
+              className="w-full rounded-xl bg-violet-600 px-8 py-3.5 text-base font-semibold text-white transition-all duration-200 hover:bg-violet-500 sm:w-auto"
             >
               {t("hero.ctaLogin")}
             </Link>
             <a
               href="#features"
-              className="w-full sm:w-auto text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-medium px-8 py-3.5 rounded-xl transition-all duration-200 text-base"
+              className="w-full rounded-xl border border-border bg-background px-8 py-3.5 text-base font-medium text-foreground transition-all duration-200 hover:bg-muted sm:w-auto"
             >
               {t("hero.ctaFeatures")}
             </a>
@@ -96,26 +108,29 @@ export function LandingPageView() {
         </div>
       </section>
 
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">
+      <section id="features" className="px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-foreground">
               {t("features.title")}
             </h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
+            <p className="mx-auto max-w-xl text-muted-foreground">
               {t("features.subtitle")}
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
               <div
                 key={f}
-                className={`bg-gray-900/60 border border-white/5 rounded-2xl p-6 transition-all duration-300 ${featureBorders[i]}`}
+                className={cn(
+                  "rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md",
+                  featureBorders[i]
+                )}
               >
-                <h3 className="text-white font-semibold text-lg mb-2">
+                <h3 className="mb-2 text-lg font-semibold text-foreground">
                   {t(`features.${f}.title`)}
                 </h3>
-                <p className="text-gray-400 text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   {t(`features.${f}.desc`)}
                 </p>
               </div>
@@ -124,27 +139,30 @@ export function LandingPageView() {
         </div>
       </section>
 
-      <section className="py-24 px-6 bg-gray-900/30">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="bg-muted/50 px-6 py-24">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-foreground">
               {t("howItWorks.title")}
             </h2>
-            <p className="text-gray-400">{t("howItWorks.subtitle")}</p>
+            <p className="text-muted-foreground">{t("howItWorks.subtitle")}</p>
           </div>
           <div className="space-y-8">
             {steps.map((step, i) => (
-              <div key={step} className="flex gap-6 items-start">
+              <div key={step} className="flex items-start gap-6">
                 <div
-                  className={`flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-lg bg-${stepColors[i]}-500/15 text-${stepColors[i]}-400`}
+                  className={cn(
+                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-bold",
+                    stepBadgeClass[stepColors[i]]
+                  )}
                 >
                   {String(i + 1).padStart(2, "0")}
                 </div>
                 <div className="pt-1">
-                  <h3 className="text-white font-semibold text-lg mb-1">
+                  <h3 className="mb-1 text-lg font-semibold text-foreground">
                     {t(`howItWorks.${step}.title`)}
                   </h3>
-                  <p className="text-gray-400 leading-relaxed">
+                  <p className="leading-relaxed text-muted-foreground">
                     {t(`howItWorks.${step}.desc`)}
                   </p>
                 </div>
@@ -154,40 +172,40 @@ export function LandingPageView() {
         </div>
       </section>
 
-      <section className="py-24 px-6">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="mb-4 text-3xl font-bold text-foreground">
             {t("cta.title")}
           </h2>
-          <p className="text-gray-400 mb-8">{t("cta.subtitle")}</p>
+          <p className="mb-8 text-muted-foreground">{t("cta.subtitle")}</p>
           <Link
             href="/auth/login"
-            className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200"
+            className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-8 py-3.5 font-semibold text-white transition-all duration-200 hover:bg-violet-500"
           >
             {t("cta.button")}
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-white/5 py-10 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-gray-400 text-sm">{t("footer.brand")}</span>
+      <footer className="border-t border-border px-6 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
+          <span className="text-sm text-muted-foreground">{t("footer.brand")}</span>
           <div className="flex items-center gap-6">
             <Link
               href="/terms-of-service"
-              className="text-gray-500 hover:text-gray-300 text-sm"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {t("footer.terms")}
             </Link>
             <Link
               href="/privacy-policy"
-              className="text-gray-500 hover:text-gray-300 text-sm"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {t("footer.privacy")}
             </Link>
             <Link
               href="/auth/login"
-              className="text-gray-500 hover:text-gray-300 text-sm"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {t("footer.login")}
             </Link>
