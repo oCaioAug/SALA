@@ -1,3 +1,8 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -15,17 +20,11 @@ export async function POST(request: NextRequest) {
     const itemId = formData.get("itemId") as string | null;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "Nenhuma imagem fornecida" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.NO_IMAGE, 400);
     }
 
     if (!itemName) {
-      return NextResponse.json(
-        { error: "Nome do item é obrigatório" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.ITEM_NAME_REQUIRED, 400);
     }
 
     // Validar imagem

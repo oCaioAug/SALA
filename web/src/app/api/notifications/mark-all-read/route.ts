@@ -1,16 +1,25 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
-// PUT /api/notifications/mark-all-read - Marcar todas as notificações do usuário como lidas
 export async function PUT(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const body = await request.json();
     const { userId } = body;
-
-    console.log(
-      ` Marcando todas as notificações do usuário ${userId} como lidas`
-    );
 
     if (!userId) {
       return NextResponse.json(
@@ -19,47 +28,43 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Determinar se userId é um email ou ID
     let actualUserId = userId;
     if (userId.includes("@")) {
-      // É um email, buscar o usuário
       const user = await prisma.user.findUnique({
         where: { email: userId },
         select: { id: true },
       });
-
       if (!user) {
-        return NextResponse.json(
-          { error: "Usuário não encontrado" },
-          { status: 404 }
-        );
+        return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
       }
-
       actualUserId = user.id;
-      console.log(` Email ${userId} convertido para ID ${actualUserId}`);
+    }
+
+    if (
+      actualUserId !== ctx.user.id &&
+      !isOrgAdmin({
+        platformRole: ctx.user.platformRole,
+        organizationRole: ctx.user.organizationRole,
+      })
+    ) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
     const result = await prisma.notification.updateMany({
       where: {
         userId: actualUserId,
         isRead: false,
+        OR: [{ organizationId: ctx.organizationId }, { organizationId: null }],
       },
-      data: {
-        isRead: true,
-      },
+      data: { isRead: true },
     });
 
-    console.log(` ${result.count} notificações marcadas como lidas`);
-
-    return NextResponse.json({
-      success: true,
-      count: result.count,
-    });
+    return NextResponse.json({ success: true, count: result.count });
   } catch (error) {
     console.error("Erro ao marcar notificações como lidas:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

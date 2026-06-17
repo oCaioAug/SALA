@@ -7,46 +7,214 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Plan {
+  id                        String   @id @default(cuid())
+  name                      String
+  slug                      String   @unique
+  maxRooms                  Int      @default(10)
+  maxUsers                  Int      @default(50)
+  maxReservationsPerMonth   Int?
+  features                  Json?
+  isActive                  Boolean  @default(true)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  subscriptions Subscription[]
+  organizations Organization[]
+
+  @@map("plans")
+}
+
+model Organization {
+  id        String             @id @default(cuid())
+  name      String
+  legalName String?
+  cnpj      String?            @unique
+  email     String?
+  phone     String?
+  slug      String             @unique
+  status    OrganizationStatus @default(ACTIVE)
+  logo      String?
+  settings  Json?
+  ownerId   String
+  planId    String?
+  deletedAt DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  owner        User                 @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  plan         Plan?                @relation(fields: [planId], references: [id], onDelete: SetNull)
+  members      OrganizationMember[]
+  invites      OrganizationInvite[]
+  rooms        Room[]
+  reservations Reservation[]
+  incidents    Incident[]
+  notifications Notification[]
+  subscription Subscription?
+  auditLogs    AuditLog[]
+  dailyStats   OrganizationDailyStats[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("organizations")
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  organizationId     String             @unique
+  planId             String
+  status             SubscriptionStatus @default(ACTIVE)
+  externalId         String?
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan         Plan         @relation(fields: [planId], references: [id])
+
+  @@index([planId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole @default(MEMBER)
+  invitedById    String?
+  joinedAt       DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy    User?        @relation("MemberInvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId, role])
+  @@map("organization_members")
+}
+
+model OrganizationInvite {
+  id             String           @id @default(cuid())
+  organizationId String
+  email          String
+  role           OrganizationRole @default(MEMBER)
+  token          String           @unique @default(cuid())
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  invitedById    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User?        @relation("InviteSentBy", fields: [invitedById], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, email])
+  @@index([email])
+  @@index([expiresAt])
+  @@map("organization_invites")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String?
+  actorUserId    String
+  action         String
+  entityType     String
+  entityId       String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  actor          User          @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model OrganizationDailyStats {
+  organizationId      String
+  date                DateTime @db.Date
+  reservationsCount   Int      @default(0)
+  activeUsersCount    Int      @default(0)
+  openIncidentsCount  Int      @default(0)
+  roomsCount          Int      @default(0)
+  membersCount        Int      @default(0)
+  updatedAt           DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@id([organizationId, date])
+  @@map("organization_daily_stats")
+}
+
 model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String         @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role           @default(USER)
-  /// Layout do dashboard (react-grid-layout), JSON: { version, layouts }
+  id              String       @id @default(cuid())
+  name            String?
+  email           String       @unique
+  emailVerified   DateTime?
+  passwordHash    String?
+  cpf             String?      @unique
+  phone           String?
+  image           String?
+  /// @deprecated Derivar de OrganizationMember.role — mantido para compatibilidade
+  role            Role         @default(USER)
+  platformRole    PlatformRole @default(NONE)
   dashboardLayout Json?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  deletedAt       DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
   accounts      Account[]
   notifications Notification[]
   reservations  Reservation[]
   sessions      Session[]
   pushTokens    PushToken[]
-  
-  // Relacionamentos com incidentes
-  reportedIncidents IncidentStatusHistory[]
-  assignedIncidents Incident[] @relation("AssignedIncidents")
-  incidentsReported Incident[] @relation("ReportedIncidents")
 
+  ownedOrganizations Organization[]       @relation("OrganizationOwner")
+  memberships        OrganizationMember[]
+  invitesSent        OrganizationInvite[] @relation("InviteSentBy")
+  membersInvited     OrganizationMember[] @relation("MemberInvitedBy")
+  auditLogs          AuditLog[]
+
+  reportedIncidents IncidentStatusHistory[]
+  assignedIncidents Incident[]              @relation("AssignedIncidents")
+  incidentsReported Incident[]              @relation("ReportedIncidents")
+
+  @@index([platformRole])
+  @@index([deletedAt])
   @@map("users")
 }
 
 model Room {
-  id                   String        @id @default(cuid())
-  name                 String
-  description          String?
-  status               RoomStatus    @default(LIVRE)
-  capacity             Int?
-  locationDescription  String?
-  outletCount          Int?
-  climateControlled    Boolean       @default(false)
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  items                Item[]
-  reservations         Reservation[]
-  incidents            Incident[]
+  id                  String     @id @default(cuid())
+  name                String
+  description         String?
+  status              RoomStatus @default(LIVRE)
+  capacity            Int?
+  locationDescription String?
+  outletCount         Int?
+  climateControlled   Boolean    @default(false)
+  organizationId      String
+  deletedAt           DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        Item[]
+  reservations Reservation[]
+  incidents    Incident[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([deletedAt])
   @@map("rooms")
 }
 
@@ -58,12 +226,16 @@ model Item {
   quantity       Int      @default(1)
   icon           String?
   roomId         String?
+  organizationId String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  room           Room?    @relation(fields: [roomId], references: [id])
-  images         Image[]
-  incidents      Incident[]
 
+  room      Room?      @relation(fields: [roomId], references: [id])
+  images    Image[]
+  incidents Incident[]
+
+  @@index([roomId])
+  @@index([organizationId])
   @@map("items")
 }
 
@@ -76,101 +248,119 @@ model Image {
   updatedAt DateTime @updatedAt
   item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
+  @@index([itemId])
   @@map("images")
 }
 
 model Reservation {
-  id                  String            @id @default(cuid())
-  userId              String
-  roomId              String
-  startTime           DateTime
-  endTime             DateTime
-  purpose             String?
-  status              ReservationStatus @default(PENDING)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  googleCalendarEventId String?         // ID do evento no Google Calendar (quando sincronizado)
-  
-  // Campos de recorrência
+  id                    String            @id @default(cuid())
+  userId                String
+  roomId                String
+  organizationId        String
+  startTime             DateTime
+  endTime               DateTime
+  purpose               String?
+  status                ReservationStatus @default(PENDING)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  googleCalendarEventId String?
+
   isRecurring         Boolean           @default(false)
   recurringPattern    RecurringPattern?
-  recurringDaysOfWeek Int[]             @default([]) // 0=domingo, 1=segunda, ..., 6=sábado
+  recurringDaysOfWeek Int[]             @default([])
   recurringEndDate    DateTime?
-  parentReservationId String?           // ID da reserva pai (template de recorrência)
-  recurringTemplateId String?           // ID do template de recorrência (mesmo para todas as instâncias)
-  
-  room                Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Relacionamento para reservas filhas (instâncias geradas)
-  childReservations   Reservation[]     @relation("RecurringReservations")
-  parentReservation   Reservation?      @relation("RecurringReservations", fields: [parentReservationId], references: [id], onDelete: Cascade)
+  parentReservationId String?
+  recurringTemplateId String?
 
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  room         Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  childReservations Reservation[] @relation("RecurringReservations")
+  parentReservation Reservation?  @relation("RecurringReservations", fields: [parentReservationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, startTime])
+  @@index([organizationId, status])
+  @@index([roomId, status, startTime, endTime])
+  @@index([userId, startTime])
+  @@index([recurringTemplateId])
+  @@index([status, startTime])
   @@map("reservations")
 }
 
 model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  data      Json?
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String           @id @default(cuid())
+  userId         String
+  organizationId String?
+  type           NotificationType
+  title          String
+  message        String
+  data           Json?
+  isRead         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([organizationId, createdAt])
   @@map("notifications")
 }
 
 model Incident {
-  id          String          @id @default(cuid())
-  title       String
-  description String
-  priority    IncidentPriority @default(MEDIUM)
-  status      IncidentStatus  @default(REPORTED)
-  category    IncidentCategory
-  
-  // Relacionamentos
+  id             String           @id @default(cuid())
+  title          String
+  description    String
+  priority       IncidentPriority @default(MEDIUM)
+  status         IncidentStatus   @default(REPORTED)
+  category       IncidentCategory
+  organizationId String
+
   reportedById String
-  reportedBy   User            @relation("ReportedIncidents", fields: [reportedById], references: [id])
+  reportedBy   User   @relation("ReportedIncidents", fields: [reportedById], references: [id])
   assignedToId String?
-  assignedTo   User?           @relation("AssignedIncidents", fields: [assignedToId], references: [id])
-  
-  // Localização do incidente
-  roomId       String?
-  room         Room?           @relation(fields: [roomId], references: [id])
-  itemId       String?
-  item         Item?           @relation(fields: [itemId], references: [id])
-  
-  // Metadados
+  assignedTo   User?  @relation("AssignedIncidents", fields: [assignedToId], references: [id])
+
+  roomId String?
+  room   Room?  @relation(fields: [roomId], references: [id])
+  itemId String?
+  item   Item?  @relation(fields: [itemId], references: [id])
+
   estimatedResolutionTime DateTime?
   actualResolutionTime    DateTime?
-  resolutionNotes        String?
-  
+  resolutionNotes         String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Histórico do incidente
+
+  organization  Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   statusHistory IncidentStatusHistory[]
-  
+
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, priority])
+  @@index([reportedById])
+  @@index([assignedToId])
+  @@index([roomId])
   @@map("incidents")
 }
 
 model IncidentStatusHistory {
-  id          String         @id @default(cuid())
-  incidentId  String
-  incident    Incident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
-  
+  id         String @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
   fromStatus  IncidentStatus?
   toStatus    IncidentStatus
   notes       String?
   changedById String
-  changedBy   User           @relation(fields: [changedById], references: [id])
-  
-  createdAt   DateTime       @default(now())
-  
+  changedBy   User @relation(fields: [changedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([incidentId])
   @@map("incident_status_history")
 }
 
@@ -184,6 +374,7 @@ model PushToken {
   updatedAt  DateTime @updatedAt
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, isActive])
   @@map("push_tokens")
 }
 
@@ -200,9 +391,11 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
+  refresh_token_expires_in Int?
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
   @@map("accounts")
 }
 
@@ -213,6 +406,8 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([expires])
   @@map("sessions")
 }
 
@@ -238,6 +433,30 @@ model ApiCredential {
   @@map("api_credentials")
 }
 
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+}
+
+enum PlatformRole {
+  SUPER_ADMIN
+  NONE
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  TRIAL
+}
 
 enum Role {
   ADMIN

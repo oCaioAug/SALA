@@ -39,6 +39,8 @@ export interface RoomWithItems {
   locationDescription: string | null;
   outletCount: number | null;
   climateControlled: boolean;
+  organizationId: string;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   items: ItemWithImages[];

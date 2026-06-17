@@ -1,117 +1,186 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Role } from "@prisma/client";
+import { PlatformRole } from "@prisma/client";
 import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
+import { verifyPassword } from "@/lib/auth/password";
+import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
+import { toLegacySessionRole } from "@/lib/auth/roles";
 import { syncUpcomingReservationsForUser } from "@/lib/googleCalendar";
 import { prisma } from "@/lib/prisma";
+import { credentialsLoginSchema } from "@/lib/validations/auth";
+
+const adapter = PrismaAdapter(prisma);
+const originalLinkAccount = adapter.linkAccount;
+if (originalLinkAccount) {
+  adapter.linkAccount = (account: Parameters<typeof originalLinkAccount>[0]) => {
+    const { refresh_token_expires_in: _rt, ...cleanAccount } = account as Record<
+      string,
+      unknown
+    >;
+    return originalLinkAccount(
+      cleanAccount as Parameters<typeof originalLinkAccount>[0]
+    );
+  };
+}
+
+async function enrichSessionUser(
+  userId: string,
+  preferredOrganizationId?: string | null
+) {
+  const dbUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { platformRole: true },
+  });
+  const resolved = await resolvePrimaryOrganization(
+    userId,
+    preferredOrganizationId
+  );
+  const platformRole = dbUser?.platformRole ?? PlatformRole.NONE;
+  const organizationRole = resolved?.organizationRole ?? null;
+
+  return {
+    platformRole,
+    organizationId: resolved?.organizationId ?? null,
+    organizationRole,
+    organizationName: resolved?.organizationName ?? null,
+    role: toLegacySessionRole({ platformRole, organizationRole }),
+  };
+}
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
-          // Escopo ampliado para permitir integração com Google Calendar
           scope:
             "openid email profile https://www.googleapis.com/auth/calendar",
         },
       },
     }),
+    CredentialsProvider({
+      id: "credentials",
+      name: "Email e senha",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Senha", type: "password" },
+      },
+      async authorize(credentials) {
+        const parsed = credentialsLoginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
+
+        const { email, password } = parsed.data;
+        const user = await prisma.user.findUnique({
+          where: { email: email.toLowerCase() },
+        });
+
+        if (!user?.passwordHash) return null;
+
+        const valid = await verifyPassword(password, user.passwordHash);
+        if (!valid) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
+      },
+    }),
   ],
   callbacks: {
-    async session({ session, user }) {
-      console.log("Session callback chamado:", {
-        sessionUser: session?.user?.email,
-        userId: user?.id,
-      });
-      if (session?.user) {
-        session.user.id = user.id;
-        // Buscar informações adicionais do usuário no banco
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { role: true },
-        });
-        session.user.role = dbUser?.role || Role.USER;
-        console.log("Session configurada com role:", session.user.role);
+    async jwt({ token, user, trigger, session }) {
+      if (user?.id) {
+        token.sub = user.id;
+      }
+
+      if (token.sub) {
+        const preferOrganizationId =
+          trigger === "update" &&
+          session &&
+          typeof session === "object" &&
+          "preferOrganizationId" in session
+            ? (session.preferOrganizationId as string | null | undefined)
+            : undefined;
+
+        const enriched = await enrichSessionUser(
+          token.sub,
+          preferOrganizationId
+        );
+        token.platformRole = enriched.platformRole;
+        token.organizationId = enriched.organizationId;
+        token.organizationRole = enriched.organizationRole;
+        token.organizationName = enriched.organizationName;
+        token.role = enriched.role;
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (session?.user && token.sub) {
+        session.user.id = token.sub;
+        session.user.platformRole =
+          (token.platformRole as PlatformRole) ?? PlatformRole.NONE;
+        session.user.organizationId =
+          (token.organizationId as string | null) ?? null;
+        session.user.organizationRole =
+          (token.organizationRole as typeof session.user.organizationRole) ??
+          null;
+        session.user.organizationName =
+          (token.organizationName as string | null) ?? null;
+        session.user.role = token.role as typeof session.user.role;
       }
       return session;
     },
     async signIn({ user, account }) {
-      console.log("SignIn callback chamado:", {
-        email: user.email,
-        provider: account?.provider,
-      });
-
       if (account?.provider === "google") {
         if (!user.email) {
           console.error("Email não fornecido pelo Google");
           return false;
         }
-        console.log("Login Google autorizado para:", user.email);
         return true;
       }
 
-      console.log("Login permitido para:", user.email);
       return true;
     },
     async redirect({ url, baseUrl }) {
-      console.log("Redirect callback chamado:", { url, baseUrl });
-
-      // Se é um callback do Google OAuth, redirecionar para dashboard
       if (url.includes("/api/auth/callback/google")) {
-        console.log("Redirecionando após Google OAuth para /dashboard");
-        return `${baseUrl}/dashboard`;
+        return `${baseUrl}/organizations`;
       }
 
-      // Se a URL é relativa, usar baseUrl
       if (url.startsWith("/")) {
-        console.log(
-          "URL relativa, redirecionando para:",
-          `${baseUrl}${url}`
-        );
         return `${baseUrl}${url}`;
       }
 
-      // Se é da mesma origem, permitir
       if (new URL(url).origin === baseUrl) {
-        console.log("Mesma origem, permitindo:", url);
         return url;
       }
 
-      // Caso contrário, redirecionar para dashboard
-      console.log("Redirecionamento padrão para /dashboard");
-      return `${baseUrl}/dashboard`;
+      return `${baseUrl}/organizations`;
     },
   },
   pages: {
     signIn: "/auth/login",
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
   events: {
     async signIn({ user, account }) {
-      console.log("SignIn event:", {
-        email: user.email,
-        provider: account?.provider,
-      });
-
-      // Ao o usuário logar com Google (e possivelmente conceder permissão de calendário),
-      // sincronizar reservas futuras dele com o Google Calendar.
       if (account?.provider === "google" && user.id) {
         void syncUpcomingReservationsForUser(user.id);
       }
-    },
-    async session({ session }) {
-      console.log("Session event:", { email: session.user?.email });
     },
   },
   logger: {

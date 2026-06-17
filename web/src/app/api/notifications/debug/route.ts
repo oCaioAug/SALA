@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 
 import { prisma } from "@/lib/prisma";
 
@@ -56,7 +61,7 @@ export async function GET() {
     console.error("Erro ao listar notificações para debug:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

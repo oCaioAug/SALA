@@ -1,8 +1,10 @@
+import { OrganizationRole } from "@prisma/client";
 import crypto from "crypto";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { toLegacySessionRole } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 
 interface AuthResult {
@@ -11,9 +13,42 @@ interface AuthResult {
     id: string;
     email: string;
     role: string;
+    organizationId: string | null;
+    organizationRole: OrganizationRole | null;
   };
   error?: string;
   status?: number;
+}
+
+async function getUserWithOrganization(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      platformRole: true,
+      memberships: {
+        take: 1,
+        orderBy: { createdAt: "asc" },
+        select: { organizationId: true, role: true },
+      },
+    },
+  });
+
+  if (!user) return null;
+
+  const membership = user.memberships[0] ?? null;
+
+  return {
+    id: user.id,
+    email: user.email,
+    organizationId: membership?.organizationId ?? null,
+    organizationRole: membership?.role ?? null,
+    role: toLegacySessionRole({
+      platformRole: user.platformRole,
+      organizationRole: membership?.role ?? null,
+    }),
+  };
 }
 
 // Função para validar token mobile
@@ -69,10 +104,7 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
       const { email, valid } = validateMobileToken(token);
 
       if (valid && email) {
-        const user = await prisma.user.findUnique({
-          where: { email },
-          select: { id: true, email: true, role: true },
-        });
+        const user = await getUserWithOrganization(email);
 
         if (user) {
           return { success: true, user };
@@ -85,10 +117,7 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
     // Tentar autenticação por sessão (web)
     const session = await getServerSession(authOptions);
     if (session?.user?.email) {
-      const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-        select: { id: true, email: true, role: true },
-      });
+      const user = await getUserWithOrganization(session.user.email);
 
       if (user) {
         return { success: true, user };

@@ -2,15 +2,37 @@
 
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useLayoutEffect, useRef, useState, useTransition } from "react";
 import { FaCheck } from "react-icons/fa";
 
+import {
+  type DropdownPlacement,
+  preferencesDropdownClass,
+  preferencesMenuItemClass,
+  preferencesTriggerClass,
+  type PreferencesVariant,
+} from "@/components/preferences/preference-styles";
 import { locales } from "@/config";
 import { usePathname, useRouter } from "@/navigation";
 
-export default function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  variant?: PreferencesVariant;
+  showLabel?: boolean;
+  dropdownPlacement?: DropdownPlacement;
+};
+
+const MENU_ITEM_HEIGHT = 44;
+const MENU_VERTICAL_PADDING = 16;
+
+export default function LanguageSwitcher({
+  variant = "tenant",
+  showLabel = true,
+  dropdownPlacement = "auto",
+}: LanguageSwitcherProps) {
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPlacement, setMenuPlacement] = useState<"top" | "bottom">("bottom");
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const localeActive = useLocale();
@@ -24,6 +46,33 @@ export default function LanguageSwitcher() {
     fr: t("french"),
     ja: t("japanese"),
   };
+
+  useLayoutEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+
+    if (dropdownPlacement === "top") {
+      setMenuPlacement("top");
+      return;
+    }
+
+    if (dropdownPlacement === "bottom") {
+      setMenuPlacement("bottom");
+      return;
+    }
+
+    const rect = triggerRef.current.getBoundingClientRect();
+    const menuHeight = locales.length * MENU_ITEM_HEIGHT + MENU_VERTICAL_PADDING;
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const spaceAbove = rect.top - 8;
+
+    if (spaceBelow >= menuHeight) {
+      setMenuPlacement("bottom");
+    } else if (spaceAbove >= menuHeight) {
+      setMenuPlacement("top");
+    } else {
+      setMenuPlacement(spaceAbove > spaceBelow ? "top" : "bottom");
+    }
+  }, [isOpen, dropdownPlacement]);
 
   const handleLocaleChange = (nextLocale: string) => {
     if (nextLocale === localeActive) {
@@ -40,45 +89,46 @@ export default function LanguageSwitcher() {
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-300"
+        className={preferencesTriggerClass(variant)}
         aria-label={t("changeLanguage")}
+        aria-expanded={isOpen}
         disabled={isPending}
       >
-        <Languages className="w-5 h-5" />
-        <span className="text-sm font-medium hidden sm:inline">
-          {localeLabels[localeActive] || localeActive}
-        </span>
+        <Languages className="h-5 w-5" />
+        {showLabel && (
+          <span className="hidden text-sm font-medium sm:inline">
+            {localeLabels[localeActive] || localeActive}
+          </span>
+        )}
       </button>
 
       {isOpen && (
         <>
-          {/* Overlay para fechar ao clicar fora */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
+            aria-hidden="true"
           />
 
-          {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-50 overflow-hidden transition-colors duration-300">
+          <div className={preferencesDropdownClass(variant, menuPlacement)}>
             <div className="py-2">
               {locales.map(locale => (
                 <button
                   key={locale}
+                  type="button"
                   onClick={() => handleLocaleChange(locale)}
                   disabled={isPending}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white transition-colors duration-200 ${
+                  className={preferencesMenuItemClass(
+                    variant,
                     locale === localeActive
-                      ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium"
-                      : ""
-                  }`}
+                  )}
                 >
-                  <span className="text-sm">{localeLabels[locale]}</span>
+                  <span>{localeLabels[locale]}</span>
                   {locale === localeActive && (
-                    <FaCheck
-                      className="ml-auto h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400"
-                      aria-hidden
-                    />
+                    <FaCheck className="ml-auto h-4 w-4 shrink-0" aria-hidden />
                   )}
                 </button>
               ))}

@@ -29,7 +29,8 @@ export const useNavigation = ({
       "/users",
       "/profile",
       "/salas",
-      "/dashboard",
+      "/organizations",
+      "/explorar",
     ];
 
     pagesToPrefetch.forEach(page => {
@@ -50,7 +51,10 @@ export const useNavigation = ({
       await new Promise(resolve => setTimeout(resolve, 50));
 
       const routeMap: Record<string, string> = {
+        inicio: "/organizations",
+        organizations: "/organizations",
         dashboard: "/dashboard",
+        explorar: "/explorar",
         salas: "/salas",
         solicitacoes: "/solicitacoes",
         agendamentos: "/agendamentos",
@@ -62,7 +66,7 @@ export const useNavigation = ({
         profile: "/profile",
       };
 
-      const route = routeMap[page] || "/dashboard";
+      const route = routeMap[page] || "/explorar";
       router.push(route);
 
       setTimeout(() => setIsNavigating(false), 200);

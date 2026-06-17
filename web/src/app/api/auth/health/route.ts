@@ -7,9 +7,7 @@ export async function GET() {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL || "not_set",
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? "set" : "missing",
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? "set" : "missing",
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
-      ? "set"
-      : "missing",
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? "set" : "missing",
     NODE_ENV: process.env.NODE_ENV,
     VERCEL_URL: process.env.VERCEL_URL,
     HARDCODED_URL:

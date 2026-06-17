@@ -1,8 +1,17 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { IncidentPriority, IncidentStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import {
+  mapIncidentRelatedUsers,
+  userWithMembershipSelect,
+} from "@/lib/auth/roles";
 import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 
@@ -18,6 +27,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: authResult.error || "Não autorizado" },
         { status: authResult.status || 401 }
+      );
+    }
+
+    if (!authResult.user.organizationId) {
+      return NextResponse.json(
+        { error: "Usuário sem organização vinculada" },
+        { status: 403 }
       );
     }
 
@@ -44,7 +60,9 @@ export async function GET(request: NextRequest) {
       limit,
     });
 
-    const where: any = {};
+    const where: Record<string, unknown> = {
+      organizationId: authResult.user.organizationId,
+    };
 
     if (status) {
       where.status = status;
@@ -75,16 +93,17 @@ export async function GET(request: NextRequest) {
     }
 
     const skip = (page - 1) * limit;
+    const organizationId = authResult.user.organizationId;
 
     const [incidents, total] = await Promise.all([
       prisma.incident.findMany({
         where,
         include: {
           reportedBy: {
-            select: { id: true, name: true, email: true, role: true },
+            select: userWithMembershipSelect(organizationId),
           },
           assignedTo: {
-            select: { id: true, name: true, email: true, role: true },
+            select: userWithMembershipSelect(organizationId),
           },
           room: {
             select: { id: true, name: true, status: true },
@@ -117,7 +136,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({
-      incidents,
+      incidents: incidents.map(mapIncidentRelatedUsers),
       pagination: {
         page,
         limit,
@@ -129,7 +148,7 @@ export async function GET(request: NextRequest) {
     console.error("Erro ao buscar incidentes:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
@@ -212,28 +231,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar se a sala/item existe
+    // Verificar se a sala/item existe e resolver organizationId
+    let organizationId = authResult.user.organizationId!;
+
     if (roomId) {
       const room = await prisma.room.findUnique({ where: { id: roomId } });
       if (!room) {
+        return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+      }
+      if (room.organizationId !== organizationId) {
         return NextResponse.json(
-          { error: "Sala não encontrada" },
-          { status: 404 }
+          { error: "Sala não pertence à sua organização" },
+          { status: 403 }
         );
       }
+      organizationId = room.organizationId;
     }
 
     if (itemId) {
-      const item = await prisma.item.findUnique({ where: { id: itemId } });
+      const item = await prisma.item.findUnique({
+        where: { id: itemId },
+        include: { room: { select: { organizationId: true } } },
+      });
       if (!item) {
+        return apiErrorResponse(ApiErrorCode.ITEM_NOT_FOUND, 404);
+      }
+      const itemOrgId = item.organizationId ?? item.room?.organizationId;
+      if (itemOrgId && itemOrgId !== organizationId) {
         return NextResponse.json(
-          { error: "Item não encontrado" },
-          { status: 404 }
+          { error: "Item não pertence à sua organização" },
+          { status: 403 }
         );
       }
+      if (itemOrgId) organizationId = itemOrgId;
     }
 
-    // Criar o incidente
     const incident = await prisma.incident.create({
       data: {
         title,
@@ -241,6 +273,7 @@ export async function POST(request: NextRequest) {
         priority: priority || "MEDIUM",
         category,
         reportedById,
+        organizationId,
         roomId,
         itemId,
         estimatedResolutionTime: estimatedResolutionTime
@@ -250,7 +283,7 @@ export async function POST(request: NextRequest) {
       },
       include: {
         reportedBy: {
-          select: { id: true, name: true, email: true, role: true },
+          select: userWithMembershipSelect(organizationId),
         },
         room: {
           select: { id: true, name: true, status: true },
@@ -276,12 +309,14 @@ export async function POST(request: NextRequest) {
 
     console.log(` Incidente criado com ID: ${incident.id}`);
 
-    return NextResponse.json(incident, { status: 201 });
+    return NextResponse.json(mapIncidentRelatedUsers(incident), {
+      status: 201,
+    });
   } catch (error) {
     console.error("Erro ao criar incidente:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

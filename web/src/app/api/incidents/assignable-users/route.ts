@@ -1,78 +1,80 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 
-import { authOptions } from "@/lib/auth";
+import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin, toLegacySessionRole } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
-// Força renderização dinâmica
 export const dynamic = "force-dynamic";
 
-// GET /api/incidents/assignable-users - Buscar usuários que podem ser atribuídos a incidentes
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    // Apenas admins podem listar usuários para atribuição
-    if (!currentUser || currentUser.role !== "ADMIN") {
+    if (
+      !isOrgAdmin({
+        platformRole: ctx.user.platformRole,
+        organizationRole: ctx.user.organizationRole,
+      })
+    ) {
       return NextResponse.json(
         { error: "Apenas administradores podem listar usuários" },
         { status: 403 }
       );
     }
 
-    console.log("Buscando usuários disponíveis para atribuição");
-
-    // Buscar todos os usuários (admins e técnicos podem receber atribuições)
-    const assignableUsers = await prisma.user.findMany({
-      where: {
-        role: {
-          in: ["ADMIN", "USER"], // Assumindo que técnicos também têm role "USER"
-        },
-      },
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId: ctx.organizationId },
       select: {
-        id: true,
-        name: true,
-        email: true,
         role: true,
-        _count: {
+        user: {
           select: {
-            assignedIncidents: {
-              where: {
-                status: {
-                  in: ["REPORTED", "IN_ANALYSIS", "IN_PROGRESS"],
+            id: true,
+            name: true,
+            email: true,
+            _count: {
+              select: {
+                assignedIncidents: {
+                  where: {
+                    organizationId: ctx.organizationId,
+                    status: {
+                      in: ["REPORTED", "IN_ANALYSIS", "IN_PROGRESS"],
+                    },
+                  },
                 },
               },
             },
           },
         },
       },
-      orderBy: [
-        { role: "desc" }, // ADMINs primeiro
-        { name: "asc" },
-      ],
+      orderBy: [{ role: "asc" }, { user: { name: "asc" } }],
     });
 
-    // Adicionar estatísticas de incidentes para cada usuário
-    const usersWithStats = assignableUsers.map(user => ({
-      ...user,
+    const usersWithStats = members.map(({ role, user }) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      organizationRole: role,
+      role: toLegacySessionRole({ organizationRole: role }),
       activeIncidents: user._count.assignedIncidents,
     }));
-
-    console.log(` Encontrados ${usersWithStats.length} usuários disponíveis`);
 
     return NextResponse.json(usersWithStats);
   } catch (error) {
     console.error("Erro ao buscar usuários assignáveis:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

@@ -1,5 +1,11 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isOrgAdmin } from "@/lib/auth/roles";
 import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 import {
@@ -29,9 +35,11 @@ export async function POST(
     // Verificar se o usuário pode alterar este perfil
     if (
       authResult.user.id !== targetUserId &&
-      authResult.user.role !== "ADMIN"
+      !isOrgAdmin({
+        organizationRole: authResult.user.organizationRole ?? null,
+      })
     ) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 403);
     }
 
     // Verificar se o usuário alvo existe
@@ -40,20 +48,14 @@ export async function POST(
     });
 
     if (!targetUser) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     const formData = await request.formData();
     const file = formData.get("avatar") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "Nenhuma imagem fornecida" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.NO_IMAGE, 400);
     }
 
     // Validar imagem
@@ -99,10 +101,7 @@ export async function POST(
     });
   } catch (error) {
     console.error("Erro ao fazer upload do avatar via mobile:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
@@ -125,9 +124,11 @@ export async function DELETE(
     // Verificar se o usuário pode alterar este perfil
     if (
       authResult.user.id !== targetUserId &&
-      authResult.user.role !== "ADMIN"
+      !isOrgAdmin({
+        organizationRole: authResult.user.organizationRole ?? null,
+      })
     ) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 403);
     }
 
     // Verificar se o usuário alvo existe
@@ -136,10 +137,7 @@ export async function DELETE(
     });
 
     if (!targetUser) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     // Remover o avatar do usuário
@@ -161,9 +159,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Erro ao remover avatar via mobile:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

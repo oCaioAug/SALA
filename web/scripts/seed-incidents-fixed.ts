@@ -23,6 +23,14 @@ async function main() {
       return;
     }
 
+    const organizationId = rooms[0]?.organizationId;
+    if (!organizationId) {
+      console.log(
+        "[seed-incidents-fixed] Nenhuma organização encontrada. Execute o seed principal primeiro."
+      );
+      return;
+    }
+
     // Criar alguns incidentes de teste
     const incidentsData: Array<{
       title: string;
@@ -139,7 +147,7 @@ async function main() {
       console.log(`Creating incident: ${incidentData.title}`);
 
       const incident = await prisma.incident.create({
-        data: incidentData,
+        data: { ...incidentData, organizationId },
       });
 
       // Criar histórico de status
@@ -179,9 +187,7 @@ async function main() {
         });
       }
 
-      console.log(
-        `[seed-incidents-fixed] Incidente criado: ${incident.title}`
-      );
+      console.log(`[seed-incidents-fixed] Incidente criado: ${incident.title}`);
     }
 
     console.log(
@@ -197,7 +203,9 @@ async function main() {
       _count: { _all: true },
     });
 
-    console.log("\n[seed-incidents-fixed] Estatísticas dos incidentes criados:");
+    console.log(
+      "\n[seed-incidents-fixed] Estatísticas dos incidentes criados:"
+    );
     stats.forEach(stat => {
       console.log(`   ${stat.status}: ${stat._count._all} incidentes`);
     });

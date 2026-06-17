@@ -1,21 +1,27 @@
-import { PrismaClient } from "@prisma/client";
+import {
+  OrganizationRole,
+  PlatformRole,
+  PrismaClient,
+  Role,
+} from "@prisma/client";
 
 const prisma = new PrismaClient({
   log: ["query", "info", "warn", "error"],
 });
 
+const DEFAULT_ORG_ID = "org-sala-default";
+
 async function main() {
   console.log("[seed] Iniciando seed do banco de dados...");
 
-  // Criar usuários de exemplo
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@sala.com" },
-    update: {},
+    update: { platformRole: PlatformRole.SUPER_ADMIN, role: Role.ADMIN },
     create: {
       name: "Administrador",
       email: "admin@sala.com",
-      role: "ADMIN",
-      // teste
+      role: Role.ADMIN,
+      platformRole: PlatformRole.SUPER_ADMIN,
     },
   });
 
@@ -25,7 +31,7 @@ async function main() {
     create: {
       name: "Usuário Teste",
       email: "user@sala.com",
-      role: "USER",
+      role: Role.USER,
     },
   });
 
@@ -35,7 +41,7 @@ async function main() {
     create: {
       name: "Maria Santos",
       email: "maria.santos@universidade.edu",
-      role: "USER",
+      role: Role.USER,
     },
   });
 
@@ -45,7 +51,7 @@ async function main() {
     create: {
       name: "João Silva",
       email: "joao.silva@universidade.edu",
-      role: "USER",
+      role: Role.USER,
     },
   });
 
@@ -55,16 +61,94 @@ async function main() {
     create: {
       name: "Ana Costa",
       email: "ana.costa@universidade.edu",
-      role: "USER",
+      role: Role.USER,
     },
   });
 
   console.log("[seed] Usuários criados");
 
-  // Criar salas de exemplo
+  const defaultOrg = await prisma.organization.upsert({
+    where: { slug: "sala-default" },
+    update: { ownerId: adminUser.id },
+    create: {
+      id: DEFAULT_ORG_ID,
+      name: "SALA Default",
+      slug: "sala-default",
+      ownerId: adminUser.id,
+    },
+  });
+
+  const tenantUsers = [
+    { user: regularUser, role: OrganizationRole.MEMBER },
+    { user: user2, role: OrganizationRole.MEMBER },
+    { user: user3, role: OrganizationRole.MEMBER },
+    { user: user4, role: OrganizationRole.MEMBER },
+  ];
+
+  for (const entry of tenantUsers) {
+    await prisma.organizationMember.upsert({
+      where: {
+        organizationId_userId: {
+          organizationId: defaultOrg.id,
+          userId: entry.user.id,
+        },
+      },
+      create: {
+        organizationId: defaultOrg.id,
+        userId: entry.user.id,
+        role: entry.role,
+      },
+      update: { role: entry.role },
+    });
+  }
+
+  console.log("[seed] Organização default criada");
+
+  await prisma.organizationMember.upsert({
+    where: {
+      organizationId_userId: {
+        organizationId: defaultOrg.id,
+        userId: adminUser.id,
+      },
+    },
+    create: {
+      organizationId: defaultOrg.id,
+      userId: adminUser.id,
+      role: OrganizationRole.OWNER,
+    },
+    update: { role: OrganizationRole.OWNER },
+  });
+
+  await prisma.plan.upsert({
+    where: { id: "plan-starter" },
+    update: {},
+    create: {
+      id: "plan-starter",
+      name: "Starter",
+      slug: "starter",
+      maxRooms: 10,
+      maxUsers: 50,
+    },
+  });
+
+  await prisma.organization.update({
+    where: { id: defaultOrg.id },
+    data: { planId: "plan-starter" },
+  });
+
+  await prisma.subscription.upsert({
+    where: { organizationId: defaultOrg.id },
+    update: {},
+    create: {
+      organizationId: defaultOrg.id,
+      planId: "plan-starter",
+      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+    },
+  });
+
   const labRobotica = await prisma.room.upsert({
     where: { id: "lab-robotica" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "lab-robotica",
       name: "Laboratório de Robótica",
@@ -72,12 +156,13 @@ async function main() {
         "Sala equipada para projetos de alta performance com computadores potentes e equipamentos de robótica.",
       capacity: 20,
       status: "LIVRE",
+      organizationId: defaultOrg.id,
     },
   });
 
   const salaReunioes = await prisma.room.upsert({
     where: { id: "sala-reunioes" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "sala-reunioes",
       name: "Sala de Reuniões",
@@ -85,12 +170,13 @@ async function main() {
         "Ambiente para reuniões e planejamentos com equipamentos de apresentação.",
       capacity: 12,
       status: "RESERVADO",
+      organizationId: defaultOrg.id,
     },
   });
 
   const estudioDesign = await prisma.room.upsert({
     where: { id: "estudio-design" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "estudio-design",
       name: "Estúdio de Design",
@@ -98,12 +184,13 @@ async function main() {
         "Ambiente criativo com equipamentos específicos para design gráfico e digital.",
       capacity: 15,
       status: "EM_USO",
+      organizationId: defaultOrg.id,
     },
   });
 
   const laboratorioQuimica = await prisma.room.upsert({
     where: { id: "lab-quimica" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "lab-quimica",
       name: "Laboratório de Química",
@@ -111,6 +198,7 @@ async function main() {
         "Laboratório equipado para experimentos químicos com segurança.",
       capacity: 25,
       status: "LIVRE",
+      organizationId: defaultOrg.id,
     },
   });
 
@@ -341,11 +429,12 @@ async function main() {
   // Criar algumas reservas de exemplo
   await prisma.reservation.upsert({
     where: { id: "reserva-1" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "reserva-1",
       userId: regularUser.id,
       roomId: salaReunioes.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-15T14:00:00Z"),
       endTime: new Date("2025-10-15T16:00:00Z"),
       purpose: "Reunião de planejamento do projeto",
@@ -355,11 +444,12 @@ async function main() {
 
   await prisma.reservation.upsert({
     where: { id: "reserva-2" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "reserva-2",
       userId: adminUser.id,
       roomId: estudioDesign.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-16T09:00:00Z"),
       endTime: new Date("2025-10-16T17:00:00Z"),
       purpose: "Workshop de design gráfico",
@@ -370,11 +460,12 @@ async function main() {
   // Criar solicitações pendentes (PENDING)
   await prisma.reservation.upsert({
     where: { id: "solicitacao-1" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "solicitacao-1",
       userId: user2.id,
       roomId: labRobotica.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-20T10:00:00Z"),
       endTime: new Date("2025-10-20T12:00:00Z"),
       purpose: "Aula prática de programação de robôs",
@@ -384,11 +475,12 @@ async function main() {
 
   await prisma.reservation.upsert({
     where: { id: "solicitacao-2" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "solicitacao-2",
       userId: user3.id,
       roomId: laboratorioQuimica.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-22T14:00:00Z"),
       endTime: new Date("2025-10-22T18:00:00Z"),
       purpose: "Experimento de química orgânica - síntese de compostos",
@@ -398,11 +490,12 @@ async function main() {
 
   await prisma.reservation.upsert({
     where: { id: "solicitacao-3" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "solicitacao-3",
       userId: user4.id,
       roomId: estudioDesign.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-25T09:00:00Z"),
       endTime: new Date("2025-10-25T11:00:00Z"),
       purpose: "Sessão de design gráfico para projeto final",
@@ -412,11 +505,12 @@ async function main() {
 
   await prisma.reservation.upsert({
     where: { id: "solicitacao-4" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "solicitacao-4",
       userId: regularUser.id,
       roomId: salaReunioes.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-24T15:00:00Z"),
       endTime: new Date("2025-10-24T17:00:00Z"),
       purpose: "Reunião de orientação de TCC",
@@ -426,11 +520,12 @@ async function main() {
 
   await prisma.reservation.upsert({
     where: { id: "solicitacao-5" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "solicitacao-5",
       userId: user2.id,
       roomId: laboratorioQuimica.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-28T08:00:00Z"),
       endTime: new Date("2025-10-28T12:00:00Z"),
       purpose: "Análise quantitativa - determinação de concentrações",
@@ -440,11 +535,12 @@ async function main() {
 
   await prisma.reservation.upsert({
     where: { id: "solicitacao-6" },
-    update: {},
+    update: { organizationId: defaultOrg.id },
     create: {
       id: "solicitacao-6",
       userId: user3.id,
       roomId: labRobotica.id,
+      organizationId: defaultOrg.id,
       startTime: new Date("2025-10-30T13:00:00Z"),
       endTime: new Date("2025-10-30T17:00:00Z"),
       purpose: "Desenvolvimento de projeto de robótica colaborativa",

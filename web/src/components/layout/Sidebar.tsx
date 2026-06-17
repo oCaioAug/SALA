@@ -7,6 +7,7 @@ import {
   Calendar,
   ChevronRight,
   ClipboardList,
+  Compass,
   DoorOpen,
   Eye,
   LayoutDashboard,
@@ -14,10 +15,10 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React from "react";
 
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -36,10 +37,17 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const t = useTranslations("Sidebar");
   const tCommon = useTranslations("Common");
-  const { data: session } = useSession();
-  const isAdmin = session?.user?.role === "ADMIN";
+  const { isOrgAdmin } = useOrgPermissions();
 
-  const menuItems = [
+  const myOrganizationsItem = {
+    id: "inicio",
+    label: t("menuItems.inicio.label"),
+    icon: Building2,
+    description: t("menuItems.inicio.description"),
+    active: currentPage === "inicio",
+  };
+
+  const adminMenuItems = [
     {
       id: "dashboard",
       label: t("menuItems.dashboard.label"),
@@ -82,18 +90,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: t("menuItems.vision.description"),
       active: currentPage === "vision",
     },
-    // Menu de usuários apenas para administradores
-    ...(isAdmin
-      ? [
-          {
-            id: "users",
-            label: t("menuItems.users.label"),
-            icon: Users,
-            description: t("menuItems.users.description"),
-            active: currentPage === "users",
-          },
-        ]
-      : []),
+    {
+      id: "users",
+      label: t("menuItems.users.label"),
+      icon: Users,
+      description: t("menuItems.users.description"),
+      active: currentPage === "users",
+    },
     {
       id: "profile",
       label: t("menuItems.profile.label"),
@@ -116,6 +119,46 @@ const Sidebar: React.FC<SidebarProps> = ({
       active: currentPage === "configuracoes",
     },
   ];
+
+  const memberMenuItems = [
+    {
+      id: "explorar",
+      label: t("menuItems.explorar.label"),
+      icon: Compass,
+      description: t("menuItems.explorar.description"),
+      active: currentPage === "explorar",
+    },
+    {
+      id: "agendamentos",
+      label: t("menuItems.agendamentosMember.label"),
+      icon: Calendar,
+      description: t("menuItems.agendamentosMember.description"),
+      active: currentPage === "agendamentos",
+    },
+    {
+      id: "incidentes",
+      label: t("menuItems.incidentesMember.label"),
+      icon: AlertTriangle,
+      description: t("menuItems.incidentesMember.description"),
+      active: currentPage === "incidentes",
+    },
+    {
+      id: "profile",
+      label: t("menuItems.profile.label"),
+      icon: User,
+      description: t("menuItems.profile.description"),
+      active: currentPage === "profile",
+    },
+    {
+      id: "notificacoes",
+      label: t("menuItems.notificacoes.label"),
+      icon: Bell,
+      description: t("menuItems.notificacoes.description"),
+      active: currentPage === "notificacoes",
+    },
+  ];
+
+  const menuItems = isOrgAdmin ? adminMenuItems : memberMenuItems;
 
   return (
     <div
@@ -147,106 +190,126 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <nav
         className={cn(
-          "flex-1 overflow-y-auto px-4 py-6",
+          "flex min-h-0 flex-1 flex-col px-4 py-6",
           variant === "mobile" && "min-h-0"
         )}
       >
-        <div className="mb-6">
-          <h2 className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-3 px-3">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <h2 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
             {t("navigation")}
           </h2>
           <ul className="space-y-1">
-            {menuItems.map(item => {
-              const IconComponent = item.icon;
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => onNavigate(item.id)}
-                    disabled={isNavigating}
-                    className={cn(
-                      "group w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all duration-300 relative overflow-hidden",
-                      item.active
-                        ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-slate-900 dark:text-white shadow-lg border border-blue-500/30"
-                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white hover:shadow-md",
-                      isNavigating &&
-                        !item.active &&
-                        "opacity-50 cursor-not-allowed",
-                      isNavigating && item.active && "animate-pulse"
-                    )}
-                  >
-                    {/* Efeito de hover */}
-                    <div
-                      className={cn(
-                        "absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-300",
-                        !item.active && "group-hover:opacity-100"
-                      )}
-                    ></div>
-
-                    {/* Ícone */}
-                    <div
-                      className={cn(
-                        "relative z-10 p-2 rounded-lg transition-all duration-300",
-                        item.active
-                          ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg"
-                          : "bg-slate-200/80 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 group-hover:bg-slate-300 dark:group-hover:bg-slate-600 group-hover:text-slate-900 dark:group-hover:text-white"
-                      )}
-                    >
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-
-                    {/* Conteúdo */}
-                    <div className="relative z-10 flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {item.label}
-                      </div>
-                      <div
-                        className={cn(
-                          "text-xs truncate transition-colors duration-300",
-                          item.active
-                            ? "text-blue-600 dark:text-blue-200"
-                            : "text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
-                        )}
-                      >
-                        {item.description}
-                      </div>
-                    </div>
-
-                    {/* Indicador de ativo */}
-                    {item.active && (
-                      <div className="relative z-10 w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse"></div>
-                    )}
-
-                    {/* Loading spinner */}
-                    {isNavigating && item.active && (
-                      <div className="relative z-10 ml-auto w-4 h-4 border-2 border-slate-400 dark:border-slate-400 border-t-slate-900 dark:border-t-white rounded-full animate-spin"></div>
-                    )}
-
-                    {/* Seta de navegação */}
-                    {!item.active && (
-                      <ChevronRight className="relative z-10 w-4 h-4 text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors duration-300" />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
+            {menuItems.map(item => (
+              <li key={item.id}>
+                <SidebarNavButton
+                  item={item}
+                  isNavigating={isNavigating}
+                  onNavigate={onNavigate}
+                />
+              </li>
+            ))}
           </ul>
         </div>
 
-        {/* Status do sistema */}
-        <div className="mt-auto p-4 bg-slate-200/80 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 transition-colors duration-300">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-              {tCommon("online")}
-            </span>
-          </div>
-          <p className="text-xs text-slate-600 dark:text-slate-500">
-            {tCommon("lastUpdate")}
+        <div className="mt-4 shrink-0 space-y-2 border-t border-slate-200 pt-4 dark:border-slate-700/50">
+          <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            {t("footer")}
           </p>
+          <SidebarNavButton
+            item={myOrganizationsItem}
+            isNavigating={isNavigating}
+            onNavigate={onNavigate}
+          />
+          <div className="rounded-xl border border-slate-300 bg-slate-200/80 p-4 transition-colors duration-300 dark:border-slate-700/50 dark:bg-slate-800/50">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-green-400"></div>
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                {tCommon("online")}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-500">
+              {tCommon("lastUpdate")}
+            </p>
+          </div>
         </div>
       </nav>
     </div>
   );
 };
+
+type SidebarMenuItem = {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  active: boolean;
+};
+
+function SidebarNavButton({
+  item,
+  isNavigating,
+  onNavigate,
+}: {
+  item: SidebarMenuItem;
+  isNavigating: boolean;
+  onNavigate: (page: string) => void;
+}) {
+  const IconComponent = item.icon;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate(item.id)}
+      disabled={isNavigating}
+      className={cn(
+        "group relative flex w-full items-center gap-3 overflow-hidden rounded-xl px-3 py-3 text-left transition-all duration-300",
+        item.active
+          ? "border border-blue-500/30 bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-slate-900 shadow-lg dark:text-white"
+          : "text-slate-700 hover:bg-slate-200/80 hover:text-slate-900 hover:shadow-md dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-white",
+        isNavigating && !item.active && "cursor-not-allowed opacity-50",
+        isNavigating && item.active && "animate-pulse"
+      )}
+    >
+      <div
+        className={cn(
+          "absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 transition-opacity duration-300",
+          !item.active && "group-hover:opacity-100"
+        )}
+      />
+      <div
+        className={cn(
+          "relative z-10 rounded-lg p-2 transition-all duration-300",
+          item.active
+            ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg"
+            : "bg-slate-200/80 text-slate-600 group-hover:bg-slate-300 group-hover:text-slate-900 dark:bg-slate-700/50 dark:text-slate-400 dark:group-hover:bg-slate-600 dark:group-hover:text-white"
+        )}
+      >
+        <IconComponent className="h-4 w-4" />
+      </div>
+      <div className="relative z-10 min-w-0 flex-1">
+        <div className="truncate text-sm font-medium">{item.label}</div>
+        <div
+          className={cn(
+            "truncate text-xs transition-colors duration-300",
+            item.active
+              ? "text-blue-600 dark:text-blue-200"
+              : "text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+          )}
+        >
+          {item.description}
+        </div>
+      </div>
+      {item.active && (
+        <div className="relative z-10 h-2 w-2 animate-pulse rounded-full bg-gradient-to-r from-blue-400 to-purple-400" />
+      )}
+      {isNavigating && item.active && (
+        <div className="relative z-10 ml-auto h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-slate-900 dark:border-t-white" />
+      )}
+      {!item.active && (
+        <ChevronRight className="relative z-10 h-4 w-4 text-slate-500 transition-colors duration-300 group-hover:text-slate-700 dark:group-hover:text-slate-300" />
+      )}
+    </button>
+  );
+}
 
 export { Sidebar };

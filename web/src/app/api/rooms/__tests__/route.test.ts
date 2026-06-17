@@ -3,6 +3,7 @@
  */
 import { NextRequest } from "next/server";
 
+import { TEST_ORG_ID } from "../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../prisma/mock";
 import { GET, POST } from "../route";
 
@@ -85,7 +86,11 @@ describe("Rooms API (List and Create)", () => {
       expect(data.id).toBe("new-room");
       expect(prismaMock.room.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ name: "Sala Nova", capacity: 20 }),
+          data: expect.objectContaining({
+            name: "Sala Nova",
+            capacity: 20,
+            organizationId: TEST_ORG_ID,
+          }),
         })
       );
     });

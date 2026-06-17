@@ -1,6 +1,7 @@
-import { NotificationType } from "@prisma/client";
+import { NotificationType, OrganizationRole } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 
+import { isOrgAdminRole } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 import { getIntlLocale } from "@/lib/utils";
 
@@ -59,7 +60,22 @@ export const notificationService = {
         minute: "2-digit",
       });
 
-      const userIsAdmin = reservation.user.role === "ADMIN";
+      const organizationId =
+        reservation.organizationId ?? reservation.room?.organizationId;
+
+      let userIsAdmin = false;
+      if (organizationId) {
+        const creatorMembership = await prisma.organizationMember.findUnique({
+          where: {
+            organizationId_userId: {
+              organizationId,
+              userId: reservation.userId,
+            },
+          },
+          select: { role: true },
+        });
+        userIsAdmin = isOrgAdminRole(creatorMembership?.role);
+      }
       const userName =
         reservation.user.name || (locale === "pt" ? "Usuário" : "User");
       const purposeText = reservation.purpose
@@ -83,37 +99,48 @@ export const notificationService = {
         });
       }
 
-      // Buscar todos os usuários administradores
-      const adminUsers = await prisma.user.findMany({
-        where: { role: "ADMIN" },
-        select: { id: true, email: true, name: true },
-      });
+      const adminMembers = organizationId
+        ? await prisma.organizationMember.findMany({
+            where: {
+              organizationId,
+              role: {
+                in: [OrganizationRole.OWNER, OrganizationRole.ADMIN],
+              },
+            },
+            include: {
+              user: { select: { id: true, email: true, name: true } },
+            },
+          })
+        : [];
 
       console.log(
-        ` Criando notificações para ${adminUsers.length} administradores`
+        ` Criando notificações para ${adminMembers.length} administradores`
       );
 
-      // Criar notificação para cada admin
       const notifications = await Promise.all(
-        adminUsers.map(admin =>
-          createNotification(admin.id, "RESERVATION_CREATED", title, message, {
-            reservationId: reservation.id,
-            roomId: reservation.roomId,
-            roomName: reservation.room.name,
-            userId: reservation.userId,
-            userName: reservation.user.name,
-            userRole: reservation.user.role,
-            isAdmin: userIsAdmin,
-            startTime: reservation.startTime,
-            endTime: reservation.endTime,
-            purpose: reservation.purpose,
-          })
+        adminMembers.map(member =>
+          createNotification(
+            member.user.id,
+            "RESERVATION_CREATED",
+            title,
+            message,
+            {
+              reservationId: reservation.id,
+              roomId: reservation.roomId,
+              roomName: reservation.room.name,
+              userId: reservation.userId,
+              userName: reservation.user.name,
+              organizationRole: member.role,
+              isAdmin: userIsAdmin,
+              startTime: reservation.startTime,
+              endTime: reservation.endTime,
+              purpose: reservation.purpose,
+            }
+          )
         )
       );
 
-      console.log(
-        ` ${notifications.length} notificações criadas com sucesso`
-      );
+      console.log(` ${notifications.length} notificações criadas com sucesso`);
       return notifications;
     } catch (error) {
       console.error("Erro ao criar notificações para admins:", error);

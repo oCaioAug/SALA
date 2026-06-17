@@ -3,7 +3,8 @@ import { spawnSync } from "node:child_process";
 
 const directUrl = process.env.DIRECT_URL;
 const subcommand = process.argv[2] === "deploy" ? "deploy" : "dev";
-const forwardedArgs = subcommand === "deploy" ? process.argv.slice(3) : process.argv.slice(2);
+const forwardedArgs =
+  subcommand === "deploy" ? process.argv.slice(3) : process.argv.slice(2);
 
 if (!directUrl) {
   console.error(
@@ -28,4 +29,3 @@ if (result.error) {
 }
 
 process.exit(result.status ?? 1);
-

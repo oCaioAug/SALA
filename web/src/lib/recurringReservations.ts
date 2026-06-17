@@ -5,6 +5,7 @@ export type RecurringPattern = "DAILY" | "WEEKLY" | "MONTHLY";
 interface RecurringReservationData {
   userId: string;
   roomId: string;
+  organizationId: string;
   startTime: Date;
   endTime: Date;
   purpose?: string;
@@ -24,6 +25,7 @@ export async function generateRecurringReservations(
   const {
     userId,
     roomId,
+    organizationId,
     startTime,
     endTime,
     purpose,
@@ -37,6 +39,7 @@ export async function generateRecurringReservations(
   const reservations: Array<{
     userId: string;
     roomId: string;
+    organizationId: string;
     startTime: Date;
     endTime: Date;
     purpose?: string;
@@ -88,6 +91,7 @@ export async function generateRecurringReservations(
         reservations.push({
           userId,
           roomId,
+          organizationId,
           startTime: occurrenceStart,
           endTime: occurrenceEnd,
           purpose,

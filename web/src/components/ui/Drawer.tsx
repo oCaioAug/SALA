@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import React, { useEffect, useId, useRef } from "react";
 
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ const Drawer: React.FC<DrawerProps> = ({
   closeOnEscape = true,
   passThrough = false,
 }) => {
+  const t = useTranslations("Common.a11y");
   const isLeft = side === "left";
   const titleId = useId();
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -71,7 +73,10 @@ const Drawer: React.FC<DrawerProps> = ({
 
   return (
     <div
-      className={cn("fixed inset-0 z-[100]", passThrough && "pointer-events-none")}
+      className={cn(
+        "fixed inset-0 z-[100]",
+        passThrough && "pointer-events-none"
+      )}
     >
       <button
         type="button"
@@ -80,7 +85,7 @@ const Drawer: React.FC<DrawerProps> = ({
           passThrough && "opacity-0"
         )}
         onClick={onClose}
-        aria-label="Fechar painel"
+        aria-label={t("closePanel")}
       />
 
       <div
@@ -104,39 +109,39 @@ const Drawer: React.FC<DrawerProps> = ({
             className
           )}
         >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-4 sm:p-6 dark:border-slate-700">
-          <h2
-            id={titleId}
-            className="pr-4 text-lg font-semibold text-slate-900 sm:text-xl dark:text-white"
-          >
-            {title}
-          </h2>
-          <button
-            ref={closeBtnRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Fechar"
-            className="shrink-0 rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
-          >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-4 sm:p-6 dark:border-slate-700">
+            <h2
+              id={titleId}
+              className="pr-4 text-lg font-semibold text-slate-900 sm:text-xl dark:text-white"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+              {title}
+            </h2>
+            <button
+              ref={closeBtnRef}
+              type="button"
+              onClick={onClose}
+              aria-label={t("close")}
+              className="shrink-0 rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4 text-slate-900 sm:p-6 dark:text-white">
-          {children}
-        </div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 text-slate-900 sm:p-6 dark:text-white">
+            {children}
+          </div>
         </div>
       </div>
     </div>

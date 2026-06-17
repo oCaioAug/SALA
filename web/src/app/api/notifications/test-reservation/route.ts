@@ -1,3 +1,8 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
 import { notificationService } from "@/lib/notifications";
@@ -70,7 +75,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao testar notificação de reserva:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }

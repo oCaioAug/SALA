@@ -3,6 +3,7 @@
  */
 import { NextRequest } from "next/server";
 
+import { TEST_ORG_ID } from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { POST } from "../route";
 
@@ -90,6 +91,7 @@ describe("Check Conflict API", () => {
     expect(prismaMock.reservation.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
+          organizationId: TEST_ORG_ID,
           id: { not: "current-res" },
         }),
       })

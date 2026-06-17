@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 
 import { verifyAuth } from "@/lib/auth-hybrid";
 
+import { TEST_ORG_ID } from "../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../prisma/mock";
 import { GET, POST } from "../route";
 
@@ -18,7 +19,7 @@ describe("Incidents API", () => {
     jest.clearAllMocks();
     (verifyAuth as jest.Mock).mockResolvedValue({
       success: true,
-      user: { id: "admin-1", role: "ADMIN" },
+      user: { id: "admin-1", role: "ADMIN", organizationId: "org-test" },
     });
   });
 
@@ -59,7 +60,7 @@ describe("Incidents API", () => {
         expect.objectContaining({
           skip: 10,
           take: 10,
-          where: { status: "REPORTED" },
+          where: { organizationId: TEST_ORG_ID, status: "REPORTED" },
         })
       );
     });
@@ -218,7 +219,10 @@ describe("Incidents API", () => {
 
     it("should create an incident successfully", async () => {
       prismaMock.user.findUnique.mockResolvedValue({ id: "admin-1" } as any);
-      prismaMock.room.findUnique.mockResolvedValue({ id: "room-1" } as any);
+      prismaMock.room.findUnique.mockResolvedValue({
+        id: "room-1",
+        organizationId: TEST_ORG_ID,
+      } as any);
       prismaMock.incident.create.mockResolvedValue({
         id: "new-inc",
         ...validBody,
@@ -322,7 +326,10 @@ describe("Incidents API", () => {
       const itemBody = { ...bodyWithItem, itemId: "item-1" };
 
       prismaMock.user.findUnique.mockResolvedValue({ id: "admin-1" } as any);
-      prismaMock.item.findUnique.mockResolvedValue({ id: "item-1" } as any);
+      prismaMock.item.findUnique.mockResolvedValue({
+        id: "item-1",
+        organizationId: TEST_ORG_ID,
+      } as any);
       prismaMock.incident.create.mockResolvedValue({ id: "new-inc" } as any);
       prismaMock.incidentStatusHistory.create.mockResolvedValue({} as any);
 

@@ -3,15 +3,15 @@
  */
 import { NextRequest } from "next/server";
 
+import { TEST_ORG_ID, TEST_USER_ID } from "../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../prisma/mock";
 import { GET, POST } from "../route";
 
-const mockUser = { id: "user-1", email: "user@example.com", role: "USER" };
+const mockUser = { id: TEST_USER_ID, email: "user@example.com", role: "USER" };
 
 describe("Notifications API", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  // ==================== GET ====================
   describe("GET /api/notifications", () => {
     it("should return 400 if userId is missing", async () => {
       const req = new NextRequest("http://localhost:3000/api/notifications");
@@ -77,6 +77,7 @@ describe("Notifications API", () => {
             userId: "user-1",
             isRead: true,
             type: "RESERVATION_CREATED",
+            OR: [{ organizationId: TEST_ORG_ID }, { organizationId: null }],
           }),
           take: 5,
         })
@@ -84,12 +85,11 @@ describe("Notifications API", () => {
     });
   });
 
-  // ==================== POST ====================
   describe("POST /api/notifications", () => {
     it("should return 400 if required fields are missing", async () => {
       const req = new NextRequest("http://localhost:3000/api/notifications", {
         method: "POST",
-        body: JSON.stringify({ userId: "user-1" }), // Missing type, title, message
+        body: JSON.stringify({ userId: "user-1" }),
       });
       const response = await POST(req);
       const data = await response.json();
@@ -140,6 +140,11 @@ describe("Notifications API", () => {
 
       expect(response.status).toBe(201);
       expect(data.id).toBe("notif-1");
+      expect(prismaMock.notification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ organizationId: TEST_ORG_ID }),
+        })
+      );
     });
 
     it("should return 500 on DB error", async () => {

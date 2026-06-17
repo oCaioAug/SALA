@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { MdInventory2 } from "react-icons/md";
@@ -15,6 +16,7 @@ import { useNavigation } from "@/lib/hooks/useNavigation";
 import { Image, Item, Room, User } from "@/lib/types";
 
 const RoomItemsPage: React.FC = () => {
+  const t = useTranslations("RoomItemsPage");
   const params = useParams();
   const router = useRouter();
   const roomId = params.id as string;
@@ -42,7 +44,7 @@ const RoomItemsPage: React.FC = () => {
         // Carregar dados da sala
         const roomResponse = await fetch(`/api/rooms/${roomId}`);
         if (!roomResponse.ok) {
-          throw new Error("Sala não encontrada");
+          throw new Error(t("errors.roomNotFound"));
         }
         const roomData = await roomResponse.json();
         setRoom(roomData);
@@ -50,12 +52,12 @@ const RoomItemsPage: React.FC = () => {
         // Carregar itens da sala
         const itemsResponse = await fetch(`/api/rooms/${roomId}/items`);
         if (!itemsResponse.ok) {
-          throw new Error("Erro ao carregar itens");
+          throw new Error(t("errors.loadItems"));
         }
         const itemsData = await itemsResponse.json();
         setItems(itemsData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro desconhecido");
+        setError(err instanceof Error ? err.message : t("errors.unknown"));
       } finally {
         setLoading(false);
       }
@@ -67,7 +69,7 @@ const RoomItemsPage: React.FC = () => {
   }, [roomId]);
 
   const handleAddItem = async (
-    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    itemData: Omit<Item, "id" | "createdAt" | "updatedAt" | "organizationId">,
     imageData?: any
   ) => {
     try {
@@ -109,12 +111,12 @@ const RoomItemsPage: React.FC = () => {
 
       setIsAddItemModalOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao adicionar item");
+      setError(err instanceof Error ? err.message : t("errors.addItem"));
     }
   };
 
   const handleUpdateItem = async (
-    itemData: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    itemData: Omit<Item, "id" | "createdAt" | "updatedAt" | "organizationId">,
     imageData?: any
   ) => {
     if (!editingItem) return;
@@ -129,7 +131,7 @@ const RoomItemsPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao atualizar item");
+        throw new Error(t("errors.updateItem"));
       }
 
       const updatedItem = await response.json();
@@ -160,7 +162,7 @@ const RoomItemsPage: React.FC = () => {
 
       setEditingItem(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar item");
+      setError(err instanceof Error ? err.message : t("errors.updateItem"));
     }
   };
 
@@ -173,12 +175,12 @@ const RoomItemsPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao deletar item");
+        throw new Error(t("errors.deleteItem"));
       }
 
       setItems(prev => prev.filter(item => item.id !== itemId));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao deletar item");
+      setError(err instanceof Error ? err.message : t("errors.deleteItem"));
     }
   };
 
@@ -190,189 +192,193 @@ const RoomItemsPage: React.FC = () => {
       onNotificationClick={() => {}}
     >
       {loading ? (
-        <LoadingPage variant="embedded" message="Carregando itens..." />
+        <LoadingPage variant="embedded" message={t("loading")} />
       ) : error || !room ? (
         <ErrorPage
           variant="embedded"
-          error={error || "Sala não encontrada"}
+          error={error || t("errors.roomNotFound")}
           onRetry={() => router.push(`/salas/${roomId}`)}
-          retryLabel="Voltar à Sala"
+          retryLabel={t("back")}
         />
       ) : (
-      <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Itens da Sala: {room.name}
-          </h1>
-          <p className="text-slate-600 dark:text-gray-400">
-            {items.length} itens cadastrados
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={() => router.back()}>
-            ← Voltar
-          </Button>
-          <Button onClick={() => setIsAddItemModalOpen(true)}>
-            + Adicionar Item
-          </Button>
-        </div>
-      </div>
-
-      {/* Lista de itens */}
-      {items.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <div className="text-slate-500 dark:text-gray-400 mb-4">
-              <svg
-                className="w-16 h-16 mx-auto mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
-              <p className="text-xl mb-2 text-slate-900 dark:text-white">
-                Nenhum item cadastrado
-              </p>
-              <p className="text-sm text-slate-600 dark:text-gray-400">
-                Comece adicionando itens para esta sala
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                {t("title")}: {room.name}
+              </h1>
+              <p className="text-slate-600 dark:text-gray-400">
+                {items.length} itens cadastrados
               </p>
             </div>
-            <Button onClick={() => setIsAddItemModalOpen(true)}>
-              Adicionar Primeiro Item
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item: any) => {
-            const itemImage =
-              item.images && item.images.length > 0
-                ? item.images[0].path.replace(
-                    "/api/uploads/items/images/original_",
-                    "/api/uploads/items/images/thumb_"
-                  )
-                : null;
 
-            return (
-              <Card
-                key={item.id}
-                className="hover:shadow-xl transition-shadow overflow-hidden"
-              >
-                <CardContent className="p-0">
-                  {/* Imagem do item */}
-                  {itemImage ? (
-                    <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={itemImage}
-                        alt={item.name}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                      {item.icon ? (
-                        <span className="text-5xl">{item.icon}</span>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => router.back()}>
+                ← {t("back")}
+              </Button>
+              <Button onClick={() => setIsAddItemModalOpen(true)}>
+                + {t("addItem")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Lista de itens */}
+          {items.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <div className="text-slate-500 dark:text-gray-400 mb-4">
+                  <svg
+                    className="w-16 h-16 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    />
+                  </svg>
+                  <p className="text-xl mb-2 text-slate-900 dark:text-white">
+                    {t("noItems")}
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-gray-400">
+                    Comece adicionando itens para esta sala
+                  </p>
+                </div>
+                <Button onClick={() => setIsAddItemModalOpen(true)}>
+                  Adicionar Primeiro Item
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {items.map((item: any) => {
+                const itemImage =
+                  item.images && item.images.length > 0
+                    ? item.images[0].path.replace(
+                        "/api/uploads/items/images/original_",
+                        "/api/uploads/items/images/thumb_"
+                      )
+                    : null;
+
+                return (
+                  <Card
+                    key={item.id}
+                    className="hover:shadow-xl transition-shadow overflow-hidden"
+                  >
+                    <CardContent className="p-0">
+                      {/* Imagem do item */}
+                      {itemImage ? (
+                        <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                          <img
+                            src={itemImage}
+                            alt={item.name}
+                            className="w-full h-full object-contain p-2"
+                          />
+                        </div>
                       ) : (
-                        <MdInventory2 className="h-20 w-20 text-slate-500 dark:text-slate-400" />
+                        <div className="w-full aspect-square bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                          {item.icon ? (
+                            <span className="text-5xl">{item.icon}</span>
+                          ) : (
+                            <MdInventory2 className="h-20 w-20 text-slate-500 dark:text-slate-400" />
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
 
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white text-lg mb-1">
-                          {item.name}
-                        </h3>
-                        <p className="text-sm text-slate-600 dark:text-gray-400">
-                          Quantidade: {item.quantity}
-                        </p>
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-slate-900 dark:text-white text-lg mb-1">
+                              {item.name}
+                            </h3>
+                            <p className="text-sm text-slate-600 dark:text-gray-400">
+                              Quantidade: {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingItem(item)}
+                            className="flex-1"
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex-1"
+                          >
+                            Deletar
+                          </Button>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingItem(item)}
-                        className="flex-1"
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex-1"
-                      >
-                        Deletar
-                      </Button>
-                    </div>
-                  </div>
+                      {item.description && (
+                        <p className="text-slate-700 dark:text-gray-300 text-sm mb-4 mt-4">
+                          {item.description}
+                        </p>
+                      )}
 
-                  {item.description && (
-                    <p className="text-slate-700 dark:text-gray-300 text-sm mb-4 mt-4">
-                      {item.description}
-                    </p>
-                  )}
-
-                  {item.specifications && item.specifications.length > 0 && (
-                    <div className="mt-4">
-                      <p className="text-xs text-slate-600 dark:text-gray-500 font-medium mb-2">
-                        Especificações:
-                      </p>
-                      <ul className="text-xs text-slate-600 dark:text-gray-400 space-y-1">
-                        {item.specifications.map(
-                          (spec: string, index: number) => (
-                            <li key={index} className="flex items-center gap-2">
-                              <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                              {spec}
-                            </li>
-                          )
+                      {item.specifications &&
+                        item.specifications.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-xs text-slate-600 dark:text-gray-500 font-medium mb-2">
+                              Especificações:
+                            </p>
+                            <ul className="text-xs text-slate-600 dark:text-gray-400 space-y-1">
+                              {item.specifications.map(
+                                (spec: string, index: number) => (
+                                  <li
+                                    key={index}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
+                                    {spec}
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
                         )}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
-      {/* Modal para adicionar item */}
-      <Drawer
-        isOpen={isAddItemModalOpen}
-        onClose={() => setIsAddItemModalOpen(false)}
-        title="Adicionar Item"
-      >
-        <ItemForm
-          onSubmit={handleAddItem}
-          onCancel={() => setIsAddItemModalOpen(false)}
-        />
-      </Drawer>
+          {/* Modal para adicionar item */}
+          <Drawer
+            isOpen={isAddItemModalOpen}
+            onClose={() => setIsAddItemModalOpen(false)}
+            title="Adicionar Item"
+          >
+            <ItemForm
+              onSubmit={handleAddItem}
+              onCancel={() => setIsAddItemModalOpen(false)}
+            />
+          </Drawer>
 
-      <Drawer
-        isOpen={!!editingItem}
-        onClose={() => setEditingItem(null)}
-        title="Editar Item"
-      >
-        <ItemForm
-          item={editingItem}
-          onSubmit={handleUpdateItem}
-          onCancel={() => setEditingItem(null)}
-        />
-      </Drawer>
-      </>
+          <Drawer
+            isOpen={!!editingItem}
+            onClose={() => setEditingItem(null)}
+            title="Editar Item"
+          >
+            <ItemForm
+              item={editingItem}
+              onSubmit={handleUpdateItem}
+              onCancel={() => setEditingItem(null)}
+            />
+          </Drawer>
+        </>
       )}
     </PageLayout>
   );
@@ -382,7 +388,7 @@ const RoomItemsPage: React.FC = () => {
 const ItemForm: React.FC<{
   item?: (Item & { images?: Image[] }) | null;
   onSubmit: (
-    item: Omit<Item, "id" | "createdAt" | "updatedAt">,
+    item: Omit<Item, "id" | "createdAt" | "updatedAt" | "organizationId">,
     imageData?: any
   ) => void;
   onCancel: () => void;

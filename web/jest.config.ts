@@ -1,30 +1,34 @@
-import nextJest from 'next/jest.js'
+import nextJest from "next/jest.js";
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
-  dir: './',
-})
+  dir: "./",
+});
 
 // Add any custom config to be passed to Jest
 /** @type {import('jest').Config} */
 const config = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts', '<rootDir>/prisma/mock.ts'],
-  testEnvironment: 'jest-environment-jsdom',
+  setupFilesAfterEnv: [
+    "<rootDir>/jest.setup.ts",
+    "<rootDir>/prisma/mock.ts",
+    "<rootDir>/prisma/auth-mocks.ts",
+  ],
+  testEnvironment: "jest-environment-jsdom",
   moduleNameMapper: {
     // Handle module aliases
-    '^@/(.*)$': '<rootDir>/src/$1',
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
   coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/.next/',
-    '/coverage/',
-    'jest.config.ts',
-    'jest.setup.ts',
-    '/src/components/ui/',
+    "/node_modules/",
+    "/.next/",
+    "/coverage/",
+    "jest.config.ts",
+    "jest.setup.ts",
+    "/src/components/ui/",
   ],
-  testPathIgnorePatterns: ['<rootDir>/tests/', '<rootDir>/node_modules/'],
-}
+  testPathIgnorePatterns: ["<rootDir>/tests/", "<rootDir>/node_modules/"],
+};
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(config)
+export default createJestConfig(config);

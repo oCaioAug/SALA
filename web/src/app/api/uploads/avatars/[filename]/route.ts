@@ -1,3 +1,8 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import fs from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -68,9 +73,6 @@ export async function GET(
     });
   } catch (error) {
     console.error("Erro ao servir avatar:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

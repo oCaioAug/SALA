@@ -18,20 +18,20 @@ const mockParams = (userId: string) => ({
 
 const mockAdminAuth = {
   success: true,
-  user: { id: "admin-1", role: "ADMIN" },
+  user: { id: "admin-1", role: "ADMIN", organizationRole: "ADMIN" },
 };
 const mockUserAuth = {
   success: true,
-  user: { id: "user-1", role: "USER" },
+  user: { id: "user-1", role: "USER", organizationRole: "MEMBER" },
 };
 const mockUser = {
   id: "user-1",
   name: "João",
   email: "joao@example.com",
-  role: "USER",
   image: null,
   createdAt: new Date(),
   updatedAt: new Date(),
+  memberships: [{ role: "MEMBER", organizationId: "org-1" }],
 };
 
 describe("Users [userId] API", () => {
@@ -157,6 +157,7 @@ describe("Users [userId] API", () => {
       prismaMock.user.update.mockResolvedValue({
         ...mockUser,
         name: "Novo Nome",
+        memberships: [{ role: "MEMBER" }],
       } as any);
 
       const req = new NextRequest("http://localhost:3000/api/users/user-1", {

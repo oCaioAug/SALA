@@ -25,6 +25,7 @@ import {
   NOTIFICATION_TYPE_CONFIG,
   NotificationTypeType,
 } from "@/lib/types";
+import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 import { getIntlLocale } from "@/lib/utils";
 
 interface NotificationModalProps {
@@ -43,7 +44,9 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   onNotificationClick,
 }) => {
   const t = useTranslations("NotificationModal");
+  const tCommon = useTranslations("Common");
   const tNotificationService = useTranslations("NotificationService");
+  const { fromPayload } = useApiErrorMessage();
   const locale = useLocale();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,14 +63,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       );
 
       if (!response.ok) {
-        throw new Error("Erro ao carregar notificações");
+        throw new Error(t("loadError"));
       }
 
       const data = await response.json();
       setNotifications(data);
     } catch (err) {
       console.error("Erro ao carregar notificações:", err);
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      setError(
+        err instanceof Error ? err.message : fromPayload({}) || t("loadError")
+      );
     } finally {
       setLoading(false);
     }
@@ -226,8 +231,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
     switch (notification.type) {
       case "RESERVATION_CREATED": {
-        const userName =
-          notificationData.userName || (locale === "pt" ? "Usuário" : "User");
+        const userName = notificationData.userName || tCommon("user");
         const roomName = notificationData.roomName || "";
         const startTime = notificationData.startTime
           ? new Date(notificationData.startTime).toLocaleString(intlLocale, {

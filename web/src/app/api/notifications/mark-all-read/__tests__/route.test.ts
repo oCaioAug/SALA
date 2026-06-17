@@ -3,6 +3,7 @@
  */
 import { NextRequest } from "next/server";
 
+import { TEST_ORG_ID, TEST_USER_ID } from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { PUT } from "../route";
 
@@ -31,7 +32,7 @@ describe("Mark All Notifications Read API", () => {
       "http://localhost:3000/api/notifications/mark-all-read",
       {
         method: "PUT",
-        body: JSON.stringify({ userId: "user-1" }),
+        body: JSON.stringify({ userId: TEST_USER_ID }),
       }
     );
     const response = await PUT(req);
@@ -41,13 +42,17 @@ describe("Mark All Notifications Read API", () => {
     expect(data.success).toBe(true);
     expect(data.count).toBe(5);
     expect(prismaMock.notification.updateMany).toHaveBeenCalledWith({
-      where: { userId: "user-1", isRead: false },
+      where: {
+        userId: TEST_USER_ID,
+        isRead: false,
+        OR: [{ organizationId: TEST_ORG_ID }, { organizationId: null }],
+      },
       data: { isRead: true },
     });
   });
 
   it("should resolve email to userId before updating", async () => {
-    prismaMock.user.findUnique.mockResolvedValue({ id: "user-1" } as any);
+    prismaMock.user.findUnique.mockResolvedValue({ id: TEST_USER_ID } as any);
     prismaMock.notification.updateMany.mockResolvedValue({ count: 3 });
 
     const req = new NextRequest(
@@ -66,7 +71,12 @@ describe("Mark All Notifications Read API", () => {
       select: { id: true },
     });
     expect(prismaMock.notification.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: "user-1", isRead: false } })
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: TEST_USER_ID,
+          isRead: false,
+        }),
+      })
     );
   });
 
@@ -92,7 +102,7 @@ describe("Mark All Notifications Read API", () => {
       "http://localhost:3000/api/notifications/mark-all-read",
       {
         method: "PUT",
-        body: JSON.stringify({ userId: "user-1" }),
+        body: JSON.stringify({ userId: TEST_USER_ID }),
       }
     );
     const response = await PUT(req);

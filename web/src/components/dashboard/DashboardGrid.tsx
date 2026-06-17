@@ -88,7 +88,7 @@ function layoutRectsMatch(
     const nb = next[bp] ?? [];
     if (pa.length !== nb.length) return false;
     for (const aItem of pa) {
-      const bItem = nb.find((l) => l.i === aItem.i);
+      const bItem = nb.find(l => l.i === aItem.i);
       if (!bItem || !sameItemLayout(aItem, bItem)) return false;
     }
   }
@@ -102,13 +102,13 @@ function mergeLayoutsFromGrid(
   const next = cloneResponsiveLayouts(prev);
   for (const bp of DASHBOARD_BREAKPOINTS) {
     const incoming = (all[bp] ?? []).filter(
-      (it) =>
+      it =>
         it.i !== DROP_PLACEHOLDER_I &&
         DASHBOARD_WIDGET_IDS.includes(it.i as DashboardWidgetId)
     );
     const row = [...(next[bp] ?? [])];
     for (const it of incoming) {
-      const idx = row.findIndex((l) => l.i === it.i);
+      const idx = row.findIndex(l => l.i === it.i);
       if (idx >= 0) {
         const base = row[idx];
         if (!base) continue;
@@ -138,16 +138,14 @@ function placeWidgetAtBottom(
   hiddenForMaxY: readonly DashboardWidgetId[]
 ): ResponsiveLayouts {
   const next = cloneResponsiveLayouts(layouts);
-  const hiddenSet = new Set(
-    hiddenForMaxY.filter((h) => h !== id)
-  );
+  const hiddenSet = new Set(hiddenForMaxY.filter(h => h !== id));
   for (const bp of DASHBOARD_BREAKPOINTS) {
     const def = getDefaultLayoutItem(id, bp);
     if (!def) continue;
     const cols = DASHBOARD_GRID_COLS[bp];
     const row = [...(next[bp] ?? [])];
     const visibleMaxY = row
-      .filter((l) => !hiddenSet.has(l.i as DashboardWidgetId))
+      .filter(l => !hiddenSet.has(l.i as DashboardWidgetId))
       .reduce((m, l) => Math.max(m, l.y + l.h), 0);
     const placed = clampLayoutItemToCols(
       {
@@ -162,7 +160,7 @@ function placeWidgetAtBottom(
       },
       cols
     );
-    const idx = row.findIndex((l) => l.i === id);
+    const idx = row.findIndex(l => l.i === id);
     if (idx >= 0) {
       next[bp] = row.map((l, i) => (i === idx ? placed : l));
     }
@@ -194,7 +192,7 @@ function applyDropFromPalette(
       cols
     );
     const row = [...(next[bp] ?? [])];
-    next[bp] = row.map((l) => (l.i === id ? merged : l));
+    next[bp] = row.map(l => (l.i === id ? merged : l));
   }
   return next;
 }
@@ -267,11 +265,7 @@ function WidgetShell({
   );
 }
 
-export function DashboardGrid({
-  rooms,
-  chartStats,
-  chartStatsLoading,
-}: Props) {
+export function DashboardGrid({ rooms, chartStats, chartStatsLoading }: Props) {
   const { data: session } = useSession();
   const { showSuccess, showError } = useApp();
   const tGrid = useTranslations("DashboardHome.grid");
@@ -293,14 +287,13 @@ export function DashboardGrid({
   const preEditHiddenRef = useRef<DashboardWidgetId[] | null>(null);
   const draggingPaletteIdRef = useRef<DashboardWidgetId | null>(null);
   /** Durante edição, evitamos `setLayouts` em todo `onLayoutChange` (ciclo com compactação do RGL). */
-  const latestLayoutsRef = useRef<ResponsiveLayouts>(mergeDashboardLayouts(null));
+  const latestLayoutsRef = useRef<ResponsiveLayouts>(
+    mergeDashboardLayouts(null)
+  );
   const isEditingRef = useRef(false);
   isEditingRef.current = isEditing;
 
-  const hiddenSet = useMemo(
-    () => new Set(hiddenWidgets),
-    [hiddenWidgets]
-  );
+  const hiddenSet = useMemo(() => new Set(hiddenWidgets), [hiddenWidgets]);
 
   const visibleLayouts = useMemo(
     () => filterLayoutsByHidden(layouts, hiddenSet),
@@ -308,7 +301,7 @@ export function DashboardGrid({
   );
 
   const visibleIds = useMemo(
-    () => DASHBOARD_WIDGET_IDS.filter((id) => !hiddenSet.has(id)),
+    () => DASHBOARD_WIDGET_IDS.filter(id => !hiddenSet.has(id)),
     [hiddenSet]
   );
 
@@ -363,7 +356,7 @@ export function DashboardGrid({
         return;
       }
 
-      setLayouts((prev) => {
+      setLayouts(prev => {
         const next = mergeLayoutsFromGrid(prev, all);
         const matched = layoutRectsMatch(prev, next);
         return matched ? prev : next;
@@ -460,16 +453,23 @@ export function DashboardGrid({
     } finally {
       setSaving(false);
     }
-  }, [closeWidgetDrawer, putLayout, session?.user?.email, showError, showSuccess, tGrid]);
+  }, [
+    closeWidgetDrawer,
+    putLayout,
+    session?.user?.email,
+    showError,
+    showSuccess,
+    tGrid,
+  ]);
 
   const hideWidget = useCallback((id: DashboardWidgetId) => {
-    setHiddenWidgets((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setHiddenWidgets(prev => (prev.includes(id) ? prev : [...prev, id]));
   }, []);
 
   const insertWidgetAtBottom = useCallback((id: DashboardWidgetId) => {
-    const nh = hiddenWidgetsRef.current.filter((x) => x !== id);
+    const nh = hiddenWidgetsRef.current.filter(x => x !== id);
     setHiddenWidgets(nh);
-    setLayouts((prev) => {
+    setLayouts(prev => {
       const base = isEditingRef.current ? latestLayoutsRef.current : prev;
       const next = placeWidgetAtBottom(base, id, nh);
       if (isEditingRef.current) {
@@ -493,9 +493,9 @@ export function DashboardGrid({
         return;
       }
       const id = raw as DashboardWidgetId;
-      const nh = hiddenWidgetsRef.current.filter((x) => x !== id);
+      const nh = hiddenWidgetsRef.current.filter(x => x !== id);
       setHiddenWidgets(nh);
-      setLayouts((prev) => {
+      setLayouts(prev => {
         const base = isEditingRef.current ? latestLayoutsRef.current : prev;
         const next = applyDropFromPalette(base, id, droppedItem);
         if (isEditingRef.current) {
@@ -635,7 +635,12 @@ export function DashboardGrid({
           )}
           <div className="flex flex-wrap items-center justify-end gap-2">
             {!isEditing ? (
-              <Button type="button" size="sm" variant="outline" onClick={beginEdit}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={beginEdit}
+              >
                 {tGrid("editDashboard")}
               </Button>
             ) : (
@@ -692,7 +697,7 @@ export function DashboardGrid({
       >
         <DashboardWidgetPalette
           hiddenIds={hiddenSet}
-          onPaletteDragStart={(wid) => {
+          onPaletteDragStart={wid => {
             draggingPaletteIdRef.current = wid;
             setPaletteDragging(true);
             setWidgetDrawerOpen(false);
@@ -701,7 +706,7 @@ export function DashboardGrid({
             draggingPaletteIdRef.current = null;
             setPaletteDragging(false);
           }}
-          onAddClick={(wid) => insertWidgetAtBottom(wid)}
+          onAddClick={wid => insertWidgetAtBottom(wid)}
         />
       </Drawer>
 
@@ -738,7 +743,7 @@ export function DashboardGrid({
         onDropDragOver={onDropDragOver}
         resizeHandles={["se", "s", "e"]}
       >
-        {visibleIds.map((id) => (
+        {visibleIds.map(id => (
           <div key={id} className="h-full min-w-0">
             {renderWidget(id)}
           </div>

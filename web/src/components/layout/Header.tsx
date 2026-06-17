@@ -5,20 +5,18 @@ import {
   ChevronDown,
   LogOut,
   Menu,
-  Moon,
   Search,
   Settings,
-  Sun,
   User as UserIcon,
 } from "lucide-react";
 import Image from "next/image";
+import { OrganizationRole, PlatformRole } from "@/lib/auth/roles";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
 
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { NotificationModal } from "@/components/ui/NotificationModal";
-import { useTheme } from "@/lib/providers/ThemeProvider";
 import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 import { Link } from "@/navigation";
 
@@ -40,7 +38,17 @@ const Header: React.FC<HeaderProps> = ({
   const t = useTranslations("Header");
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
-  const { theme, toggleTheme } = useTheme();
+
+  const tenantRoleLabel = (() => {
+    const orgRole = session?.user?.organizationRole;
+    if (orgRole === OrganizationRole.OWNER) return t("roles.owner");
+    if (orgRole === OrganizationRole.ADMIN) return t("roles.admin");
+    if (orgRole === OrganizationRole.MEMBER) return t("roles.member");
+    if (session?.user?.platformRole === PlatformRole.SUPER_ADMIN) {
+      return t("roles.platformSuperAdmin");
+    }
+    return tCommon("user");
+  })();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -48,14 +56,12 @@ const Header: React.FC<HeaderProps> = ({
   // Buscar contador de notificações
   const fetchNotificationCount = useCallback(async () => {
     if (!session?.user?.email) {
-      console.log("No user email available for fetching notifications");
       return;
     }
 
-    console.log(
-      "Header: Buscando contador de notificações para:",
-      session.user.email
-    );
+    if (session.user.platformRole === PlatformRole.SUPER_ADMIN) {
+      return;
+    }
 
     try {
       const controller = new AbortController();
@@ -68,19 +74,9 @@ const Header: React.FC<HeaderProps> = ({
 
       clearTimeout(timeoutId);
 
-      console.log(
-        "Header: Resposta do contador:",
-        response.status,
-        response.ok
-      );
-
       if (response.ok) {
         const data = await response.json();
-        console.log("Header: Contador atualizado:", data.count);
         setNotificationCount(data.count);
-      } else {
-        console.error("Header: Erro ao buscar contador:", response.status);
-        // Em caso de erro, manter o valor anterior
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -197,21 +193,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Seletor de idioma */}
-          <LanguageSwitcher />
-
-          {/* Toggle de tema */}
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-600/50 rounded-xl transition-all duration-300"
-            aria-label={t("userMenu.ariaLabel")}
-          >
-            {theme === "dark" ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </button>
+          <AppPreferencesControls variant="tenant" showLabels />
 
           {session?.user ? (
             <div className="relative">
@@ -244,8 +226,8 @@ const Header: React.FC<HeaderProps> = ({
                   <p className="text-slate-900 dark:text-white font-medium text-sm">
                     {session.user.name || tCommon("user")}
                   </p>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs capitalize">
-                    {session.user.role || tCommon("user")}
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">
+                    {tenantRoleLabel}
                   </p>
                 </div>
 

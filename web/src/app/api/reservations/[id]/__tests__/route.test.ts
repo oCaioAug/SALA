@@ -5,6 +5,10 @@ import { NextRequest } from "next/server";
 
 import { notificationService } from "@/lib/notifications";
 
+import {
+  mockGetReservationInOrganization,
+  TEST_ORG_ID,
+} from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { DELETE, GET, PUT } from "../route";
 
@@ -24,6 +28,7 @@ const mockReservation = {
   id: "res-1",
   roomId: "room-1",
   userId: "user-1",
+  organizationId: TEST_ORG_ID,
   startTime: new Date("2024-01-01T10:00:00"),
   endTime: new Date("2024-01-01T12:00:00"),
   status: "ACTIVE",
@@ -52,7 +57,7 @@ describe("Reservation [id] API", () => {
     });
 
     it("should return 404 when reservation is not found", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(null);
+      mockGetReservationInOrganization.mockResolvedValueOnce(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/bad-id"
@@ -81,7 +86,7 @@ describe("Reservation [id] API", () => {
   // ==================== PUT ====================
   describe("PUT /api/reservations/[id]", () => {
     it("should return 404 if reservation does not exist", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(null);
+      mockGetReservationInOrganization.mockResolvedValueOnce(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/bad-id",
@@ -96,9 +101,6 @@ describe("Reservation [id] API", () => {
     });
 
     it("should return 409 if time conflict exists when changing time", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(
-        mockReservation as any
-      );
       prismaMock.reservation.findFirst.mockResolvedValue({
         id: "conflicting-res",
       } as any);
@@ -119,10 +121,7 @@ describe("Reservation [id] API", () => {
     });
 
     it("should update reservation and room status to LIVRE when cancelled", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(
-        mockReservation as any
-      );
-      prismaMock.reservation.findFirst.mockResolvedValue(null); // No conflicts
+      prismaMock.reservation.findFirst.mockResolvedValue(null);
       prismaMock.reservation.update.mockResolvedValue({
         ...mockReservation,
         status: "CANCELLED",
@@ -146,9 +145,6 @@ describe("Reservation [id] API", () => {
     });
 
     it("should update reservation fields without conflict check when no time change", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(
-        mockReservation as any
-      );
       prismaMock.reservation.update.mockResolvedValue({
         ...mockReservation,
         purpose: "Treinamento",
@@ -178,7 +174,7 @@ describe("Reservation [id] API", () => {
     });
 
     it("should return 404 if reservation not found", async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(null);
+      mockGetReservationInOrganization.mockResolvedValueOnce(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/bad-id",

@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
 import { MdInventory2 } from "react-icons/md";
 
+import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { RoomForm } from "@/components/forms/RoomForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -19,6 +20,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { Room } from "@/lib/types";
 import { safeLocalStorage } from "@/lib/utils/clientSafe";
@@ -31,6 +33,7 @@ const SalasPage: React.FC = () => {
   const ts = useTranslations("SalasPage");
 
   const { data: session } = useSession();
+  const { isOrgAdmin } = useOrgPermissions();
   const [currentPageNav, setCurrentPageNav] = useState("salas");
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +92,7 @@ const SalasPage: React.FC = () => {
         const now = Date.now();
         const cacheExpiry = 5 * 60 * 1000;
 
-        if (roomsCache.length > 0 && now - lastFetchTime < cacheExpiry) {
+        if (lastFetchTime > 0 && now - lastFetchTime < cacheExpiry) {
           setRooms(roomsCache);
           setLoading(false);
           return;
@@ -155,7 +158,10 @@ const SalasPage: React.FC = () => {
   const handleAddRoom = () => setCreateRoomModalOpen(true);
 
   const handleCreateRoom = async (
-    roomData: Omit<Room, "id" | "createdAt" | "updatedAt">
+    roomData: Omit<
+      Room,
+      "id" | "createdAt" | "updatedAt" | "organizationId" | "deletedAt"
+    >
   ) => {
     try {
       const response = await fetch("/api/rooms", {
@@ -307,188 +313,196 @@ const SalasPage: React.FC = () => {
   };
 
   return (
-    <PageLayout
-      currentPage={currentPageNav}
-      onNavigate={navigate}
-      isNavigating={isNavigating}
-      onNotificationClick={() => {}}
-      onNotificationItemClick={globalNotificationHandler}
-      notificationUpdateTrigger={0}
-    >
-      {loading ? (
-        <LoadingPage variant="embedded" message={t("feedback.loading")} />
-      ) : error ? (
-        <ErrorPage
-          variant="embedded"
-          error={error}
-          onRetry={() => window.location.reload()}
-          retryLabel={t("actions.retry")}
-        />
-      ) : (
-      <>
-      <div className="mb-6 sm:mb-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-              <Building2 className="h-8 w-8 text-blue-400" />
-            </div>
-            <div>
-              <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-                {ts("title")}
-              </h1>
-              <p className="text-slate-600 dark:text-gray-400">
-                {ts("subtitle")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {session?.user?.role === "ADMIN" && (
-              <Link href="/users">
-                <Button variant="outline">{t("actions.users")}</Button>
-              </Link>
-            )}
-            <Button onClick={handleAddRoom}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t("actions.newRoom")}
-            </Button>
-          </div>
-        </div>
-
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-slate-500 dark:text-gray-400" />
-            <input
-              type="text"
-              placeholder={t("filters.searchPlaceholder")}
-              value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchTerm(e.target.value)
-              }
-              className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-slate-900 transition-all placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-400"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setStatusFilter(e.target.value)
-              }
-              className="rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-            >
-              <option value="all">{t("filters.statusAll")}</option>
-              <option value="LIVRE">{t("filters.statusFree")}</option>
-              <option value="EM_USO">{t("filters.statusInUse")}</option>
-              <option value="RESERVADO">{t("filters.statusReserved")}</option>
-            </select>
-
-            <div className="flex rounded-lg border border-slate-300 bg-white dark:border-gray-600 dark:bg-gray-800">
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                className={`rounded-l-lg p-3 transition-colors ${
-                  viewMode === "grid"
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <Grid className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={`rounded-r-lg p-3 transition-colors ${
-                  viewMode === "list"
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {filteredRooms.length === 0 ? (
-        <EmptyState
-          icon={
-            <Building2 className="h-8 w-8 text-slate-500 dark:text-gray-400" />
-          }
-          title={
-            searchTerm || statusFilter !== "all"
-              ? t("empty.notFoundTitle")
-              : t("empty.noDataTitle")
-          }
-          description={
-            searchTerm || statusFilter !== "all"
-              ? t("empty.notFoundDesc")
-              : t("empty.noDataDesc")
-          }
-          action={
-            searchTerm || statusFilter !== "all"
-              ? undefined
-              : { label: t("empty.createFirst"), onClick: handleAddRoom }
-          }
-        />
-      ) : (
-        <>
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {paginatedRooms.map((room: any) => renderRoomCard(room, false))}
-              <Card
-                variant="outlined"
-                hover
-                className="flex min-h-[280px] cursor-pointer flex-col items-center justify-center border-2 border-dashed border-slate-300 animate-scaleIn group dark:border-slate-500/50 dark:hover:border-blue-500/50"
-                onClick={handleAddRoom}
-              >
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 transition-transform duration-300 group-hover:scale-110">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600">
-                    <Plus className="h-6 w-6 text-white" />
+    <OrgAdminGuard>
+      <PageLayout
+        currentPage={currentPageNav}
+        onNavigate={navigate}
+        isNavigating={isNavigating}
+        onNotificationClick={() => {}}
+        onNotificationItemClick={globalNotificationHandler}
+        notificationUpdateTrigger={0}
+      >
+        {loading ? (
+          <LoadingPage variant="embedded" message={t("feedback.loading")} />
+        ) : error ? (
+          <ErrorPage
+            variant="embedded"
+            error={error}
+            onRetry={() => window.location.reload()}
+            retryLabel={t("actions.retry")}
+          />
+        ) : (
+          <>
+            <div className="mb-6 sm:mb-8">
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
+                    <Building2 className="h-8 w-8 text-blue-400" />
+                  </div>
+                  <div>
+                    <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                      {ts("title")}
+                    </h1>
+                    <p className="text-slate-600 dark:text-gray-400">
+                      {ts("subtitle")}
+                    </p>
                   </div>
                 </div>
-                <h3 className="mb-2 text-xl font-semibold text-slate-900 transition-colors duration-300 group-hover:text-blue-400 dark:text-white">
-                  {t("card.createTitle")}
-                </h3>
-                <p className="max-w-48 text-center text-sm text-slate-600 dark:text-slate-400">
-                  {t("card.createDescription")}
-                </p>
-              </Card>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {paginatedRooms.map((room: any) => renderRoomCard(room, true))}
-            </div>
-          )}
 
-          <Pagination
-            className="mt-8"
-            page={safePage}
-            pageSize={pageSize}
-            total={totalFiltered}
-            onPageChange={setPage}
-            onPageSizeChange={size => {
-              setPageSize(size);
-              setPage(1);
-            }}
-          />
-        </>
-      )}
+                <div className="flex flex-wrap gap-3">
+                  {isOrgAdmin && (
+                    <Link href="/users">
+                      <Button variant="outline">{t("actions.users")}</Button>
+                    </Link>
+                  )}
+                  <Button onClick={handleAddRoom}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t("actions.newRoom")}
+                  </Button>
+                </div>
+              </div>
 
-      <Drawer
-        isOpen={isCreateRoomModalOpen}
-        onClose={() => setCreateRoomModalOpen(false)}
-        title={t("modal.createTitle")}
-      >
-        <RoomForm
-          onSubmit={handleCreateRoom}
-          onCancel={() => setCreateRoomModalOpen(false)}
-        />
-      </Drawer>
-      </>
-      )}
-    </PageLayout>
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-slate-500 dark:text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder={t("filters.searchPlaceholder")}
+                    value={searchTerm}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setSearchTerm(e.target.value)
+                    }
+                    className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-slate-900 transition-all placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-400"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <select
+                    value={statusFilter}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                      setStatusFilter(e.target.value)
+                    }
+                    className="rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  >
+                    <option value="all">{t("filters.statusAll")}</option>
+                    <option value="LIVRE">{t("filters.statusFree")}</option>
+                    <option value="EM_USO">{t("filters.statusInUse")}</option>
+                    <option value="RESERVADO">
+                      {t("filters.statusReserved")}
+                    </option>
+                  </select>
+
+                  <div className="flex rounded-lg border border-slate-300 bg-white dark:border-gray-600 dark:bg-gray-800">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("grid")}
+                      className={`rounded-l-lg p-3 transition-colors ${
+                        viewMode === "grid"
+                          ? "bg-blue-600 text-white"
+                          : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
+                      }`}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("list")}
+                      className={`rounded-r-lg p-3 transition-colors ${
+                        viewMode === "list"
+                          ? "bg-blue-600 text-white"
+                          : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
+                      }`}
+                    >
+                      <List className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {filteredRooms.length === 0 ? (
+              <EmptyState
+                icon={
+                  <Building2 className="h-8 w-8 text-slate-500 dark:text-gray-400" />
+                }
+                title={
+                  searchTerm || statusFilter !== "all"
+                    ? t("empty.notFoundTitle")
+                    : t("empty.noDataTitle")
+                }
+                description={
+                  searchTerm || statusFilter !== "all"
+                    ? t("empty.notFoundDesc")
+                    : t("empty.noDataDesc")
+                }
+                action={
+                  searchTerm || statusFilter !== "all"
+                    ? undefined
+                    : { label: t("empty.createFirst"), onClick: handleAddRoom }
+                }
+              />
+            ) : (
+              <>
+                {viewMode === "grid" ? (
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {paginatedRooms.map((room: any) =>
+                      renderRoomCard(room, false)
+                    )}
+                    <Card
+                      variant="outlined"
+                      hover
+                      className="flex min-h-[280px] cursor-pointer flex-col items-center justify-center border-2 border-dashed border-slate-300 animate-scaleIn group dark:border-slate-500/50 dark:hover:border-blue-500/50"
+                      onClick={handleAddRoom}
+                    >
+                      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 transition-transform duration-300 group-hover:scale-110">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600">
+                          <Plus className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                      <h3 className="mb-2 text-xl font-semibold text-slate-900 transition-colors duration-300 group-hover:text-blue-400 dark:text-white">
+                        {t("card.createTitle")}
+                      </h3>
+                      <p className="max-w-48 text-center text-sm text-slate-600 dark:text-slate-400">
+                        {t("card.createDescription")}
+                      </p>
+                    </Card>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {paginatedRooms.map((room: any) =>
+                      renderRoomCard(room, true)
+                    )}
+                  </div>
+                )}
+
+                <Pagination
+                  className="mt-8"
+                  page={safePage}
+                  pageSize={pageSize}
+                  total={totalFiltered}
+                  onPageChange={setPage}
+                  onPageSizeChange={size => {
+                    setPageSize(size);
+                    setPage(1);
+                  }}
+                />
+              </>
+            )}
+
+            <Drawer
+              isOpen={isCreateRoomModalOpen}
+              onClose={() => setCreateRoomModalOpen(false)}
+              title={t("modal.createTitle")}
+            >
+              <RoomForm
+                onSubmit={handleCreateRoom}
+                onCancel={() => setCreateRoomModalOpen(false)}
+              />
+            </Drawer>
+          </>
+        )}
+      </PageLayout>
+    </OrgAdminGuard>
   );
 };
 

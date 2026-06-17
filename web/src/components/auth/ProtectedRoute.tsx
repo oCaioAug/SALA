@@ -1,10 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { ReactNode, useEffect } from "react";
 
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useRouter } from "@/navigation";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+  const t = useTranslations("Common");
   const router = useRouter();
   const { status } = useSession();
 
@@ -36,7 +38,7 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-white">Redirecionando para login...</p>
+          <p className="text-foreground">{t("redirectingToLogin")}</p>
         </div>
       </div>
     );

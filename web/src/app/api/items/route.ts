@@ -1,23 +1,34 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse } from "@/lib/auth/platform";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
 
-// Cache simples em memória
-let itemsCache: any[] | null = null;
-let lastCacheTime = 0;
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutos
+const cacheByOrg = new Map<string, { data: unknown[]; timestamp: number }>();
+const CACHE_DURATION = 2 * 60 * 1000;
 
 export async function GET() {
   try {
-    const now = Date.now();
-
-    // Verificar cache
-    if (itemsCache && now - lastCacheTime < CACHE_DURATION) {
-      return NextResponse.json(itemsCache);
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
-    // Consulta otimizada
+    const now = Date.now();
+    const cached = cacheByOrg.get(ctx.organizationId);
+    if (cached && now - cached.timestamp < CACHE_DURATION) {
+      return NextResponse.json(cached.data);
+    }
+
     const items = await prisma.item.findMany({
+      where: { organizationId: ctx.organizationId },
       select: {
         id: true,
         name: true,
@@ -26,55 +37,48 @@ export async function GET() {
         quantity: true,
         icon: true,
         roomId: true,
+        organizationId: true,
         createdAt: true,
         updatedAt: true,
         images: {
-          select: {
-            id: true,
-            filename: true,
-            path: true,
-          },
+          select: { id: true, filename: true, path: true },
           take: 1,
-          orderBy: {
-            createdAt: "desc",
-          },
+          orderBy: { createdAt: "desc" },
         },
-        room: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        room: { select: { id: true, name: true } },
       },
-      orderBy: {
-        name: "asc",
-      },
+      orderBy: { name: "asc" },
     });
 
-    // Atualizar cache
-    itemsCache = items;
-    lastCacheTime = now;
+    cacheByOrg.set(ctx.organizationId, { data: items, timestamp: now });
 
     return NextResponse.json(items);
   } catch (error) {
     console.error("Erro ao buscar itens:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const body = await request.json();
     const { name, description, specifications, quantity, icon, roomId } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Nome do item é obrigatório" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.ITEM_NAME_REQUIRED, 400);
+    }
+
+    if (roomId) {
+      const room = await getRoomInOrganization(roomId, ctx.organizationId);
+      if (!room) {
+        return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+      }
     }
 
     const item = await prisma.item.create({
@@ -82,25 +86,19 @@ export async function POST(request: NextRequest) {
         name,
         description,
         specifications: specifications || [],
-        quantity: quantity ? parseInt(quantity) : 1,
+        quantity: quantity ? parseInt(quantity, 10) : 1,
         icon,
         roomId: roomId || null,
+        organizationId: ctx.organizationId,
       },
-      include: {
-        room: true,
-      },
+      include: { room: true },
     });
 
-    // Invalidar cache
-    itemsCache = null;
-    lastCacheTime = 0;
+    cacheByOrg.delete(ctx.organizationId);
 
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar item:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

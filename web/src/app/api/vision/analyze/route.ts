@@ -187,6 +187,7 @@ export async function POST(request: NextRequest) {
             category: "EQUIPMENT_FAILURE",
             reportedById: authResult.user.id,
             roomId: roomId,
+            organizationId: room.organizationId,
             status: "REPORTED",
           },
         });

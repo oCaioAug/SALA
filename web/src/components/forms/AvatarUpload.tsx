@@ -1,11 +1,13 @@
 "use client";
 
-import { Camera, Trash2, Upload, X } from "lucide-react";
+import { Camera, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import React, { useCallback, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 
 interface AvatarUploadProps {
@@ -21,6 +23,8 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   onAvatarUpdate,
   disabled = false,
 }) => {
+  const t = useTranslations("AvatarUpload");
+  const { fromPayload } = useApiErrorMessage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -34,14 +38,14 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       // Validar tipo
       const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
       if (!allowedTypes.includes(file.type)) {
-        setError("Formato não suportado. Use JPG, PNG ou WebP.");
+        setError(t("invalidFormat"));
         return;
       }
 
       // Validar tamanho (15MB)
       const maxSize = 15 * 1024 * 1024;
       if (file.size > maxSize) {
-        setError("Imagem muito grande. Máximo 15MB.");
+        setError(t("tooLarge"));
         return;
       }
 
@@ -66,7 +70,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || "Erro ao fazer upload do avatar");
+          throw new Error(fromPayload(errorData) || t("uploadError"));
         }
 
         const data = await response.json();
@@ -78,15 +82,13 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         // Sucesso implícito - o componente pai deve mostrar mensagem de sucesso
       } catch (error) {
         console.error("Erro ao fazer upload:", error);
-        setError(
-          error instanceof Error ? error.message : "Erro ao fazer upload"
-        );
+        setError(error instanceof Error ? error.message : t("uploadError"));
         setPreviewUrl(null);
       } finally {
         setIsUploading(false);
       }
     },
-    [onAvatarUpdate]
+    [onAvatarUpdate, fromPayload, t]
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,15 +109,13 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Erro ao remover avatar");
+        throw new Error(fromPayload(errorData) || t("uploadError"));
       }
 
       onAvatarUpdate(null);
     } catch (error) {
       console.error("Erro ao remover avatar:", error);
-      setError(
-        error instanceof Error ? error.message : "Erro ao remover avatar"
-      );
+      setError(error instanceof Error ? error.message : t("uploadError"));
     } finally {
       setIsRemoving(false);
     }
@@ -146,7 +146,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           <div className="relative">
             <Image
               src={previewUrl}
-              alt="Preview do avatar"
+              alt={t("previewAlt")}
               width={120}
               height={120}
               className="w-30 h-30 rounded-2xl object-cover shadow-xl"
@@ -195,12 +195,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           {isUploading ? (
             <>
               <LoadingSpinner size="sm" />
-              Enviando...
+              {t("uploading")}
             </>
           ) : (
             <>
               <Upload className="w-4 h-4" />
-              {currentAvatar ? "Alterar" : "Enviar"}
+              {currentAvatar ? t("change") : t("upload")}
             </>
           )}
         </Button>
@@ -216,12 +216,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             {isRemoving ? (
               <>
                 <LoadingSpinner size="sm" />
-                Removendo...
+                {t("removing")}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Remover
+                {t("remove")}
               </>
             )}
           </Button>
@@ -248,7 +248,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       {/* Dica de formato */}
       {!error && (
         <p className="text-xs text-slate-500 dark:text-gray-400 text-center max-w-xs">
-          JPG, PNG ou WebP • Máximo 15MB
+          {t("hint")}
         </p>
       )}
     </div>

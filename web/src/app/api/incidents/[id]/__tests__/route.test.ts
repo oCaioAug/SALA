@@ -3,10 +3,17 @@
  */
 import { NextRequest } from "next/server";
 
+import {
+  mockAdminContextValue,
+  mockGetIncidentInOrganization,
+  mockRequireTenantContext,
+  mockTenantContextValue,
+  mockTenantUser,
+  TEST_ORG_ID,
+} from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { DELETE, GET, PATCH, PUT } from "../route";
 
-// Mock getServerSession for routes that require it
 jest.mock("next-auth", () => ({
   getServerSession: jest.fn(),
 }));
@@ -16,22 +23,12 @@ import { getServerSession } from "next-auth";
 
 const mockParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
-const mockAdminUser = {
-  id: "admin-1",
-  email: "admin@example.com",
-  role: "ADMIN",
-};
-const mockNormalUser = {
-  id: "user-1",
-  email: "user@example.com",
-  role: "USER",
-};
-
 const mockIncident = {
   id: "inc-1",
   title: "Problema",
   status: "REPORTED",
   priority: "MEDIUM",
+  organizationId: TEST_ORG_ID,
   reportedById: "user-1",
   assignedToId: null,
   reportedBy: {
@@ -46,10 +43,19 @@ const mockIncident = {
   statusHistory: [],
 };
 
-describe("Incidents [id] API", () => {
-  beforeEach(() => jest.clearAllMocks());
+function mockIncidentFindFirst(incident: typeof mockIncident | null) {
+  prismaMock.incident.findFirst.mockResolvedValue(incident as any);
+}
 
-  // ==================== GET ====================
+describe("Incidents [id] API", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (getServerSession as jest.Mock).mockResolvedValue({
+      user: { email: "user@example.com" },
+    });
+    mockRequireTenantContext.mockResolvedValue(mockTenantContextValue);
+  });
+
   describe("GET /api/incidents/[id]", () => {
     it("should return the incident when found", async () => {
       prismaMock.incident.findUnique.mockResolvedValue(mockIncident as any);
@@ -63,7 +69,7 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 404 when incident is not found", async () => {
-      prismaMock.incident.findUnique.mockResolvedValue(null);
+      mockGetIncidentInOrganization.mockResolvedValueOnce(null);
 
       const req = new NextRequest("http://localhost:3000/api/incidents/bad-id");
       const response = await GET(req, mockParams("bad-id"));
@@ -72,7 +78,6 @@ describe("Incidents [id] API", () => {
     });
   });
 
-  // ==================== PUT ====================
   describe("PUT /api/incidents/[id]", () => {
     it("should return 401 when not authenticated", async () => {
       (getServerSession as jest.Mock).mockResolvedValue(null);
@@ -87,11 +92,7 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 404 when incident is not found", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "admin@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockAdminUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue(null);
+      mockIncidentFindFirst(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/incidents/bad-id",
@@ -106,18 +107,16 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 403 if user has no permission", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "other@example.com" },
+      mockRequireTenantContext.mockResolvedValueOnce({
+        user: { ...mockTenantUser, id: "other-user" },
+        organizationId: TEST_ORG_ID,
+        isSuperAdmin: false,
       });
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: "other-user",
-        email: "other@example.com",
-        role: "USER",
-      } as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
-        assignedTo: null,
-      } as any);
+        reportedById: "user-1",
+        assignedToId: null,
+      });
 
       const req = new NextRequest("http://localhost:3000/api/incidents/inc-1", {
         method: "PUT",
@@ -129,11 +128,8 @@ describe("Incidents [id] API", () => {
     });
 
     it("should allow admin to update and change status", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "admin@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockAdminUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
+      mockIncidentFindFirst({
         ...mockIncident,
         assignedTo: null,
         reportedBy: { id: "user-1" },
@@ -157,7 +153,6 @@ describe("Incidents [id] API", () => {
     });
   });
 
-  // ==================== DELETE ====================
   describe("DELETE /api/incidents/[id]", () => {
     it("should return 401 when not authenticated", async () => {
       (getServerSession as jest.Mock).mockResolvedValue(null);
@@ -171,11 +166,6 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 403 if user is not an admin", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-
       const req = new NextRequest("http://localhost:3000/api/incidents/inc-1", {
         method: "DELETE",
       });
@@ -185,17 +175,12 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 404 if incident does not exist", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "admin@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockAdminUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue(null);
+      mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
+      mockIncidentFindFirst(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/incidents/bad-id",
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
       const response = await DELETE(req, mockParams("bad-id"));
 
@@ -203,11 +188,8 @@ describe("Incidents [id] API", () => {
     });
 
     it("should delete incident as admin", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "admin@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockAdminUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue(mockIncident as any);
+      mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
+      mockIncidentFindFirst(mockIncident);
       prismaMock.incident.delete.mockResolvedValue({} as any);
 
       const req = new NextRequest("http://localhost:3000/api/incidents/inc-1", {
@@ -224,7 +206,6 @@ describe("Incidents [id] API", () => {
     });
   });
 
-  // ==================== PATCH ====================
   describe("PATCH /api/incidents/[id]", () => {
     it("should return 401 when not authenticated", async () => {
       (getServerSession as jest.Mock).mockResolvedValue(null);
@@ -239,14 +220,9 @@ describe("Incidents [id] API", () => {
     });
 
     it("should allow reporter to update their own incident title", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
-        reportedBy: { id: "user-1" },
-        assignedTo: null,
+        reportedBy: { id: mockTenantUser.id },
       } as any);
       prismaMock.incident.update.mockResolvedValue({
         ...mockIncident,
@@ -263,36 +239,29 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 400 when no update data is provided", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
-        reportedBy: { id: "user-1" },
-        assignedTo: null,
+        reportedBy: { id: mockTenantUser.id },
       } as any);
 
       const req = new NextRequest("http://localhost:3000/api/incidents/inc-1", {
         method: "PATCH",
-        body: JSON.stringify({}), // No update data
+        body: JSON.stringify({}),
       });
       const response = await PATCH(req, mockParams("inc-1"));
 
       expect(response.status).toBe(400);
     });
+
     it("should return 403 if user has no permission to edit incident", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "stranger@example.com" },
+      mockRequireTenantContext.mockResolvedValueOnce({
+        user: { ...mockTenantUser, id: "stranger" },
+        organizationId: TEST_ORG_ID,
+        isSuperAdmin: false,
       });
-      prismaMock.user.findUnique.mockResolvedValue({
-        id: "stranger",
-        email: "stranger@example.com",
-        role: "USER",
-      } as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
-        reportedBy: { id: "user-1" }, // different user
+        reportedBy: { id: "user-1" },
         assignedTo: null,
       } as any);
 
@@ -306,14 +275,10 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 400 if incident is RESOLVED and user is not admin", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
         status: "RESOLVED",
-        reportedBy: { id: "user-1" },
+        reportedBy: { id: mockTenantUser.id },
         assignedTo: null,
       } as any);
 
@@ -327,13 +292,9 @@ describe("Incidents [id] API", () => {
     });
 
     it("should ignore assignedToId for non-admins and return warning", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
-        reportedBy: { id: "user-1" },
+        reportedBy: { id: mockTenantUser.id },
         assignedTo: null,
       } as any);
       prismaMock.incident.update.mockResolvedValue({
@@ -349,26 +310,19 @@ describe("Incidents [id] API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // The warning about ignored assignedToId should be in the response
       expect(data.warnings).toBeDefined();
       expect(data.ignoredFields).toContain("assignedToId");
     });
 
     it("should return 403 if user tries to change status without permission", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
-        reportedBy: { id: "user-1" },
+        reportedBy: { id: mockTenantUser.id },
         assignedTo: null,
       } as any);
 
-      // Only assignedToId (not title or description) — all will be ignored
       const req = new NextRequest("http://localhost:3000/api/incidents/inc-1", {
         method: "PATCH",
-        // Normal user tries to change status to IN_PROGRESS (only allowed: RESOLVED for reporter)
         body: JSON.stringify({
           status: "IN_PROGRESS",
           assignedToId: "admin-1",
@@ -376,19 +330,14 @@ describe("Incidents [id] API", () => {
       });
       const response = await PATCH(req, mockParams("inc-1"));
 
-      // All fields ignored → 403 with ignoredFields
       expect(response.status).toBe(403);
     });
 
     it("should create status history entry when reporter resolves their own incident", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockResolvedValue({
+      mockIncidentFindFirst({
         ...mockIncident,
         status: "IN_PROGRESS",
-        reportedBy: { id: "user-1" },
+        reportedBy: { id: mockTenantUser.id },
         assignedTo: null,
       } as any);
       prismaMock.incident.update.mockResolvedValue({
@@ -408,11 +357,11 @@ describe("Incidents [id] API", () => {
     });
 
     it("should return 500 on DB error in PATCH", async () => {
-      (getServerSession as jest.Mock).mockResolvedValue({
-        user: { email: "user@example.com" },
-      });
-      prismaMock.user.findUnique.mockResolvedValue(mockNormalUser as any);
-      prismaMock.incident.findUnique.mockRejectedValue(new Error("DB error"));
+      mockIncidentFindFirst({
+        ...mockIncident,
+        reportedBy: { id: mockTenantUser.id },
+      } as any);
+      prismaMock.incident.update.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/incidents/inc-1", {
         method: "PATCH",

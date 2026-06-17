@@ -307,302 +307,305 @@ const AgendamentosPage: React.FC = () => {
           retryLabel={t("retryLabel")}
         />
       ) : (
-      <>
-      {/* Header da página */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-              <CalendarIcon className="w-8 h-8 text-blue-400" />
+        <>
+          {/* Header da página */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
+                  <CalendarIcon className="w-8 h-8 text-blue-400" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    {t("title")}
+                  </h1>
+                  <p className="text-slate-600 dark:text-gray-400">
+                    {t("description")}
+                  </p>
+                </div>
+              </div>
+
+              <Button onClick={handleCreateReservation} className="px-6 py-3">
+                <Plus className="w-5 h-5 mr-2" />
+                {t("newReservation")}
+              </Button>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                {t("title")}
-              </h1>
-              <p className="text-slate-600 dark:text-gray-400">
-                {t("description")}
-              </p>
+
+            {/* Filtros e busca */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder={t("searchPlaceholder")}
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">{t("statusFilter.all")}</option>
+                <option value="PENDING">{t("statusFilter.pending")}</option>
+                <option value="APPROVED">{t("statusFilter.approved")}</option>
+                <option value="ACTIVE">{t("statusFilter.active")}</option>
+                <option value="CANCELLED">{t("statusFilter.cancelled")}</option>
+                <option value="COMPLETED">{t("statusFilter.completed")}</option>
+              </select>
             </div>
           </div>
 
-          <Button onClick={handleCreateReservation} className="px-6 py-3">
-            <Plus className="w-5 h-5 mr-2" />
-            {t("newReservation")}
-          </Button>
-        </div>
-
-        {/* Filtros e busca */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={t("searchPlaceholder")}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          {/* Calendário */}
+          <div className="mb-8">
+            <Calendar
+              reservations={reservations}
+              rooms={rooms}
+              onReservationClick={handleReservationClick}
+              onDateClick={handleDateClick}
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">{t("statusFilter.all")}</option>
-            <option value="PENDING">{t("statusFilter.pending")}</option>
-            <option value="APPROVED">{t("statusFilter.approved")}</option>
-            <option value="ACTIVE">{t("statusFilter.active")}</option>
-            <option value="CANCELLED">{t("statusFilter.cancelled")}</option>
-            <option value="COMPLETED">{t("statusFilter.completed")}</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Calendário */}
-      <div className="mb-8">
-        <Calendar
-          reservations={reservations}
-          rooms={rooms}
-          onReservationClick={handleReservationClick}
-          onDateClick={handleDateClick}
-          selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
-        />
-      </div>
-
-      {/* Lista de reservas do dia selecionado */}
-      <Card variant="elevated">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-blue-400" />
-            <div>
-              <CardTitle className="text-xl">
-                {t("reservationsOfTheDay")}{" "}
-                {selectedDate.toLocaleDateString(getIntlLocale(locale), {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "long",
-                })}
-              </CardTitle>
-              <p className="text-slate-600 dark:text-gray-400 text-sm">
-                {totalDayReservations}{" "}
-                {t("reservationsFound")}
-              </p>
+          {/* Lista de reservas do dia selecionado */}
+          <Card variant="elevated">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-blue-400" />
+                <div>
+                  <CardTitle className="text-xl">
+                    {t("reservationsOfTheDay")}{" "}
+                    {selectedDate.toLocaleDateString(getIntlLocale(locale), {
+                      weekday: "long",
+                      day: "2-digit",
+                      month: "long",
+                    })}
+                  </CardTitle>
+                  <p className="text-slate-600 dark:text-gray-400 text-sm">
+                    {totalDayReservations} {t("reservationsFound")}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <CardContent className="p-6">
-          {totalDayReservations === 0 ? (
-            <EmptyState
-              icon={
-                <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
-              }
-              title={t("noReservationsForTheDay")}
-              description={t("noReservationsForTheDayDescription")}
-            />
-          ) : (
-            <div className="space-y-4">
-              {paginatedDayReservations.map(reservation => (
-                <div
-                  key={reservation.id}
-                  className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
-                  onClick={() => handleReservationClick(reservation)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-blue-500/20 rounded-lg">
-                        <Building2 className="w-5 h-5 text-blue-400" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900 dark:text-white">
-                          {rooms.find(r => r.id === reservation.roomId)?.name ||
-                            t("unknownRoom")}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <UserIcon className="w-4 h-4" />
-                            {reservation.user.name}
+            <CardContent className="p-6">
+              {totalDayReservations === 0 ? (
+                <EmptyState
+                  icon={
+                    <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+                  }
+                  title={t("noReservationsForTheDay")}
+                  description={t("noReservationsForTheDayDescription")}
+                />
+              ) : (
+                <div className="space-y-4">
+                  {paginatedDayReservations.map(reservation => (
+                    <div
+                      key={reservation.id}
+                      className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
+                      onClick={() => handleReservationClick(reservation)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 bg-blue-500/20 rounded-lg">
+                            <Building2 className="w-5 h-5 text-blue-400" />
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {formatDateTime(
-                              new Date(reservation.startTime)
-                            )} - {formatDateTime(new Date(reservation.endTime))}
+                          <div>
+                            <h3 className="font-semibold text-slate-900 dark:text-white">
+                              {rooms.find(r => r.id === reservation.roomId)
+                                ?.name || t("unknownRoom")}
+                            </h3>
+                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
+                              <div className="flex items-center gap-1">
+                                <UserIcon className="w-4 h-4" />
+                                {reservation.user.name}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                {formatDateTime(
+                                  new Date(reservation.startTime)
+                                )}{" "}
+                                -{" "}
+                                {formatDateTime(new Date(reservation.endTime))}
+                              </div>
+                            </div>
+                            {reservation.purpose && (
+                              <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">
+                                {reservation.purpose}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        {reservation.purpose && (
-                          <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">
-                            {reservation.purpose}
-                          </p>
-                        )}
+
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              reservation.status
+                            )}`}
+                          >
+                            {getStatusText(reservation.status)}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleReservationClick(reservation);
+                            }}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                  <Pagination
+                    page={safeDayPage}
+                    pageSize={dayPageSize}
+                    total={totalDayReservations}
+                    onPageChange={setDayPage}
+                    onPageSizeChange={size => {
+                      setDayPageSize(size);
+                      setDayPage(1);
+                    }}
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          reservation.status
-                        )}`}
-                      >
-                        {getStatusText(reservation.status)}
+          <Drawer
+            isOpen={isDetailsModalOpen}
+            onClose={() => setIsDetailsModalOpen(false)}
+            title={t("modal.details")}
+          >
+            {selectedReservation && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                      {t("room")}
+                    </label>
+                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                      <Building2 className="w-4 h-4 text-blue-400" />
+                      <span className="text-slate-900 dark:text-white">
+                        {rooms.find(r => r.id === selectedReservation.roomId)
+                          ?.name || t("unknownRoom")}
                       </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleReservationClick(reservation);
-                        }}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                      {t("user")}
+                    </label>
+                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                      <UserIcon className="w-4 h-4 text-green-400" />
+                      <span className="text-slate-900 dark:text-white">
+                        {selectedReservation.user.name}
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
-              <Pagination
-                page={safeDayPage}
-                pageSize={dayPageSize}
-                total={totalDayReservations}
-                onPageChange={setDayPage}
-                onPageSizeChange={size => {
-                  setDayPageSize(size);
-                  setDayPage(1);
-                }}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      <Drawer
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-        title={t("modal.details")}
-      >
-        {selectedReservation && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("room")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {rooms.find(r => r.id === selectedReservation.roomId)
-                      ?.name || t("unknownRoom")}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                      {t("start")}
+                    </label>
+                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                      <Clock className="w-4 h-4 text-orange-400" />
+                      <span className="text-slate-900 dark:text-white">
+                        {formatDateTime(
+                          new Date(selectedReservation.startTime)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                      {t("end")}
+                    </label>
+                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                      <Clock className="w-4 h-4 text-red-400" />
+                      <span className="text-slate-900 dark:text-white">
+                        {formatDateTime(new Date(selectedReservation.endTime))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedReservation.purpose && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                      {t("purpose")}
+                    </label>
+                    <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
+                      {selectedReservation.purpose}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                    {t("status")}
+                  </label>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                      selectedReservation.status
+                    )}`}
+                  >
+                    {getStatusText(selectedReservation.status)}
                   </span>
                 </div>
-              </div>
 
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("user")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <UserIcon className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {selectedReservation.user.name}
-                  </span>
+                <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDetailsModalOpen(false)}
+                    className="flex-1"
+                  >
+                    {t("close")}
+                  </Button>
+                  {(selectedReservation.status === "ACTIVE" ||
+                    selectedReservation.status === "APPROVED") && (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleDeleteReservation(selectedReservation.id)
+                      }
+                      className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {t("cancelReservation")}
+                    </Button>
+                  )}
                 </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("start")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Clock className="w-4 h-4 text-orange-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {formatDateTime(new Date(selectedReservation.startTime))}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("end")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {formatDateTime(new Date(selectedReservation.endTime))}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {selectedReservation.purpose && (
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("purpose")}
-                </label>
-                <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
-                  {selectedReservation.purpose}
-                </p>
               </div>
             )}
+          </Drawer>
 
-            <div>
-              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                {t("status")}
-              </label>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                  selectedReservation.status
-                )}`}
-              >
-                {getStatusText(selectedReservation.status)}
-              </span>
-            </div>
-
-            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <Button
-                variant="outline"
-                onClick={() => setIsDetailsModalOpen(false)}
-                className="flex-1"
-              >
-                {t("close")}
-              </Button>
-              {(selectedReservation.status === "ACTIVE" ||
-                selectedReservation.status === "APPROVED") && (
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    handleDeleteReservation(selectedReservation.id)
-                  }
-                  className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t("cancelReservation")}
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-      </Drawer>
-
-      <Drawer
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title={t("modal.create")}
-        size="lg"
-      >
-        <ReservationForm
-          rooms={rooms}
-          users={users}
-          selectedDate={selectedDate}
-          onSubmit={handleSubmitReservation}
-          onCancel={() => setIsCreateModalOpen(false)}
-          loading={createReservationLoading}
-        />
-      </Drawer>
-      </>
+          <Drawer
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            title={t("modal.create")}
+            size="lg"
+          >
+            <ReservationForm
+              rooms={rooms}
+              users={users}
+              selectedDate={selectedDate}
+              onSubmit={handleSubmitReservation}
+              onCancel={() => setIsCreateModalOpen(false)}
+              loading={createReservationLoading}
+            />
+          </Drawer>
+        </>
       )}
     </PageLayout>
   );

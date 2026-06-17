@@ -1,9 +1,15 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { unlink } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { join } from "path";
 
 import { authOptions } from "@/lib/auth";
+import { isOrgAdmin } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
@@ -14,13 +20,18 @@ export async function DELETE(
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
     }
 
     const { id: itemId } = await params;
 
     // Verificar se o usuário é admin
-    if (session.user.role !== "ADMIN") {
+    if (
+      !isOrgAdmin({
+        platformRole: session.user.platformRole,
+        organizationRole: session.user.organizationRole,
+      })
+    ) {
       return NextResponse.json(
         {
           error:
@@ -37,10 +48,7 @@ export async function DELETE(
     });
 
     if (!item) {
-      return NextResponse.json(
-        { error: "Item não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.ITEM_NOT_FOUND, 404);
     }
 
     // Deletar arquivos de imagem do sistema de arquivos
@@ -80,9 +88,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Erro ao remover imagem:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

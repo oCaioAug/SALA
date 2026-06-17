@@ -15,6 +15,7 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
+import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -442,472 +443,487 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   return (
-    <PageLayout
-      currentPage={currentPage}
-      onNavigate={navigate}
-      isNavigating={isNavigating}
-      onNotificationClick={() => {}}
-      onNotificationItemClick={globalNotificationHandler}
-      notificationUpdateTrigger={0}
-    >
-      {loading ? (
-        <LoadingPage variant="embedded" message={t("loading")} />
-      ) : error ? (
-        <ErrorPage
-          variant="embedded"
-          error={error}
-          onRetry={() => window.location.reload()}
-          retryLabel={tCommon("retry")}
-        />
-      ) : (
-      <>
-      {/* Header da página */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl">
-              <ClipboardList className="w-8 h-8 text-amber-400" />
+    <OrgAdminGuard>
+      <PageLayout
+        currentPage={currentPage}
+        onNavigate={navigate}
+        isNavigating={isNavigating}
+        onNotificationClick={() => {}}
+        onNotificationItemClick={globalNotificationHandler}
+        notificationUpdateTrigger={0}
+      >
+        {loading ? (
+          <LoadingPage variant="embedded" message={t("loading")} />
+        ) : error ? (
+          <ErrorPage
+            variant="embedded"
+            error={error}
+            onRetry={() => window.location.reload()}
+            retryLabel={tCommon("retry")}
+          />
+        ) : (
+          <>
+            {/* Header da página */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl">
+                    <ClipboardList className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                      {t("title")}
+                    </h1>
+                    <p className="text-slate-600 dark:text-gray-400">
+                      {t("empty.description")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                      {solicitacoes.length}
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
+                      {t("statusFilter.pending")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Filtros e busca */}
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder={t("searchPlaceholder")}
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <select
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value)}
+                  className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="PENDING">{t("statusFilter.pending")}</option>
+                  <option value="all">{t("statusFilter.all")}</option>
+                  <option value="APPROVED">{t("statusFilter.approved")}</option>
+                  <option value="REJECTED">{t("statusFilter.rejected")}</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                {t("title")}
-              </h1>
-              <p className="text-slate-600 dark:text-gray-400">
-                {t("empty.description")}
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                {solicitacoes.length}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-gray-400">
-                {t("statusFilter.pending")}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Filtros e busca */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="w-5 h-5 text-slate-500 dark:text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={t("searchPlaceholder")}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="PENDING">{t("statusFilter.pending")}</option>
-            <option value="all">{t("statusFilter.all")}</option>
-            <option value="APPROVED">{t("statusFilter.approved")}</option>
-            <option value="REJECTED">{t("statusFilter.rejected")}</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Lista de solicitações */}
-      {filteredSolicitacoes.length === 0 ? (
-        <EmptyState
-          icon={
-            <ClipboardList className="w-8 h-8 text-slate-500 dark:text-gray-400" />
-          }
-          title={t("empty.title")}
-          description={t("empty.description")}
-        />
-      ) : (
-        <div className="space-y-4">
-          {paginatedSolicitacoes.map(solicitacao => (
-            <Card
-              key={solicitacao.id}
-              variant="elevated"
-              hover
-              className={`group ${
-                focusedReservationId === solicitacao.id
-                  ? "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/50"
-                  : ""
-              }`}
-              id={`solicitacao-${solicitacao.id}`}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-amber-500/20 rounded-xl">
-                      <Calendar className="w-6 h-6 text-amber-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-                        {rooms.find(r => r.id === solicitacao.roomId)?.name ||
-                          "Sala desconhecida"}
-                      </h3>
-                      <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
-                        <div className="flex items-center gap-1">
-                          <UserIcon className="w-4 h-4" />
-                          {solicitacao.user.name}
+            {/* Lista de solicitações */}
+            {filteredSolicitacoes.length === 0 ? (
+              <EmptyState
+                icon={
+                  <ClipboardList className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+                }
+                title={t("empty.title")}
+                description={t("empty.description")}
+              />
+            ) : (
+              <div className="space-y-4">
+                {paginatedSolicitacoes.map(solicitacao => (
+                  <Card
+                    key={solicitacao.id}
+                    variant="elevated"
+                    hover
+                    className={`group ${
+                      focusedReservationId === solicitacao.id
+                        ? "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/50"
+                        : ""
+                    }`}
+                    id={`solicitacao-${solicitacao.id}`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-amber-500/20 rounded-xl">
+                            <Calendar className="w-6 h-6 text-amber-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                              {rooms.find(r => r.id === solicitacao.roomId)
+                                ?.name || "Sala desconhecida"}
+                            </h3>
+                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
+                              <div className="flex items-center gap-1">
+                                <UserIcon className="w-4 h-4" />
+                                {solicitacao.user.name}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                {formatDateTime(
+                                  new Date(solicitacao.startTime)
+                                )}{" "}
+                                -{" "}
+                                {formatDateTime(new Date(solicitacao.endTime))}
+                              </div>
+                            </div>
+                            {solicitacao.isRecurring &&
+                              solicitacao.recurringTemplateId && (
+                                <p className="text-xs text-blue-400 mt-1">
+                                  {t("recurringInfo") ||
+                                    "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
+                                </p>
+                              )}
+                            {solicitacao.purpose && (
+                              <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
+                                {solicitacao.purpose}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {formatDateTime(
-                            new Date(solicitacao.startTime)
-                          )} - {formatDateTime(new Date(solicitacao.endTime))}
+
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              solicitacao.status
+                            )}`}
+                          >
+                            {getStatusText(solicitacao.status)}
+                          </span>
+
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleSolicitacaoClick(solicitacao)
+                              }
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+
+                            {solicitacao.status === "PENDING" && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApprove(solicitacao)}
+                                  disabled={actionLoading === solicitacao.id}
+                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                                >
+                                  {actionLoading === solicitacao.id ? (
+                                    <LoadingSpinner size="sm" />
+                                  ) : (
+                                    <CheckCircle className="w-4 h-4" />
+                                  )}
+                                </Button>
+
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openRejectDrawer(solicitacao)}
+                                  disabled={actionLoading === solicitacao.id}
+                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                >
+                                  {actionLoading === solicitacao.id ? (
+                                    <LoadingSpinner size="sm" />
+                                  ) : (
+                                    <XCircle className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      {solicitacao.isRecurring &&
-                        solicitacao.recurringTemplateId && (
-                          <p className="text-xs text-blue-400 mt-1">
-                            {t("recurringInfo") ||
-                              "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
-                          </p>
-                        )}
-                      {solicitacao.purpose && (
-                        <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
-                          {solicitacao.purpose}
-                        </p>
-                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+                <Pagination
+                  page={safeSolPage}
+                  pageSize={listPageSize}
+                  total={totalFilteredSol}
+                  onPageChange={setListPage}
+                  onPageSizeChange={size => {
+                    setListPageSize(size);
+                    setListPage(1);
+                  }}
+                />
+              </div>
+            )}
+
+            <Drawer
+              isOpen={isDetailsModalOpen}
+              onClose={() => setIsDetailsModalOpen(false)}
+              title={t("modal.details")}
+              closeOnEscape={!isRejectDrawerOpen}
+            >
+              {selectedSolicitacao && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                        {t("modal.room")}
+                      </label>
+                      <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                        <Building2 className="w-4 h-4 text-blue-400" />
+                        <span className="text-slate-900 dark:text-white">
+                          {rooms.find(r => r.id === selectedSolicitacao.roomId)
+                            ?.name || "Sala desconhecida"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                        {t("modal.user")}
+                      </label>
+                      <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                        <UserIcon className="w-4 h-4 text-green-400" />
+                        <span className="text-slate-900 dark:text-white">
+                          {selectedSolicitacao.user.name}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                        {t("modal.start")}
+                      </label>
+                      <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                        <Clock className="w-4 h-4 text-orange-400" />
+                        <span className="text-slate-900 dark:text-white">
+                          {formatDateTime(
+                            new Date(selectedSolicitacao.startTime)
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                        {t("modal.end")}
+                      </label>
+                      <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                        <Clock className="w-4 h-4 text-red-400" />
+                        <span className="text-slate-900 dark:text-white">
+                          {formatDateTime(
+                            new Date(selectedSolicitacao.endTime)
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedSolicitacao.purpose && (
+                    <div>
+                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                        {t("modal.purpose")}
+                      </label>
+                      <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
+                        {selectedSolicitacao.purpose}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
+                      {t("modal.status")}
+                    </label>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        solicitacao.status
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        selectedSolicitacao.status
                       )}`}
                     >
-                      {getStatusText(solicitacao.status)}
+                      {getStatusText(selectedSolicitacao.status)}
                     </span>
+                  </div>
 
-                    <div className="flex gap-2">
+                  {selectedSolicitacao.status === "PENDING" && (
+                    <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => handleSolicitacaoClick(solicitacao)}
+                        onClick={() => setIsDetailsModalOpen(false)}
+                        className="flex-1"
                       >
-                        <Eye className="w-4 h-4" />
+                        {t("modal.close")}
                       </Button>
+                      <Button
+                        onClick={() => handleApprove(selectedSolicitacao)}
+                        disabled={actionLoading === selectedSolicitacao.id}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        {actionLoading === selectedSolicitacao.id ? (
+                          <LoadingSpinner size="sm" />
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            {t("card.approve")}
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => openRejectDrawer(selectedSolicitacao)}
+                        disabled={actionLoading === selectedSolicitacao.id}
+                        variant="outline"
+                        className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        {actionLoading === selectedSolicitacao.id ? (
+                          <LoadingSpinner size="sm" />
+                        ) : (
+                          <>
+                            <XCircle className="w-4 h-4 mr-2" />
+                            {t("card.reject")}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Drawer>
 
-                      {solicitacao.status === "PENDING" && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApprove(solicitacao)}
-                            disabled={actionLoading === solicitacao.id}
-                            className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                          >
-                            {actionLoading === solicitacao.id ? (
-                              <LoadingSpinner size="sm" />
-                            ) : (
-                              <CheckCircle className="w-4 h-4" />
-                            )}
-                          </Button>
+            <Drawer
+              isOpen={isConflictModalOpen}
+              onClose={() => setIsConflictModalOpen(false)}
+              title={t("conflict.title")}
+              size="lg"
+            >
+              {conflictData && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                    <AlertTriangle className="w-6 h-6 text-red-400" />
+                    <div>
+                      <h3 className="font-semibold text-red-400">
+                        {t("conflict.title")}
+                      </h3>
+                      <p className="text-sm text-gray-300">
+                        {t("conflict.message")}
+                      </p>
+                    </div>
+                  </div>
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openRejectDrawer(solicitacao)}
-                            disabled={actionLoading === solicitacao.id}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  <div>
+                    <h4 className="font-medium text-white mb-3">
+                      Reservas Conflitantes:
+                    </h4>
+                    <div className="space-y-3">
+                      {conflictData.conflicts.map(
+                        (conflict: any, index: number) => (
+                          <div
+                            key={index}
+                            className="p-3 bg-slate-800 rounded-lg border border-slate-700"
                           >
-                            {actionLoading === solicitacao.id ? (
-                              <LoadingSpinner size="sm" />
-                            ) : (
-                              <XCircle className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium text-white">
+                                  {conflict.user?.name ||
+                                    "Usuário desconhecido"}
+                                </p>
+                                <p className="text-sm text-gray-400">
+                                  {formatDateTime(new Date(conflict.startTime))}{" "}
+                                  - {formatDateTime(new Date(conflict.endTime))}
+                                </p>
+                              </div>
+                              <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
+                                Conflito
+                              </span>
+                            </div>
+                          </div>
+                        )
                       )}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          <Pagination
-            page={safeSolPage}
-            pageSize={listPageSize}
-            total={totalFilteredSol}
-            onPageChange={setListPage}
-            onPageSizeChange={size => {
-              setListPageSize(size);
-              setListPage(1);
-            }}
-          />
-        </div>
-      )}
 
-      <Drawer
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-        title={t("modal.details")}
-        closeOnEscape={!isRejectDrawerOpen}
-      >
-        {selectedSolicitacao && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("modal.room")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {rooms.find(r => r.id === selectedSolicitacao.roomId)
-                      ?.name || "Sala desconhecida"}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("modal.user")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <UserIcon className="w-4 h-4 text-green-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {selectedSolicitacao.user.name}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("modal.start")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Clock className="w-4 h-4 text-orange-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {formatDateTime(new Date(selectedSolicitacao.startTime))}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("modal.end")}
-                </label>
-                <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                  <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-slate-900 dark:text-white">
-                    {formatDateTime(new Date(selectedSolicitacao.endTime))}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {selectedSolicitacao.purpose && (
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                  {t("modal.purpose")}
-                </label>
-                <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
-                  {selectedSolicitacao.purpose}
-                </p>
-              </div>
-            )}
-
-            <div>
-              <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                {t("modal.status")}
-              </label>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                  selectedSolicitacao.status
-                )}`}
-              >
-                {getStatusText(selectedSolicitacao.status)}
-              </span>
-            </div>
-
-            {selectedSolicitacao.status === "PENDING" && (
-              <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsDetailsModalOpen(false)}
-                  className="flex-1"
-                >
-                  {t("modal.close")}
-                </Button>
-                <Button
-                  onClick={() => handleApprove(selectedSolicitacao)}
-                  disabled={actionLoading === selectedSolicitacao.id}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                >
-                  {actionLoading === selectedSolicitacao.id ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      {t("card.approve")}
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={() => openRejectDrawer(selectedSolicitacao)}
-                  disabled={actionLoading === selectedSolicitacao.id}
-                  variant="outline"
-                  className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  {actionLoading === selectedSolicitacao.id ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <>
-                      <XCircle className="w-4 h-4 mr-2" />
-                      {t("card.reject")}
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </Drawer>
-
-      <Drawer
-        isOpen={isConflictModalOpen}
-        onClose={() => setIsConflictModalOpen(false)}
-        title={t("conflict.title")}
-        size="lg"
-      >
-        {conflictData && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-              <AlertTriangle className="w-6 h-6 text-red-400" />
-              <div>
-                <h3 className="font-semibold text-red-400">
-                  {t("conflict.title")}
-                </h3>
-                <p className="text-sm text-gray-300">{t("conflict.message")}</p>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-white mb-3">
-                Reservas Conflitantes:
-              </h4>
-              <div className="space-y-3">
-                {conflictData.conflicts.map((conflict: any, index: number) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-slate-800 rounded-lg border border-slate-700"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-white">
-                          {conflict.user?.name || "Usuário desconhecido"}
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          {formatDateTime(new Date(conflict.startTime))} -{" "}
-                          {formatDateTime(new Date(conflict.endTime))}
-                        </p>
-                      </div>
-                      <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
-                        Conflito
-                      </span>
-                    </div>
+                  <div className="flex gap-3 pt-4 border-t border-slate-700">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsConflictModalOpen(false)}
+                      className="flex-1"
+                    >
+                      {t("conflict.cancel")}
+                    </Button>
+                    <Button
+                      onClick={handleForceApprove}
+                      disabled={actionLoading === conflictData.solicitacao.id}
+                      className="flex-1 bg-red-600 hover:bg-red-700"
+                    >
+                      {actionLoading === conflictData.solicitacao.id ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <>
+                          <AlertTriangle className="w-4 h-4 mr-2" />
+                          {t("conflict.forceApprove")}
+                        </>
+                      )}
+                    </Button>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+            </Drawer>
 
-            <div className="flex gap-3 pt-4 border-t border-slate-700">
-              <Button
-                variant="outline"
-                onClick={() => setIsConflictModalOpen(false)}
-                className="flex-1"
-              >
-                {t("conflict.cancel")}
-              </Button>
-              <Button
-                onClick={handleForceApprove}
-                disabled={actionLoading === conflictData.solicitacao.id}
-                className="flex-1 bg-red-600 hover:bg-red-700"
-              >
-                {actionLoading === conflictData.solicitacao.id ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  <>
-                    <AlertTriangle className="w-4 h-4 mr-2" />
-                    {t("conflict.forceApprove")}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+            <Drawer
+              isOpen={isRejectDrawerOpen}
+              onClose={closeRejectDrawer}
+              title={t("rejectModal.title")}
+            >
+              {rejectTarget && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600 dark:text-gray-400">
+                    {rejectTarget.isRecurring
+                      ? t("rejectModal.descriptionRecurring")
+                      : t("rejectModal.description")}
+                  </p>
+                  <div>
+                    <label
+                      htmlFor="reject-reason"
+                      className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block"
+                    >
+                      {t("rejectModal.reasonLabel")}
+                    </label>
+                    <textarea
+                      id="reject-reason"
+                      rows={4}
+                      value={rejectReason}
+                      onChange={e => setRejectReason(e.target.value)}
+                      placeholder={t("rejectModal.placeholder")}
+                      className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={closeRejectDrawer}
+                      disabled={actionLoading === rejectTarget.id}
+                    >
+                      {t("rejectModal.cancel")}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={confirmReject}
+                      disabled={actionLoading === rejectTarget.id}
+                      className="flex flex-1 items-center justify-center gap-0 bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      {actionLoading === rejectTarget.id ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4 mr-2" />
+                          {t("rejectModal.confirm")}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Drawer>
+          </>
         )}
-      </Drawer>
-
-      <Drawer
-        isOpen={isRejectDrawerOpen}
-        onClose={closeRejectDrawer}
-        title={t("rejectModal.title")}
-      >
-        {rejectTarget && (
-          <div className="space-y-4">
-            <p className="text-sm text-slate-600 dark:text-gray-400">
-              {rejectTarget.isRecurring
-                ? t("rejectModal.descriptionRecurring")
-                : t("rejectModal.description")}
-            </p>
-            <div>
-              <label
-                htmlFor="reject-reason"
-                className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block"
-              >
-                {t("rejectModal.reasonLabel")}
-              </label>
-              <textarea
-                id="reject-reason"
-                rows={4}
-                value={rejectReason}
-                onChange={e => setRejectReason(e.target.value)}
-                placeholder={t("rejectModal.placeholder")}
-                className="w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400"
-              />
-            </div>
-            <div className="flex gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={closeRejectDrawer}
-                disabled={actionLoading === rejectTarget.id}
-              >
-                {t("rejectModal.cancel")}
-              </Button>
-              <Button
-                type="button"
-                onClick={confirmReject}
-                disabled={actionLoading === rejectTarget.id}
-                className="flex flex-1 items-center justify-center gap-0 bg-red-600 hover:bg-red-700 text-white"
-              >
-                {actionLoading === rejectTarget.id ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  <>
-                    <XCircle className="w-4 h-4 mr-2" />
-                    {t("rejectModal.confirm")}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Drawer>
-      </>
-      )}
-    </PageLayout>
+      </PageLayout>
+    </OrgAdminGuard>
   );
 };
 

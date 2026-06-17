@@ -1,58 +1,64 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isNextResponse } from "@/lib/auth/platform";
+import { requireTenantContext } from "@/lib/auth/tenant";
+import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type RouteParams = { params: Promise<{ id: string }> };
+
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { id: roomId } = await params;
+    const room = await getRoomInOrganization(roomId, ctx.organizationId);
+    if (!room) {
+      return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+    }
+
     const now = new Date();
 
-    // Verificar se há uma reserva ativa NESTE MOMENTO
     const currentReservation = await prisma.reservation.findFirst({
       where: {
+        organizationId: ctx.organizationId,
         roomId,
         status: "ACTIVE",
         startTime: { lte: now },
         endTime: { gt: now },
       },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
 
-    // Se há uma reserva ativa agora, a sala está ocupada
-    const isCurrentlyOccupied = !!currentReservation;
-
-    // Buscar próximas reservas (independente se está ocupada agora)
     const upcomingReservations = await prisma.reservation.findMany({
       where: {
+        organizationId: ctx.organizationId,
         roomId,
         status: "ACTIVE",
         startTime: { gt: now },
       },
-      include: {
-        user: true,
-      },
-      orderBy: {
-        startTime: "asc",
-      },
-      take: 5, // Próximas 5 reservas
+      include: { user: true },
+      orderBy: { startTime: "asc" },
+      take: 5,
     });
 
     return NextResponse.json({
-      isCurrentlyOccupied,
+      isCurrentlyOccupied: !!currentReservation,
       currentReservation,
       upcomingReservations,
-      canMakeReservation: true, // Sempre pode tentar fazer reserva para outros horários
+      canMakeReservation: true,
     });
   } catch (error) {
     console.error("Erro ao verificar status da sala:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

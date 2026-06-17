@@ -1,40 +1,40 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import React, { Suspense } from "react";
 
+import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Link } from "@/navigation";
 
 const AuthErrorContent: React.FC = () => {
+  const t = useTranslations("Auth.errorPage");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
   const getErrorMessage = (errorCode: string | null) => {
-    switch (errorCode) {
-      case "Configuration":
-        return "Erro de configuração do provedor de autenticação.";
-      case "AccessDenied":
-        return "Acesso negado. Você cancelou o login ou não tem permissão.";
-      case "Verification":
-        return "Token de verificação inválido ou expirado.";
-      case "Default":
-        return "Ocorreu um erro durante a autenticação.";
-      case "Callback":
-        return "Erro no callback do Google. Verifique se o redirect URI está configurado corretamente.";
-      default:
-        return "Erro desconhecido durante a autenticação.";
+    if (!errorCode) return t("errors.unknown");
+    const key = `errors.${errorCode}` as const;
+    try {
+      return t(key);
+    } catch {
+      return t("errors.unknown");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative min-h-screen bg-background p-4 text-foreground">
+      <div className="absolute right-4 top-4">
+        <AppPreferencesControls variant="marketing" />
+      </div>
+      <div className="flex min-h-screen items-center justify-center">
+      <Card className="w-full max-w-md border-border bg-card">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-red-400 mb-2">
-            Erro de Autenticação
+            {t("title")}
           </CardTitle>
         </CardHeader>
 
@@ -45,11 +45,12 @@ const AuthErrorContent: React.FC = () => {
             {error && (
               <div className="bg-gray-800 p-3 rounded text-sm text-left">
                 <p>
-                  <strong>Código do erro:</strong> {error}
+                  <strong>{t("errorCodeLabel")}</strong> {error}
                 </p>
                 {errorDescription && (
                   <p>
-                    <strong>Descrição:</strong> {errorDescription}
+                    <strong>{t("errorDescriptionLabel")}</strong>{" "}
+                    {errorDescription}
                   </p>
                 )}
               </div>
@@ -58,36 +59,39 @@ const AuthErrorContent: React.FC = () => {
 
           <div className="space-y-2">
             <Link href="/auth/login">
-              <Button className="w-full">Tentar Novamente</Button>
+              <Button className="w-full">{t("tryAgain")}</Button>
             </Link>
 
             <Link href="/dashboard">
               <Button variant="outline" className="w-full">
-                Ir para Dashboard
+                {t("goDashboard")}
               </Button>
             </Link>
           </div>
 
           <div className="text-xs text-gray-500">
-            <p>Se o problema persistir, verifique:</p>
+            <p>{t("troubleshootTitle")}</p>
             <ul className="text-left mt-2 space-y-1">
-              <li>• Configuração do Google OAuth</li>
-              <li>• Redirect URIs autorizados</li>
-              <li>• Variáveis de ambiente</li>
+              <li>• {t("troubleshootOAuth")}</li>
+              <li>• {t("troubleshootRedirect")}</li>
+              <li>• {t("troubleshootEnv")}</li>
             </ul>
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
 
 const AuthErrorPage: React.FC = () => {
+  const t = useTranslations("Auth.errorPage");
+
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-white">Carregando...</div>
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="text-muted-foreground">{t("loading")}</div>
         </div>
       }
     >

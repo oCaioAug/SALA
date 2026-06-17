@@ -1,9 +1,18 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
+import { assertCanCreateReservation } from "@/lib/organization/plan-limits";
 import { prisma } from "@/lib/prisma";
 import {
   checkRecurringConflicts,
@@ -13,20 +22,20 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const { searchParams } = new URL(request.url);
     const roomId = searchParams.get("roomId");
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
 
-    console.log("---> mostrando requisicao de reservas: ", request);
-
-    console.log("Buscando reservas com filtros:", {
-      roomId,
-      status,
-      userId,
-    });
-
-    const where: any = {};
+    const where: Record<string, unknown> = {
+      organizationId: ctx.organizationId,
+    };
 
     if (roomId) {
       where.roomId = roomId;
@@ -39,15 +48,6 @@ export async function GET(request: NextRequest) {
     if (userId) {
       where.userId = userId;
     }
-
-    console.log("Query where:", where);
-
-    // Se não há filtro de status específico, mostrar apenas reservas ativas/aprovadas
-    // if (!status) {
-    //   where.status = {
-    //     in: ["APPROVED", "ACTIVE"],
-    //   };
-    // }
 
     const reservations = await prisma.reservation.findMany({
       where,
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     console.error("Erro ao buscar reservas:", error);
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
@@ -80,10 +80,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado" },
-        { status: 401 }
-      );
+      return apiErrorResponse(ApiErrorCode.NOT_AUTHENTICATED, 401);
     }
 
     const body = await request.json();
@@ -180,10 +177,7 @@ export async function POST(request: NextRequest) {
 
     if (!reservationOwner) {
       console.log("Usuário (dono da reserva) não encontrado:", userId);
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     console.log("Usuário dono da reserva encontrado:", reservationOwner);
@@ -193,10 +187,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!room) {
-      return NextResponse.json(
-        { error: "Sala não encontrada" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
     }
 
     // Se for reserva recorrente, verificar conflitos para todas as ocorrências
@@ -344,9 +335,29 @@ export async function POST(request: NextRequest) {
     // Usuário autenticado (quem está criando a reserva)
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
+      include: {
+        memberships: {
+          where: { organizationId: room.organizationId },
+          take: 1,
+        },
+      },
     });
 
-    const currentUserIsAdmin = currentUser?.role === "ADMIN";
+    const membership = currentUser?.memberships?.[0];
+    const currentUserIsAdmin = isOrgAdmin({
+      platformRole: currentUser?.platformRole,
+      organizationRole: membership?.role ?? null,
+    });
+
+    const reservationLimit = await assertCanCreateReservation(
+      room.organizationId
+    );
+    if (!reservationLimit.ok) {
+      return apiErrorResponse(reservationLimit.errorCode, 403, {
+        max: reservationLimit.max,
+      });
+    }
+
     const status = currentUserIsAdmin ? "APPROVED" : "PENDING";
 
     // Se for reserva recorrente, gerar todas as ocorrências
@@ -357,6 +368,7 @@ export async function POST(request: NextRequest) {
       const reservationIds = await generateRecurringReservations({
         userId,
         roomId,
+        organizationId: room.organizationId,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         purpose,
@@ -424,6 +436,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         roomId,
+        organizationId: room.organizationId,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         purpose,
@@ -470,7 +483,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: "Erro interno do servidor",
+        errorCode: ApiErrorCode.INTERNAL_ERROR,
         details: process.env.NODE_ENV === "development" ? error : undefined,
       },
       { status: 500 }

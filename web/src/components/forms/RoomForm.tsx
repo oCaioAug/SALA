@@ -9,7 +9,12 @@ import { Room, RoomStatus } from "@/lib/types";
 
 interface RoomFormProps {
   room?: Room;
-  onSubmit: (room: Omit<Room, "id" | "createdAt" | "updatedAt">) => void;
+  onSubmit: (
+    room: Omit<
+      Room,
+      "id" | "createdAt" | "updatedAt" | "organizationId" | "deletedAt"
+    >
+  ) => void;
   onCancel: () => void;
 }
 

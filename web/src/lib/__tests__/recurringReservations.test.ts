@@ -138,6 +138,7 @@ describe("recurringReservations lib", () => {
     const baseData = {
       userId: "user-1",
       roomId: "room-1",
+      organizationId: "org-test",
       startTime: new Date("2024-01-01T10:00:00"),
       endTime: new Date("2024-01-01T12:00:00"),
       purpose: "Reunião",

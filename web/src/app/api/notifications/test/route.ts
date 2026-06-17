@@ -1,3 +1,8 @@
+import {
+  apiErrorResponse,
+  apiInternalError,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
@@ -22,10 +27,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
     const notification = await prisma.notification.create({
@@ -48,9 +50,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Erro ao criar notificação de teste:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

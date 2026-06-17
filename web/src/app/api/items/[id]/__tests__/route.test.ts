@@ -3,10 +3,13 @@
  */
 import { NextRequest } from "next/server";
 
+import {
+  mockGetItemInOrganization,
+  TEST_ORG_ID,
+} from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
 import { DELETE, GET, PUT } from "../route";
 
-// Mock dynamically imported module
 jest.mock("@/lib/utils/imageProcessor", () => ({
   deleteImageFiles: jest.fn().mockResolvedValue(undefined),
 }));
@@ -21,6 +24,7 @@ const mockItem = {
   quantity: 1,
   icon: "projector",
   roomId: "room-1",
+  organizationId: TEST_ORG_ID,
   room: { id: "room-1", name: "Sala 1" },
   images: [],
 };
@@ -28,7 +32,6 @@ const mockItem = {
 describe("Items [id] API", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  // ==================== GET ====================
   describe("GET /api/items/[id]", () => {
     it("should return item when found", async () => {
       prismaMock.item.findUnique.mockResolvedValue(mockItem as any);
@@ -42,7 +45,7 @@ describe("Items [id] API", () => {
     });
 
     it("should return 404 when item is not found", async () => {
-      prismaMock.item.findUnique.mockResolvedValue(null);
+      mockGetItemInOrganization.mockResolvedValueOnce(null);
 
       const req = new NextRequest("http://localhost:3000/api/items/bad-id");
       const response = await GET(req, mockParams("bad-id"));
@@ -60,10 +63,9 @@ describe("Items [id] API", () => {
     });
   });
 
-  // ==================== PUT ====================
   describe("PUT /api/items/[id]", () => {
     it("should return 404 when item does not exist", async () => {
-      prismaMock.item.findUnique.mockResolvedValue(null);
+      mockGetItemInOrganization.mockResolvedValueOnce(null);
 
       const req = new NextRequest("http://localhost:3000/api/items/bad-id", {
         method: "PUT",
@@ -75,7 +77,6 @@ describe("Items [id] API", () => {
     });
 
     it("should update item successfully with defaults", async () => {
-      prismaMock.item.findUnique.mockResolvedValue(mockItem as any);
       prismaMock.item.update.mockResolvedValue({
         ...mockItem,
         name: "Projetor Atualizado",
@@ -100,12 +101,11 @@ describe("Items [id] API", () => {
     });
 
     it("should default quantity to 1 when not provided", async () => {
-      prismaMock.item.findUnique.mockResolvedValue(mockItem as any);
       prismaMock.item.update.mockResolvedValue(mockItem as any);
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {
         method: "PUT",
-        body: JSON.stringify({ name: "Projetor" }), // No quantity
+        body: JSON.stringify({ name: "Projetor" }),
       });
       await PUT(req, mockParams("item-1"));
 
@@ -117,7 +117,6 @@ describe("Items [id] API", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      prismaMock.item.findUnique.mockResolvedValue(mockItem as any);
       prismaMock.item.update.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {
@@ -130,10 +129,9 @@ describe("Items [id] API", () => {
     });
   });
 
-  // ==================== DELETE ====================
   describe("DELETE /api/items/[id]", () => {
     it("should delete item with no images successfully", async () => {
-      prismaMock.item.findUnique.mockResolvedValue({
+      prismaMock.item.findFirst.mockResolvedValue({
         ...mockItem,
         images: [],
       } as any);
@@ -154,7 +152,7 @@ describe("Items [id] API", () => {
 
     it("should delete image files before deleting item with images", async () => {
       const { deleteImageFiles } = await import("@/lib/utils/imageProcessor");
-      prismaMock.item.findUnique.mockResolvedValue({
+      prismaMock.item.findFirst.mockResolvedValue({
         ...mockItem,
         images: [{ id: "img-1", filename: "test.jpg", path: "/path/test.jpg" }],
       } as any);
@@ -169,7 +167,7 @@ describe("Items [id] API", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      prismaMock.item.findUnique.mockResolvedValue(mockItem as any);
+      prismaMock.item.findFirst.mockResolvedValue(mockItem as any);
       prismaMock.item.delete.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {
