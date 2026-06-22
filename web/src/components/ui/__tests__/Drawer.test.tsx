@@ -32,7 +32,7 @@ describe("Drawer Component", () => {
       </Drawer>
     );
 
-    const closeButton = screen.getByRole("button", { name: "Fechar" });
+    const closeButton = screen.getByRole("button", { name: "close" });
     fireEvent.click(closeButton);
 
     expect(handleClose).toHaveBeenCalledTimes(1);

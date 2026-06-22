@@ -47,7 +47,7 @@ describe("Rooms [id] API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(404);
-      expect(data.error).toContain("não encontrada");
+      expect(data.errorCode).toBe("ROOM_NOT_FOUND");
     });
 
     it("should return 500 on DB error", async () => {
