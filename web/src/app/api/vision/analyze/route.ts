@@ -80,49 +80,7 @@ export async function POST(request: NextRequest) {
     logs.push(`[${new Date().toLocaleTimeString()}] Imagem analisada com sucesso via motor ${analysisResult.provider}.`);
     logs.push(`[${new Date().toLocaleTimeString()}] Detecção concluída. Total de predições: ${analysisResult.predictions.length}.`);
 
-    // ==========================================
-    // CASO DE USO 1: VERIFICAÇÃO DE OCUPAÇÃO (occupancy)
-    // ==========================================
-    if (mode === "occupancy") {
-      let statusUpdated = false;
-      let newStatus = room.status;
 
-      if (occupancyCount > 0) {
-        logs.push(`[${new Date().toLocaleTimeString()}] IA detectou ${occupancyCount} pessoa(s) na sala.`);
-        if (room.status !== "EM_USO") {
-          newStatus = "EM_USO";
-          await prisma.room.update({
-            where: { id: roomId },
-            data: { status: "EM_USO" },
-          });
-          statusUpdated = true;
-          logs.push(`[AUTOMATION] 🔔 Sala "${room.name}" estava cadastrada como "${room.status}". Status atualizado automaticamente no banco para "EM_USO"!`);
-        } else {
-          logs.push(`[AUTOMATION] Sala já se encontra como "EM_USO". Nenhuma alteração de status necessária.`);
-        }
-      } else {
-        logs.push(`[${new Date().toLocaleTimeString()}] Nenhuma pessoa detectada pela IA.`);
-        if (room.status === "EM_USO") {
-          newStatus = "LIVRE";
-          await prisma.room.update({
-            where: { id: roomId },
-            data: { status: "LIVRE" },
-          });
-          statusUpdated = true;
-          logs.push(`[AUTOMATION] 🔔 Sala "${room.name}" ficou vazia. Status atualizado automaticamente para "LIVRE"!`);
-        }
-      }
-
-      return NextResponse.json({
-        success: true,
-        mode,
-        analysis: analysisResult,
-        statusChanged: statusUpdated,
-        previousStatus: room.status,
-        currentStatus: newStatus,
-        logs,
-      });
-    }
 
     // ==========================================
     // CASO DE USO 2: AUDITORIA DE EQUIPAMENTOS E INCIDENTES (audit)
