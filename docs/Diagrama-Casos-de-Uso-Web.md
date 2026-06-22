@@ -12,8 +12,9 @@ graph LR
     %% -- Casos de Uso --
     subgraph sistema_sala ["Sistema SALA"]
 
-        subgraph auth ["Autenticacao"]
-            CDU1["CDU1 · Autenticar\n(Google OAuth)"]
+        subgraph auth ["Autenticação e Cadastro"]
+            CDU1["CDU1 · Autenticar\n(Google OAuth ou E-mail/Senha)"]
+            CDU12["CDU12 · Cadastrar-se\n(Registrar Conta e Organização)"]
         end
 
         subgraph perfil ["Perfil"]
@@ -50,6 +51,7 @@ graph LR
 
     %% -- Relacionamentos - Usuario --
     User --> CDU1
+    User --> CDU12
     User --> CDU2
     User --> CDU3
     User --> CDU4
@@ -70,7 +72,7 @@ graph LR
 
     class User actorClass
     class Admin adminClass
-    class CDU1,CDU2,CDU3,CDU4,CDU5,CDU6,CDU7,CDU8,CDU9,CDU10,CDU11 ucClass
+    class CDU1,CDU12,CDU2,CDU3,CDU4,CDU5,CDU6,CDU7,CDU8,CDU9,CDU10,CDU11 ucClass
 ```
 
 ## Atores
@@ -78,54 +80,75 @@ graph LR
 | Ator | Descrição |
 |------|-----------|
 | 👤 **Usuário** | Pessoa autenticada com role `USER`. Acessa reservas, salas, incidentes, notificações e dashboard. |
-| 👨‍💼 **Administrador** | Usuário com role `ADMIN`. Herda todos os casos de uso do Usuário e possui permissões exclusivas de gestão. |
-| ⚙️ **Sistema** | Ator autônomo que executa ações automaticamente em resposta a eventos de negócio, sem interação direta humana. |
+| 👨‍💼 **Administrador** | Usuário com role `ADMIN`. Herda todos os casos de uso do Usuário (via generalização) e possui permissões exclusivas de gestão (aprovação de reservas, salas, incidentes, gestão de usuários). |
 
-> **Nota de modelagem:** A relação de **generalização** entre Usuário e Administrador expressa que o Admin possui todas as capacidades do Usuário mais as suas exclusivas, refletindo o campo `role` no modelo `User` do Prisma.
-
----
-
-> **Nota de modelagem:** Em UML, atores sao entidades **externas** ao sistema que interagem com ele. O sistema em si nunca e ator — comportamentos internos automaticos (envio de notificacoes, sincronizacao com Google Calendar) sao modelados como fluxos, pos-condicoes e regras de negocio dos casos de uso que os disparam, nao como casos de uso autonomos sem ator iniciador.
-
-## Atores
-
-| Ator | Descricao |
-|------|-----------|
-| **Usuario** | Pessoa autenticada com role `USER`. Interage com reservas, salas, incidentes, notificacoes e dashboard. |
-| **Administrador** | Usuario com role `ADMIN`. Herda todos os casos de uso do Usuario e possui permissoes exclusivas de gestao. A relacao de **generalizacao** reflete o campo `role` no modelo `User` do Prisma. |
+> **Nota de modelagem sobre Roles:** A relação de **generalização** entre Usuário e Administrador expressa que o Admin possui todas as capacidades do Usuário mais as suas permissões exclusivas, o que reflete diretamente o campo `role` no modelo `User` do Prisma.
+>
+> **Nota de modelagem sobre o Sistema:** Em UML, atores são entidades **externas** ao sistema que interagem com ele. O sistema em si nunca é um ator — comportamentos internos e automáticos (como envio de notificações, agendamentos automáticos ou sincronização em lote com o Google Calendar) são modelados como fluxos, pós-condições e regras de negócio dos casos de uso disparados por atores externos, e não como casos de uso autônomos sem ator iniciador.
 
 ---
 
-## Descricao dos Casos de Uso
+## Descrição dos Casos de Uso
 
 ---
 
 ### CDU1 - Autenticar
 
-| Campo | Conteudo |
+| Campo | Conteúdo |
 |-------|----------|
-| **Descricao** | Permite que o usuario realize login e logout no sistema via Google OAuth 2.0. O aplicativo mobile utiliza um token JWT gerado pela API para autenticacao. |
-| **Ator Principal** | Usuario (inclui Administrador) |
-| **Pre-condicao** | O usuario possui uma conta Google valida. |
-| **Pos-condicao** | Sessao autenticada criada (web via NextAuth) ou token JWT retornado (mobile). O usuario e redirecionado para a pagina inicial do sistema. |
+| **Descrição** | Permite que o usuário realize login e logout no sistema via Google OAuth 2.0 ou através de e-mail e senha. O aplicativo mobile utiliza um token JWT gerado pela API para autenticação. |
+| **Ator Principal** | Usuário (inclui Administrador) |
+| **Pré-condição** | O usuário possui cadastro prévio no sistema ou uma conta Google válida. |
+| **Pós-condição** | Sessão autenticada criada (web via NextAuth) ou token JWT retornado (mobile). O usuário é redirecionado para a página inicial (dashboard) do sistema. |
 
-**Fluxo Principal:**
-1. Usuario acessa a pagina de login.
-2. Clica em "Entrar com Google".
-3. Sistema redireciona para autenticacao Google OAuth 2.0.
-4. Google autentica o usuario e retorna a aplicacao.
-5. Sistema verifica se a conta existe; se nao, cria automaticamente com role `USER`.
-6. Sessao e iniciada e o usuario e redirecionado ao dashboard.
+**Fluxo Principal (Login via E-mail/Senha):**
+1. Usuário acessa a página de login.
+2. Preenche e-mail e senha.
+3. Clica em "Entrar".
+4. Sistema valida as credenciais contra a hash de senha persistida no banco via `CredentialsProvider`.
+5. Com as credenciais válidas, a sessão é iniciada e o usuário é redirecionado ao dashboard.
 
 **Fluxo Alternativo:**
-- **FA1 - Login mobile:** O mobile chama `POST /api/auth/mobile-token` com as credenciais Google; o sistema retorna um JWT com prazo de expiracao.
-- **FA2 - Autenticacao falha:** Credenciais invalidas ou permissao negada no Google: sistema exibe mensagem de erro e retorna a tela de login.
-- **FA3 - Logout:** Usuario clica em "Sair": sistema encerra a sessao e redireciona para a tela de login.
+- **FA1 - Login via Google OAuth 2.0:** Usuário clica em "Entrar com Google" $\rightarrow$ Sistema redireciona para a autenticação Google $\rightarrow$ Google autentica e retorna a sessão $\rightarrow$ Se for o primeiro acesso, o sistema cria a conta automaticamente com role `USER`.
+- **FA2 - Login mobile:** O mobile chama a rota `/api/auth/login` informando e-mail e senha; o sistema verifica as credenciais e retorna um token JWT com prazo de expiração.
+- **FA3 - Autenticação falha:** Credenciais inválidas ou e-mail não cadastrado: sistema exibe mensagem de erro e retorna à tela de login.
+- **FA4 - Logout:** Usuário clica em "Sair": sistema encerra a sessão e redireciona para a tela de login.
 
-**Regras de Negocio:**
-- `RN01` - A conta e criada automaticamente no primeiro login (provisionamento just-in-time).
-- `RN02` - Role padrao ao criar conta e `USER`; somente um Administrador pode elevar para `ADMIN`.
-- `RN03` - Tokens mobile expiram apos periodo configurado; renovacao requer novo login.
+**Regras de Negócio:**
+- `RN01` - Para login local, a senha informada deve corresponder à hash Bcrypt armazenada no banco.
+- `RN02` - Role padrão ao criar conta autônoma ou via Google é `USER`.
+- `RN03` - Tokens mobile expiram após o período configurado; renovação requer novo login.
+
+---
+
+### CDU12 - Cadastrar-se
+
+| Campo | Conteúdo |
+|-------|----------|
+| **Descrição** | Permite que um novo usuário crie sua conta pessoal e registre sua organização (empresa/entidade) simultaneamente no sistema no primeiro acesso. |
+| **Ator Principal** | Usuário |
+| **Pré-condição** | E-mail, CPF e CNPJ informados não devem estar previamente cadastrados no sistema. |
+| **Pós-condição** | Conta de usuário criada, organização correspondente criada no plano selecionado (com status TRIAL/TRIAL_ACTIVE), e o usuário definido automaticamente como Proprietário (Owner) desta organização. |
+
+**Fluxo Principal:**
+1. Usuário acessa a página de cadastro.
+2. Preenche os dados do Usuário (Nome, E-mail, Senha, CPF, Telefone).
+3. Preenche os dados da Organização (Nome da Organização, Razão Social, CNPJ, E-mail corporativo, Telefone corporativo).
+4. Seleciona o Plano desejado.
+5. Clica em "Cadastrar".
+6. Sistema valida os dados de entrada (Zod e regras de unicidade de CPF/CNPJ/E-mail).
+7. Sistema cria os registros do usuário e da organização de forma transacional (Prisma `$transaction`).
+8. Cadastro concluído com sucesso: usuário é redirecionado à página de login.
+
+**Fluxo Alternativo:**
+- **FA1 - Conflito de cadastro:** E-mail, CPF ou CNPJ já cadastrados: sistema aborta a transação e exibe mensagem informando qual campo está em conflito.
+- **FA2 - Cancelamento:** Usuário clica em "Voltar para o login" e o fluxo é abortado.
+
+**Regras de Negócio:**
+- `RN41` - A criação de conta e organização correspondente ocorre em uma transação atômica; falhas em qualquer escrita revertem todas as alterações.
+- `RN42` - A senha inserida no cadastro é criptografada utilizando hash Bcrypt antes de ser salva no banco (`passwordHash`).
+- `RN43` - O usuário criador da organização é automaticamente atribuído com a role de administrador membro (`role: ADMIN` e vínculo de `ownerId` da organização).
+- `RN44` - CPF e CNPJ devem passar por validações de formato e dígito verificador.
 
 ---
 
