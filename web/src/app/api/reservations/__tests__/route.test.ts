@@ -234,7 +234,7 @@ describe("Reservations API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(404);
-      expect(data.error).toContain("Usuário não encontrado");
+      expect(data.errorCode).toBe("USER_NOT_FOUND");
     });
 
     it("should return 404 if room does not exist", async () => {
@@ -253,7 +253,7 @@ describe("Reservations API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(404);
-      expect(data.error).toContain("Sala não encontrada");
+      expect(data.errorCode).toBe("ROOM_NOT_FOUND");
     });
 
     it("should fail recurring reservation if missing pattern or endDate", async () => {

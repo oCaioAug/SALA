@@ -73,7 +73,7 @@ export default function VisionPage() {
   });
 
   // --- Estados do Dashboard ---
-  const [activeTab, setActiveTab] = useState<"occupancy" | "audit" | "provision">("occupancy");
+  const [activeTab, setActiveTab] = useState<"audit" | "provision">("audit");
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [loadingRooms, setLoadingRooms] = useState<boolean>(true);
@@ -367,13 +367,7 @@ export default function VisionPage() {
       setPredictions(data.analysis.predictions);
       setDetectedSummary(data.analysis.detectedClasses);
 
-      if (activeTab === "occupancy") {
-        if (data.statusChanged) {
-          showSuccess(`Sucesso! Status da sala atualizado de "${data.previousStatus}" para "${data.currentStatus}".`);
-        } else {
-          showSuccess(`Análise de presença concluída. Status atual: ${data.currentStatus}`);
-        }
-      }
+
 
       if (activeTab === "audit") {
         setAuditComparisons(data.comparisons);
@@ -510,7 +504,7 @@ export default function VisionPage() {
 
       {/* Tabs Principais */}
       <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl mb-8 border border-slate-200/50 dark:border-slate-700/30 shadow-inner">
-        {(["occupancy", "audit", "provision"] as const).map(tab => (
+        {(["audit", "provision"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => {
@@ -717,41 +711,7 @@ export default function VisionPage() {
                 {t("controls.presetsSubtitle")}
               </p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <button
-                  onClick={() => loadPreset("empty", "Laboratório Vazio")}
-                  className={`p-3 rounded-xl border text-left transition-all duration-300 hover:scale-102 flex flex-col gap-2 ${
-                    base64Image.includes("preset-empty")
-                      ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20 shadow-md"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
-                  }`}
-                >
-                  <span className="text-xl">🪟</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {t("controls.presetEmpty")}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono">Modo Ocupação</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => loadPreset("full-classroom", "Laboratório Cheio")}
-                  className={`p-3 rounded-xl border text-left transition-all duration-300 hover:scale-102 flex flex-col gap-2 ${
-                    base64Image.includes("preset-full-classroom")
-                      ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20 shadow-md"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900"
-                  }`}
-                >
-                  <span className="text-xl">👥</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {t("controls.presetFull")}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono">Modo Ocupação</span>
-                  </div>
-                </button>
-
+              <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => loadPreset("missing-laptop", "Laboratório com Falta")}
                   className={`p-3 rounded-xl border text-left transition-all duration-300 hover:scale-102 flex flex-col gap-2 ${

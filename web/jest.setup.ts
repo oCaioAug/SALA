@@ -12,6 +12,21 @@ jest.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// Mock next-intl
+jest.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => "pt-BR",
+  useFormatter: () => ({
+    dateTime: jest.fn(),
+    number: jest.fn(),
+    list: jest.fn(),
+    relativeTime: jest.fn(),
+  }),
+  useMessages: () => ({}),
+  useNow: () => new Date(),
+  useTimeZone: () => "America/Sao_Paulo",
+}));
+
 // Mock do window.matchMedia (apenas em ambientes jsdom)
 if (typeof window !== "undefined") {
   Object.defineProperty(window, "matchMedia", {

@@ -318,7 +318,7 @@ describe("Incidents API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(404);
-      expect(data.error).toContain("Item não encontrado");
+      expect(data.errorCode).toBe("ITEM_NOT_FOUND");
     });
 
     it("should create incident successfully using itemId instead of roomId", async () => {

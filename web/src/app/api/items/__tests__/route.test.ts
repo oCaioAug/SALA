@@ -3,7 +3,11 @@
  */
 import { NextRequest } from "next/server";
 
-import { TEST_ORG_ID } from "../../../../../prisma/auth-mocks";
+import {
+  TEST_ORG_ID,
+  mockRequireTenantContext,
+  mockTenantContextValue,
+} from "../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../prisma/mock";
 import { GET, POST } from "../route";
 
@@ -43,13 +47,14 @@ describe("Items API (List and Create)", () => {
     });
 
     it("should return 500 on DB error when cache is invalid", async () => {
-      // Reset modules to get a fresh module with empty cache
-      jest.resetModules();
-      // Re-require the GET function with a fresh module instance
-      const { GET: FreshGET } = await import("../route");
+      // Use a different org ID to bypass cache
+      mockRequireTenantContext.mockResolvedValueOnce({
+        ...mockTenantContextValue,
+        organizationId: "org-cache-bypass",
+      });
       prismaMock.item.findMany.mockRejectedValue(new Error("DB error"));
 
-      const response = await FreshGET();
+      const response = await GET();
 
       expect(response.status).toBe(500);
     });
@@ -66,7 +71,7 @@ describe("Items API (List and Create)", () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toBe("Nome do item é obrigatório");
+      expect(data.errorCode).toBe("ITEM_NAME_REQUIRED");
     });
 
     it("should create a new item and invalidate cache", async () => {
