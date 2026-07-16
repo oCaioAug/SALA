@@ -7,6 +7,7 @@ import {
   Calendar,
   ChevronRight,
   ClipboardList,
+  Clock,
   Compass,
   DoorOpen,
   Eye,
@@ -82,6 +83,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: AlertTriangle,
       description: t("menuItems.incidentes.description"),
       active: currentPage === "incidentes",
+    },
+    {
+      id: "grade-horaria",
+      label: t("menuItems.gradeHoraria.label"),
+      icon: Clock,
+      description: t("menuItems.gradeHoraria.description"),
+      active: currentPage.startsWith("grade-horaria"),
     },
     {
       id: "vision",

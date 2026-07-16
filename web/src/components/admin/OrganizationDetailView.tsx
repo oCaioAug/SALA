@@ -44,6 +44,7 @@ export interface OrganizationDetail {
   email: string | null;
   phone: string | null;
   status: OrganizationStatus;
+  isSchool: boolean;
   createdAt: string;
   planId: string | null;
   plan: {
@@ -109,6 +110,7 @@ interface OrganizationDetailViewProps {
   memberEmail: string;
   setMemberEmail: (value: string) => void;
   updateStatus: (status: OrganizationStatus) => void;
+  updateIsSchool: (isSchool: boolean) => void;
   memberRoleDrafts: Record<string, OrganizationRole>;
   setMemberRoleDrafts: React.Dispatch<
     React.SetStateAction<Record<string, OrganizationRole>>
@@ -127,6 +129,7 @@ export function OrganizationDetailView({
   memberEmail,
   setMemberEmail,
   updateStatus,
+  updateIsSchool,
   memberRoleDrafts,
   setMemberRoleDrafts,
   saveMemberRole,
@@ -223,6 +226,22 @@ export function OrganizationDetailView({
                       {statusLabels[status]}
                     </Button>
                   ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Instituição de Ensino</p>
+                <div className="mt-2 flex items-center gap-3">
+                  <span className="text-sm text-foreground">
+                    {org.isSchool ? "Sim" : "Não"}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateIsSchool(!org.isSchool)}
+                    disabled={updating}
+                  >
+                    Alternar
+                  </Button>
                 </div>
               </div>
               <div>

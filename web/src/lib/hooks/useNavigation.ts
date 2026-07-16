@@ -31,6 +31,7 @@ export const useNavigation = ({
       "/salas",
       "/organizations",
       "/explorar",
+      "/grade-horaria",
     ];
 
     pagesToPrefetch.forEach(page => {
@@ -64,6 +65,7 @@ export const useNavigation = ({
         vision: "/vision",
         users: "/users",
         profile: "/profile",
+        "grade-horaria": "/grade-horaria",
       };
 
       const route = routeMap[page] || "/explorar";

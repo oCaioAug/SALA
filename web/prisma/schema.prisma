@@ -3,21 +3,22 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Plan {
-  id                        String   @id @default(cuid())
-  name                      String
-  slug                      String   @unique
-  maxRooms                  Int      @default(10)
-  maxUsers                  Int      @default(50)
-  maxReservationsPerMonth   Int?
-  features                  Json?
-  isActive                  Boolean  @default(true)
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  name                    String
+  slug                    String   @unique
+  maxRooms                Int      @default(10)
+  maxUsers                Int      @default(50)
+  maxReservationsPerMonth Int?
+  features                Json?
+  isActive                Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   subscriptions Subscription[]
   organizations Organization[]
@@ -42,17 +43,22 @@ model Organization {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  owner        User                 @relation("OrganizationOwner", fields: [ownerId], references: [id])
-  plan         Plan?                @relation(fields: [planId], references: [id], onDelete: SetNull)
-  members      OrganizationMember[]
-  invites      OrganizationInvite[]
-  rooms        Room[]
-  reservations Reservation[]
-  incidents    Incident[]
+  owner   User                 @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  plan    Plan?                @relation(fields: [planId], references: [id], onDelete: SetNull)
+  members OrganizationMember[]
+
+  isSchool      Boolean                  @default(false)
+  turmas        Turma[]
+  disciplinas   Disciplina[]
+  professores   Professor[]
+  invites       OrganizationInvite[]
+  rooms         Room[]
+  reservations  Reservation[]
+  incidents     Incident[]
   notifications Notification[]
-  subscription Subscription?
-  auditLogs    AuditLog[]
-  dailyStats   OrganizationDailyStats[]
+  subscription  Subscription?
+  auditLogs     AuditLog[]
+  dailyStats    OrganizationDailyStats[]
 
   @@index([ownerId])
   @@index([status])
@@ -131,7 +137,7 @@ model AuditLog {
   createdAt      DateTime @default(now())
 
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  actor          User          @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+  actor        User          @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, createdAt])
   @@index([actorUserId])
@@ -140,14 +146,14 @@ model AuditLog {
 }
 
 model OrganizationDailyStats {
-  organizationId      String
-  date                DateTime @db.Date
-  reservationsCount   Int      @default(0)
-  activeUsersCount    Int      @default(0)
-  openIncidentsCount  Int      @default(0)
-  roomsCount          Int      @default(0)
-  membersCount        Int      @default(0)
-  updatedAt           DateTime @updatedAt
+  organizationId     String
+  date               DateTime @db.Date
+  reservationsCount  Int      @default(0)
+  activeUsersCount   Int      @default(0)
+  openIncidentsCount Int      @default(0)
+  roomsCount         Int      @default(0)
+  membersCount       Int      @default(0)
+  updatedAt          DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -187,6 +193,7 @@ model User {
   reportedIncidents IncidentStatusHistory[]
   assignedIncidents Incident[]              @relation("AssignedIncidents")
   incidentsReported Incident[]              @relation("ReportedIncidents")
+  professores       Professor[]
 
   @@index([platformRole])
   @@index([deletedAt])
@@ -319,14 +326,14 @@ model Incident {
   organizationId String
 
   reportedById String
-  reportedBy   User   @relation("ReportedIncidents", fields: [reportedById], references: [id])
+  reportedBy   User    @relation("ReportedIncidents", fields: [reportedById], references: [id])
   assignedToId String?
-  assignedTo   User?  @relation("AssignedIncidents", fields: [assignedToId], references: [id])
+  assignedTo   User?   @relation("AssignedIncidents", fields: [assignedToId], references: [id])
 
   roomId String?
-  room   Room?  @relation(fields: [roomId], references: [id])
+  room   Room?   @relation(fields: [roomId], references: [id])
   itemId String?
-  item   Item?  @relation(fields: [itemId], references: [id])
+  item   Item?   @relation(fields: [itemId], references: [id])
 
   estimatedResolutionTime DateTime?
   actualResolutionTime    DateTime?
@@ -348,7 +355,7 @@ model Incident {
 }
 
 model IncidentStatusHistory {
-  id         String @id @default(cuid())
+  id         String   @id @default(cuid())
   incidentId String
   incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
 
@@ -356,7 +363,7 @@ model IncidentStatusHistory {
   toStatus    IncidentStatus
   notes       String?
   changedById String
-  changedBy   User @relation(fields: [changedById], references: [id])
+  changedBy   User            @relation(fields: [changedById], references: [id])
 
   createdAt DateTime @default(now())
 
@@ -379,20 +386,20 @@ model PushToken {
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
-  type              String
-  provider          String
-  providerAccountId String  @map("provider_account_id")
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+  id                       String  @id @default(cuid())
+  userId                   String  @map("user_id")
+  type                     String
+  provider                 String
+  providerAccountId        String  @map("provider_account_id")
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
   refresh_token_expires_in Int?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -432,7 +439,6 @@ model ApiCredential {
 
   @@map("api_credentials")
 }
-
 
 enum SubscriptionStatus {
   ACTIVE
@@ -523,4 +529,96 @@ enum RecurringPattern {
   DAILY
   WEEKLY
   MONTHLY
+}
+
+// ------------------------------------------------------
+// NOVOS MODELOS PARA ALOCAÇÃO DE HORÁRIOS
+// ------------------------------------------------------
+
+model Turma {
+  id             String @id @default(cuid())
+  name           String // Ex: "1º Ano A", "Engenharia 5º Semestre"
+  organizationId String
+  shiftId        String? // Identificador do Turno (ex: "manha")
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cargasHorarias CargaHoraria[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("turmas")
+}
+
+model Disciplina {
+  id             String  @id @default(cuid())
+  name           String // Ex: "Cálculo I", "História"
+  code           String? // Ex: "CALC101"
+  organizationId String
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cargasHorarias CargaHoraria[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("disciplinas")
+}
+
+model CargaHoraria {
+  id              String @id @default(cuid())
+  turmaId         String
+  disciplinaId    String
+  professorId     String
+  quantidadeAulas Int // Número de aulas dessa disciplina para essa turma com esse professor (Ex: 4)
+
+  turma      Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+  disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  professor  Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([turmaId])
+  @@index([disciplinaId])
+  @@index([professorId])
+  @@map("cargas_horarias")
+}
+
+model Disponibilidade {
+  id          String @id @default(cuid())
+  professorId String
+  diaSemana   Int // 1 (Segunda) a 5 (Sexta) ou a convenção que preferir
+  slotId      String // Identificador do slot configurado (Ex: "m1", "t1")
+
+  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([professorId, diaSemana, slotId]) // Evita duplicidade de registro de disponibilidade
+  @@index([professorId])
+  @@map("disponibilidades")
+}
+
+model Professor {
+  id             String @id @default(cuid())
+  name           String
+  email          String?
+  organizationId String
+  userId         String?
+
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  cargasHorarias  CargaHoraria[]
+  disponibilidades Disponibilidade[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("professores")
 }

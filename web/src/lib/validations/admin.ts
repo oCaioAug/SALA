@@ -24,6 +24,7 @@ export const createOrganizationSchema = z.object({
   status: z.nativeEnum(OrganizationStatus).default(OrganizationStatus.ACTIVE),
   ownerEmail: z.string().email(),
   ownerName: z.string().min(2).max(120).optional(),
+  isSchool: z.boolean().default(false).optional(),
 });
 
 export const updateOrganizationSchema = z.object({
@@ -39,6 +40,7 @@ export const updateOrganizationSchema = z.object({
   planId: z.string().min(1).optional(),
   email: organizationEmailSchema.nullable().optional(),
   phone: organizationPhoneSchema.nullable().optional(),
+  isSchool: z.boolean().optional(),
 });
 
 export const updateMemberRoleSchema = z.object({

@@ -76,6 +76,20 @@ export default function OrganizationDetailPage() {
     }
   };
 
+  const updateIsSchool = async (isSchool: boolean) => {
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/organizations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isSchool }),
+      });
+      if (res.ok) await fetchOrg();
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const saveMemberRole = async (userId: string) => {
     const role = memberRoleDrafts[userId];
     const savedRole = org?.members.find(m => m.user.id === userId)?.role;
@@ -185,6 +199,7 @@ export default function OrganizationDetailPage() {
           memberEmail={memberEmail}
           setMemberEmail={setMemberEmail}
           updateStatus={updateStatus}
+          updateIsSchool={updateIsSchool}
           memberRoleDrafts={memberRoleDrafts}
           setMemberRoleDrafts={setMemberRoleDrafts}
           saveMemberRole={saveMemberRole}

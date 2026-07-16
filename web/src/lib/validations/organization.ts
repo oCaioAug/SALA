@@ -40,6 +40,7 @@ export const selfCreateOrganizationSchema = z.object({
     .max(60)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug inválido")
     .optional(),
+  isSchool: z.boolean().default(false).optional(),
 });
 
 export type SelfCreateOrganizationInput = z.infer<

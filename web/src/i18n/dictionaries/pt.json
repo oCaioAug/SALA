@@ -504,6 +504,10 @@
         "label": "Agendamentos",
         "description": "Calendário de reservas"
       },
+      "gradeHoraria": {
+        "label": "Grade Horária",
+        "description": "Alocação e horários"
+      },
       "incidentes": {
         "label": "Incidentes",
         "description": "Gestão de problemas e manutenções"

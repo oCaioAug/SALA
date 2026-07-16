@@ -1,11 +1,15 @@
 "use client";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
+import {
+  authInputClass,
+  authInputErrorClass,
+} from "@/components/auth/auth-styles";
 import {
   AuthError,
   AuthField,
@@ -16,15 +20,11 @@ import {
 import { AuthStepProgress } from "@/components/auth/register/AuthStepProgress";
 import { RegisterStepPlan } from "@/components/auth/register/RegisterStepPlan";
 import type { PublicPlan } from "@/components/auth/register/types";
-import {
-  authInputClass,
-  authInputErrorClass,
-} from "@/components/auth/auth-styles";
 import { MaskedInput } from "@/components/ui/MaskedInput";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
-import { createOrganizationStep1Schema } from "@/lib/validations/organization";
-import { maskCnpj, maskPhone } from "@/lib/validations/brazilian-documents";
 import { cn } from "@/lib/utils";
+import { maskCnpj, maskPhone } from "@/lib/validations/brazilian-documents";
+import { createOrganizationStep1Schema } from "@/lib/validations/organization";
 
 type CreateOrgForm = {
   name: string;
@@ -33,6 +33,7 @@ type CreateOrgForm = {
   email: string;
   phone: string;
   planId: string;
+  isSchool: boolean;
 };
 
 const initialForm: CreateOrgForm = {
@@ -42,6 +43,7 @@ const initialForm: CreateOrgForm = {
   email: "",
   phone: "",
   planId: "",
+  isSchool: false,
 };
 
 const STEPS = [1, 2, 3] as const;
@@ -151,7 +153,9 @@ export function CreateOrganizationWizard({
   const inputClass = (field?: string) =>
     cn(authInputClass, field && fieldErrors[field] && authInputErrorClass);
 
-  const mapZodErrors = (issues: { path?: PropertyKey[]; message: string }[]) => {
+  const mapZodErrors = (
+    issues: { path?: PropertyKey[]; message: string }[]
+  ) => {
     const errors: Record<string, string> = {};
     for (const issue of issues) {
       const field = issue.path?.[0];
@@ -318,7 +322,11 @@ export function CreateOrganizationWizard({
                 />
               </AuthField>
 
-              <AuthField label={t("fields.cnpj")} required error={fieldErrors.cnpj}>
+              <AuthField
+                label={t("fields.cnpj")}
+                required
+                error={fieldErrors.cnpj}
+              >
                 <MaskedInput
                   name="cnpj"
                   value={form.cnpj}
@@ -331,7 +339,11 @@ export function CreateOrganizationWizard({
                 />
               </AuthField>
 
-              <AuthField label={t("fields.email")} required error={fieldErrors.email}>
+              <AuthField
+                label={t("fields.email")}
+                required
+                error={fieldErrors.email}
+              >
                 <input
                   type="email"
                   name="email"
@@ -343,7 +355,11 @@ export function CreateOrganizationWizard({
                 />
               </AuthField>
 
-              <AuthField label={t("fields.phone")} required error={fieldErrors.phone}>
+              <AuthField
+                label={t("fields.phone")}
+                required
+                error={fieldErrors.phone}
+              >
                 <MaskedInput
                   name="phone"
                   type="tel"
@@ -356,6 +372,29 @@ export function CreateOrganizationWizard({
                   autoComplete="tel"
                   inputClassName={inputClass("phone")}
                 />
+              </AuthField>
+
+              <AuthField
+                label="Instituição de Ensino"
+                error={fieldErrors.isSchool}
+              >
+                <label className="flex items-center gap-3 mt-2 cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      name="isSchool"
+                      checked={form.isSchool}
+                      onChange={e => {
+                        handleFieldChange("isSchool", e.target.checked as any);
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Ativar módulo de Grade Horária para Escolas/Universidades
+                  </span>
+                </label>
               </AuthField>
             </div>
           </section>
@@ -374,8 +413,12 @@ export function CreateOrganizationWizard({
         {currentStep === 3 && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-foreground">{t("step3.title")}</h2>
-              <p className="text-sm text-muted-foreground">{t("step3.subtitle")}</p>
+              <h2 className="text-lg font-semibold text-foreground">
+                {t("step3.title")}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {t("step3.subtitle")}
+              </p>
             </div>
 
             <section className="rounded-xl border border-border bg-muted/30 p-4">
@@ -384,10 +427,17 @@ export function CreateOrganizationWizard({
               </h3>
               <dl className="space-y-3">
                 <SummaryRow label={t("fields.name")} value={form.name} />
-                <SummaryRow label={t("fields.legalName")} value={form.legalName} />
+                <SummaryRow
+                  label={t("fields.legalName")}
+                  value={form.legalName}
+                />
                 <SummaryRow label={t("fields.cnpj")} value={form.cnpj} />
                 <SummaryRow label={t("fields.email")} value={form.email} />
                 <SummaryRow label={t("fields.phone")} value={form.phone} />
+                <SummaryRow
+                  label="Instituição de Ensino"
+                  value={form.isSchool ? "Sim" : "Não"}
+                />
               </dl>
             </section>
 
@@ -397,7 +447,10 @@ export function CreateOrganizationWizard({
                   {t("sections.plan")}
                 </h3>
                 <dl className="space-y-3">
-                  <SummaryRow label={t("fields.planName")} value={selectedPlan.name} />
+                  <SummaryRow
+                    label={t("fields.planName")}
+                    value={selectedPlan.name}
+                  />
                   <SummaryRow
                     label={t("fields.planLimits")}
                     value={t("step3.planLimitsValue", {
@@ -405,7 +458,10 @@ export function CreateOrganizationWizard({
                       users: selectedPlan.maxUsers,
                     })}
                   />
-                  <SummaryRow label={t("fields.trial")} value={t("step3.trialValue")} />
+                  <SummaryRow
+                    label={t("fields.trial")}
+                    value={t("step3.trialValue")}
+                  />
                 </dl>
               </section>
             )}
@@ -414,7 +470,11 @@ export function CreateOrganizationWizard({
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           {currentStep > 1 ? (
-            <AuthSecondaryButton type="button" onClick={handleBack} disabled={isLoading}>
+            <AuthSecondaryButton
+              type="button"
+              onClick={handleBack}
+              disabled={isLoading}
+            >
               <ArrowLeft className="h-4 w-4" />
               {t("buttons.back")}
             </AuthSecondaryButton>
