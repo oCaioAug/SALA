@@ -18,6 +18,7 @@ const DIAS_SEMANA = [
   { id: 3, nome: "Quarta" },
   { id: 4, nome: "Quinta" },
   { id: 5, nome: "Sexta" },
+  { id: 6, nome: "Sábado" },
 ];
 
 const DisponibilidadesPage: React.FC = () => {

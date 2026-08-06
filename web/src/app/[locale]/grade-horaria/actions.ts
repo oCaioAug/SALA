@@ -50,10 +50,11 @@ export async function getDisciplinas() {
   });
 }
 
-export async function createDisciplina(name: string, code?: string) {
+export async function createDisciplina(name: string, code?: string, isOffGrid: boolean = false) {
   const orgId = await getOrgId();
   const disciplina = await prisma.disciplina.create({
-    data: { name, code, organizationId: orgId },
+    // @ts-ignore
+    data: { name, code, isOffGrid, organizationId: orgId },
   });
   revalidatePath("/[locale]/grade-horaria/disciplinas", "page");
   return disciplina;

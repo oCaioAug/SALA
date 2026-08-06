@@ -25,6 +25,7 @@ const DisciplinasPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [newNome, setNewNome] = useState("");
   const [newCodigo, setNewCodigo] = useState("");
+  const [isOffGrid, setIsOffGrid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchDisciplinas = async () => {
@@ -49,10 +50,11 @@ const DisciplinasPage: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      const newDisc = await createDisciplina(newNome, newCodigo || undefined);
+      const newDisc = await createDisciplina(newNome, newCodigo || undefined, isOffGrid);
       showSuccess("Disciplina criada com sucesso!");
       setNewNome("");
       setNewCodigo("");
+      setIsOffGrid(false);
       setDisciplinas(prev => [...prev, newDisc].sort((a,b) => a.name.localeCompare(b.name)));
     } catch (err: any) {
       showError(err.message || "Erro ao criar disciplina");
@@ -116,6 +118,19 @@ const DisciplinasPage: React.FC = () => {
                   onChange={(e) => setNewCodigo(e.target.value)}
                   disabled={isSubmitting}
                 />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isOffGrid"
+                    checked={isOffGrid}
+                    onChange={(e) => setIsOffGrid(e.target.checked)}
+                    disabled={isSubmitting}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                  <label htmlFor="isOffGrid" className="text-sm text-slate-700 dark:text-slate-300">
+                    Matéria EaD / Estágio (Fora da grade presencial)
+                  </label>
+                </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting || !newNome.trim()}>
                   <Plus className="w-4 h-4 mr-2" /> Adicionar
                 </Button>
@@ -142,6 +157,11 @@ const DisciplinasPage: React.FC = () => {
                         </div>
                         {d.code && (
                           <div className="text-sm text-slate-500">Código: {d.code}</div>
+                        )}
+                        {d.isOffGrid && (
+                          <div className="text-xs font-semibold text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 px-2 py-0.5 mt-1 rounded inline-block">
+                            EaD / Extra
+                          </div>
                         )}
                       </div>
                       <Button

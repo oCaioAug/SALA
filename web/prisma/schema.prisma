@@ -556,6 +556,7 @@ model Disciplina {
   name           String // Ex: "Cálculo I", "História"
   code           String? // Ex: "CALC101"
   organizationId String
+  isOffGrid      Boolean @default(false) // Se true, não entra na alocação da grade (ex: EaD, Estágio)
 
   organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cargasHorarias CargaHoraria[]

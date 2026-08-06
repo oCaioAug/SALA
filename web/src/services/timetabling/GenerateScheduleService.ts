@@ -30,9 +30,11 @@ export class GenerateScheduleService {
     }
 
     // 2. Fetch Cargas Horárias (Requirements)
+    // Ignorar disciplinas que são EaD ou Estágio (isOffGrid = true)
     const cargas = await prisma.cargaHoraria.findMany({
       where: {
         turma: { organizationId },
+        disciplina: { isOffGrid: false },
       },
       include: {
         turma: true,
