@@ -3,8 +3,8 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
+  size?: "sm" | "md" | "lg" | "icon";
   children: React.ReactNode;
 }
 
@@ -25,12 +25,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "border border-slate-300 dark:border-gray-600 bg-transparent text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-white",
       ghost:
         "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-white",
+      destructive:
+        "bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700",
     };
 
     const sizes = {
       sm: "h-8 px-3 text-sm",
       md: "h-10 px-4",
       lg: "h-12 px-6 text-lg",
+      icon: "h-10 w-10",
     };
 
     return (
