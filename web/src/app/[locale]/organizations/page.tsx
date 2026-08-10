@@ -1,8 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -125,7 +125,7 @@ export default function OrganizationsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-background">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -133,7 +133,7 @@ export default function OrganizationsPage() {
 
   return (
     <ProtectedRoute>
-      <OrganizationsShell>
+      <OrganizationsShell variant="hub">
         <OrganizationsHub
           memberships={memberships}
           activeOrganizationId={activeOrganizationId}

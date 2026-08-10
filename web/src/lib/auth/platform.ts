@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import {
+  canViewSolicitacoes,
+  type PermissionUser,
+} from "@/lib/auth/permissions";
 import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
 import { isOrgAdmin, mapOrganizationRoleToLegacyRole } from "@/lib/auth/roles";
 import { ensureOrganizationOperational } from "@/lib/organization/access";
@@ -12,6 +16,14 @@ export type AuthUser = User & {
   organizationId: string | null;
   organizationRole: OrganizationRole | null;
 };
+
+function toPermissionUser(user: AuthUser): PermissionUser {
+  return {
+    id: user.id,
+    organizationId: user.organizationId,
+    organizationRole: user.organizationRole,
+  };
+}
 
 export async function getAuthUser(): Promise<AuthUser | null> {
   const session = await getServerSession(authOptions);
@@ -69,6 +81,32 @@ export async function requireOrgAdmin(): Promise<
     }) ||
     !user.organizationId
   ) {
+    return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+  }
+
+  const accessBlock = await ensureOrganizationOperational(user.organizationId);
+  if (accessBlock) return accessBlock;
+
+  return user;
+}
+
+/**
+ * Org admin or sector manager who can view/act on reservation approvals
+ * (scope checks for specific rooms happen in the route handlers).
+ */
+export async function requireReservationApprover(): Promise<
+  AuthUser | NextResponse<{ error: string }>
+> {
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+  if (!user.organizationId) {
+    return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+  }
+
+  const allowed = await canViewSolicitacoes(toPermissionUser(user));
+  if (!allowed) {
     return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
   }
 

@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 import { verifyPassword } from "@/lib/auth/password";
+import { isSectorManagerInOrg } from "@/lib/auth/permissions";
 import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
 import { toLegacySessionRole } from "@/lib/auth/roles";
 import { syncUpcomingReservationsForUser } from "@/lib/googleCalendar";
@@ -39,13 +40,18 @@ async function enrichSessionUser(
   );
   const platformRole = dbUser?.platformRole ?? PlatformRole.NONE;
   const organizationRole = resolved?.organizationRole ?? null;
+  const organizationId = resolved?.organizationId ?? null;
+  const isSectorManager = organizationId
+    ? await isSectorManagerInOrg(userId, organizationId)
+    : false;
 
   return {
     platformRole,
-    organizationId: resolved?.organizationId ?? null,
+    organizationId,
     organizationRole,
     organizationName: resolved?.organizationName ?? null,
     role: toLegacySessionRole({ platformRole, organizationRole }),
+    isSectorManager,
   };
 }
 
@@ -120,6 +126,7 @@ export const authOptions: NextAuthOptions = {
         token.organizationRole = enriched.organizationRole;
         token.organizationName = enriched.organizationName;
         token.role = enriched.role;
+        token.isSectorManager = enriched.isSectorManager;
       }
 
       return token;
@@ -137,6 +144,7 @@ export const authOptions: NextAuthOptions = {
         session.user.organizationName =
           (token.organizationName as string | null) ?? null;
         session.user.role = token.role as typeof session.user.role;
+        session.user.isSectorManager = Boolean(token.isSectorManager);
       }
       return session;
     },

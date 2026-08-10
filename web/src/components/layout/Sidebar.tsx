@@ -12,6 +12,7 @@ import {
   DoorOpen,
   Eye,
   LayoutDashboard,
+  Network,
   Settings,
   User,
   Users,
@@ -38,7 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const t = useTranslations("Sidebar");
   const tCommon = useTranslations("Common");
-  const { isOrgAdmin } = useOrgPermissions();
+  const { isOrgAdmin, canAccessSolicitacoes } = useOrgPermissions();
 
   const myOrganizationsItem = {
     id: "inicio",
@@ -46,6 +47,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     icon: Building2,
     description: t("menuItems.inicio.description"),
     active: currentPage === "inicio",
+  };
+
+  const solicitacoesMenuItem = {
+    id: "solicitacoes",
+    label: t("menuItems.solicitacoes.label"),
+    icon: ClipboardList,
+    description: t("menuItems.solicitacoes.description"),
+    active: currentPage === "solicitacoes",
   };
 
   const adminMenuItems = [
@@ -63,12 +72,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: t("menuItems.salas.description"),
       active: currentPage === "salas",
     },
+    solicitacoesMenuItem,
     {
-      id: "solicitacoes",
-      label: t("menuItems.solicitacoes.label"),
-      icon: ClipboardList,
-      description: t("menuItems.solicitacoes.description"),
-      active: currentPage === "solicitacoes",
+      id: "setores",
+      label: t("menuItems.setores.label"),
+      icon: Network,
+      description: t("menuItems.setores.description"),
+      active: currentPage === "setores",
     },
     {
       id: "agendamentos",
@@ -136,6 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: t("menuItems.explorar.description"),
       active: currentPage === "explorar",
     },
+    ...(canAccessSolicitacoes ? [solicitacoesMenuItem] : []),
     {
       id: "agendamentos",
       label: t("menuItems.agendamentosMember.label"),

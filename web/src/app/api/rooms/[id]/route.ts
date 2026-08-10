@@ -25,6 +25,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const room = await prisma.room.findFirst({
       where: { id, organizationId: ctx.organizationId, deletedAt: null },
       include: {
+        sector: { select: { id: true, name: true } },
         items: {
           include: {
             images: {
@@ -76,6 +77,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     const data = parsed.data;
 
+    if (data.sectorId) {
+      const sector = await prisma.sector.findFirst({
+        where: {
+          id: data.sectorId,
+          organizationId: auth.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+      if (!sector) {
+        return NextResponse.json(
+          { error: "Setor inválido ou não pertence à organização" },
+          { status: 400 }
+        );
+      }
+    }
+
     const room = await prisma.room.update({
       where: { id },
       data: {
@@ -94,8 +112,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           climateControlled: data.climateControlled,
         }),
         ...(data.status !== undefined && { status: data.status }),
+        ...(data.sectorId !== undefined && { sectorId: data.sectorId }),
       },
       include: {
+        sector: { select: { id: true, name: true } },
         items: {
           include: {
             images: {

@@ -1,10 +1,7 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { getAuthUser, isNextResponse, requireAuth } from "@/lib/auth/platform";
 import { prisma } from "@/lib/prisma";
 
@@ -27,6 +24,7 @@ export async function GET() {
             name: true,
             slug: true,
             status: true,
+            createdAt: true,
             plan: { select: { id: true, name: true } },
             _count: { select: { members: true, rooms: true } },
           },

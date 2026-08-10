@@ -113,14 +113,48 @@ export const notificationService = {
           })
         : [];
 
+      const sectorId =
+        reservation.room?.sectorId ??
+        (
+          await prisma.room.findUnique({
+            where: { id: reservation.roomId },
+            select: { sectorId: true },
+          })
+        )?.sectorId;
+
+      const sectorManagers = sectorId
+        ? await prisma.sectorMember.findMany({
+            where: {
+              sectorId,
+              role: "MANAGER",
+              sector: { deletedAt: null },
+            },
+            include: {
+              user: { select: { id: true, email: true, name: true } },
+            },
+          })
+        : [];
+
+      const recipientMap = new Map<
+        string,
+        { id: string; email: string | null; name: string | null }
+      >();
+      for (const member of adminMembers) {
+        recipientMap.set(member.user.id, member.user);
+      }
+      for (const member of sectorManagers) {
+        recipientMap.set(member.user.id, member.user);
+      }
+      const recipients = Array.from(recipientMap.values());
+
       console.log(
-        ` Criando notificações para ${adminMembers.length} administradores`
+        ` Criando notificações para ${recipients.length} aprovadores`
       );
 
       const notifications = await Promise.all(
-        adminMembers.map(member =>
+        recipients.map(recipient =>
           createNotification(
-            member.user.id,
+            recipient.id,
             "RESERVATION_CREATED",
             title,
             message,
@@ -130,7 +164,6 @@ export const notificationService = {
               roomName: reservation.room.name,
               userId: reservation.userId,
               userName: reservation.user.name,
-              organizationRole: member.role,
               isAdmin: userIsAdmin,
               startTime: reservation.startTime,
               endTime: reservation.endTime,

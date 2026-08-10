@@ -12,10 +12,11 @@ import {
   User as UserIcon,
   XCircle,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
+import { SolicitacoesGuard } from "@/components/auth/SolicitacoesGuard";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -28,23 +29,41 @@ import { Pagination } from "@/components/ui/Pagination";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { ReservationWithDetails, Room, User } from "@/lib/types";
 import { getIntlLocale } from "@/lib/utils";
+
+type ReservationWithSector = ReservationWithDetails & {
+  room: Room & { sector?: { id: string; name: string } | null };
+  decidedBy?: { id: string; name: string | null; email?: string } | null;
+  decidedAt?: string | Date | null;
+  decisionReason?: string | null;
+};
+
+type ScopeSector = {
+  id: string;
+  name: string;
+  rooms?: { id: string }[];
+  _count?: { rooms: number };
+};
 
 const SolicitacoesPage: React.FC = () => {
   const t = useTranslations("Solicitacoes");
   const tCommon = useTranslations("Common");
   const locale = useLocale();
+  const { data: session } = useSession();
+  const { isOrgAdmin } = useOrgPermissions();
   const [currentPage, setCurrentPage] = useState("solicitacoes");
-  const [solicitacoes, setSolicitacoes] = useState<ReservationWithDetails[]>(
+  const [solicitacoes, setSolicitacoes] = useState<ReservationWithSector[]>(
     []
   );
   const [rooms, setRooms] = useState<Room[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [scopeSectors, setScopeSectors] = useState<ScopeSector[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSolicitacao, setSelectedSolicitacao] =
-    useState<ReservationWithDetails | null>(null);
+    useState<ReservationWithSector | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const [conflictData, setConflictData] = useState<any>(null);
@@ -94,11 +113,12 @@ const SolicitacoesPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [solicitacoesResponse, roomsResponse, usersResponse] =
+        const [solicitacoesResponse, roomsResponse, usersResponse, sectorsResponse] =
           await Promise.all([
             fetch("/api/reservations?status=PENDING"),
             fetch("/api/rooms"),
             fetch("/api/users").catch(() => null),
+            fetch("/api/sectors").catch(() => null),
           ]);
 
         if (!solicitacoesResponse.ok) {
@@ -113,11 +133,15 @@ const SolicitacoesPage: React.FC = () => {
           throw new Error("Erro ao carregar salas");
         }
 
-        const [solicitacoesData, roomsData, usersData] = await Promise.all([
-          solicitacoesResponse.json(),
-          roomsResponse.json(),
-          usersResponse?.ok ? usersResponse.json() : Promise.resolve([]),
-        ]);
+        const [solicitacoesData, roomsData, usersData, sectorsData] =
+          await Promise.all([
+            solicitacoesResponse.json(),
+            roomsResponse.json(),
+            usersResponse?.ok ? usersResponse.json() : Promise.resolve([]),
+            sectorsResponse?.ok
+              ? sectorsResponse.json()
+              : Promise.resolve([]),
+          ]);
 
         // Agrupar reservas recorrentes para mostrar apenas uma por template
         const groupedRecurring = new Map<string, ReservationWithDetails[]>();
@@ -146,9 +170,10 @@ const SolicitacoesPage: React.FC = () => {
           }
         });
 
-        setSolicitacoes(uniqueReservations);
+        setSolicitacoes(uniqueReservations as ReservationWithSector[]);
         setRooms(roomsData);
-        setUsers(usersData || []);
+        setUsers(Array.isArray(usersData) ? usersData : []);
+        setScopeSectors(Array.isArray(sectorsData) ? sectorsData : []);
       } catch (err) {
         console.error("Erro ao carregar solicitações:", err);
         const errorMessage =
@@ -237,7 +262,35 @@ const SolicitacoesPage: React.FC = () => {
     }
   };
 
+  const isOwnRequest = (solicitacao: ReservationWithDetails) => {
+    const myId = session?.user?.id;
+    if (!myId) return false;
+    return (
+      solicitacao.userId === myId || solicitacao.user?.id === myId
+    );
+  };
+
+  const scopeBannerText = useMemo(() => {
+    if (isOrgAdmin) return t("scope.org");
+    const roomCount = scopeSectors.reduce((acc, sector) => {
+      const fromRooms = sector.rooms?.length;
+      const fromCount = sector._count?.rooms;
+      return acc + (fromRooms ?? fromCount ?? 0);
+    }, 0);
+    if (scopeSectors.length === 0 || roomCount === 0) {
+      return t("scope.managerEmpty");
+    }
+    return t("scope.manager", {
+      sectors: scopeSectors.map(s => s.name).join(", "),
+      count: roomCount,
+    });
+  }, [isOrgAdmin, scopeSectors, t]);
+
   const handleApprove = async (solicitacao: ReservationWithDetails) => {
+    if (isOwnRequest(solicitacao)) {
+      showError(t("card.selfApproveBlocked"));
+      return;
+    }
     try {
       setActionLoading(solicitacao.id);
 
@@ -265,6 +318,10 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   const openRejectDrawer = (solicitacao: ReservationWithDetails) => {
+    if (isOwnRequest(solicitacao)) {
+      showError(t("card.selfApproveBlocked"));
+      return;
+    }
     setRejectTarget(solicitacao);
     setRejectReason("");
     setIsRejectDrawerOpen(true);
@@ -443,7 +500,7 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   return (
-    <OrgAdminGuard>
+    <SolicitacoesGuard>
       <PageLayout
         currentPage={currentPage}
         onNavigate={navigate}
@@ -490,6 +547,16 @@ const SolicitacoesPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <div
+                className={`mb-6 rounded-lg border px-4 py-3 text-sm ${
+                  isOrgAdmin
+                    ? "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200"
+                    : "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200"
+                }`}
+              >
+                {scopeBannerText}
               </div>
 
               {/* Filtros e busca */}
@@ -549,9 +616,17 @@ const SolicitacoesPage: React.FC = () => {
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-                              {rooms.find(r => r.id === solicitacao.roomId)
-                                ?.name || "Sala desconhecida"}
+                              {solicitacao.room?.name ||
+                                rooms.find(r => r.id === solicitacao.roomId)
+                                  ?.name ||
+                                "Sala desconhecida"}
                             </h3>
+                            {solicitacao.room?.sector?.name ? (
+                              <p className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                                {t("card.sector")}:{" "}
+                                {solicitacao.room.sector.name}
+                              </p>
+                            ) : null}
                             <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
                               <div className="flex items-center gap-1">
                                 <UserIcon className="w-4 h-4" />
@@ -601,7 +676,8 @@ const SolicitacoesPage: React.FC = () => {
                               <Eye className="w-4 h-4" />
                             </Button>
 
-                            {solicitacao.status === "PENDING" && (
+                            {solicitacao.status === "PENDING" &&
+                              !isOwnRequest(solicitacao) && (
                               <>
                                 <Button
                                   variant="outline"
@@ -632,6 +708,12 @@ const SolicitacoesPage: React.FC = () => {
                                 </Button>
                               </>
                             )}
+                            {solicitacao.status === "PENDING" &&
+                              isOwnRequest(solicitacao) && (
+                                <p className="max-w-[10rem] text-right text-xs text-slate-500 dark:text-slate-400">
+                                  {t("card.selfApproveBlocked")}
+                                </p>
+                              )}
                           </div>
                         </div>
                       </div>
@@ -667,10 +749,18 @@ const SolicitacoesPage: React.FC = () => {
                       <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <Building2 className="w-4 h-4 text-blue-400" />
                         <span className="text-slate-900 dark:text-white">
-                          {rooms.find(r => r.id === selectedSolicitacao.roomId)
-                            ?.name || "Sala desconhecida"}
+                          {selectedSolicitacao.room?.name ||
+                            rooms.find(r => r.id === selectedSolicitacao.roomId)
+                              ?.name ||
+                            "Sala desconhecida"}
                         </span>
                       </div>
+                      {selectedSolicitacao.room?.sector?.name ? (
+                        <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                          {t("card.sector")}:{" "}
+                          {selectedSolicitacao.room.sector.name}
+                        </p>
+                      ) : null}
                     </div>
 
                     <div>
@@ -727,6 +817,39 @@ const SolicitacoesPage: React.FC = () => {
                     </div>
                   )}
 
+                  {(selectedSolicitacao.status === "APPROVED" ||
+                    selectedSolicitacao.status === "REJECTED") &&
+                  (selectedSolicitacao.decidedBy ||
+                    selectedSolicitacao.decidedAt ||
+                    selectedSolicitacao.decisionReason) ? (
+                    <div className="space-y-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                      <p className="text-sm font-medium text-slate-700 dark:text-gray-300">
+                        {t("modal.decisionTitle")}
+                      </p>
+                      {selectedSolicitacao.decidedBy ? (
+                        <p className="text-sm text-slate-600 dark:text-gray-400">
+                          {t("modal.decidedBy")}:{" "}
+                          {selectedSolicitacao.decidedBy.name ||
+                            selectedSolicitacao.decidedBy.email}
+                        </p>
+                      ) : null}
+                      {selectedSolicitacao.decidedAt ? (
+                        <p className="text-sm text-slate-600 dark:text-gray-400">
+                          {t("modal.decidedAt")}:{" "}
+                          {formatDateTime(
+                            new Date(selectedSolicitacao.decidedAt)
+                          )}
+                        </p>
+                      ) : null}
+                      {selectedSolicitacao.decisionReason ? (
+                        <p className="text-sm text-slate-600 dark:text-gray-400">
+                          {t("modal.decisionReason")}:{" "}
+                          {selectedSolicitacao.decisionReason}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <div>
                     <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
                       {t("modal.status")}
@@ -740,7 +863,8 @@ const SolicitacoesPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {selectedSolicitacao.status === "PENDING" && (
+                  {selectedSolicitacao.status === "PENDING" &&
+                    !isOwnRequest(selectedSolicitacao) && (
                     <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <Button
                         variant="outline"
@@ -780,6 +904,12 @@ const SolicitacoesPage: React.FC = () => {
                       </Button>
                     </div>
                   )}
+                  {selectedSolicitacao.status === "PENDING" &&
+                    isOwnRequest(selectedSolicitacao) && (
+                      <p className="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-600 dark:border-slate-600 dark:text-slate-300">
+                        {t("card.selfApproveBlocked")}
+                      </p>
+                    )}
                 </div>
               )}
             </Drawer>
@@ -923,7 +1053,7 @@ const SolicitacoesPage: React.FC = () => {
           </>
         )}
       </PageLayout>
-    </OrgAdminGuard>
+    </SolicitacoesGuard>
   );
 };
 

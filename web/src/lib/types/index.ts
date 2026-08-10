@@ -40,11 +40,13 @@ export interface RoomWithItems {
   outletCount: number | null;
   climateControlled: boolean;
   organizationId: string;
+  sectorId: string | null;
   deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   items: ItemWithImages[];
   reservations?: Reservation[];
+  sector?: { id: string; name: string } | null;
 }
 
 export interface RoomWithReservations extends Room {

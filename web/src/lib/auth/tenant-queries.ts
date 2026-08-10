@@ -15,6 +15,17 @@ export async function getReservationInOrganization(
 ) {
   return prisma.reservation.findFirst({
     where: { id: reservationId, organizationId },
+    include: {
+      room: {
+        select: {
+          id: true,
+          organizationId: true,
+          sectorId: true,
+          name: true,
+        },
+      },
+      user: true,
+    },
   });
 }
 

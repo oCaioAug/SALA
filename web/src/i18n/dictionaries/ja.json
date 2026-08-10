@@ -29,7 +29,7 @@
       "reservedTag": "予約済み",
       "people": "{count} 名",
       "quantity": "数量: {count}",
-      "moreItems": "他 +{count} 点",
+      "moreItems": "+{count}件の追加アイテム",
       "createTitle": "新しい部屋を作成",
       "createDescription": "管理を開始するために、システムに新しい部屋を追加します"
     },
@@ -66,7 +66,11 @@
       "locationPlaceholder": "Ex.: Próximo à esquina, 2º andar...",
       "outletsLabel": "Tomadas (parede)",
       "outletsPlaceholder": "Quantidade",
-      "climateLabel": "Ambiente climatizado"
+      "climateLabel": "Ambiente climatizado",
+      "sectorLabel": "担当部門",
+      "sectorNone": "部門なし",
+      "sectorHelp": "この部門のマネージャーがこの部屋の予約を承認できます。",
+      "sectorHelpNone": "部門なしの場合、この部屋の予約承認は組織管理者のみです。"
     }
   },
   "Pagination": {
@@ -79,7 +83,13 @@
   },
   "SalasPage": {
     "title": "会議室",
-    "subtitle": "会議室の一覧・フィルター・管理"
+    "subtitle": "会議室の一覧・フィルター・管理",
+    "noSector": "部門なし",
+    "filters": {
+      "noSector": "部門なし",
+      "sectorAll": "すべての部門"
+    },
+    "orphanBanner": "部門なしの部屋が{count}件 — 予約承認は組織管理者のみです。"
   },
   "DashboardHome": {
     "title": "ダッシュボード",
@@ -258,6 +268,10 @@
       "incidentesMember": {
         "label": "Reportar problema",
         "description": "Informar problemas nas salas"
+      },
+      "setores": {
+        "label": "部門",
+        "description": "部屋の責任と承認"
       }
     }
   },
@@ -626,7 +640,9 @@
       "pending": "保留中",
       "approved": "承認済み",
       "rejected": "拒否済み",
-      "unknown": "不明"
+      "unknown": "不明",
+      "sector": "部門",
+      "selfApproveBlocked": "自分の申請は承認・却下できません"
     },
     "modal": {
       "details": "リクエスト詳細",
@@ -637,7 +653,11 @@
       "purpose": "目的",
       "status": "ステータス",
       "createdAt": "作成日時",
-      "close": "閉じる"
+      "close": "閉じる",
+      "decisionTitle": "決定",
+      "decidedBy": "決定者",
+      "decidedAt": "日時",
+      "decisionReason": "理由"
     },
     "conflict": {
       "title": "予約の競合",
@@ -663,6 +683,11 @@
       "placeholder": "拒否の理由を入力...",
       "cancel": "キャンセル",
       "confirm": "拒否を確定"
+    },
+    "scope": {
+      "org": "範囲: 組織全体",
+      "manager": "範囲: {sectors} — {count}件の部屋",
+      "managerEmpty": "範囲: 部屋が紐づいた部門がありません"
     }
   },
   "Notifications": {
@@ -1122,7 +1147,9 @@
     "location": "Localização",
     "outlets": "Tomadas",
     "climateYes": "Climatizado",
-    "climateNo": "Sem climatização"
+    "climateNo": "Sem climatização",
+    "sector": "部門",
+    "noSector": "部門なし"
   },
   "UsersPage": {
     "title": "ユーザー管理",
@@ -1930,5 +1957,84 @@
   "Preferences": {
     "switchToLight": "Switch to light theme",
     "switchToDark": "Switch to dark theme"
+  },
+  "SetoresPage": {
+    "title": "部門",
+    "subtitle": "予約承認者を整理：各部門に部屋とマネージャーを割り当て",
+    "create": "新しい部門",
+    "edit": "編集",
+    "archive": "アーカイブ",
+    "searchPlaceholder": "部門を検索...",
+    "emptyTitle": "部門がありません",
+    "emptyDescription": "部門を作成し、「管理」から部屋と承認マネージャーを設定します。",
+    "drawerCreateTitle": "部門を作成",
+    "drawerEditTitle": "部門を管理",
+    "nameLabel": "名前",
+    "namePlaceholder": "例: IT調整",
+    "descriptionLabel": "説明",
+    "descriptionPlaceholder": "任意",
+    "roomsLabel": "部門の部屋",
+    "noRooms": "利用可能な部屋がありません",
+    "membersLabel": "部門マネージャー",
+    "selectMember": "マネージャーを選択...",
+    "removeMember": "マネージャーを外す",
+    "roomsCount": "{count} 部屋",
+    "membersCount": "{count} マネージャー",
+    "save": "保存",
+    "saving": "保存中...",
+    "cancel": "キャンセル",
+    "confirmArchive": "部門「{name}」をアーカイブしますか？{count}件の部屋が部門なしになり、承認は組織管理者のみになります。",
+    "feedback": {
+      "created": "部門を作成しました",
+      "updated": "部門を更新しました",
+      "archived": "部門をアーカイブしました",
+      "memberAdded": "マネージャーを追加しました",
+      "memberRemoved": "マネージャーを削除しました",
+      "memberRefreshHint": "別デバイスでログイン中のマネージャーは、リクエスト表示のためページ更新が必要です",
+      "createdContinue": "部門を作成しました。部屋を確認し、下でマネージャーを追加してください。"
+    },
+    "errors": {
+      "load": "部門の読み込みに失敗しました",
+      "save": "部門の保存に失敗しました",
+      "archive": "部門のアーカイブに失敗しました",
+      "nameRequired": "名前は必須です",
+      "addMember": "マネージャーの追加に失敗しました",
+      "removeMember": "マネージャーの削除に失敗しました"
+    },
+    "managersLabel": "マネージャー",
+    "otherSector": "別の部門",
+    "assignedToSector": "既に {name}",
+    "manage": "管理",
+    "drawerHintCreate": "基本情報・部屋・マネージャーを入力。保存時にまとめて作成されます。",
+    "drawerHintEdit": "部屋とマネージャーを設定。マネージャーはこの部門の部屋だけ管理できます。",
+    "sectionBasicsTitle": "部門情報",
+    "sectionBasicsHelp": "組織内に表示される名前",
+    "sectionRoomsTitle": "部屋を割り当て",
+    "sectionRoomsHelp": "この部門の担当部屋 — マネージャーが管理できるようになります",
+    "sectionMembersTitle": "マネージャーを追加",
+    "sectionMembersHelp": "これらの部屋の予約を承認・却下できる人",
+    "roomsSelected": "{count} 件選択",
+    "roomsSaveHint": "チェックした部屋は「変更を保存」で保存されます。",
+    "membersAfterCreate": "マネージャーは部門作成後に追加できます。「作成して続ける」を押してください。",
+    "noMembersYet": "リストにマネージャーがいません。下で追加してから保存してください。",
+    "addMemberLabel": "マネージャーを追加",
+    "addMember": "追加",
+    "addMemberHint": "リストは保存時のみ反映されます。別セッションのマネージャーはページ更新が必要です。",
+    "noMemberCandidates": "他のメンバーがいません。先にユーザーを登録してください。",
+    "saveAndContinue": "作成して続ける",
+    "saveChanges": "変更を保存",
+    "cardEmptyHint": "部屋もマネージャーもありません。管理をクリック。",
+    "roomsSaveHintCreate": "チェックした部屋は部門の保存時に紐づきます。",
+    "roomsSaveHintEdit": "チェックした部屋は「変更を保存」で保存されます。",
+    "checklistBasics": "基本",
+    "checklistRooms": "部屋",
+    "checklistMembers": "管理者",
+    "checklistReady": "完了",
+    "checklistPending": "未設定",
+    "checklistAfterCreate": "作成後",
+    "roomsManageEffect": "効果: この部門のマネージャーは、これらの部屋の予約を承認・却下・確認できます。",
+    "membersSaveHint": "リストのマネージャーは「変更を保存」で部屋と一緒に保存されます。",
+    "createSubmit": "部門を作成",
+    "confirmDiscard": "未保存の変更があります。破棄して閉じますか？"
   }
 }

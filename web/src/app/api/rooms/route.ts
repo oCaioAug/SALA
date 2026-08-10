@@ -43,8 +43,12 @@ export async function GET() {
         locationDescription: true,
         outletCount: true,
         climateControlled: true,
+        sectorId: true,
         createdAt: true,
         updatedAt: true,
+        sector: {
+          select: { id: true, name: true },
+        },
         items: {
           select: {
             id: true,
@@ -137,7 +141,25 @@ export async function POST(request: NextRequest) {
       outletCount,
       climateControlled,
       status,
+      sectorId,
     } = parsed.data;
+
+    if (sectorId) {
+      const sector = await prisma.sector.findFirst({
+        where: {
+          id: sectorId,
+          organizationId: auth.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+      if (!sector) {
+        return NextResponse.json(
+          { error: "Setor inválido ou não pertence à organização" },
+          { status: 400 }
+        );
+      }
+    }
 
     const room = await prisma.room.create({
       data: {
@@ -149,8 +171,12 @@ export async function POST(request: NextRequest) {
         climateControlled: climateControlled ?? false,
         status: status ?? "LIVRE",
         organizationId: auth.organizationId,
+        sectorId: sectorId ?? null,
       },
-      include: { items: true },
+      include: {
+        items: true,
+        sector: { select: { id: true, name: true } },
+      },
     });
 
     roomsCacheByOrg.delete(auth.organizationId);

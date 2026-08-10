@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -18,10 +18,13 @@ interface RoomFormProps {
   onCancel: () => void;
 }
 
+type SectorOption = { id: string; name: string };
+
 const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   const t = useTranslations("Dashboard");
   const tf = useTranslations("Dashboard.form");
 
+  const [sectors, setSectors] = useState<SectorOption[]>([]);
   const [formData, setFormData] = useState({
     name: room?.name || "",
     description: room?.description || "",
@@ -33,9 +36,29 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
         ? String(room.outletCount)
         : "",
     climateControlled: room?.climateControlled ?? false,
+    sectorId: room?.sectorId ?? "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/sectors");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && Array.isArray(data)) {
+          setSectors(data.map((s: SectorOption) => ({ id: s.id, name: s.name })));
+        }
+      } catch {
+        // Setores são opcionais no formulário
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +81,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
         ? parseInt(formData.outletCount, 10)
         : null,
       climateControlled: formData.climateControlled,
+      sectorId: formData.sectorId || null,
     });
   };
 
@@ -168,6 +192,34 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
           <option value="EM_USO">{t("filters.statusInUse")}</option>
           <option value="RESERVADO">{t("filters.statusReserved")}</option>
         </select>
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+          {tf("sectorLabel")}
+        </label>
+        <select
+          name="sectorId"
+          value={formData.sectorId}
+          onChange={handleInputChange}
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+        >
+          <option value="">{tf("sectorNone")}</option>
+          {sectors.map(sector => (
+            <option key={sector.id} value={sector.id}>
+              {sector.name}
+            </option>
+          ))}
+        </select>
+        <p
+          className={`mt-1.5 text-xs ${
+            formData.sectorId
+              ? "text-slate-500 dark:text-slate-400"
+              : "text-amber-700 dark:text-amber-300"
+          }`}
+        >
+          {formData.sectorId ? tf("sectorHelp") : tf("sectorHelpNone")}
+        </p>
       </div>
 
       <div className="flex gap-3 pt-4">
