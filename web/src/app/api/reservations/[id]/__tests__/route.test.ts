@@ -57,7 +57,7 @@ describe("Reservation [id] API", () => {
     });
 
     it("should return 404 when reservation is not found", async () => {
-      mockGetReservationInOrganization.mockResolvedValueOnce(null);
+      mockGetReservationInOrganization.mockResolvedValueOnce(null as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/bad-id"
@@ -86,7 +86,7 @@ describe("Reservation [id] API", () => {
   // ==================== PUT ====================
   describe("PUT /api/reservations/[id]", () => {
     it("should return 404 if reservation does not exist", async () => {
-      mockGetReservationInOrganization.mockResolvedValueOnce(null);
+      mockGetReservationInOrganization.mockResolvedValueOnce(null as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/bad-id",
@@ -174,7 +174,7 @@ describe("Reservation [id] API", () => {
     });
 
     it("should return 404 if reservation not found", async () => {
-      mockGetReservationInOrganization.mockResolvedValueOnce(null);
+      mockGetReservationInOrganization.mockResolvedValueOnce(null as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations/bad-id",

@@ -29,7 +29,7 @@
       "reservedTag": "Reserved",
       "people": "{count} people",
       "quantity": "Qty: {count}",
-      "moreItems": "+{count} more items",
+      "moreItems": "{count, plural, one {+1 more item} other {+{count} more items}}",
       "createTitle": "Create New Room",
       "createDescription": "Add a new room to the system to start managing"
     },
@@ -66,7 +66,11 @@
       "climateLabel": "Climate controlled",
       "submitCreate": "Create Room",
       "submitUpdate": "Update Room",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "sectorLabel": "Responsible sector",
+      "sectorNone": "No sector",
+      "sectorHelp": "Managers of this sector can approve reservations for this room.",
+      "sectorHelpNone": "With no sector, only organization admins approve reservations for this room."
     }
   },
   "Pagination": {
@@ -79,7 +83,13 @@
   },
   "SalasPage": {
     "title": "Rooms",
-    "subtitle": "Browse, filter and manage rooms"
+    "subtitle": "Browse, filter and manage rooms",
+    "noSector": "No sector",
+    "filters": {
+      "noSector": "No sector",
+      "sectorAll": "All sectors"
+    },
+    "orphanBanner": "{count} room(s) with no sector — only org admins approve their bookings."
   },
   "DashboardHome": {
     "title": "Dashboard",
@@ -262,6 +272,10 @@
       "incidentesMember": {
         "label": "Report issue",
         "description": "Report room problems"
+      },
+      "setores": {
+        "label": "Sectors",
+        "description": "Room responsibility and approvals"
       }
     }
   },
@@ -303,7 +317,7 @@
   "OrganizationsPage": {
     "greeting": "Hello",
     "title": "Your organizations",
-    "subtitle": "Choose where to work, accept invites, or register a new organization",
+    "subtitle": "Select an organization to open your dashboard.",
     "hubBadge": "Access hub",
     "signOut": "Sign out",
     "enter": "Open",
@@ -313,9 +327,17 @@
     "inviteError": "Failed to accept invite",
     "completeProfileHint": "Complete your profile (CPF and phone) before creating an organization, or accept an invite below.",
     "superAdminOrgHint": "As a platform administrator, manage organizations from the platform panel.",
+    "shell": {
+      "brand": "Dashboard"
+    },
+    "card": {
+      "planLine": "{plan} plan · {role}",
+      "roleLine": "Your role: {role}",
+      "createdAt": "Created on {date}"
+    },
     "sections": {
       "organizations": "Your organizations",
-      "organizationsDesc": "Select an organization to continue",
+      "organizationsDesc": "Select an organization to open your dashboard.",
       "actions": "Quick actions",
       "actionsDesc": "Register a new organization or open the platform panel"
     },
@@ -343,6 +365,10 @@
       "description": "Manage all organizations, plans, users, and SALA platform audit",
       "badge": "Super Admin"
     },
+    "manageOrg": {
+      "title": "Manage organizations",
+      "description": "Invite members and change permissions."
+    },
     "organization": {
       "adminTitle": "Organization panel",
       "adminDescription": "Rooms, reservations, users, and organization settings",
@@ -351,13 +377,13 @@
       "namedTitle": "{name}"
     },
     "createOrg": {
-      "title": "Create organization",
-      "description": "Set up a new company or team on SALA",
+      "title": "Create new organization",
+      "description": "Start a new organization from scratch.",
       "action": "Create"
     },
     "anotherOrg": {
-      "title": "Another organization",
-      "description": "Register a new organization on SALA"
+      "title": "Create new organization",
+      "description": "Start a new organization from scratch."
     },
     "invites": {
       "title": "Pending invites",
@@ -791,7 +817,9 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "sector": "Sector",
+      "selfApproveBlocked": "You cannot approve or reject your own request"
     },
     "modal": {
       "details": "Request Details",
@@ -802,7 +830,11 @@
       "purpose": "Purpose",
       "status": "Status",
       "createdAt": "Created at",
-      "close": "Close"
+      "close": "Close",
+      "decisionTitle": "Decision",
+      "decidedBy": "Decided by",
+      "decidedAt": "At",
+      "decisionReason": "Reason"
     },
     "conflict": {
       "title": "Reservation Conflict",
@@ -828,6 +860,11 @@
       "placeholder": "Describe the reason for rejection...",
       "cancel": "Cancel",
       "confirm": "Confirm rejection"
+    },
+    "scope": {
+      "org": "Scope: entire organization",
+      "manager": "Scope: {sectors} — {count} room(s)",
+      "managerEmpty": "Scope: no sectors with linked rooms"
     }
   },
   "Notifications": {
@@ -1287,7 +1324,9 @@
     },
     "confirmations": {
       "deleteItem": "Are you sure you want to delete this item?"
-    }
+    },
+    "sector": "Sector",
+    "noSector": "No sector"
   },
   "UsersPage": {
     "title": "User Management",
@@ -2113,6 +2152,17 @@
       "audit": "Equipment Audit",
       "provision": "Auto Provisioning"
     },
+    "workflow": {
+      "stepRoom": "Room",
+      "stepImage": "Image",
+      "stepAnalyze": "Analyze",
+      "imageStatus": "Image status",
+      "imageReady": "Ready for analysis",
+      "imageMissing": "Waiting for upload or capture",
+      "webcamActive": "Webcam active",
+      "needRoom": "Select a room to continue.",
+      "needImage": "Upload or capture an image before analyzing."
+    },
     "provider": {
       "title": "Artificial Intelligence Engine",
       "mock": "Offline Simulator (High Fidelity)",
@@ -2128,6 +2178,9 @@
       "modelIdPlaceholder": "E.g. yolov8n, s-a-l-a-detector/1",
       "save": "Encrypt & Save to DB",
       "clear": "Clear from DB (Revert)",
+      "clearShort": "Clear",
+      "show": "Show",
+      "hide": "Hide",
       "saved": "Credentials encrypted and saved successfully!",
       "cleared": "Credentials removed from database.",
       "onlyAdmins": "Only administrators can manage API keys.",
@@ -2141,14 +2194,19 @@
     "controls": {
       "selectRoom": "Select a Room",
       "selectRoomPlaceholder": "Select...",
+      "captureArea": "Capture area",
+      "useWebcam": "Use Webcam",
+      "stopCamera": "Stop Camera",
+      "selectFile": "Select File",
+      "clearImage": "Remove image",
       "uploadTitle": "Upload Image for Analysis",
       "uploadSubtitle": "Drag and drop or click to upload a photo",
       "analyzeBtn": "Run AI Prediction",
       "analyzing": "Analyzing...",
       "camera": "Lab Webcam",
       "capture": "Capture Photo",
-      "presets": "Simulation Scenarios (Presets)",
-      "presetsSubtitle": "Click a scenario preset below to load predefined test images instantly:",
+      "presets": "Test scenarios",
+      "presetsSubtitle": "Load a preconfigured image to validate the flow quickly.",
       "presetEmpty": "Empty Laboratory",
       "presetFull": "Class in Session",
       "presetAudit": "Missing Equipment",
@@ -2163,6 +2221,7 @@
       "statusMissing": "Missing!",
       "statusExcess": "Excess",
       "auditSummary": "Audit Summary",
+      "summaryHint": "Reconciliation between registered items and visually identified objects.",
       "noDiscrepancy": "No discrepancies found. All room equipment is present!",
       "discrepancyFound": "Discrepancies found! {count} registered item(s) are missing.",
       "incidentGenerated": "Incident ticket automatically created by S.A.L.A.-Bot!",
@@ -2175,8 +2234,89 @@
       "qtyCol": "Suggested Qty",
       "iconCol": "Icon",
       "saveBtn": "Confirm & Persist to Database",
+      "processing": "Processing...",
       "success": "Room successfully provisioned! {count} items created.",
+      "successBanner": "Room provisioned successfully. Equipment was saved and is now active.",
       "empty": "No assets detected for onboarding. Try uploading a different photo."
     }
+  },
+  "SetoresPage": {
+    "title": "Sectors",
+    "subtitle": "Control who approves bookings: assign rooms and managers to each sector",
+    "create": "New sector",
+    "edit": "Edit",
+    "archive": "Archive",
+    "searchPlaceholder": "Search sectors...",
+    "emptyTitle": "No sectors yet",
+    "emptyDescription": "Create a sector, click Manage, then assign rooms and approval managers.",
+    "drawerCreateTitle": "Create sector",
+    "drawerEditTitle": "Manage sector",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. IT Coordination",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Optional",
+    "roomsLabel": "Sector rooms",
+    "noRooms": "No rooms available",
+    "membersLabel": "Sector managers",
+    "selectMember": "Select manager...",
+    "removeMember": "Remove manager",
+    "roomsCount": "{count} rooms",
+    "membersCount": "{count} managers",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirmArchive": "Archive sector \"{name}\"? {count} room(s) will have no sector and only org admins will approve their bookings.",
+    "feedback": {
+      "created": "Sector created successfully",
+      "updated": "Sector updated successfully",
+      "archived": "Sector archived",
+      "memberAdded": "Manager added",
+      "memberRemoved": "Manager removed",
+      "memberRefreshHint": "Managers already signed in elsewhere must refresh the page to see Requests",
+      "createdContinue": "Sector created. Review rooms and add managers below."
+    },
+    "errors": {
+      "load": "Failed to load sectors",
+      "save": "Failed to save sector",
+      "archive": "Failed to archive sector",
+      "nameRequired": "Name is required",
+      "addMember": "Failed to add manager",
+      "removeMember": "Failed to remove manager"
+    },
+    "managersLabel": "Managers",
+    "otherSector": "another sector",
+    "assignedToSector": "already in {name}",
+    "manage": "Manage",
+    "drawerHintCreate": "Fill in details, rooms, and managers. Everything is created at once when you save.",
+    "drawerHintEdit": "Assign rooms and managers. Managers only control rooms linked to this sector.",
+    "sectionBasicsTitle": "Sector details",
+    "sectionBasicsHelp": "Display name in the organization",
+    "sectionRoomsTitle": "Assign rooms",
+    "sectionRoomsHelp": "Rooms under this sector — managers will be able to manage them",
+    "sectionMembersTitle": "Add managers",
+    "sectionMembersHelp": "People who can approve, reject, and see the queue for these rooms",
+    "roomsSelected": "{count} selected",
+    "roomsSaveHint": "Checked rooms are saved when you click \"Save changes\".",
+    "membersAfterCreate": "Managers can only be added after the sector exists. Click \"Create and continue\" to unlock this step.",
+    "noMembersYet": "No managers in the list yet. Add below, then save.",
+    "addMemberLabel": "Add manager",
+    "addMember": "Add",
+    "addMemberHint": "The list is only saved when you save. Managers in another session must refresh to see Requests.",
+    "noMemberCandidates": "No other members available. Add users under Users first.",
+    "saveAndContinue": "Create and continue",
+    "saveChanges": "Save changes",
+    "cardEmptyHint": "No rooms or managers yet. Click Manage to configure.",
+    "roomsSaveHintCreate": "Checked rooms are linked when you save the sector.",
+    "roomsSaveHintEdit": "Checked rooms are saved when you click \"Save changes\".",
+    "checklistBasics": "Details",
+    "checklistRooms": "Rooms",
+    "checklistMembers": "Managers",
+    "checklistReady": "Done",
+    "checklistPending": "Pending",
+    "checklistAfterCreate": "After create",
+    "roomsManageEffect": "Effect: managers of this sector can approve, reject, and track reservations for these rooms.",
+    "membersSaveHint": "Managers in the list are saved with rooms when you click \"Save changes\".",
+    "createSubmit": "Create sector",
+    "confirmDiscard": "You have unsaved changes. Discard and close?"
   }
 }

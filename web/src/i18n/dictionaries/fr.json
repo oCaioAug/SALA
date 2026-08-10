@@ -29,7 +29,7 @@
       "reservedTag": "Réservée",
       "people": "{count} personnes",
       "quantity": "Qté : {count}",
-      "moreItems": "+{count} autres articles",
+      "moreItems": "{count, plural, one {+1 article supplémentaire} other {+{count} articles supplémentaires}}",
       "createTitle": "Créer Nouvelle Salle",
       "createDescription": "Ajoutez une nouvelle salle au système pour commencer la gestion"
     },
@@ -66,7 +66,11 @@
       "locationPlaceholder": "Ex.: Próximo à esquina, 2º andar...",
       "outletsLabel": "Tomadas (parede)",
       "outletsPlaceholder": "Quantidade",
-      "climateLabel": "Ambiente climatizado"
+      "climateLabel": "Ambiente climatizado",
+      "sectorLabel": "Secteur responsable",
+      "sectorNone": "Sans secteur",
+      "sectorHelp": "Les gestionnaires de ce secteur pourront valider les réservations de cette salle.",
+      "sectorHelpNone": "Sans secteur, seuls les admins de l'organisation valident les réservations."
     }
   },
   "Pagination": {
@@ -79,7 +83,13 @@
   },
   "SalasPage": {
     "title": "Salles",
-    "subtitle": "Parcourir, filtrer et gérer les salles"
+    "subtitle": "Parcourir, filtrer et gérer les salles",
+    "noSector": "Sans secteur",
+    "filters": {
+      "noSector": "Sans secteur",
+      "sectorAll": "Tous les secteurs"
+    },
+    "orphanBanner": "{count} salle(s) sans secteur — seuls les admins valident leurs réservations."
   },
   "DashboardHome": {
     "title": "Tableau de bord",
@@ -258,6 +268,10 @@
       "incidentesMember": {
         "label": "Reportar problema",
         "description": "Informar problemas nas salas"
+      },
+      "setores": {
+        "label": "Secteurs",
+        "description": "Responsables des salles et validations"
       }
     }
   },
@@ -626,7 +640,9 @@
       "pending": "En attente",
       "approved": "Approuvée",
       "rejected": "Rejetée",
-      "unknown": "Inconnu"
+      "unknown": "Inconnu",
+      "sector": "Secteur",
+      "selfApproveBlocked": "Vous ne pouvez pas valider ou refuser votre propre demande"
     },
     "modal": {
       "details": "Détails de la Demande",
@@ -637,7 +653,11 @@
       "purpose": "Objet",
       "status": "Statut",
       "createdAt": "Créée le",
-      "close": "Fermer"
+      "close": "Fermer",
+      "decisionTitle": "Décision",
+      "decidedBy": "Décidé par",
+      "decidedAt": "Le",
+      "decisionReason": "Motif"
     },
     "conflict": {
       "title": "Conflit de Réservation",
@@ -663,6 +683,11 @@
       "placeholder": "Décrivez le motif du refus...",
       "cancel": "Annuler",
       "confirm": "Confirmer le refus"
+    },
+    "scope": {
+      "org": "Périmètre : toute l'organisation",
+      "manager": "Périmètre : {sectors} — {count} salle(s)",
+      "managerEmpty": "Périmètre : aucun secteur avec salles liées"
     }
   },
   "Notifications": {
@@ -1122,7 +1147,9 @@
     "location": "Localização",
     "outlets": "Tomadas",
     "climateYes": "Climatizado",
-    "climateNo": "Sem climatização"
+    "climateNo": "Sem climatização",
+    "sector": "Secteur",
+    "noSector": "Sans secteur"
   },
   "UsersPage": {
     "title": "Gestion des Utilisateurs",
@@ -1930,5 +1957,84 @@
   "Preferences": {
     "switchToLight": "Switch to light theme",
     "switchToDark": "Switch to dark theme"
+  },
+  "SetoresPage": {
+    "title": "Secteurs",
+    "subtitle": "Contrôlez qui valide les réservations : attribuez salles et gestionnaires",
+    "create": "Nouveau secteur",
+    "edit": "Modifier",
+    "archive": "Archiver",
+    "searchPlaceholder": "Rechercher des secteurs...",
+    "emptyTitle": "Aucun secteur",
+    "emptyDescription": "Créez un secteur, cliquez sur Gérer, puis attribuez salles et gestionnaires.",
+    "drawerCreateTitle": "Créer un secteur",
+    "drawerEditTitle": "Gérer le secteur",
+    "nameLabel": "Nom",
+    "namePlaceholder": "Ex. : Coordination TI",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Facultatif",
+    "roomsLabel": "Salles du secteur",
+    "noRooms": "Aucune salle disponible",
+    "membersLabel": "Gestionnaires du secteur",
+    "selectMember": "Sélectionner un gestionnaire...",
+    "removeMember": "Retirer le gestionnaire",
+    "roomsCount": "{count} salles",
+    "membersCount": "{count} gestionnaires",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
+    "confirmArchive": "Archiver le secteur \"{name}\" ? {count} salle(s) n'auront plus de secteur ; seuls les admins pourront valider.",
+    "feedback": {
+      "created": "Secteur créé avec succès",
+      "updated": "Secteur mis à jour avec succès",
+      "archived": "Secteur archivé",
+      "memberAdded": "Gestionnaire ajouté",
+      "memberRemoved": "Gestionnaire retiré",
+      "memberRefreshHint": "Les gestionnaires déjà connectés ailleurs doivent actualiser la page pour voir Demandes",
+      "createdContinue": "Secteur créé. Vérifiez les salles et ajoutez des gestionnaires ci-dessous."
+    },
+    "errors": {
+      "load": "Échec du chargement des secteurs",
+      "save": "Échec de l'enregistrement du secteur",
+      "archive": "Échec de l'archivage du secteur",
+      "nameRequired": "Le nom est obligatoire",
+      "addMember": "Échec de l'ajout du gestionnaire",
+      "removeMember": "Échec du retrait du gestionnaire"
+    },
+    "managersLabel": "Gestionnaires",
+    "otherSector": "autre secteur",
+    "assignedToSector": "déjà dans {name}",
+    "manage": "Gérer",
+    "drawerHintCreate": "Renseignez infos, salles et gestionnaires. Tout est créé d'un coup à l'enregistrement.",
+    "drawerHintEdit": "Attribuez salles et gestionnaires. Un gestionnaire ne gère que les salles de ce secteur.",
+    "sectionBasicsTitle": "Informations du secteur",
+    "sectionBasicsHelp": "Nom affiché dans l'organisation",
+    "sectionRoomsTitle": "Attribuer des salles",
+    "sectionRoomsHelp": "Salles de ce secteur — les gestionnaires pourront les gérer",
+    "sectionMembersTitle": "Ajouter des gestionnaires",
+    "sectionMembersHelp": "Personnes qui peuvent valider, refuser et voir la file de ces salles",
+    "roomsSelected": "{count} sélectionnée(s)",
+    "roomsSaveHint": "Les salles cochées sont enregistrées via \"Enregistrer les modifications\".",
+    "membersAfterCreate": "Les gestionnaires s'ajoutent après la création. Cliquez sur \"Créer et continuer\".",
+    "noMembersYet": "Aucun gestionnaire dans la liste. Ajoutez ci-dessous, puis enregistrez.",
+    "addMemberLabel": "Ajouter un gestionnaire",
+    "addMember": "Ajouter",
+    "addMemberHint": "La liste n'est enregistrée qu'à la sauvegarde. Les gestionnaires ailleurs doivent actualiser Demandes.",
+    "noMemberCandidates": "Aucun autre membre. Ajoutez-en dans Utilisateurs.",
+    "saveAndContinue": "Créer et continuer",
+    "saveChanges": "Enregistrer les modifications",
+    "cardEmptyHint": "Ni salles ni gestionnaires. Cliquez sur Gérer.",
+    "roomsSaveHintCreate": "Les salles cochées sont liées à l'enregistrement du secteur.",
+    "roomsSaveHintEdit": "Les salles cochées sont enregistrées via \"Enregistrer les modifications\".",
+    "checklistBasics": "Infos",
+    "checklistRooms": "Salles",
+    "checklistMembers": "Gestionnaires",
+    "checklistReady": "OK",
+    "checklistPending": "En attente",
+    "checklistAfterCreate": "Après création",
+    "roomsManageEffect": "Effet : les gestionnaires de ce secteur pourront valider, refuser et suivre les réservations de ces salles.",
+    "membersSaveHint": "Les gestionnaires de la liste sont enregistrés avec les salles via \"Enregistrer les modifications\".",
+    "createSubmit": "Créer le secteur",
+    "confirmDiscard": "Modifications non enregistrées. Abandonner et fermer ?"
   }
 }

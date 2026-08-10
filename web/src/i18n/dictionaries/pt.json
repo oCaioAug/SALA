@@ -29,7 +29,7 @@
       "reservedTag": "Reservada",
       "people": "{count} pessoas",
       "quantity": "Qtd: {count}",
-      "moreItems": "+{count} itens adicionais",
+      "moreItems": "{count, plural, one {+1 item adicional} other {+{count} itens adicionais}}",
       "createTitle": "Criar Nova Sala",
       "createDescription": "Adicione uma nova sala ao sistema para começar o gerenciamento"
     },
@@ -64,9 +64,13 @@
       "outletsLabel": "Tomadas (parede)",
       "outletsPlaceholder": "Quantidade",
       "climateLabel": "Ambiente climatizado",
+      "sectorLabel": "Setor responsável",
+      "sectorNone": "Sem setor",
       "submitCreate": "Criar Sala",
       "submitUpdate": "Atualizar Sala",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "sectorHelp": "Os gestores deste setor poderão aprovar reservas desta sala.",
+      "sectorHelpNone": "Sem setor, apenas administradores da organização aprovam reservas desta sala."
     }
   },
   "Pagination": {
@@ -79,7 +83,92 @@
   },
   "SalasPage": {
     "title": "Salas",
-    "subtitle": "Visualize, filtre e gerencie as salas do sistema"
+    "subtitle": "Visualize, filtre e gerencie as salas do sistema",
+    "noSector": "Sem setor",
+    "filters": {
+      "noSector": "Sem setor",
+      "sectorAll": "Todos os setores"
+    },
+    "orphanBanner": "{count} sala(s) sem setor — só administradores da organização aprovam reservas delas."
+  },
+  "SetoresPage": {
+    "title": "Setores",
+    "subtitle": "Organize quem aprova reservas: atribua salas e gestores a cada setor",
+    "create": "Novo setor",
+    "edit": "Editar",
+    "archive": "Arquivar",
+    "searchPlaceholder": "Buscar setores...",
+    "emptyTitle": "Nenhum setor cadastrado",
+    "emptyDescription": "Crie um setor, clique em Gerenciar e atribua salas e gestores de aprovação.",
+    "drawerCreateTitle": "Criar setor",
+    "drawerEditTitle": "Gerenciar setor",
+    "nameLabel": "Nome",
+    "namePlaceholder": "Ex: Coordenação de TI",
+    "descriptionLabel": "Descrição",
+    "descriptionPlaceholder": "Opcional",
+    "roomsLabel": "Salas do setor",
+    "noRooms": "Nenhuma sala disponível",
+    "membersLabel": "Gestores do setor",
+    "selectMember": "Selecionar gestor...",
+    "removeMember": "Remover gestor",
+    "roomsCount": "{count} salas",
+    "membersCount": "{count} gestores",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "confirmArchive": "Arquivar o setor \"{name}\"? {count} sala(s) ficarão sem setor e só admins da organização poderão aprovar reservas delas.",
+    "feedback": {
+      "created": "Setor criado com sucesso",
+      "updated": "Setor atualizado com sucesso",
+      "archived": "Setor arquivado",
+      "memberAdded": "Gestor adicionado",
+      "memberRemoved": "Gestor removido",
+      "memberRefreshHint": "Gestores já logados em outro dispositivo/aba precisam atualizar a página para ver Solicitações",
+      "createdContinue": "Setor criado. Confira as salas e adicione os gestores abaixo."
+    },
+    "errors": {
+      "load": "Erro ao carregar setores",
+      "save": "Erro ao salvar setor",
+      "archive": "Erro ao arquivar setor",
+      "nameRequired": "Nome é obrigatório",
+      "addMember": "Erro ao adicionar gestor",
+      "removeMember": "Erro ao remover gestor"
+    },
+    "managersLabel": "Gestores",
+    "otherSector": "outro setor",
+    "assignedToSector": "já em {name}",
+    "manage": "Gerenciar",
+    "drawerHintCreate": "Preencha dados, salas e gestores. Tudo é criado de uma vez ao salvar.",
+    "drawerHintEdit": "Atribua salas e gestores. Quem for gestor só gerencia as salas vinculadas a este setor.",
+    "sectionBasicsTitle": "Dados do setor",
+    "sectionBasicsHelp": "Nome exibido na organização",
+    "sectionRoomsTitle": "Atribuir salas",
+    "sectionRoomsHelp": "Salas sob responsabilidade deste setor — os gestores passam a gerenciá-las",
+    "sectionMembersTitle": "Adicionar gestores",
+    "sectionMembersHelp": "Pessoas que podem aprovar, rejeitar e ver a fila destas salas",
+    "roomsSelected": "{count} selecionada(s)",
+    "roomsSaveHint": "As salas marcadas são salvas ao clicar em \"Salvar alterações\".",
+    "membersAfterCreate": "Gestores só podem ser adicionados depois de criar o setor. Clique em \"Criar e continuar\" para liberar esta etapa.",
+    "noMembersYet": "Nenhum gestor na lista. Inclua abaixo e depois salve.",
+    "addMemberLabel": "Incluir gestor",
+    "addMember": "Adicionar",
+    "addMemberHint": "A lista só é gravada ao salvar. Gestores em outra sessão precisam atualizar a página para ver Solicitações.",
+    "noMemberCandidates": "Não há outros membros disponíveis. Cadastre usuários em Usuários primeiro.",
+    "saveAndContinue": "Criar e continuar",
+    "saveChanges": "Salvar alterações",
+    "cardEmptyHint": "Sem salas nem gestores. Clique em Gerenciar para configurar.",
+    "roomsSaveHintCreate": "As salas marcadas são vinculadas ao salvar o setor.",
+    "roomsSaveHintEdit": "As salas marcadas são salvas ao clicar em \"Salvar alterações\".",
+    "checklistBasics": "Dados",
+    "checklistRooms": "Salas",
+    "checklistMembers": "Gestores",
+    "checklistReady": "Ok",
+    "checklistPending": "Pendente",
+    "checklistAfterCreate": "Após criar",
+    "roomsManageEffect": "Efeito: os gestores deste setor poderão aprovar, rejeitar e acompanhar as reservas destas salas.",
+    "membersSaveHint": "Gestores da lista são salvos junto com as salas ao clicar em \"Salvar alterações\".",
+    "createSubmit": "Criar setor",
+    "confirmDiscard": "Há alterações não salvas. Descartar e fechar?"
   },
   "DashboardHome": {
     "title": "Painel",
@@ -500,6 +589,10 @@
         "label": "Solicitações",
         "description": "Aprovar reservas pendentes"
       },
+      "setores": {
+        "label": "Setores",
+        "description": "Responsáveis por salas e aprovações"
+      },
       "agendamentos": {
         "label": "Agendamentos",
         "description": "Calendário de reservas"
@@ -588,7 +681,7 @@
   "OrganizationsPage": {
     "greeting": "Olá",
     "title": "Suas organizações",
-    "subtitle": "Escolha onde deseja trabalhar, aceite convites ou cadastre uma nova organização",
+    "subtitle": "Selecione uma organização para acessar seu painel.",
     "hubBadge": "Central de acesso",
     "signOut": "Sair",
     "enter": "Acessar",
@@ -598,9 +691,17 @@
     "inviteError": "Erro ao aceitar convite",
     "completeProfileHint": "Complete seu perfil (CPF e telefone) antes de criar uma organização, ou aceite um convite abaixo.",
     "superAdminOrgHint": "Como administrador da plataforma, gerencie organizações pelo painel da plataforma.",
+    "shell": {
+      "brand": "Painel"
+    },
+    "card": {
+      "planLine": "Plano {plan} · {role}",
+      "roleLine": "Seu papel: {role}",
+      "createdAt": "Criada em {date}"
+    },
     "sections": {
       "organizations": "Suas organizações",
-      "organizationsDesc": "Selecione a organização para continuar",
+      "organizationsDesc": "Selecione uma organização para acessar seu painel.",
       "actions": "Ações rápidas",
       "actionsDesc": "Cadastre uma nova organização ou acesse o painel da plataforma"
     },
@@ -628,6 +729,10 @@
       "description": "Gerenciar todas as organizações, planos, usuários e auditoria do SALA",
       "badge": "Super Admin"
     },
+    "manageOrg": {
+      "title": "Gerenciar organizações",
+      "description": "Convide membros e altere permissões."
+    },
     "organization": {
       "adminTitle": "Painel da organização",
       "adminDescription": "Salas, reservas, usuários e configurações da sua organização",
@@ -636,13 +741,13 @@
       "namedTitle": "{name}"
     },
     "createOrg": {
-      "title": "Criar organização",
-      "description": "Configure uma nova empresa ou equipe no SALA",
+      "title": "Criar nova organização",
+      "description": "Comece uma nova organização do zero.",
       "action": "Cadastrar"
     },
     "anotherOrg": {
-      "title": "Outra organização",
-      "description": "Cadastrar uma nova organização no SALA"
+      "title": "Criar nova organização",
+      "description": "Comece uma nova organização do zero."
     },
     "invites": {
       "title": "Convites pendentes",
@@ -1076,7 +1181,9 @@
       "pending": "Pendente",
       "approved": "Aprovada",
       "rejected": "Rejeitada",
-      "unknown": "Desconhecido"
+      "unknown": "Desconhecido",
+      "sector": "Setor",
+      "selfApproveBlocked": "Você não pode aprovar ou rejeitar a própria solicitação"
     },
     "modal": {
       "details": "Detalhes da Solicitação",
@@ -1087,7 +1194,11 @@
       "purpose": "Propósito",
       "status": "Status",
       "createdAt": "Criada em",
-      "close": "Fechar"
+      "close": "Fechar",
+      "decisionTitle": "Decisão",
+      "decidedBy": "Decidido por",
+      "decidedAt": "Em",
+      "decisionReason": "Motivo"
     },
     "conflict": {
       "title": "Conflito de Reserva",
@@ -1113,6 +1224,11 @@
       "placeholder": "Descreva o motivo da recusa...",
       "cancel": "Cancelar",
       "confirm": "Confirmar recusa"
+    },
+    "scope": {
+      "org": "Escopo: toda a organização",
+      "manager": "Escopo: {sectors} — {count} sala(s)",
+      "managerEmpty": "Escopo: nenhum setor com salas vinculadas"
     }
   },
   "Notifications": {
@@ -1691,7 +1807,9 @@
     },
     "confirmations": {
       "deleteItem": "Tem certeza que deseja excluir este item?"
-    }
+    },
+    "sector": "Setor",
+    "noSector": "Sem setor"
   },
   "UsersPage": {
     "title": "Gestão de Usuários",
@@ -2110,6 +2228,17 @@
       "audit": "Auditoria de Itens",
       "provision": "Provisionamento de Itens"
     },
+    "workflow": {
+      "stepRoom": "Sala",
+      "stepImage": "Imagem",
+      "stepAnalyze": "Análise",
+      "imageStatus": "Status da imagem",
+      "imageReady": "Pronta para análise",
+      "imageMissing": "Aguardando upload ou captura",
+      "webcamActive": "Webcam ativa",
+      "needRoom": "Selecione uma sala para continuar.",
+      "needImage": "Envie ou capture uma imagem antes de analisar."
+    },
     "provider": {
       "title": "Motor de Inteligência Artificial",
       "mock": "Simulador Offline (Alta Fidelidade)",
@@ -2125,6 +2254,9 @@
       "modelIdPlaceholder": "Ex: yolov8n, s-a-l-a-detector/1",
       "save": "Criptografar e Salvar no Banco",
       "clear": "Remover do Banco (Reverter)",
+      "clearShort": "Limpar",
+      "show": "Mostrar",
+      "hide": "Ocultar",
       "saved": "Credenciais criptografadas e salvas com sucesso!",
       "cleared": "Credenciais removidas do banco de dados.",
       "onlyAdmins": "Apenas administradores podem gerenciar chaves de API.",
@@ -2138,14 +2270,19 @@
     "controls": {
       "selectRoom": "Selecione uma Sala",
       "selectRoomPlaceholder": "Selecione...",
+      "captureArea": "Área de captura",
+      "useWebcam": "Usar Webcam",
+      "stopCamera": "Desativar Câmera",
+      "selectFile": "Selecionar Arquivo",
+      "clearImage": "Remover imagem",
       "uploadTitle": "Enviar Foto para Análise",
       "uploadSubtitle": "Arraste uma foto ou clique para fazer upload",
       "analyzeBtn": "Executar Análise com IA",
       "analyzing": "Analisando...",
       "camera": "Webcam do Laboratório",
       "capture": "Capturar Foto",
-      "presets": "Cenários de Teste (Presets)",
-      "presetsSubtitle": "Clique em um cenário abaixo para carregar imagens pré-configuradas imediatamente:",
+      "presets": "Cenários de teste",
+      "presetsSubtitle": "Carregue uma imagem pré-configurada para validar o fluxo rapidamente.",
       "presetEmpty": "Laboratório Vazio",
       "presetFull": "Laboratório em Uso",
       "presetAudit": "Falta de Equipamentos",
@@ -2160,6 +2297,7 @@
       "statusMissing": "Faltando!",
       "statusExcess": "Excesso",
       "auditSummary": "Resumo da Auditoria",
+      "summaryHint": "Reconciliação entre itens registrados e objetos identificados visualmente.",
       "noDiscrepancy": "Nenhuma discrepância encontrada. Todos os equipamentos estão em ordem!",
       "discrepancyFound": "Discrepâncias detectadas! {count} equipamento(s) cadastrado(s) não foram identificados.",
       "incidentGenerated": "Incidente automático gerado com sucesso pelo SALA-BOT!",
@@ -2172,7 +2310,9 @@
       "qtyCol": "Quantidade Sugerida",
       "iconCol": "Ícone",
       "saveBtn": "Confirmar e Cadastrar no Banco",
+      "processing": "Processando...",
       "success": "Sala provisionada com sucesso! {count} itens foram criados.",
+      "successBanner": "Sala provisionada com sucesso. Os equipamentos foram salvos e estão ativos.",
       "empty": "Nenhum item detectado para provisionamento. Tente carregar outra foto."
     }
   }

@@ -45,12 +45,21 @@ const Drawer: React.FC<DrawerProps> = ({
   const isLeft = side === "left";
   const titleId = useId();
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      return;
+    }
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closeOnEscape) onClose();
+      if (e.key === "Escape" && closeOnEscape) onCloseRef.current();
     };
     document.addEventListener("keydown", onKey);
 
@@ -58,8 +67,12 @@ const Drawer: React.FC<DrawerProps> = ({
     if (!passThrough) {
       prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      queueMicrotask(() => closeBtnRef.current?.focus());
+      // Focus close only when the drawer opens, not on every parent re-render
+      if (!wasOpenRef.current) {
+        queueMicrotask(() => closeBtnRef.current?.focus());
+      }
     }
+    wasOpenRef.current = true;
 
     return () => {
       document.removeEventListener("keydown", onKey);
@@ -67,7 +80,7 @@ const Drawer: React.FC<DrawerProps> = ({
         document.body.style.overflow = prevOverflow;
       }
     };
-  }, [isOpen, onClose, closeOnEscape, passThrough]);
+  }, [isOpen, closeOnEscape, passThrough]);
 
   if (!isOpen) return null;
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { MdInventory2 } from "react-icons/md";
 
@@ -10,10 +10,10 @@ import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Drawer } from "@/components/ui/Drawer";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { Image, Item, Room, User } from "@/lib/types";
+import { Image, Item, Room } from "@/lib/types";
 
 const RoomItemsPage: React.FC = () => {
   const t = useTranslations("RoomItemsPage");
@@ -22,12 +22,16 @@ const RoomItemsPage: React.FC = () => {
   const roomId = params.id as string;
 
   const [currentPage, setCurrentPage] = useState("salas");
-  const [room, setRoom] = useState<Room | null>(null);
+  const [room, setRoom] = useState<(Room & { canManageItems?: boolean }) | null>(
+    null
+  );
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+
+  const canManageItems = Boolean(room?.canManageItems);
 
   // Hook de navegação
   const { navigate, isNavigating } = useNavigation({
@@ -217,9 +221,11 @@ const RoomItemsPage: React.FC = () => {
               <Button variant="outline" onClick={() => router.back()}>
                 ← {t("back")}
               </Button>
-              <Button onClick={() => setIsAddItemModalOpen(true)}>
-                + {t("addItem")}
-              </Button>
+              {canManageItems && (
+                <Button onClick={() => setIsAddItemModalOpen(true)}>
+                  + {t("addItem")}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -248,9 +254,11 @@ const RoomItemsPage: React.FC = () => {
                     Comece adicionando itens para esta sala
                   </p>
                 </div>
-                <Button onClick={() => setIsAddItemModalOpen(true)}>
-                  Adicionar Primeiro Item
-                </Button>
+                {canManageItems && (
+                  <Button onClick={() => setIsAddItemModalOpen(true)}>
+                    Adicionar Primeiro Item
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -302,22 +310,26 @@ const RoomItemsPage: React.FC = () => {
                         </div>
 
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingItem(item)}
-                            className="flex-1"
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex-1"
-                          >
-                            Deletar
-                          </Button>
+                          {canManageItems && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingItem(item)}
+                                className="flex-1"
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex-1"
+                              >
+                                Deletar
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
 

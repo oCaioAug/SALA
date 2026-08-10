@@ -38,12 +38,19 @@ describe("Approve Reservation API", () => {
         organizationId: orgId,
         roomId: "room-1",
         status: "PENDING",
+        room: {
+          id: "room-1",
+          organizationId: orgId,
+          sectorId: null,
+          name: "Sala 1",
+        },
+        user: { id: "user-1", name: "Maria", email: "maria@example.com" },
       })
     );
   });
 
   it("should return 404 if reservation not found", async () => {
-    mockGetReservationInOrganization.mockResolvedValueOnce(null);
+    mockGetReservationInOrganization.mockResolvedValueOnce(null as any);
 
     const req = new NextRequest(
       "http://localhost:3000/api/reservations/bad-id/approve",
@@ -60,6 +67,13 @@ describe("Approve Reservation API", () => {
       organizationId: TEST_ORG_ID,
       roomId: "room-1",
       status: "APPROVED",
+      room: {
+        id: "room-1",
+        organizationId: TEST_ORG_ID,
+        sectorId: null,
+        name: "Sala 1",
+      },
+      user: { id: "user-1", name: "Maria", email: "maria@example.com" },
     });
 
     const req = new NextRequest(

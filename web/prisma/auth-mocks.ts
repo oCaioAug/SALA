@@ -56,18 +56,46 @@ export const mockRequireOrgAdmin = jest.fn(() =>
   Promise.resolve(mockAdminUser)
 );
 
+export const mockRequireReservationApprover = jest.fn(() =>
+  Promise.resolve(mockAdminUser)
+);
+
 export const mockGetRoomInOrganization = jest.fn(
   (roomId: string, orgId: string) =>
     Promise.resolve({ id: roomId, organizationId: orgId, deletedAt: null })
 );
 
 export const mockGetReservationInOrganization = jest.fn(
-  (id: string, orgId: string) =>
+  (
+    id: string,
+    orgId: string
+  ): Promise<{
+    id: string;
+    organizationId: string;
+    roomId: string;
+    userId: string;
+    status: string;
+    room: {
+      id: string;
+      organizationId: string;
+      sectorId: string | null;
+      name: string;
+    };
+    user: { id: string; name: string; email: string };
+  } | null> =>
     Promise.resolve({
       id,
       organizationId: orgId,
       roomId: "room-1",
+      userId: TEST_USER_ID,
       status: "ACTIVE",
+      room: {
+        id: "room-1",
+        organizationId: orgId,
+        sectorId: null,
+        name: "Sala 1",
+      },
+      user: { id: TEST_USER_ID, name: "Test", email: "test@example.com" },
     })
 );
 
@@ -100,6 +128,7 @@ jest.mock("@/lib/auth/platform", () => {
   return {
     ...actual,
     requireOrgAdmin: () => mockRequireOrgAdmin(),
+    requireReservationApprover: () => mockRequireReservationApprover(),
     requireAuth: () => mockRequireOrgAdmin(),
   };
 });
@@ -119,15 +148,29 @@ jest.mock("@/lib/auth/tenant-queries", () => ({
 beforeEach(() => {
   mockRequireTenantContext.mockResolvedValue(mockTenantContextValue);
   mockRequireOrgAdmin.mockResolvedValue(mockAdminUser);
+  mockRequireReservationApprover.mockResolvedValue(mockAdminUser);
   mockGetRoomInOrganization.mockImplementation((roomId, orgId) =>
-    Promise.resolve({ id: roomId, organizationId: orgId, deletedAt: null })
+    Promise.resolve({
+      id: roomId,
+      organizationId: orgId,
+      sectorId: null,
+      deletedAt: null,
+    })
   );
   mockGetReservationInOrganization.mockImplementation((id, orgId) =>
     Promise.resolve({
       id,
       organizationId: orgId,
       roomId: "room-1",
+      userId: TEST_USER_ID,
       status: "ACTIVE",
+      room: {
+        id: "room-1",
+        organizationId: orgId,
+        sectorId: null,
+        name: "Sala 1",
+      },
+      user: { id: TEST_USER_ID, name: "Test", email: "test@example.com" },
     })
   );
   mockGetIncidentInOrganization.mockImplementation((id, orgId) =>

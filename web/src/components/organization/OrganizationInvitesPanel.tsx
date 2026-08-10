@@ -89,7 +89,7 @@ export function OrganizationInvitesPanel() {
             placeholder={t("emailPlaceholder")}
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-400"
           />
           <Button type="submit" disabled={sending}>
             {sending ? t("sending") : t("sendInvite")}
@@ -97,14 +97,14 @@ export function OrganizationInvitesPanel() {
         </form>
 
         {lastInviteUrl && (
-          <div className="flex items-center gap-2 rounded-lg bg-violet-500/10 px-3 py-2 text-sm">
-            <span className="flex-1 truncate text-violet-200">
+          <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm dark:border-violet-500/20 dark:bg-violet-500/10">
+            <span className="flex-1 truncate text-violet-800 dark:text-violet-200">
               {lastInviteUrl}
             </span>
             <button
               type="button"
               onClick={() => copyUrl(lastInviteUrl)}
-              className="text-violet-300 hover:text-violet-100"
+              className="text-violet-600 hover:text-violet-800 dark:text-violet-300 dark:hover:text-violet-100"
               aria-label={t("copyLink")}
             >
               <Copy className="h-4 w-4" />
@@ -118,17 +118,19 @@ export function OrganizationInvitesPanel() {
           </div>
         ) : invites.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               {t("pendingTitle")}
             </p>
             {invites.map(invite => (
               <div
                 key={invite.id}
-                className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-gray-800/50"
+                className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800/50"
               >
                 <div>
-                  <p className="font-medium">{invite.email}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-slate-900 dark:text-slate-100">
+                    {invite.email}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {t("expires", {
                       role: invite.role,
                       date: new Date(invite.expiresAt).toLocaleDateString(
@@ -141,7 +143,7 @@ export function OrganizationInvitesPanel() {
                   <button
                     type="button"
                     onClick={() => copyUrl(invite.inviteUrl)}
-                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                     aria-label={t("copyLink")}
                   >
                     <Copy className="h-4 w-4" />
@@ -149,7 +151,7 @@ export function OrganizationInvitesPanel() {
                   <button
                     type="button"
                     onClick={() => cancelInvite(invite.id)}
-                    className="text-red-500 hover:text-red-400"
+                    className="text-red-500 hover:text-red-600 dark:hover:text-red-400"
                     aria-label={t("cancelInvite")}
                   >
                     <X className="h-4 w-4" />

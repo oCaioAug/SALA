@@ -5,6 +5,7 @@ import {
   Calendar as CalendarIcon,
   Edit,
   MapPin,
+  Network,
   Package,
   Plug,
   Plus,
@@ -45,6 +46,9 @@ const RoomDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+
+  const canEditRoom = Boolean(room?.canEditRoom);
+  const canManageItems = Boolean(room?.canManageItems);
 
   // Hook de navegação otimizada
   const { navigate, isNavigating } = useNavigation({
@@ -95,7 +99,17 @@ const RoomDetailPage: React.FC = () => {
       }
 
       const updatedRoom = await response.json();
-      setRoom(updatedRoom);
+      setRoom(prev =>
+        prev
+          ? {
+              ...prev,
+              ...updatedRoom,
+              canEditRoom: prev.canEditRoom,
+              canManageItems: prev.canManageItems,
+              items: updatedRoom.items ?? prev.items,
+            }
+          : updatedRoom
+      );
       setIsEditModalOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.updateRoom"));
@@ -276,7 +290,7 @@ const RoomDetailPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
                   {room.name}
                 </h1>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                   <StatusBadge status={room.status} />
                   {room.capacity && (
                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
@@ -288,6 +302,15 @@ const RoomDetailPage: React.FC = () => {
                       </div>
                       <span>{t("capacity", { count: room.capacity })}</span>
                     </div>
+                  )}
+                  {room.sector?.name ? (
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+                      {t("sector")}: {room.sector.name}
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      {t("noSector")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -301,7 +324,7 @@ const RoomDetailPage: React.FC = () => {
                   <CalendarIcon className="w-4 h-4" />
                   {t("viewReservations")}
                 </Button>
-                {isAdmin && (
+                {canEditRoom && (
                   <>
                     <Button
                       variant="outline"
@@ -311,14 +334,16 @@ const RoomDetailPage: React.FC = () => {
                       <Edit className="w-4 h-4" />
                       {t("editRoom")}
                     </Button>
-                    <Button
-                      onClick={() => setIsAddItemModalOpen(true)}
-                      className="gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      {t("addItem")}
-                    </Button>
                   </>
+                )}
+                {canManageItems && (
+                  <Button
+                    onClick={() => setIsAddItemModalOpen(true)}
+                    className="gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t("addItem")}
+                  </Button>
                 )}
               </div>
             </div>
@@ -337,6 +362,17 @@ const RoomDetailPage: React.FC = () => {
           <Card className="mb-6">
             <CardTitle className="mb-4 text-lg">{t("infoTitle")}</CardTitle>
             <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+              <div className="flex gap-3">
+                <Network className="mt-0.5 h-5 w-5 shrink-0 text-indigo-500" />
+                <div>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {t("sector")}
+                  </p>
+                  <p>
+                    {room.sector?.name?.trim() || t("noSector")}
+                  </p>
+                </div>
+              </div>
               <div className="flex gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
                 <div>
@@ -400,11 +436,11 @@ const RoomDetailPage: React.FC = () => {
                   {t("empty.title")}
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400 mb-6">
-                  {isAdmin
+                  {canManageItems
                     ? t("empty.descriptionAdmin")
                     : t("empty.descriptionUser")}
                 </p>
-                {isAdmin && (
+                {canManageItems && (
                   <Button
                     onClick={() => setIsAddItemModalOpen(true)}
                     className="gap-2"
@@ -461,7 +497,7 @@ const RoomDetailPage: React.FC = () => {
                               {t("item.quantity", { count: item.quantity })}
                             </p>
                           </div>
-                          {isAdmin && (
+                          {canManageItems && (
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <Button
                                 variant="outline"
@@ -534,6 +570,7 @@ const RoomDetailPage: React.FC = () => {
               room={room}
               onSubmit={handleUpdateRoom}
               onCancel={() => setIsEditModalOpen(false)}
+              allowSectorChange={isAdmin}
             />
           </Drawer>
 
