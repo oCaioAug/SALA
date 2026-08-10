@@ -1,7 +1,7 @@
 import {
   OrganizationRole,
-  SectorMemberRole,
   type Room,
+  SectorMemberRole,
 } from "@prisma/client";
 
 import { isOrgAdminRole } from "@/lib/auth/roles";
@@ -11,6 +11,8 @@ export const Capability = {
   manageOrganization: "manageOrganization",
   manageSectors: "manageSectors",
   manageRooms: "manageRooms",
+  editRoom: "editRoom",
+  manageRoomItems: "manageRoomItems",
   approveReservations: "approveReservations",
   viewSolicitacoes: "viewSolicitacoes",
 } as const;
@@ -145,8 +147,35 @@ export function canManageSectors(user: PermissionUser): boolean {
   );
 }
 
+/** Create / soft-delete rooms — org admin only. */
 export function canManageRooms(user: PermissionUser): boolean {
   return (
     !!user.organizationId && isOrgAdminRole(user.organizationRole)
   );
+}
+
+/**
+ * Update room attributes (name, capacity, location, outlets, climate, status…).
+ * Same scope as reservation approval: org admin any room in org; sector manager
+ * only rooms in sectors they manage; rooms without sector: org admin only.
+ * Changing sectorId remains org-admin-only at the API layer.
+ */
+export async function canEditRoom(
+  user: PermissionUser,
+  room: RoomForApproval
+): Promise<boolean> {
+  return canApproveRoom(user, room);
+}
+
+/**
+ * Org admin can manage items on any room in their org.
+ * Sector manager can manage items only on rooms assigned to a sector they manage.
+ * Rooms without sector: only org admin.
+ * Same scope as reservation approval for the room.
+ */
+export async function canManageRoomItems(
+  user: PermissionUser,
+  room: RoomForApproval
+): Promise<boolean> {
+  return canApproveRoom(user, room);
 }

@@ -1,11 +1,11 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
-import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import {
+  apiErrorResponse,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { canManageRoomItems } from "@/lib/auth/permissions";
+import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";
 import { requireTenantContext } from "@/lib/auth/tenant";
 import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
@@ -47,16 +47,24 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const auth = await requireOrgAdmin();
-    if (isNextResponse(auth)) return auth;
-    if (!auth.organizationId) {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
       return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
     const { id } = await params;
-    const room = await getRoomInOrganization(id, auth.organizationId);
+    const room = await getRoomInOrganization(id, ctx.organizationId);
     if (!room) {
       return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+    }
+
+    const allowed = await canManageRoomItems(
+      toPermissionUser(ctx.user),
+      room
+    );
+    if (!allowed) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
     const body = await request.json();
@@ -74,7 +82,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         quantity: quantity ? parseInt(quantity, 10) : 1,
         icon,
         roomId: id,
-        organizationId: auth.organizationId,
+        organizationId: ctx.organizationId,
       },
     });
 

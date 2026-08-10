@@ -1,11 +1,14 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
-import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { canEditRoom, canManageRoomItems } from "@/lib/auth/permissions";
+import {
+  isNextResponse,
+  requireOrgAdmin,
+  toPermissionUser,
+} from "@/lib/auth/platform";
+import { isOrgAdminRole } from "@/lib/auth/roles";
 import { requireTenantContext } from "@/lib/auth/tenant";
 import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
@@ -46,7 +49,17 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
     }
 
-    return NextResponse.json(room);
+    const permissionUser = toPermissionUser(ctx.user);
+    const [canManageItems, canEdit] = await Promise.all([
+      canManageRoomItems(permissionUser, room),
+      canEditRoom(permissionUser, room),
+    ]);
+
+    return NextResponse.json({
+      ...room,
+      canManageItems,
+      canEditRoom: canEdit,
+    });
   } catch (error) {
     console.error("Erro ao buscar sala:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
@@ -55,16 +68,25 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const auth = await requireOrgAdmin();
-    if (isNextResponse(auth)) return auth;
-    if (!auth.organizationId) {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+    }
+    if (!ctx.organizationId) {
       return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
     const { id } = await params;
-    const existing = await getRoomInOrganization(id, auth.organizationId);
+    const existing = await getRoomInOrganization(id, ctx.organizationId);
     if (!existing) {
       return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+    }
+
+    const permissionUser = toPermissionUser(ctx.user);
+    const allowed = await canEditRoom(permissionUser, existing);
+    if (!allowed) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
     const json = await request.json();
@@ -76,12 +98,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
     const data = parsed.data;
+    const isAdmin = isOrgAdminRole(ctx.user.organizationRole);
 
-    if (data.sectorId) {
+    // Only org admins may reassign the room's sector.
+    if (isAdmin && data.sectorId) {
       const sector = await prisma.sector.findFirst({
         where: {
           id: data.sectorId,
-          organizationId: auth.organizationId,
+          organizationId: ctx.organizationId,
           deletedAt: null,
         },
         select: { id: true },
@@ -112,7 +136,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           climateControlled: data.climateControlled,
         }),
         ...(data.status !== undefined && { status: data.status }),
-        ...(data.sectorId !== undefined && { sectorId: data.sectorId }),
+        ...(isAdmin &&
+          data.sectorId !== undefined && { sectorId: data.sectorId }),
       },
       include: {
         sector: { select: { id: true, name: true } },

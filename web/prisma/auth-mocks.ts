@@ -150,7 +150,12 @@ beforeEach(() => {
   mockRequireOrgAdmin.mockResolvedValue(mockAdminUser);
   mockRequireReservationApprover.mockResolvedValue(mockAdminUser);
   mockGetRoomInOrganization.mockImplementation((roomId, orgId) =>
-    Promise.resolve({ id: roomId, organizationId: orgId, deletedAt: null })
+    Promise.resolve({
+      id: roomId,
+      organizationId: orgId,
+      sectorId: null,
+      deletedAt: null,
+    })
   );
   mockGetReservationInOrganization.mockImplementation((id, orgId) =>
     Promise.resolve({

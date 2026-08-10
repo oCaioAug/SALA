@@ -4,7 +4,9 @@
 import { NextRequest } from "next/server";
 
 import {
+  mockAdminContextValue,
   mockGetItemInOrganization,
+  mockRequireTenantContext,
   TEST_ORG_ID,
 } from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
@@ -64,8 +66,27 @@ describe("Items [id] API", () => {
   });
 
   describe("PUT /api/items/[id]", () => {
+    const itemWithRoom = {
+      id: "item-1",
+      roomId: "room-1",
+      organizationId: TEST_ORG_ID,
+      room: {
+        id: "room-1",
+        organizationId: TEST_ORG_ID,
+        sectorId: "sector-1",
+      },
+    };
+
+    beforeEach(() => {
+      mockRequireTenantContext.mockResolvedValue(mockAdminContextValue);
+      prismaMock.sectorMember.findUnique.mockResolvedValue({
+        role: "MANAGER",
+        sector: { deletedAt: null },
+      } as any);
+    });
+
     it("should return 404 when item does not exist", async () => {
-      mockGetItemInOrganization.mockResolvedValueOnce(null);
+      prismaMock.item.findFirst.mockResolvedValueOnce(null);
 
       const req = new NextRequest("http://localhost:3000/api/items/bad-id", {
         method: "PUT",
@@ -77,6 +98,7 @@ describe("Items [id] API", () => {
     });
 
     it("should update item successfully with defaults", async () => {
+      prismaMock.item.findFirst.mockResolvedValue(itemWithRoom as any);
       prismaMock.item.update.mockResolvedValue({
         ...mockItem,
         name: "Projetor Atualizado",
@@ -87,7 +109,6 @@ describe("Items [id] API", () => {
         body: JSON.stringify({ name: "Projetor Atualizado", quantity: "2" }),
       });
       const response = await PUT(req, mockParams("item-1"));
-      const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(prismaMock.item.update).toHaveBeenCalledWith(
@@ -101,6 +122,7 @@ describe("Items [id] API", () => {
     });
 
     it("should default quantity to 1 when not provided", async () => {
+      prismaMock.item.findFirst.mockResolvedValue(itemWithRoom as any);
       prismaMock.item.update.mockResolvedValue(mockItem as any);
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {
@@ -117,6 +139,7 @@ describe("Items [id] API", () => {
     });
 
     it("should return 500 on DB error", async () => {
+      prismaMock.item.findFirst.mockResolvedValue(itemWithRoom as any);
       prismaMock.item.update.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {
@@ -130,10 +153,19 @@ describe("Items [id] API", () => {
   });
 
   describe("DELETE /api/items/[id]", () => {
+    beforeEach(() => {
+      mockRequireTenantContext.mockResolvedValue(mockAdminContextValue);
+    });
+
     it("should delete item with no images successfully", async () => {
       prismaMock.item.findFirst.mockResolvedValue({
         ...mockItem,
         images: [],
+        room: {
+          id: "room-1",
+          organizationId: TEST_ORG_ID,
+          sectorId: "sector-1",
+        },
       } as any);
       prismaMock.item.delete.mockResolvedValue({} as any);
 
@@ -155,6 +187,11 @@ describe("Items [id] API", () => {
       prismaMock.item.findFirst.mockResolvedValue({
         ...mockItem,
         images: [{ id: "img-1", filename: "test.jpg", path: "/path/test.jpg" }],
+        room: {
+          id: "room-1",
+          organizationId: TEST_ORG_ID,
+          sectorId: "sector-1",
+        },
       } as any);
       prismaMock.item.delete.mockResolvedValue({} as any);
 
@@ -167,7 +204,14 @@ describe("Items [id] API", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      prismaMock.item.findFirst.mockResolvedValue(mockItem as any);
+      prismaMock.item.findFirst.mockResolvedValue({
+        ...mockItem,
+        room: {
+          id: "room-1",
+          organizationId: TEST_ORG_ID,
+          sectorId: "sector-1",
+        },
+      } as any);
       prismaMock.item.delete.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {

@@ -1,10 +1,13 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  apiErrorResponse,
+} from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { canManageRoomItems } from "@/lib/auth/permissions";
+import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";
+import { isOrgAdminRole } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 import {
   generateFilename,
@@ -14,6 +17,12 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
+    }
+
     const formData = await request.formData();
     const file = formData.get("image") as File;
     const itemName = formData.get("itemName") as string;
@@ -27,25 +36,75 @@ export async function POST(request: NextRequest) {
       return apiErrorResponse(ApiErrorCode.ITEM_NAME_REQUIRED, 400);
     }
 
-    // Validar imagem
+    const permissionUser = toPermissionUser(ctx.user);
+
+    if (itemId) {
+      const item = await prisma.item.findFirst({
+        where: {
+          id: itemId,
+          OR: [
+            { organizationId: ctx.organizationId },
+            { room: { organizationId: ctx.organizationId } },
+          ],
+        },
+        include: {
+          room: {
+            select: { id: true, organizationId: true, sectorId: true },
+          },
+        },
+      });
+
+      if (!item) {
+        return apiErrorResponse(ApiErrorCode.ITEM_NOT_FOUND, 404);
+      }
+
+      if (item.room) {
+        const allowed = await canManageRoomItems(permissionUser, item.room);
+        if (!allowed) {
+          return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+        }
+      } else if (!isOrgAdminRole(ctx.user.organizationRole)) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    } else if (!isOrgAdminRole(ctx.user.organizationRole)) {
+      // Temp upload before item exists: only org admins, or managers who
+      // already passed room-scoped create. Managers must attach itemId after create.
+      // Allow sector managers to upload temp files only if they manage at least one room
+      // — prefer requiring roomId for managers.
+      const roomId = formData.get("roomId") as string | null;
+      if (!roomId) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+      const room = await prisma.room.findFirst({
+        where: {
+          id: roomId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true, organizationId: true, sectorId: true },
+      });
+      if (!room) {
+        return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+      }
+      const allowed = await canManageRoomItems(permissionUser, room);
+      if (!allowed) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    }
+
     const validation = validateImage(file);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    // Converter File para Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Gerar nome do arquivo
     const filename = generateFilename(itemName);
 
-    // Processar e salvar imagem
     const { originalPath, thumbnailPath } = await uploadImage(buffer, filename);
 
-    // Salvar referência no banco de dados
     if (itemId) {
-      // Se já existe item, criar imagem associada
       const image = await prisma.image.create({
         data: {
           itemId,
@@ -61,15 +120,14 @@ export async function POST(request: NextRequest) {
         thumbnailPath,
         itemId: image.itemId,
       });
-    } else {
-      // Se não existe item ainda, retornar dados para salvar depois
-      return NextResponse.json({
-        filename,
-        path: originalPath,
-        thumbnailPath,
-        temp: true, // Indica que é temporário, precisa ser associado a um item depois
-      });
     }
+
+    return NextResponse.json({
+      filename,
+      path: originalPath,
+      thumbnailPath,
+      temp: true,
+    });
   } catch (error) {
     console.error("Erro ao fazer upload da imagem:", error);
     return NextResponse.json(

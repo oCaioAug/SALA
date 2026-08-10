@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
 import { MdInventory2 } from "react-icons/md";
 
-import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
+import { SalasAccessGuard } from "@/components/auth/SalasAccessGuard";
 import { RoomForm } from "@/components/forms/RoomForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -20,8 +20,8 @@ import { Pagination } from "@/components/ui/Pagination";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
+import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { Room } from "@/lib/types";
 import { safeLocalStorage } from "@/lib/utils/clientSafe";
 import { Link } from "@/navigation";
@@ -33,7 +33,7 @@ const SalasPage: React.FC = () => {
   const ts = useTranslations("SalasPage");
 
   const { data: session } = useSession();
-  const { isOrgAdmin } = useOrgPermissions();
+  const { isOrgAdmin, isSectorManager } = useOrgPermissions();
   const [currentPageNav, setCurrentPageNav] = useState("salas");
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -198,7 +198,16 @@ const SalasPage: React.FC = () => {
       (sectorFilter === "noSector" && !roomSectorId) ||
       (sectorFilter !== "noSector" && roomSectorId === sectorFilter);
 
-    return matchesSearch && matchesStatus && matchesSector;
+    const managedSectorIds = new Set(sectors.map(s => s.id));
+    const matchesManagerScope =
+      isOrgAdmin ||
+      (isSectorManager &&
+        !!roomSectorId &&
+        managedSectorIds.has(roomSectorId));
+
+    return (
+      matchesSearch && matchesStatus && matchesSector && matchesManagerScope
+    );
   });
 
   useEffect(() => {
@@ -414,7 +423,7 @@ const SalasPage: React.FC = () => {
   };
 
   return (
-    <OrgAdminGuard>
+    <SalasAccessGuard>
       <PageLayout
         currentPage={currentPageNav}
         onNavigate={navigate}
@@ -456,10 +465,12 @@ const SalasPage: React.FC = () => {
                       <Button variant="outline">{t("actions.users")}</Button>
                     </Link>
                   )}
-                  <Button onClick={handleAddRoom}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t("actions.newRoom")}
-                  </Button>
+                  {isOrgAdmin && (
+                    <Button onClick={handleAddRoom}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t("actions.newRoom")}
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -635,7 +646,7 @@ const SalasPage: React.FC = () => {
           </>
         )}
       </PageLayout>
-    </OrgAdminGuard>
+    </SalasAccessGuard>
   );
 };
 

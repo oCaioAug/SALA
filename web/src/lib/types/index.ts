@@ -47,6 +47,8 @@ export interface RoomWithItems {
   items: ItemWithImages[];
   reservations?: Reservation[];
   sector?: { id: string; name: string } | null;
+  canManageItems?: boolean;
+  canEditRoom?: boolean;
 }
 
 export interface RoomWithReservations extends Room {

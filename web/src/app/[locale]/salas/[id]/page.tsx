@@ -47,6 +47,9 @@ const RoomDetailPage: React.FC = () => {
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
+  const canEditRoom = Boolean(room?.canEditRoom);
+  const canManageItems = Boolean(room?.canManageItems);
+
   // Hook de navegação otimizada
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -96,7 +99,17 @@ const RoomDetailPage: React.FC = () => {
       }
 
       const updatedRoom = await response.json();
-      setRoom(updatedRoom);
+      setRoom(prev =>
+        prev
+          ? {
+              ...prev,
+              ...updatedRoom,
+              canEditRoom: prev.canEditRoom,
+              canManageItems: prev.canManageItems,
+              items: updatedRoom.items ?? prev.items,
+            }
+          : updatedRoom
+      );
       setIsEditModalOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.updateRoom"));
@@ -311,7 +324,7 @@ const RoomDetailPage: React.FC = () => {
                   <CalendarIcon className="w-4 h-4" />
                   {t("viewReservations")}
                 </Button>
-                {isAdmin && (
+                {canEditRoom && (
                   <>
                     <Button
                       variant="outline"
@@ -321,14 +334,16 @@ const RoomDetailPage: React.FC = () => {
                       <Edit className="w-4 h-4" />
                       {t("editRoom")}
                     </Button>
-                    <Button
-                      onClick={() => setIsAddItemModalOpen(true)}
-                      className="gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      {t("addItem")}
-                    </Button>
                   </>
+                )}
+                {canManageItems && (
+                  <Button
+                    onClick={() => setIsAddItemModalOpen(true)}
+                    className="gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t("addItem")}
+                  </Button>
                 )}
               </div>
             </div>
@@ -421,11 +436,11 @@ const RoomDetailPage: React.FC = () => {
                   {t("empty.title")}
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400 mb-6">
-                  {isAdmin
+                  {canManageItems
                     ? t("empty.descriptionAdmin")
                     : t("empty.descriptionUser")}
                 </p>
-                {isAdmin && (
+                {canManageItems && (
                   <Button
                     onClick={() => setIsAddItemModalOpen(true)}
                     className="gap-2"
@@ -482,7 +497,7 @@ const RoomDetailPage: React.FC = () => {
                               {t("item.quantity", { count: item.quantity })}
                             </p>
                           </div>
-                          {isAdmin && (
+                          {canManageItems && (
                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                               <Button
                                 variant="outline"
@@ -555,6 +570,7 @@ const RoomDetailPage: React.FC = () => {
               room={room}
               onSubmit={handleUpdateRoom}
               onCancel={() => setIsEditModalOpen(false)}
+              allowSectorChange={isAdmin}
             />
           </Drawer>
 

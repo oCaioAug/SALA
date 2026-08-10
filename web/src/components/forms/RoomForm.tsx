@@ -16,11 +16,18 @@ interface RoomFormProps {
     >
   ) => void;
   onCancel: () => void;
+  /** When false, sector select is hidden and sectorId is not sent on submit. */
+  allowSectorChange?: boolean;
 }
 
 type SectorOption = { id: string; name: string };
 
-const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
+const RoomForm: React.FC<RoomFormProps> = ({
+  room,
+  onSubmit,
+  onCancel,
+  allowSectorChange = true,
+}) => {
   const t = useTranslations("Dashboard");
   const tf = useTranslations("Dashboard.form");
 
@@ -42,6 +49,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!allowSectorChange) return;
     let cancelled = false;
     (async () => {
       try {
@@ -58,7 +66,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [allowSectorChange]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +89,9 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
         ? parseInt(formData.outletCount, 10)
         : null,
       climateControlled: formData.climateControlled,
-      sectorId: formData.sectorId || null,
+      sectorId: allowSectorChange
+        ? formData.sectorId || null
+        : (room?.sectorId ?? null),
     });
   };
 
@@ -194,33 +204,35 @@ const RoomForm: React.FC<RoomFormProps> = ({ room, onSubmit, onCancel }) => {
         </select>
       </div>
 
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-          {tf("sectorLabel")}
-        </label>
-        <select
-          name="sectorId"
-          value={formData.sectorId}
-          onChange={handleInputChange}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-        >
-          <option value="">{tf("sectorNone")}</option>
-          {sectors.map(sector => (
-            <option key={sector.id} value={sector.id}>
-              {sector.name}
-            </option>
-          ))}
-        </select>
-        <p
-          className={`mt-1.5 text-xs ${
-            formData.sectorId
-              ? "text-slate-500 dark:text-slate-400"
-              : "text-amber-700 dark:text-amber-300"
-          }`}
-        >
-          {formData.sectorId ? tf("sectorHelp") : tf("sectorHelpNone")}
-        </p>
-      </div>
+      {allowSectorChange && (
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {tf("sectorLabel")}
+          </label>
+          <select
+            name="sectorId"
+            value={formData.sectorId}
+            onChange={handleInputChange}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+          >
+            <option value="">{tf("sectorNone")}</option>
+            {sectors.map(sector => (
+              <option key={sector.id} value={sector.id}>
+                {sector.name}
+              </option>
+            ))}
+          </select>
+          <p
+            className={`mt-1.5 text-xs ${
+              formData.sectorId
+                ? "text-slate-500 dark:text-slate-400"
+                : "text-amber-700 dark:text-amber-300"
+            }`}
+          >
+            {formData.sectorId ? tf("sectorHelp") : tf("sectorHelpNone")}
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" className="flex-1">

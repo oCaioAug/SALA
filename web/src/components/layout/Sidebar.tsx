@@ -39,7 +39,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const t = useTranslations("Sidebar");
   const tCommon = useTranslations("Common");
-  const { isOrgAdmin, canAccessSolicitacoes } = useOrgPermissions();
+  const { isOrgAdmin, canAccessSolicitacoes, isSectorManager } =
+    useOrgPermissions();
 
   const myOrganizationsItem = {
     id: "inicio",
@@ -57,6 +58,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     active: currentPage === "solicitacoes",
   };
 
+  const salasMenuItem = {
+    id: "salas",
+    label: t("menuItems.salas.label"),
+    icon: DoorOpen,
+    description: t("menuItems.salas.description"),
+    active: currentPage === "salas",
+  };
+
   const adminMenuItems = [
     {
       id: "dashboard",
@@ -65,13 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: t("menuItems.dashboard.description"),
       active: currentPage === "dashboard",
     },
-    {
-      id: "salas",
-      label: t("menuItems.salas.label"),
-      icon: DoorOpen,
-      description: t("menuItems.salas.description"),
-      active: currentPage === "salas",
-    },
+    salasMenuItem,
     solicitacoesMenuItem,
     {
       id: "setores",
@@ -146,6 +149,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: t("menuItems.explorar.description"),
       active: currentPage === "explorar",
     },
+    ...(isSectorManager ? [salasMenuItem] : []),
     ...(canAccessSolicitacoes ? [solicitacoesMenuItem] : []),
     {
       id: "agendamentos",

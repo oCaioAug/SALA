@@ -17,7 +17,7 @@ export type AuthUser = User & {
   organizationRole: OrganizationRole | null;
 };
 
-function toPermissionUser(user: AuthUser): PermissionUser {
+export function toPermissionUser(user: AuthUser): PermissionUser {
   return {
     id: user.id,
     organizationId: user.organizationId,

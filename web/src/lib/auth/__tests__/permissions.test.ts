@@ -1,10 +1,10 @@
 import { OrganizationRole, SectorMemberRole } from "@prisma/client";
 
-import { OrganizationRole, SectorMemberRole } from "@prisma/client";
-
 import {
   canApproveReservation,
   canApproveRoom,
+  canEditRoom,
+  canManageRoomItems,
   canManageRooms,
   canManageSectors,
   canViewSolicitacoes,
@@ -210,6 +210,120 @@ describe("permissions", () => {
           organizationRole: OrganizationRole.MEMBER,
         })
       ).toBe(false);
+    });
+  });
+
+  describe("canEditRoom", () => {
+    it("allows org admin for any room", async () => {
+      const ok = await canEditRoom(
+        {
+          id: "admin-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.ADMIN,
+        },
+        roomWithoutSector
+      );
+      expect(ok).toBe(true);
+    });
+
+    it("allows sector MANAGER for room in their sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue({
+        role: SectorMemberRole.MANAGER,
+        sector: { deletedAt: null },
+      } as any);
+
+      const ok = await canEditRoom(
+        {
+          id: "manager-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(true);
+    });
+
+    it("denies MEMBER for room without sector", async () => {
+      const ok = await canEditRoom(
+        {
+          id: "member-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithoutSector
+      );
+      expect(ok).toBe(false);
+    });
+
+    it("denies sector manager of another sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(null);
+
+      const ok = await canEditRoom(
+        {
+          id: "manager-2",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(false);
+    });
+  });
+
+  describe("canManageRoomItems", () => {
+    it("allows org admin for any room", async () => {
+      const ok = await canManageRoomItems(
+        {
+          id: "admin-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.ADMIN,
+        },
+        roomWithoutSector
+      );
+      expect(ok).toBe(true);
+    });
+
+    it("allows sector MANAGER for room in their sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue({
+        role: SectorMemberRole.MANAGER,
+        sector: { deletedAt: null },
+      } as any);
+
+      const ok = await canManageRoomItems(
+        {
+          id: "manager-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(true);
+    });
+
+    it("denies MEMBER for room without sector", async () => {
+      const ok = await canManageRoomItems(
+        {
+          id: "member-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithoutSector
+      );
+      expect(ok).toBe(false);
+    });
+
+    it("denies sector manager of another sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(null);
+
+      const ok = await canManageRoomItems(
+        {
+          id: "manager-2",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(false);
     });
   });
 });

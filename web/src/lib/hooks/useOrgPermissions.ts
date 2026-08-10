@@ -25,6 +25,11 @@ export function useOrgPermissions() {
 
   const canAccessSolicitacoes = isOrgAdmin || isSectorManager;
 
+  /** Menu/list access to /salas — item mutations still checked per room on the API. */
+  const canAccessSalas = isOrgAdmin || isSectorManager;
+
+  const canManageSectorRoomItems = isOrgAdmin || isSectorManager;
+
   const isOrgMember =
     status === "authenticated" && hasOrganization && !isOrgAdmin;
 
@@ -39,6 +44,8 @@ export function useOrgPermissions() {
     isOrgMember,
     isSectorManager,
     canAccessSolicitacoes,
+    canAccessSalas,
+    canManageSectorRoomItems,
     isLoading: status === "loading",
   };
 }
