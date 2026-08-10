@@ -1,16 +1,22 @@
 "use client";
 
+import { CalendarCheck, Info, Play } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Play, CalendarCheck, AlertTriangle } from "lucide-react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
-import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
-import { runTimetablingEngine, getTurmas, getDisciplinas, getProfessores, getGradeSettings } from "../actions";
+import {
+  getDisciplinas,
+  getGradeSettings,
+  getProfessores,
+  getTurmas,
+  runTimetablingEngine,
+} from "../actions";
 
 const DIAS_SEMANA = [
   { id: 1, nome: "Segunda" },
@@ -32,7 +38,9 @@ const GerarGradePage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [turmasMap, setTurmasMap] = useState<Record<string, string>>({});
-  const [turmaShiftsMap, setTurmaShiftsMap] = useState<Record<string, string>>({});
+  const [turmaShiftsMap, setTurmaShiftsMap] = useState<Record<string, string>>(
+    {}
+  );
   const [discMap, setDiscMap] = useState<Record<string, string>>({});
   const [profMap, setProfMap] = useState<Record<string, string>>({});
   const [shifts, setShifts] = useState<any[]>([]);
@@ -41,9 +49,12 @@ const GerarGradePage: React.FC = () => {
     const fetchDictionaries = async () => {
       try {
         const [turmas, disc, profs, settings] = await Promise.all([
-          getTurmas(), getDisciplinas(), getProfessores(), getGradeSettings()
+          getTurmas(),
+          getDisciplinas(),
+          getProfessores(),
+          getGradeSettings(),
         ]);
-        
+
         const tMap: Record<string, string> = {};
         const tsMap: Record<string, string> = {};
         turmas.forEach(t => {
@@ -54,15 +65,15 @@ const GerarGradePage: React.FC = () => {
         setTurmaShiftsMap(tsMap);
 
         const dMap: Record<string, string> = {};
-        disc.forEach(d => dMap[d.id] = d.name);
+        disc.forEach(d => (dMap[d.id] = d.name));
         setDiscMap(dMap);
 
         const pMap: Record<string, string> = {};
-        profs.forEach(p => pMap[p.id] = p.name);
+        profs.forEach(p => (pMap[p.id] = p.name));
         setProfMap(pMap);
-        
+
         setShifts(settings.timetabling?.shifts || []);
-      } catch(err) {
+      } catch (err) {
         console.error("Erro ao carregar dicionários", err);
       }
     };
@@ -73,14 +84,15 @@ const GerarGradePage: React.FC = () => {
     try {
       setIsGenerating(true);
       setResult(null);
-      
+
       const res = await runTimetablingEngine();
       setResult(res);
-      
+
       if (res.success) {
         showSuccess("Grade gerada com sucesso!");
       } else {
-        showError("Grade gerada com restrições (algumas aulas não alocadas).");
+        // Usa showSuccess também para não parecer um erro fatal do sistema
+        showSuccess("Grade gerada! Verifique os detalhes na tela.");
       }
     } catch (err: any) {
       showError(err.message || "Erro ao gerar grade");
@@ -93,7 +105,7 @@ const GerarGradePage: React.FC = () => {
   // output: { [turmaId]: Record<string, ScheduledClass> }
   const groupByTurma = () => {
     if (!result?.schedule || !Array.isArray(result.schedule)) return {};
-    
+
     const groups: Record<string, Record<string, any>> = {};
     result.schedule.forEach((c: any) => {
       if (!groups[c.turmaId]) groups[c.turmaId] = {};
@@ -103,7 +115,9 @@ const GerarGradePage: React.FC = () => {
   };
 
   const grouped = groupByTurma();
-  const sortedTurmaIds = Object.keys(grouped).sort((a, b) => (turmasMap[a] || "").localeCompare(turmasMap[b] || ""));
+  const sortedTurmaIds = Object.keys(grouped).sort((a, b) =>
+    (turmasMap[a] || "").localeCompare(turmasMap[b] || "")
+  );
 
   return (
     <OrgAdminGuard>
@@ -120,7 +134,8 @@ const GerarGradePage: React.FC = () => {
                 Gerar Grade Horária
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Execute o motor de alocação para distribuir as aulas baseadas nas disponibilidades.
+                Execute o motor de alocação para distribuir as aulas baseadas
+                nas disponibilidades.
               </p>
             </div>
           </div>
@@ -137,15 +152,18 @@ const GerarGradePage: React.FC = () => {
               </div>
               <h2 className="text-2xl font-semibold">Pronto para gerar?</h2>
               <p className="text-slate-500">
-                O motor irá analisar todas as cargas horárias e disponibilidades para criar a melhor grade possível sem conflitos.
+                O motor irá analisar todas as cargas horárias e disponibilidades
+                para criar a melhor grade possível sem conflitos.
               </p>
-              <Button 
-                size="lg" 
-                className="w-full text-lg h-14" 
-                onClick={handleGenerate} 
+              <Button
+                size="lg"
+                className="w-full text-lg h-14"
+                onClick={handleGenerate}
                 disabled={isGenerating}
               >
-                {isGenerating ? "Processando Algoritmo..." : "Executar Motor de Alocação"}
+                {isGenerating
+                  ? "Processando Algoritmo..."
+                  : "Executar Motor de Alocação"}
               </Button>
             </div>
           </CardContent>
@@ -154,37 +172,61 @@ const GerarGradePage: React.FC = () => {
         {result && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Resumo */}
-            <Card className={result.success ? "border-green-200 bg-green-50 dark:bg-green-900/10" : "border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10"}>
+            <Card
+              className={
+                result.success
+                  ? "border-green-200 bg-green-50 dark:bg-green-900/10"
+                  : "border-blue-200 bg-blue-50 dark:bg-blue-900/10"
+              }
+            >
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   {result.success ? (
                     <CalendarCheck className="w-8 h-8 text-green-600" />
                   ) : (
-                    <AlertTriangle className="w-8 h-8 text-yellow-600" />
+                    <Info className="w-8 h-8 text-blue-600" />
                   )}
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {result.success ? "Alocação Perfeita!" : "Alocação Parcial"}
+                      {result.success
+                        ? "Grade Gerada com Perfeição!"
+                        : "Grade Gerada (Alocação Parcial)"}
                     </h3>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">
-                      Fitness Score: <strong>{result.fitness.toFixed(1)}%</strong>
+                      Fitness Score:{" "}
+                      <strong>{result.fitness.toFixed(1)}%</strong>
                     </p>
-                    {result.unallocatedRequirements && (
-                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-yellow-200">
-                        <p className="font-semibold text-yellow-700 dark:text-yellow-500 mb-2">Cargas não alocadas:</p>
-                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
-                          {result.unallocatedRequirements.map((req: any, i: number) => (
-                            <li key={i}>
-                              {turmasMap[req.turmaId]} - {discMap[req.disciplinaId]} ({profMap[req.professorId]}): Faltam {req.requiredSlots} aulas
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {result.errors && (
-                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-red-200">
-                        <p className="font-semibold text-red-700 dark:text-red-500 mb-2">Erros de Restrição:</p>
-                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
+                    {result.unallocatedRequirements &&
+                      result.unallocatedRequirements.length > 0 && (
+                        <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-blue-200 shadow-sm">
+                          <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
+                            Aulas pendentes (não alocadas por falta de
+                            horário/espaço):
+                          </p>
+                          <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300 space-y-1">
+                            {result.unallocatedRequirements.map(
+                              (req: any, i: number) => (
+                                <li key={i}>
+                                  <span className="font-medium">
+                                    {turmasMap[req.turmaId]}
+                                  </span>{" "}
+                                  - {discMap[req.disciplinaId]} (
+                                  {profMap[req.professorId]}):{" "}
+                                  <span className="font-semibold text-blue-600 dark:text-blue-300">
+                                    Faltam {req.requiredSlots} aulas
+                                  </span>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    {result.errors && result.errors.length > 0 && (
+                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-orange-200 shadow-sm">
+                        <p className="font-semibold text-orange-700 dark:text-orange-500 mb-2">
+                          Notas do Motor / Conflitos Restantes:
+                        </p>
+                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300 space-y-1">
                           {result.errors.map((err: string, i: number) => (
                             <li key={i}>{err}</li>
                           ))}
@@ -208,7 +250,9 @@ const GerarGradePage: React.FC = () => {
                 <Card key={turmaId} className="overflow-hidden">
                   <CardContent className="p-0">
                     <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 border-b dark:border-slate-800 flex items-center gap-2">
-                      <CardTitle className="text-lg">{turmasMap[turmaId]}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {turmasMap[turmaId]}
+                      </CardTitle>
                       {shift && (
                         <span className="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-300">
                           {shift.name}
@@ -219,9 +263,14 @@ const GerarGradePage: React.FC = () => {
                       <table className="w-full text-sm text-center">
                         <thead className="bg-white dark:bg-slate-950 border-b dark:border-slate-800">
                           <tr>
-                            <th className="py-3 px-4 font-semibold text-slate-500">Horário</th>
+                            <th className="py-3 px-4 font-semibold text-slate-500">
+                              Horário
+                            </th>
                             {days.map(dia => (
-                              <th key={dia.id} className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800">
+                              <th
+                                key={dia.id}
+                                className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800"
+                              >
                                 {dia.nome}
                               </th>
                             ))}
@@ -229,15 +278,21 @@ const GerarGradePage: React.FC = () => {
                         </thead>
                         <tbody className="divide-y dark:divide-slate-800">
                           {shiftSlots.map((slot: any) => (
-                            <tr key={slot.id} className="bg-white dark:bg-slate-900">
+                            <tr
+                              key={slot.id}
+                              className="bg-white dark:bg-slate-900"
+                            >
                               <td className="py-4 px-4 text-slate-500 font-medium whitespace-nowrap">
                                 {slot.label}
                               </td>
-                              {days.map((dia) => {
+                              {days.map(dia => {
                                 const timeSlotStr = `${dia.id}_${slot.id}`;
                                 const classInfo = grouped[turmaId][timeSlotStr];
                                 return (
-                                  <td key={dia.id} className="p-2 border-l dark:border-slate-800">
+                                  <td
+                                    key={dia.id}
+                                    className="p-2 border-l dark:border-slate-800"
+                                  >
                                     {classInfo ? (
                                       <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded p-2 shadow-sm min-h-[4rem] flex flex-col items-center justify-center">
                                         <span className="font-semibold text-blue-900 dark:text-blue-100">
@@ -248,7 +303,9 @@ const GerarGradePage: React.FC = () => {
                                         </span>
                                       </div>
                                     ) : (
-                                      <div className="text-slate-300 dark:text-slate-700 italic">-</div>
+                                      <div className="text-slate-300 dark:text-slate-700 italic">
+                                        -
+                                      </div>
                                     )}
                                   </td>
                                 );
