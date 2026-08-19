@@ -505,6 +505,7 @@ enum OrganizationRole {
 
 enum SectorMemberRole {
   MANAGER
+  MEMBER
 }
 
 enum OrganizationStatus {

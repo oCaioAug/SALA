@@ -5,9 +5,13 @@ graph LR
     %% -- Atores --
     User(["Usuario"])
     Admin(["Administrador"])
+    SuperAdmin(["Super Administrador"])
+    Gestor(["Gestor de Setor"])
 
     %% Generalizacao: Administrador e um Usuario
     User ---|"«generalizacao»"| Admin
+    Admin ---|"«generalizacao»"| SuperAdmin
+    User ---|"«generalizacao»"| Gestor
 
     %% -- Casos de Uso --
     subgraph sistema_sala ["Sistema SALA"]
@@ -58,19 +62,38 @@ graph LR
     User --> CDU9
     User --> CDU11
 
+
+    %% -- Relacionamentos - Gestor (escopo de setor) --
+    Gestor --> CDU5
+    Gestor --> CDU6
+    Gestor --> CDU8
+    Gestor --> CDU12
     %% -- Relacionamentos - Administrador (exclusivos) --
     Admin --> CDU5
     Admin --> CDU8
     Admin --> CDU10
 
+    %% -- Relacionamentos - Super Administrador --
+    SuperAdmin --> CDU16
+    SuperAdmin --> CDU17
+    SuperAdmin --> CDU18
+    SuperAdmin --> CDU19
+
     %% -- Estilos --
     classDef actorClass fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a
     classDef adminClass fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f
+    classDef superAdminClass fill:#fce7f3,stroke:#db2777,stroke-width:2px,color:#831843
+    classDef gestorClass fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
     classDef ucClass fill:#f0fdf4,stroke:#15803d,stroke-width:1px,color:#14532d
 
     class User actorClass
     class Admin adminClass
-    class CDU1,CDU2,CDU3,CDU4,CDU5,CDU6,CDU7,CDU8,CDU9,CDU10,CDU11 ucClass
+    class SuperAdmin superAdminClass
+    class Gestor gestorClass
+    class CDU1,CDU2,CDU3,CDU4,CDU5,CDU6,CDU7,CDU8,CDU9,CDU10,CDU11,CDU12,CDU13,CDU14,CDU15,CDU16,CDU17,CDU18,CDU19 ucClass
+
+    classDef extSystem fill:#fce7f3,stroke:#db2777,stroke-width:2px,color:#831843
+    class GoogleOAuth,GoogleCalendar extSystem
 ```
 
 ## Atores
@@ -104,7 +127,7 @@ graph LR
 
 | Campo | Conteudo |
 |-------|----------|
-| **Descricao** | Permite que o usuario realize login e logout no sistema via Google OAuth 2.0. O aplicativo mobile utiliza um token JWT gerado pela API para autenticacao. |
+| **Descricao** | Permite que o usuario realize login e logout no sistema via Google OAuth 2.0 ou Credenciais Convencionais (E-mail/Senha). |
 | **Ator Principal** | Usuario (inclui Administrador) |
 | **Pre-condicao** | O usuario possui uma conta Google valida. |
 | **Pos-condicao** | Sessao autenticada criada (web via NextAuth) ou token JWT retornado (mobile). O usuario e redirecionado para a pagina inicial do sistema. |
@@ -125,7 +148,7 @@ graph LR
 **Regras de Negocio:**
 - `RN01` - A conta e criada automaticamente no primeiro login (provisionamento just-in-time).
 - `RN02` - Role padrao ao criar conta e `USER`; somente um Administrador pode elevar para `ADMIN`.
-- `RN03` - Tokens mobile expiram apos periodo configurado; renovacao requer novo login.
+
 
 ---
 
@@ -163,7 +186,7 @@ graph LR
 | **Descricao** | Permite ao usuario criar uma solicitacao de reserva de sala, simples ou recorrente (`DAILY`, `WEEKLY`, `MONTHLY`), com verificacao automatica de conflitos de horario. |
 | **Ator Principal** | Usuario (inclui Administrador) |
 | **Pre-condicao** | Usuario autenticado. Existe ao menos uma sala com status `LIVRE` ou `RESERVADO`. |
-| **Pos-condicao** | Reserva criada com status `PENDING` (Usuario) ou `APPROVED` (Administrador). Notificacao enviada automaticamente ao(s) Administrador(es). Se o usuario possui conta Google com permissao de calendario vinculada, evento e criado no Google Calendar. |
+| **Pos-condicao** | Reserva criada com status de acordo com a configuracao da sala (`PENDING` se exigir aprovacao, `APPROVED` caso contrario). Notificacao enviada. Sincronizacao com Google Calendar se configurado. |
 
 **Fluxo Principal:**
 1. Usuario acessa a pagina de agendamentos ou o detalhe de uma sala.
@@ -186,7 +209,7 @@ graph LR
 - `RN07` - Conflitos consideram reservas com status `ACTIVE`, `APPROVED` e `PENDING`.
 - `RN08` - Para reservas `WEEKLY`, os dias da semana devem ser informados (campo `recurringDaysOfWeek`).
 - `RN09` - Todas as instancias recorrentes sao vinculadas por `recurringTemplateId`.
-- `RN10` - Reservas criadas por Administrador sao automaticamente aprovadas.
+- `RN10` - Reservas criadas por Administrador sao automaticamente aprovadas, assim como reservas em salas que nao exigem aprovacao (`requiresApproval = false`).
 - `RN11` - A sincronizacao com o Google Calendar e best-effort: falhas na API externa nao bloqueiam a criacao da reserva.
 - `RN12` - O ID do evento criado no Google Calendar e persistido em `Reservation.googleCalendarEventId`.
 
@@ -344,7 +367,7 @@ graph LR
 
 ---
 
-### CDU8 - Gerenciar Incidentes *(exclusivo Administrador)*
+### CDU8 - Gerenciar Incidentes *(Administrador e Gestor)*
 
 | Campo | Conteudo |
 |-------|----------|
@@ -363,10 +386,10 @@ graph LR
 
 **Fluxo Alternativo:**
 - **FA1 - Incidente ja resolvido ou cancelado:** Sistema impede alteracoes de status a partir dos estados finais.
-- **FA2 - Reatribuicao de responsavel:** Administrador pode reatribuir a qualquer usuario listado por `GET /api/incidents/assignable-users`.
+- **FA2 - Reatribuicao de responsavel:** Administrador/Gestor pode reatribuir a qualquer usuario listado por `GET /api/incidents/assignable-users`.
 
 **Regras de Negocio:**
-- `RN26` - Apenas Administrador pode alterar status, atribuir responsavel e registrar notas.
+- `RN26` - Apenas Administrador/Owner ou Gestor (MANAGER) pode alterar status, atribuir responsavel e registrar notas. Gestores so podem atuar em incidentes associados ao seu proprio setor.
 - `RN27` - Toda mudanca de status gera um registro imutavel em `IncidentStatusHistory`.
 - `RN28` - Estados finais: `RESOLVED` e `CANCELLED`. A partir deles nao ha transicao de saida.
 - `RN29` - O campo `actualResolutionTime` e preenchido automaticamente ao transitar para `RESOLVED`.
@@ -451,3 +474,132 @@ graph LR
 - `RN38` - Usuario comum visualiza apenas estatisticas das proprias reservas.
 - `RN39` - Administrador visualiza estatisticas globais do sistema (todas as reservas e todos os incidentes).
 - `RN40` - Dados do dashboard sao obtidos em tempo real para garantir precisao.
+
+
+---
+
+### CDU13 - Criar Conta
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite que novos usuarios se cadastrem no sistema de forma livre, criando uma conta via e-mail e senha. |
+| **Ator Principal** | Usuario |
+| **Pre-condicao** | O e-mail informado nao deve estar previamente cadastrado no sistema. |
+| **Pos-condicao** | Uma nova conta de usuario (`User`) e criada. O usuario podera realizar o login. |
+
+**Fluxo Principal:**
+1. Usuario acessa a tela de cadastro ("Sign-Up").
+2. Preenche os dados: Nome, E-mail e Senha.
+3. Submete o formulario.
+4. Sistema valida se o e-mail ja existe na base de dados.
+5. Sistema cria a conta com a role padrao e redireciona o usuario para a tela de login.
+
+---
+
+### CDU14 - Gerenciar Organização e Membros
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite a um usuario criar uma organizacao, tornando-se o seu OWNER. Permite tambem que administradores (OWNER/ADMIN) gerenciem as informacoes da organizacao, enviem convites (`OrganizationInvite`) e gerenciem membros existentes (`OrganizationMember`). |
+| **Ator Principal** | Usuario (como OWNER/ADMIN da Organizacao) |
+| **Pre-condicao** | Usuario autenticado. Para gerenciar membros, deve ser administrador da organizacao. |
+| **Pos-condicao** | Organizacao criada ou atualizada. Convites gerados ou membros adicionados/removidos. |
+
+**Fluxo Principal (Criar Organizacao):**
+1. Usuario acessa a secao de criar organizacao.
+2. Fornece o Nome e um Identificador (Slug) para a organizacao.
+3. Sistema cria a `Organization` e atribui o usuario como `OWNER`.
+4. Sistema vincula a organizacao a um `Plan` padrao atraves de uma `Subscription`.
+
+**Fluxo Principal (Convidar e Gerenciar Membros):**
+1. Administrador (OWNER/ADMIN) acessa o painel da organizacao e lista os membros atuais.
+2. Clica em "Convidar Membro", insere o e-mail e seleciona a role (`MEMBER` ou `ADMIN`).
+3. Sistema cria o `OrganizationInvite` e dispara o e-mail de convite.
+4. Ao gerenciar membros ativos, o Administrador pode alterar as roles ou remove-los da organizacao.
+
+---
+
+### CDU15 - Gerenciar Assinatura
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite ao Administrador (OWNER) gerenciar a assinatura (`Subscription`) da organizacao, realizar upgrade ou downgrade de planos (`Plan`), e visualizar os limites atuais. |
+| **Ator Principal** | Administrador |
+| **Pre-condicao** | Usuario autenticado como OWNER da organizacao. |
+| **Pos-condicao** | Assinatura atualizada e limites de uso (ex: quantidade maxima de salas e membros) reajustados de acordo com o novo plano. |
+
+**Fluxo Principal:**
+1. Administrador acessa a aba de Assinatura/Billing no painel da organizacao.
+2. Sistema lista os planos (`Plan`) disponiveis e o plano atual ativo.
+3. Administrador seleciona um novo plano e confirma a transicao.
+4. Sistema atualiza o `Subscription` vinculando-o ao novo `Plan`.
+5. Regras e limitacoes do novo plano passam a vigorar imediatamente (ex: `maxRooms`, `maxUsers`).
+
+
+---
+
+### CDU16 - Gerenciar Planos (Plataforma)
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite ao Super Admin criar, editar, visualizar e desativar planos de assinatura oferecidos pela plataforma SaaS. |
+| **Ator Principal** | Super Administrador |
+| **Pre-condicao** | Usuario autenticado com `platformRole = SUPER_ADMIN`. |
+| **Pos-condicao** | Planos criados/atualizados afetam os limites de uso das proximas assinaturas. |
+
+**Fluxo Principal:**
+1. Super Admin acessa o painel de gestao de planos.
+2. Sistema exibe a lista de planos cadastrados.
+3. Usuario clica em "Novo Plano" e define: Nome, Slug, `maxRooms`, `maxUsers`.
+4. Sistema salva o plano (`Plan`) no banco de dados.
+
+---
+
+### CDU17 - Gerenciar Organizacoes (Plataforma)
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite ao Super Admin visualizar todas as organizacoes cadastradas no sistema, analisar metricas macro e intervir em seus status (ex: banir ou suspender). |
+| **Ator Principal** | Super Administrador |
+| **Pre-condicao** | Usuario autenticado com `platformRole = SUPER_ADMIN`. |
+| **Pos-condicao** | Organizacao suspensa/ativa ou informacoes visualizadas com sucesso. |
+
+**Fluxo Principal:**
+1. Super Admin acessa o painel de organizacoes globais.
+2. Sistema lista as organizacoes com filtros de nome, slug e status.
+3. Usuario seleciona uma organizacao e visualiza os detalhes (Estatisticas Diarias, Plano Ativo, Total de Membros).
+4. Super Admin altera o status da organizacao para `SUSPENDED`.
+5. Sistema revoga o acesso e bloqueia novos logins para os membros daquela organizacao.
+
+---
+
+### CDU18 - Monitoramento e Auditoria
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite ao Super Admin visualizar a trilha de logs (`AuditLog`) e as estatisticas diarias das organizacoes (`OrganizationDailyStats`). |
+| **Ator Principal** | Super Administrador |
+| **Pre-condicao** | Usuario autenticado com `platformRole = SUPER_ADMIN`. |
+| **Pos-condicao** | Dados de auditoria filtrados e apresentados para consulta. |
+
+**Fluxo Principal:**
+1. Super Admin acessa a tela de Logs de Auditoria.
+2. Seleciona filtros como data, ator, acao ou ID de entidade.
+3. Sistema processa os `AuditLog` e exibe as informacoes em tabela.
+
+---
+
+### CDU19 - Configurar Integracoes Globais
+
+| Campo | Conteudo |
+|-------|----------|
+| **Descricao** | Permite a configuracao de chaves de API e credenciais de servicos externos usados de forma global pela aplicacao (ex: modelos de ML via ROBOFLOW). |
+| **Ator Principal** | Super Administrador |
+| **Pre-condicao** | Usuario autenticado com `platformRole = SUPER_ADMIN`. |
+| **Pos-condicao** | Credenciais criptografadas e armazenadas para uso pela aplicacao (`ApiCredential`). |
+
+**Fluxo Principal:**
+1. Super Admin acessa a tela de Integracoes do painel global.
+2. Clica para configurar as credenciais do ROBOFLOW.
+3. Insere a chave secreta.
+4. Sistema criptografa a chave gerando o `encryptedKey` e `iv` e salva na entidade `ApiCredential`.

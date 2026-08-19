@@ -1,0 +1,369 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+class User {
+    + id: String
+    + email: String
+    + name: String?
+    + role: OrganizationRole
+    + platformRole: PlatformRole
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Room {
+    + id: String
+    + name: String
+    + description: String?
+    + status: RoomStatus
+    + capacity: Int?
+    + requiresApproval: Boolean
+    + sectorId: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+
+class Plan {
+    + id: String
+    + name: String
+    + slug: String
+    + maxRooms: Int
+    + maxUsers: Int
+    + maxReservationsPerMonth: Int?
+    + isActive: Boolean
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Organization {
+    + id: String
+    + name: String
+    + legalName: String?
+    + cnpj: String?
+    + email: String?
+    + slug: String
+    + status: OrganizationStatus
+    + ownerId: String
+    + planId: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Subscription {
+    + id: String
+    + organizationId: String
+    + planId: String
+    + status: SubscriptionStatus
+    + currentPeriodStart: DateTime
+    + currentPeriodEnd: DateTime
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class OrganizationMember {
+    + id: String
+    + organizationId: String
+    + userId: String
+    + role: OrganizationRole
+    + invitedById: String?
+    + joinedAt: DateTime
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class OrganizationInvite {
+    + id: String
+    + organizationId: String
+    + email: String
+    + role: OrganizationRole
+    + token: String
+    + expiresAt: DateTime
+    + acceptedAt: DateTime?
+    + invitedById: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Sector {
+    + id: String
+    + organizationId: String
+    + name: String
+    + description: String?
+    + deletedAt: DateTime?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class SectorMember {
+    + id: String
+    + sectorId: String
+    + userId: String
+    + role: SectorMemberRole
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Item {
+    + id: String
+    + name: String
+    + description: String?
+    + specifications: String[]
+    + quantity: Int
+    + icon: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Image {
+    + id: String
+    + filename: String
+    + path: String
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Reservation {
+    + id: String
+    + startTime: DateTime
+    + endTime: DateTime
+    + purpose: String?
+    + status: ReservationStatus
+    + decidedById: String?
+    + decidedAt: DateTime?
+    + decisionReason: String?
+    + isRecurring: Boolean
+    + recurringPattern: RecurringPattern?
+    + recurringDaysOfWeek: Int[]
+    + recurringEndDate: DateTime?
+    + parentReservationId: String?
+    + recurringTemplateId: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Notification {
+    + id: String
+    + type: NotificationType
+    + title: String
+    + message: String
+    + isRead: Boolean
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class Incident {
+    + id: String
+    + title: String
+    + description: String
+    + priority: IncidentPriority
+    + status: IncidentStatus
+    + category: IncidentCategory
+    + estimatedResolutionTime: DateTime?
+    + actualResolutionTime: DateTime?
+    + resolutionNotes: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class AuditLog {
+    + id: String
+    + action: String
+    + entityType: String
+    + entityId: String
+    + oldData: String?
+    + newData: String?
+    + ipAddress: String?
+    + userAgent: String?
+    + createdAt: DateTime
+}
+
+class OrganizationDailyStats {
+    + id: String
+    + date: DateTime
+    + totalUsers: Int
+    + activeUsers: Int
+    + totalReservations: Int
+    + completedReservations: Int
+    + cancelledReservations: Int
+    + reportedIncidents: Int
+    + resolvedIncidents: Int
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class ApiCredential {
+    + id: String
+    + provider: String
+    + encryptedKey: String
+    + iv: String
+    + tag: String
+    + modelId: String?
+    + createdAt: DateTime
+    + updatedAt: DateTime
+}
+
+class IncidentStatusHistory {
+    + id: String
+    + fromStatus: IncidentStatus?
+    + toStatus: IncidentStatus
+    + notes: String?
+    + createdAt: DateTime
+}
+
+
+enum OrganizationStatus {
+    ACTIVE
+    SUSPENDED
+    TRIAL
+}
+
+enum SubscriptionStatus {
+    ACTIVE
+    PAST_DUE
+    CANCELLED
+    TRIALING
+}
+
+enum SectorMemberRole {
+    MANAGER
+    MEMBER
+}
+
+enum OrganizationRole {
+    OWNER
+    ADMIN
+    MEMBER
+}
+
+enum SectorMemberRole {
+    MANAGER
+    MEMBER
+}
+
+enum RoomStatus {
+    LIVRE
+    EM_USO
+    RESERVADO
+}
+
+enum ReservationStatus {
+    ACTIVE
+    CANCELLED
+    COMPLETED
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+enum PlatformRole {
+    SUPER_ADMIN
+    NONE
+}
+
+enum NotificationType {
+    RESERVATION_CREATED
+    RESERVATION_APPROVED
+    RESERVATION_REJECTED
+    RESERVATION_CANCELLED
+    RESERVATION_CONFLICT
+    RESERVATION_REMINDER
+    ROOM_STATUS_CHANGED
+    SYSTEM_ANNOUNCEMENT
+    INCIDENT_CREATED
+    INCIDENT_ASSIGNED
+    INCIDENT_STATUS_CHANGED
+    INCIDENT_RESOLVED
+}
+
+enum IncidentStatus {
+    REPORTED
+    IN_ANALYSIS
+    IN_PROGRESS
+    RESOLVED
+    CANCELLED
+}
+
+enum IncidentPriority {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+}
+
+enum IncidentCategory {
+    EQUIPMENT_FAILURE
+    INFRASTRUCTURE
+    SOFTWARE
+    SAFETY
+    MAINTENANCE
+    ELECTRICAL
+    NETWORK
+    OTHER
+}
+
+enum RecurringPattern {
+    DAILY
+    WEEKLY
+    MONTHLY
+}
+
+User "1" --> "*" Reservation : reservations
+User "1" --> "*" SectorMember : sectorMemberships
+User "1" --> "*" Notification : notifications
+User "1" --> "*" Incident : incidentsReported
+User "1" --> "*" IncidentStatusHistory : statusChanges
+
+
+Plan "1" --> "*" Subscription : subscriptions
+Plan "1" --> "*" Organization : organizations
+Organization "1" --> "*" OrganizationMember : members
+Organization "1" --> "*" OrganizationInvite : invites
+Organization "1" --> "1" Subscription : subscription
+Organization "1" --> "*" Sector : sectors
+Organization "1" --> "*" Room : rooms
+Organization "1" --> "*" Reservation : reservations
+Organization "1" --> "*" Incident : incidents
+User "1" --> "*" Organization : ownedOrganizations
+User "1" --> "*" OrganizationMember : memberships
+User "1" --> "*" OrganizationInvite : invitesSent
+
+Sector "1" --> "*" SectorMember : members
+Sector "1" --> "*" Room : rooms
+Room "*" --> "0..1" Sector : sector
+Reservation "*" --> "0..1" User : decidedBy
+
+Room "1" --> "*" Reservation : reservations
+Room "1" --> "*" Item : items
+Room "1" --> "*" Incident : incidents
+
+Item "1" --> "*" Image : images
+Item "0..1" --> "1" Room : room
+Item "1" --> "*" Incident : incidents
+
+Reservation "*" --> "1" User : user
+Reservation "*" --> "1" Room : room
+Reservation "1" --> "0..*" Reservation : childReservations
+Reservation "0..1" --> "1" Reservation : parentReservation
+
+Incident "*" --> "1" User : reportedBy
+Incident "0..1" --> "1" User : assignedTo
+Incident "0..1" --> "1" Room : room
+Incident "0..1" --> "1" Item : item
+Incident "1" --> "*" IncidentStatusHistory : statusHistory
+
+IncidentStatusHistory "*" --> "1" Incident : incident
+IncidentStatusHistory "*" --> "1" User : changedBy
+
+User --> OrganizationRole
+SectorMember --> SectorMemberRole
+Room --> RoomStatus
+Reservation --> ReservationStatus
+Reservation --> RecurringPattern
+Notification --> NotificationType
+Incident --> IncidentStatus
+Incident --> IncidentPriority
+Incident --> IncidentCategory
+
+@enduml

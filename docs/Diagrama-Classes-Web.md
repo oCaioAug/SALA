@@ -25,6 +25,69 @@ classDiagram
         +DateTime updatedAt
     }
 
+
+    class Plan {
+        +String id
+        +String name
+        +PlatformRole platformRole
+        +String slug
+        +Int maxRooms
+        +Int maxUsers
+        +Int? maxReservationsPerMonth
+        +Boolean isActive
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Organization {
+        +String id
+        +String name
+        +String? legalName
+        +String? cnpj
+        +String? email
+        +String slug
+        +OrganizationStatus status
+        +String ownerId
+        +String? planId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Subscription {
+        +String id
+        +String organizationId
+        +String planId
+        +SubscriptionStatus status
+        +DateTime currentPeriodStart
+        +DateTime currentPeriodEnd
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class OrganizationMember {
+        +String id
+        +String organizationId
+        +String userId
+        +OrganizationRole role
+        +String? invitedById
+        +DateTime joinedAt
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class OrganizationInvite {
+        +String id
+        +String organizationId
+        +String email
+        +OrganizationRole role
+        +String token
+        +DateTime expiresAt
+        +DateTime? acceptedAt
+        +String? invitedById
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
     class Sector {
         +String id
         +String organizationId
@@ -106,6 +169,43 @@ classDiagram
         +DateTime updatedAt
     }
 
+    class AuditLog {
+        +String id
+        +String action
+        +String entityType
+        +String entityId
+        +String? oldData
+        +String? newData
+        +String? ipAddress
+        +String? userAgent
+        +DateTime createdAt
+    }
+
+    class OrganizationDailyStats {
+        +String id
+        +DateTime date
+        +Int totalUsers
+        +Int activeUsers
+        +Int totalReservations
+        +Int completedReservations
+        +Int cancelledReservations
+        +Int reportedIncidents
+        +Int resolvedIncidents
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class ApiCredential {
+        +String id
+        +String provider
+        +String encryptedKey
+        +String iv
+        +String tag
+        +String? modelId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
     class IncidentStatusHistory {
         +String id
         +IncidentStatus? fromStatus
@@ -114,14 +214,7 @@ classDiagram
         +DateTime createdAt
     }
 
-    class PushToken {
-        +String id
-        +String token
-        +String? deviceType
-        +Boolean isActive
-        +DateTime createdAt
-        +DateTime updatedAt
-    }
+
 
     %% Serviços de Domínio
     class AuthService {
@@ -175,6 +268,12 @@ classDiagram
         PENDING
         APPROVED
         REJECTED
+    }
+
+    class PlatformRole {
+        <<enumeration>>
+        SUPER_ADMIN
+        NONE
     }
 
     class NotificationType {
@@ -277,6 +376,7 @@ classDiagram
 
     %% Relacionamentos - Enums
     User --> Role : role
+    User --> PlatformRole : platformRole
     Room --> RoomStatus : status
     Reservation --> ReservationStatus : status
     Reservation --> RecurringPattern : recurringPattern
@@ -303,7 +403,8 @@ classDiagram
     class ReservationService serviceClass
     class NotificationService serviceClass
     class IncidentService serviceClass
-    class Role enumClass
+    class OrganizationRole enumClass
+    class SectorMemberRole enumClass
     class RoomStatus enumClass
     class ReservationStatus enumClass
     class NotificationType enumClass
@@ -319,11 +420,27 @@ classDiagram
 
 #### User
 
-Usuário do sistema (ADMIN ou USER). Cria reservas, reporta incidentes e recebe notificações.
+Usuário do sistema (OWNER, ADMIN ou MEMBER). Cria reservas, reporta incidentes e recebe notificações.
 
 #### Room
 
 Sala disponível para reserva. Possui status, lista de itens e opcionalmente um setor responsável (`sectorId`).
+
+
+#### Plan
+Plano de assinatura do sistema (ex: Free, Pro), contendo limites de salas e usuários.
+
+#### Organization
+Entidade principal do modelo SaaS, representando uma escola ou empresa. Vincula membros, setores, salas e assinaturas.
+
+#### Subscription
+Assinatura ativa de uma Organization referente a um Plan.
+
+#### OrganizationMember
+Relacionamento entre um User e uma Organization, definindo sua OrganizationRole (MEMBER, ADMIN, OWNER).
+
+#### OrganizationInvite
+Convite enviado por e-mail para que um usuário externo se junte à Organization.
 
 #### Sector
 

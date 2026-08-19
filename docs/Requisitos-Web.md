@@ -4,37 +4,35 @@
 
 ### 1.1 Autenticação e Autorização
 
-#### RF01 - Autenticação via Google OAuth
+#### RF01 - Autenticação via Google OAuth e Credenciais Convencionais
 
-- **Descrição**: O sistema deve permitir que usuários façam login usando suas contas Google.
+- **Descrição**: O sistema deve permitir que usuários façam login usando suas contas Google ou email/senha convencionais.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU1 (Autenticar)
 - **Critérios de Aceitação**:
-  - Usuário pode fazer login com conta Google
-  - Sistema cria automaticamente conta se não existir
+  - Usuário pode fazer login com conta Google ou email/senha
+  - Sistema cria automaticamente conta se não existir no Google OAuth
   - Sessão é mantida entre requisições
   - Logout encerra a sessão corretamente
 
 #### RF02 - Controle de Acesso Baseado em Roles
 
-- **Descrição**: O sistema deve diferenciar permissões entre usuários ADMIN e USER.
+- **Descrição**: O sistema deve diferenciar permissões baseadas em papéis de organização (OWNER, ADMIN, MEMBER) e de setor (MANAGER).
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU1, CDU5, CDU6, CDU8, CDU10
 - **Critérios de Aceitação**:
-  - Apenas ADMIN/OWNER podem aprovar/rejeitar qualquer sala; gestores de setor aprovam no escopo
-  - Criar/excluir salas e vincular setor: apenas ADMIN/OWNER; editar infos da sala e itens: ADMIN/OWNER ou gestor no escopo do setor
-  - Apenas ADMIN pode gerenciar usuários
-  - Apenas ADMIN pode atribuir e resolver incidentes
+  - Acesso à plataforma e permissões de recursos são validados com base nas roles de organização e setor.
+  - Ações de gestão global (ex: gerenciar usuários, criar salas, gerir organizações) são restritas aos papéis OWNER e ADMIN.
+  - Ações de gestão departamental (ex: aprovar reservas e atualizar incidentes de salas do setor) podem ser delegadas ao MANAGER.
+  - O papel MEMBER possui acesso padrão, podendo gerenciar apenas seus próprios recursos (perfil, suas reservas, reportar incidentes).
 
-#### RF03 - Geração de Token para Mobile
+#### [DESCONTINUADO] Geração de Token para Mobile
 
-- **Descrição**: O sistema deve gerar tokens de autenticação para aplicativo mobile.
-- **Prioridade**: Média
-- **Casos de Uso Relacionados**: CDU1
+- **Descrição**: O sistema deve gerar tokens de autenticação para aplicativo mobile. (Recurso descontinuado)
+- **Prioridade**: Baixa
+- **Casos de Uso Relacionados**: Nenhum
 - **Critérios de Aceitação**:
-  - API deve gerar token JWT para autenticação mobile
-  - Token deve expirar após período determinado
-  - Token deve ser validado em requisições subsequentes
+  - [DESCONTINUADO]
 
 ### 1.2 Gestão de Perfil
 
@@ -46,7 +44,7 @@
   - Exibir role do usuário
   - Exibir data de criação da conta
 
-#### RF05 - Edição de Perfil
+#### RF04 - Edição de Perfil
 
 - **Descrição**: Usuário deve poder editar suas informações de perfil.
 - **Prioridade**: Média
@@ -59,7 +57,7 @@
 
 ### 1.3 Gestão de Reservas
 
-#### RF06 - Criação de Reserva
+#### RF05 - Criação de Reserva
 
 - **Descrição**: Usuário deve poder criar solicitação de reserva de sala.
 - **Prioridade**: Alta
@@ -69,9 +67,9 @@
   - Definição de data e horário de início e fim
   - Opção de adicionar propósito/descrição
   - Validação de conflitos de horário
-  - Definição do status inicial conforme role (APPROVED para ADMIN, PENDING para USER)
+  - Definição do status inicial conforme role e configuração da sala (se `requiresApproval` for falso, a reserva é APPROVED automaticamente, senão PENDING para MEMBER e APPROVED para ADMIN/OWNER ou MANAGER do setor)
 
-#### RF07 - Reservas Recorrentes
+#### RF06 - Reservas Recorrentes
 
 - **Descrição**: Sistema deve suportar criação de reservas recorrentes (diárias, semanais, mensais).
 - **Prioridade**: Média
@@ -83,7 +81,7 @@
   - Geração automática de instâncias futuras
   - Todas as instâncias vinculadas ao template pai
 
-#### RF08 - Visualização de Reservas
+#### RF07 - Visualização de Reservas
 
 - **Descrição**: Usuário deve poder visualizar suas reservas e administrador todas as reservas.
 - **Prioridade**: Alta
@@ -94,7 +92,7 @@
   - Diferenciação visual por status
   - Informações de sala e usuário associados
 
-#### RF09 - Aprovação/Rejeição de Reservas
+#### RF08 - Aprovação/Rejeição de Reservas
 
 - **Descrição**: Administradores da organização e gestores de setor devem poder aprovar ou rejeitar solicitações de reserva no respectivo escopo.
 - **Prioridade**: Alta
@@ -108,16 +106,16 @@
   - Notificação automática ao solicitante sobre a decisão
   - Para reservas recorrentes: aprovar/rejeitar todas as instâncias do template (todas no mesmo escopo)
 
-#### RF09A - Gestão de Setores
+#### RF09 - Gestão de Setores
 
-- **Descrição**: Administrador da organização deve poder criar setores, vincular salas e designar gestores responsáveis pela aprovação daquelas salas.
+- **Descrição**: Administrador da organização ou Gestor (MANAGER) deve poder gerenciar setores, vincular salas e adicionar novos membros ao setor.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU12 (Gerenciar Setores)
 - **Critérios de Aceitação**:
   - Cada sala pertence a no máximo um setor (`Room.sectorId`)
-  - Setor contém membros com papel MANAGER
+  - O gestor do setor (`MANAGER`) pode adicionar outros usuários ao setor, atribuindo níveis de acesso como `MANAGER` ou `MEMBER` (membro comum do setor)
   - Soft-delete de setor desvincula salas
-  - Gestores não gerenciam criar/excluir salas, usuários ou setores — aprovam reservas e editam infos/itens das salas do setor
+  - Apenas o Administrador global pode criar ou excluir setores. O Gestor administra o conteúdo do seu próprio setor (membros, informações de salas, aprovação de reservas)
 
 #### RF10 - Verificação de Conflitos
 
@@ -194,13 +192,13 @@
   - Status inicial: REPORTED
   - Notificação automática aos administradores
 
-#### RF16 - Gestão de Incidentes (Admin)
+#### RF16 - Gestão de Incidentes (Admin e Gestor)
 
-- **Descrição**: Administrador deve poder gerenciar o ciclo de vida dos incidentes.
+- **Descrição**: Administrador (OWNER/ADMIN) ou Gestor (MANAGER) deve poder gerenciar o ciclo de vida dos incidentes.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU8 (Gerenciar Incidentes)
 - **Critérios de Aceitação**:
-  - Visualizar lista de incidentes com filtros
+  - Visualizar lista de incidentes com filtros (gestores visualizam apenas do escopo de seu setor)
   - Atribuir incidente a um usuário
   - Atualizar status (IN_ANALYSIS, IN_PROGRESS, RESOLVED)
   - Adicionar notas de resolução
@@ -247,13 +245,12 @@
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU3, CDU4, CDU5, CDU7, CDU8 (comportamento interno disparado por estes CDUs, visível pelo ator em CDU9)
 - **Critérios de Aceitação**:
-  - Notificação enviada ao(s) Administrador(es) quando uma reserva é criada por Usuario (CDU3)
+  - Notificação enviada ao(s) Administrador(es) e Gestor(es) do setor quando uma reserva é criada por um MEMBER (CDU3)
   - Notificação enviada ao solicitante quando reserva é aprovada ou rejeitada (CDU5)
   - Notificação enviada ao solicitante quando reserva é cancelada (CDU4)
-  - Notificação enviada ao(s) Administrador(es) quando um incidente é reportado (CDU7)
+  - Notificação enviada ao(s) Administrador(es) e Gestor(es) do setor quando um incidente é reportado (CDU7)
   - Notificação enviada ao responsavel designado quando incidente é atribuído (CDU8)
   - Notificação enviada ao reportante quando status do incidente é alterado (CDU8)
-  - Quando o usuario possui PushToken ativo, a notificação também é entregue via push ao aplicativo mobile
 
 #### RF26 - Integração com Google Calendar
 
@@ -286,7 +283,7 @@
 - **Prioridade**: Média
 - **Casos de Uso Relacionados**: CDU10 (Gerenciar Usuarios)
 - **Critérios de Aceitação**:
-  - Alterar entre ADMIN e USER
+  - Alterar papéis na organização (MEMBER, ADMIN)
   - Validação de permissões
   - Atualização imediata das permissões
   - Log da alteração
@@ -326,6 +323,104 @@
   - Permitir filtros por período, sala e item
   - Expor dados via endpoint de estatísticas de incidentes
   - Integrar os dados ao dashboard administrativo
+
+
+### 1.9 Gestão SaaS e Organizações
+
+#### RF27 - Cadastro de Usuário (Sign-Up)
+
+- **Descrição**: O sistema deve permitir o cadastro livre de novos usuários via e-mail e senha.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU13 (Criar Conta)
+- **Critérios de Aceitação**:
+  - Usuário informa nome, e-mail e senha
+  - O e-mail deve ser único na plataforma
+  - Após cadastro, o usuário pode realizar login com as credenciais criadas
+
+#### RF28 - Criação e Gestão de Organização
+
+- **Descrição**: Um usuário autenticado pode criar e gerenciar uma organização, atuando como seu proprietário (OWNER).
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU14 (Gerenciar Organização e Membros)
+- **Critérios de Aceitação**:
+  - Usuário cria a organização informando nome e slug (identificador único)
+  - O criador da organização recebe automaticamente a role `OWNER`
+  - A organização pode possuir informações complementares como CNPJ, e-mail e configurações
+  - O sistema vincula automaticamente a organização ao plano padrão (ex: Trial ou Free)
+
+#### RF29 - Convite e Gestão de Participantes
+
+- **Descrição**: Administradores da organização (`OWNER` ou `ADMIN`) podem convidar novos usuários para participarem da organização.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU14 (Gerenciar Organização e Membros)
+- **Critérios de Aceitação**:
+  - Convite é gerado por e-mail contendo a role de destino (`MEMBER`, `ADMIN`)
+  - O usuário convidado aceita o convite e se torna um `OrganizationMember`
+  - O gestor pode remover membros ou alterar suas roles dentro da organização
+
+#### RF30 - Planos e Assinaturas (SaaS)
+
+- **Descrição**: O sistema deve controlar os limites de uso de uma organização com base no plano assinado.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU15 (Gerenciar Assinatura)
+- **Critérios de Aceitação**:
+  - Cada plano possui limites pré-definidos (ex: `maxRooms`, `maxUsers`)
+  - A assinatura (`Subscription`) controla a vigência do plano para a organização
+  - O sistema bloqueia a criação de novas salas ou membros se o limite do plano for atingido
+
+
+### 1.10 Gestão da Plataforma (Super Admin)
+
+#### RF31 - Gestão Global de Planos
+
+- **Descrição**: O Super Admin deve poder gerenciar os planos de assinatura (SaaS) oferecidos pela plataforma.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU16 (Gerenciar Planos - Plataforma)
+- **Critérios de Aceitação**:
+  - Criar, editar e visualizar planos (`Plan`)
+  - Definir limites do plano (ex: `maxRooms`, `maxUsers`)
+  - Ativar ou desativar planos (soft-delete)
+  - Impedir exclusão de planos que possuam assinaturas ativas
+
+#### RF32 - Gestão Global de Organizações
+
+- **Descrição**: O Super Admin deve ter visão e controle sobre todas as organizações cadastradas no sistema.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU17 (Gerenciar Organizações - Plataforma)
+- **Critérios de Aceitação**:
+  - Listar todas as organizações da plataforma com filtros e paginação
+  - Visualizar detalhes, estatísticas diárias e o plano atual de cada organização
+  - Suspender ou reativar organizações (alterar `OrganizationStatus`)
+  - Acessar métricas e quantidades de membros/reservas/incidentes por organização
+
+#### RF33 - Auditoria e Logs da Plataforma
+
+- **Descrição**: O Super Admin deve visualizar as trilhas de auditoria das ações críticas realizadas na plataforma.
+- **Prioridade**: Média
+- **Casos de Uso Relacionados**: CDU18 (Monitoramento e Auditoria)
+- **Critérios de Aceitação**:
+  - Visualizar listagem de registros em `AuditLog`
+  - Filtrar logs por organização, ator, tipo de entidade ou data
+  - Visualizar metadados completos de cada ação registrada (ex: criação de organização, mudança de plano, banimento)
+
+#### RF34 - Configurações de Integrações Globais
+
+- **Descrição**: O Super Admin deve poder configurar integrações globais e serviços de terceiros que a plataforma consome.
+- **Prioridade**: Média
+- **Casos de Uso Relacionados**: CDU19 (Configurar Integrações Globais)
+- **Critérios de Aceitação**:
+  - Gerenciar credenciais de APIs externas (`ApiCredential`), como chaves do ROBOFLOW
+  - As credenciais devem ser armazenadas de forma criptografada (`encryptedKey` e `iv`)
+  - Permitir a rotação de chaves sem afetar o fluxo do usuário final
+
+#### RF35 - Delegação e Bootstrapping de Super Admin
+
+- **Descrição**: O sistema deve prover mecanismos seguros para inicializar e delegar a role `SUPER_ADMIN`.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: Nenhum (Configuração) / CDU10 (Gerenciar Usuários)
+- **Critérios de Aceitação**:
+  - **Bootstrapping (Whitelist):** Ao realizar o login via Google OAuth, o sistema verifica se o e-mail consta em uma lista restrita via Variável de Ambiente (ex: `SUPER_ADMIN_EMAILS`). Se sim, o usuário ganha `platformRole = SUPER_ADMIN` automaticamente.
+  - **Delegação:** Um `SUPER_ADMIN` já autenticado pode promover ou rebaixar a `platformRole` de outros usuários diretamente pelo Painel de Super Admin.
 
 ## 2. Requisitos Não-Funcionais
 
@@ -513,14 +608,14 @@
 | ---------------------------------- | -------------------------------------- | ---------- |
 | RF01 - Autenticação Google OAuth   | CDU1                                   | Alta       |
 | RF02 - Controle de Acesso          | CDU1, CDU5, CDU6, CDU8, CDU10         | Alta       |
-| RF03 - Token Mobile                | CDU1                                   | Média      |
-| RF04 - Visualizar Perfil           | CDU2                                   | Média      |
-| RF05 - Editar Perfil               | CDU2                                   | Média      |
-| RF06 - Criar Reserva               | CDU3                                   | Alta       |
-| RF07 - Reservas Recorrentes        | CDU3                                   | Média      |
-| RF08 - Visualizar Reservas         | CDU4                                   | Alta       |
-| RF09 - Aprovar/Rejeitar            | CDU5                                   | Alta       |
-| RF09A - Gestão de Setores          | CDU12                                  | Alta       |
+| [DESCONTINUADO] Token Mobile       | CDU1                                   | Média      |
+| RF03 - Visualizar Perfil           | CDU2                                   | Média      |
+| RF04 - Editar Perfil               | CDU2                                   | Média      |
+| RF05 - Criar Reserva               | CDU3                                   | Alta       |
+| RF06 - Reservas Recorrentes        | CDU3                                   | Média      |
+| RF07 - Visualizar Reservas         | CDU4                                   | Alta       |
+| RF08 - Aprovar/Rejeitar            | CDU5                                   | Alta       |
+| RF09 - Gestão de Setores           | CDU12                                  | Alta       |
 | RF10 - Verificar Conflitos         | CDU3                                   | Alta       |
 | RF11 - Cancelar Reserva            | CDU4                                   | Média      |
 | RF12 - Visualizar Salas            | CDU6                                   | Alta       |
@@ -538,6 +633,19 @@
 | RF24 - Estatísticas por Usuário    | CDU11                                  | Média      |
 | RF25 - Relatórios de Incidentes    | CDU8, CDU11                            | Média      |
 | RF26 - Integração Google Calendar  | CDU3, CDU4, CDU5                       | Média      |
+
+
+| RF27 - Cadastro de Usuário (Sign-Up) | CDU13                                  | Alta       |
+| RF28 - Criação e Gestão de Org     | CDU14                                  | Alta       |
+| RF29 - Convite e Participantes     | CDU14                                  | Alta       |
+| RF30 - Planos e Assinaturas (SaaS) | CDU15                                  | Alta       |
+
+
+| RF31 - Gestão Global de Planos     | CDU16                                  | Alta       |
+| RF32 - Gestão de Organizações      | CDU17                                  | Alta       |
+| RF33 - Auditoria e Logs            | CDU18                                  | Média      |
+| RF34 - Configurações Globais       | CDU19                                  | Média      |
+| RF35 - Bootstrapping Super Admin   | CDU10                                  | Alta       |
 
 ## 4. Tecnologias e Ferramentas
 

@@ -1,0 +1,68 @@
+@startuml
+left to right direction
+
+actor "Usuario" as user
+actor "Administrador" as admin
+actor "Super Administrador" as superadmin
+actor "Gestor de Setor" as gestor
+actor "Google OAuth 2.0" as google_oauth << Sistema Externo >>
+actor "Google Calendar API" as google_calendar << Sistema Externo >>
+
+user <|-- admin
+admin <|-- superadmin
+user <|-- gestor
+
+rectangle "Sistema SALA" {
+    usecase "CDU1 · Autenticar" as cdu1
+    usecase "CDU2 · Gerenciar Perfil" as cdu2
+    usecase "CDU3 · Criar Reserva" as cdu3
+    usecase "CDU4 · Visualizar / Cancelar Reservas" as cdu4
+    usecase "CDU5 · Aprovar / Rejeitar Reserva" as cdu5
+    usecase "CDU6 · Gerenciar Salas e Itens" as cdu6
+    usecase "CDU7 · Reportar Incidente" as cdu7
+    usecase "CDU8 · Gerenciar Incidentes" as cdu8
+    usecase "CDU9 · Visualizar Notificacoes" as cdu9
+    usecase "CDU10 · Gerenciar Usuarios" as cdu10
+    usecase "CDU11 · Visualizar Dashboard" as cdu11
+    usecase "CDU12 · Gerenciar Setores" as cdu12
+    usecase "CDU13 · Criar Conta" as cdu13
+    usecase "CDU14 · Gerenciar Organizacao e Membros" as cdu14
+    usecase "CDU15 · Gerenciar Assinatura" as cdu15
+    usecase "CDU16 · Gerenciar Planos" as cdu16
+    usecase "CDU17 · Gerenciar Organizacoes" as cdu17
+    usecase "CDU18 · Monitoramento e Auditoria" as cdu18
+    usecase "CDU19 · Configurar Integracoes" as cdu19
+}
+user --> cdu1
+user --> cdu2
+user --> cdu3
+user --> cdu4
+user --> cdu6
+user --> cdu7
+user --> cdu9
+user --> cdu11
+user --> cdu13
+user --> cdu14
+
+
+gestor --> cdu5
+gestor --> cdu6
+gestor --> cdu8
+gestor --> cdu12
+admin --> cdu5
+admin --> cdu8
+admin --> cdu10
+admin --> cdu12
+admin --> cdu15
+
+superadmin --> cdu16
+superadmin --> cdu17
+superadmin --> cdu18
+superadmin --> cdu19
+
+cdu1 ..> google_oauth : <<autentica>>
+cdu3 ..> google_calendar : <<sincroniza>>
+cdu4 ..> google_calendar : <<remove evento>>
+cdu5 ..> google_calendar : <<atualiza/remove>>
+
+@enduml
