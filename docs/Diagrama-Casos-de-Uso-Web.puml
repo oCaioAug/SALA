@@ -1,4 +1,5 @@
 @startuml
+' Diagrama de Casos de Uso - Especificacao Academica (Mestrado/Graduacao)
 left to right direction
 
 actor "Usuario" as user
