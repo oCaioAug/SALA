@@ -34,7 +34,6 @@ const membershipSelect = {
   role: true,
   canApproveReservations: true,
   canManageRooms: true,
-  sector: { select: { deletedAt: true } },
 } as const;
 
 /** True if the user has any sector membership in the organization. */
@@ -48,7 +47,6 @@ export async function isSectorManagerInOrg(
       role: SectorMemberRole.MANAGER,
       sector: {
         organizationId,
-        deletedAt: null,
       },
     },
     select: { id: true },
@@ -68,7 +66,6 @@ export async function hasSectorCapabilityInOrg(
       [capability]: true,
       sector: {
         organizationId,
-        deletedAt: null,
       },
     },
     select: { id: true },
@@ -86,7 +83,6 @@ export async function getOrgSectorCapabilities(
       role: SectorMemberRole.MANAGER,
       sector: {
         organizationId,
-        deletedAt: null,
       },
     },
     select: {
@@ -113,7 +109,6 @@ export async function getSectorRoomIdsForCapability(
       organizationId,
       deletedAt: null,
       sector: {
-        deletedAt: null,
         members: {
           some: {
             userId,
@@ -152,7 +147,6 @@ export async function hasSectorCapability(
   return (
     !!membership &&
     membership.role === SectorMemberRole.MANAGER &&
-    membership.sector.deletedAt === null &&
     membership[capability] === true
   );
 }
@@ -168,9 +162,7 @@ export async function isManagerOfSector(
     select: membershipSelect,
   });
   return (
-    !!membership &&
-    membership.role === SectorMemberRole.MANAGER &&
-    membership.sector.deletedAt === null
+    !!membership && membership.role === SectorMemberRole.MANAGER
   );
 }
 

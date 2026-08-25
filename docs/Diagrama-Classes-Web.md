@@ -30,7 +30,6 @@ classDiagram
         +String organizationId
         +String name
         +String? description
-        +DateTime? deletedAt
         +DateTime createdAt
         +DateTime updatedAt
     }

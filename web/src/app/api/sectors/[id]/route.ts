@@ -3,6 +3,7 @@ import { ApiErrorCode } from "@/lib/api/error-codes";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { writeAuditLog } from "@/lib/audit";
 import { isManagerOfSector } from "@/lib/auth/permissions";
 import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
 import { isOrgAdmin } from "@/lib/auth/roles";
@@ -47,7 +48,6 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: ctx.organizationId,
-        deletedAt: null,
       },
       include: sectorDetailInclude,
     });
@@ -79,7 +79,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: auth.organizationId,
-        deletedAt: null,
       },
     });
     if (!existing) {
@@ -175,7 +174,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: auth.organizationId,
-        deletedAt: null,
+      },
+      include: {
+        _count: { select: { members: true, rooms: true } },
       },
     });
     if (!existing) {
@@ -185,21 +186,25 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    await prisma.$transaction([
-      prisma.sectorMember.deleteMany({ where: { sectorId: id } }),
-      prisma.room.updateMany({
-        where: { sectorId: id, organizationId: auth.organizationId },
-        data: { sectorId: null },
-      }),
-      prisma.sector.update({
-        where: { id },
-        data: { deletedAt: new Date() },
-      }),
-    ]);
+    // Room.sectorId is onDelete: SetNull; SectorMember cascades.
+    await prisma.sector.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Setor arquivado com sucesso" });
+    await writeAuditLog({
+      actorUserId: auth.id,
+      action: "sector.deleted",
+      entityType: "Sector",
+      entityId: id,
+      organizationId: auth.organizationId,
+      metadata: {
+        name: existing.name,
+        membersCount: existing._count.members,
+        roomsCount: existing._count.rooms,
+      },
+    });
+
+    return NextResponse.json({ message: "Setor removido com sucesso" });
   } catch (error) {
-    console.error("Erro ao arquivar setor:", error);
+    console.error("Erro ao remover setor:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

@@ -84,7 +84,6 @@ describe("Items [id] API", () => {
         role: "MANAGER",
         canApproveReservations: true,
         canManageRooms: true,
-        sector: { deletedAt: null },
       } as any);
     });
 
@@ -148,8 +147,7 @@ describe("Items [id] API", () => {
         role: "MANAGER",
         canApproveReservations: true,
         canManageRooms: false,
-        sector: { deletedAt: null },
-      } as any);
+              } as any);
 
       const req = new NextRequest("http://localhost:3000/api/items/item-1", {
         method: "PUT",

@@ -21,7 +21,6 @@ const mockSector = {
   name: "TI",
   description: null,
   organizationId: TEST_ORG_ID,
-  deletedAt: null,
   members: [],
   rooms: [],
   _count: { members: 0, rooms: 0 },
@@ -52,7 +51,6 @@ describe("Sectors API (List and Create)", () => {
         expect.objectContaining({
           where: {
             organizationId: TEST_ORG_ID,
-            deletedAt: null,
           },
         })
       );
@@ -70,7 +68,6 @@ describe("Sectors API (List and Create)", () => {
         expect.objectContaining({
           where: {
             organizationId: TEST_ORG_ID,
-            deletedAt: null,
             members: { some: { userId: TEST_USER_ID } },
           },
         })

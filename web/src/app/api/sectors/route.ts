@@ -35,7 +35,6 @@ export async function GET() {
 
     const where: Prisma.SectorWhereInput = {
       organizationId: ctx.organizationId,
-      deletedAt: null,
     };
 
     if (!userIsOrgAdmin) {

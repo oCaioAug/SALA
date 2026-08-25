@@ -21,7 +21,6 @@ const mockSector = {
   name: "TI",
   description: null,
   organizationId: TEST_ORG_ID,
-  deletedAt: null,
   members: [],
   rooms: [],
   _count: { members: 0, rooms: 0 },
@@ -57,7 +56,6 @@ describe("Sectors [id] API", () => {
         role: "MANAGER",
         canApproveReservations: true,
         canManageRooms: true,
-        sector: { deletedAt: null },
       } as any);
       prismaMock.sector.findFirst.mockResolvedValue(mockSector as any);
 
@@ -140,18 +138,17 @@ describe("Sectors [id] API", () => {
   });
 
   describe("DELETE /api/sectors/[id]", () => {
-    it("should archive sector, unlink rooms and remove members", async () => {
+    it("should hard-delete sector and write audit log", async () => {
       mockRequireOrgAdmin.mockResolvedValueOnce({
         id: TEST_ADMIN_ID,
         organizationId: TEST_ORG_ID,
       } as any);
-      prismaMock.sector.findFirst.mockResolvedValue(mockSector as any);
-      prismaMock.sectorMember.deleteMany.mockResolvedValue({ count: 1 } as any);
-      prismaMock.room.updateMany.mockResolvedValue({ count: 2 } as any);
-      prismaMock.sector.update.mockResolvedValue({
+      prismaMock.sector.findFirst.mockResolvedValue({
         ...mockSector,
-        deletedAt: new Date(),
+        _count: { members: 1, rooms: 2 },
       } as any);
+      prismaMock.sector.delete.mockResolvedValue(mockSector as any);
+      prismaMock.auditLog.create.mockResolvedValue({ id: "audit-1" } as any);
 
       const req = new NextRequest(
         "http://localhost:3000/api/sectors/sector-1",
@@ -161,26 +158,24 @@ describe("Sectors [id] API", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.message).toMatch(/arquivado/i);
-      expect(prismaMock.$transaction).toHaveBeenCalled();
-      expect(prismaMock.sectorMember.deleteMany).toHaveBeenCalledWith({
-        where: { sectorId: "sector-1" },
+      expect(data.message).toMatch(/removido/i);
+      expect(prismaMock.sector.delete).toHaveBeenCalledWith({
+        where: { id: "sector-1" },
       });
-      expect(prismaMock.room.updateMany).toHaveBeenCalledWith(
+      expect(prismaMock.auditLog.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { sectorId: "sector-1", organizationId: TEST_ORG_ID },
-          data: { sectorId: null },
-        })
-      );
-      expect(prismaMock.sector.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: "sector-1" },
-          data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+          data: expect.objectContaining({
+            actorUserId: TEST_ADMIN_ID,
+            action: "sector.deleted",
+            entityType: "Sector",
+            entityId: "sector-1",
+            organizationId: TEST_ORG_ID,
+          }),
         })
       );
     });
 
-    it("should return 404 when sector is already archived or missing", async () => {
+    it("should return 404 when sector is missing", async () => {
       mockRequireOrgAdmin.mockResolvedValueOnce({
         id: TEST_ADMIN_ID,
         organizationId: TEST_ORG_ID,

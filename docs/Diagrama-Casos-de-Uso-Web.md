@@ -257,20 +257,20 @@ graph LR
 
 | Campo | Conteudo |
 |-------|----------|
-| **Descricao** | Permite criar/editar/arquivar setores, vincular salas e adicionar membros com funcoes independentes: confirmar agendas (`canApproveReservations`) e gerenciar salas (`canManageRooms`, infos + itens). |
+| **Descricao** | Permite criar/editar/remover setores, vincular salas e adicionar membros com funcoes independentes: confirmar agendas (`canApproveReservations`) e gerenciar salas (`canManageRooms`, infos + itens). |
 | **Ator Principal** | OWNER/ADMIN da organização |
 | **Pre-condicao** | Usuario autenticado como admin da org. |
-| **Pos-condicao** | Setor criado/atualizado/arquivado; salas vinculadas; membros atualizados. |
+| **Pos-condicao** | Setor criado/atualizado/removido; salas vinculadas; membros atualizados. |
 
 **Fluxo Principal:**
 1. Admin acessa `/setores`.
 2. Cria setor com nome e descricao opcional.
 3. Vincula salas (cada sala no maximo um setor).
 4. Adiciona membros a partir da org e marca as funcoes de cada um.
-5. Soft-delete arquiva o setor, remove membros do setor e desvincula salas (permite recriar o mesmo nome).
+5. Remoção apaga o setor de forma definitiva (hard delete), desvincula salas (FK `onDelete: SetNull`), remove membros em cascata e registra auditoria.
 
 **Regras de Negocio:**
-- `RN34` - Nome do setor e unico por organização entre setores ativos (`deletedAt` nulo).
+- `RN34` - Nome do setor e unico por organização.
 - `RN35` - Membro de setor nao ganha `OrganizationRole` ADMIN; permanece MEMBER com `SectorMember` e flags de funcao.
 - `RN36` - Criar/excluir salas e CRUD de setores permanece exclusivo de OWNER/ADMIN. Funcoes de setor: aprovar agendas (`canApproveReservations`) e gerenciar salas (`canManageRooms`, infos + itens).
 

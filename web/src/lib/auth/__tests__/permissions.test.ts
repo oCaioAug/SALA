@@ -23,16 +23,8 @@ const membership = (
     role: SectorMemberRole.MANAGER,
     canApproveReservations: true,
     canManageRooms: true,
-    sector: { deletedAt: null },
     ...flags,
   }) as any;
-
-const membershipSelect = {
-  role: true,
-  canApproveReservations: true,
-  canManageRooms: true,
-  sector: { select: { deletedAt: true } },
-};
 
 describe("permissions", () => {
   const orgId = "org-1";
@@ -104,7 +96,11 @@ describe("permissions", () => {
         where: {
           sectorId_userId: { sectorId: "sector-1", userId: "manager-1" },
         },
-        select: membershipSelect,
+        select: {
+          role: true,
+          canApproveReservations: true,
+          canManageRooms: true,
+        },
       });
     });
 

@@ -117,7 +117,7 @@
   - Cada sala pertence a no máximo um setor (`Room.sectorId`)
   - Setor contém membros com papel MANAGER e funções (`canApproveReservations`, `canManageRooms`)
   - ADMIN escolhe, por pessoa, quais funções estão ativas; ao menos uma é obrigatória
-  - Soft-delete de setor desvincula salas
+  - Remoção de setor é definitiva (hard delete), desvincula salas e registra auditoria (`sector.deleted`)
   - Membros de setor não gerenciam criar/excluir salas, usuários ou setores — só as funções marcadas no vínculo
 
 #### RF10 - Verificação de Conflitos

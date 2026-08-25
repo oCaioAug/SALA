@@ -202,23 +202,20 @@ model User {
   @@map("users")
 }
 
-/// Active-name uniqueness is enforced by partial unique index
-/// `sectors_organizationId_name_active_key` (WHERE deletedAt IS NULL).
 model Sector {
-  id             String    @id @default(cuid())
+  id             String   @id @default(cuid())
   organizationId String
   name           String
   description    String?
-  deletedAt      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      SectorMember[]
   rooms        Room[]
 
+  @@unique([organizationId, name])
   @@index([organizationId])
-  @@index([deletedAt])
   @@map("sectors")
 }
 

@@ -22,7 +22,6 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: auth.organizationId,
-        deletedAt: null,
       },
       select: { id: true },
     });
@@ -61,7 +60,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: auth.organizationId,
-        deletedAt: null,
       },
       select: { id: true },
     });

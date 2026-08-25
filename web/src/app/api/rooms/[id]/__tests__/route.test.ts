@@ -57,7 +57,6 @@ describe("Rooms [id] API", () => {
         role: SectorMemberRole.MANAGER,
         canApproveReservations: false,
         canManageRooms: true,
-        sector: { deletedAt: null },
       } as any);
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1");
@@ -146,7 +145,6 @@ describe("Rooms [id] API", () => {
         role: SectorMemberRole.MANAGER,
         canApproveReservations: true,
         canManageRooms: true,
-        sector: { deletedAt: null },
       } as any);
       prismaMock.room.update.mockResolvedValue({
         ...mockRoom,
@@ -195,8 +193,7 @@ describe("Rooms [id] API", () => {
         role: SectorMemberRole.MANAGER,
         canApproveReservations: true,
         canManageRooms: false,
-        sector: { deletedAt: null },
-      } as any);
+              } as any);
 
       const req = new NextRequest("http://localhost:3000/api/rooms/room-1", {
         method: "PUT",
