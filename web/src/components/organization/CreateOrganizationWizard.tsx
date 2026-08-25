@@ -422,7 +422,7 @@ export function CreateOrganizationWizard({
             </div>
 
             <section className="rounded-xl border border-border bg-muted/30 p-4">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-violet-400/90">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary/90">
                 {t("sections.organization")}
               </h3>
               <dl className="space-y-3">
@@ -443,7 +443,7 @@ export function CreateOrganizationWizard({
 
             {selectedPlan && (
               <section className="rounded-xl border border-border bg-muted/30 p-4">
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-violet-400/90">
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary/90">
                   {t("sections.plan")}
                 </h3>
                 <dl className="space-y-3">

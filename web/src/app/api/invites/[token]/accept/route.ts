@@ -1,10 +1,7 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { apiErrorResponse } from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireAuth } from "@/lib/auth/platform";
 import { isInviteActive } from "@/lib/organization/invites";
@@ -47,20 +44,17 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (auth.organizationId) {
-      if (auth.organizationId === invite.organizationId) {
-        return NextResponse.json(
-          { error: "Você já pertence a esta organização" },
-          { status: 409 }
-        );
-      }
-      return NextResponse.json(
-        {
-          error:
-            "Você já pertence a outra organização. Saia dela antes de aceitar este convite.",
+    const existingMember = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_userId: {
+          organizationId: invite.organizationId,
+          userId: auth.id,
         },
-        { status: 409 }
-      );
+      },
+      select: { id: true },
+    });
+    if (existingMember) {
+      return apiErrorResponse(ApiErrorCode.INVITE_ALREADY_MEMBER, 409);
     }
 
     const memberLimit = await assertCanAddMember(invite.organizationId);

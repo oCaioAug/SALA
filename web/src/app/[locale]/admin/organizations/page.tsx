@@ -1,18 +1,15 @@
 "use client";
 
 import { OrganizationStatus } from "@/lib/auth/roles";
-import {
-  Building2,
-  CheckCircle2,
-  Clock,
-  Plus,
-  XCircle,
-} from "lucide-react";
+import { Building2, CheckCircle2, Clock, Plus, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { AdminFilterBar } from "@/components/admin/AdminFilterBar";
-import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
+import {
+  AdminPageContent,
+  AdminPageHeader,
+} from "@/components/admin/AdminLayout";
 import { AdminMetricCards } from "@/components/admin/AdminMetricCards";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/Button";
@@ -111,7 +108,7 @@ export default function OrganizationsPage() {
       value: stats?.total ?? 0,
       sub: "Organizações cadastradas",
       icon: Building2,
-      iconClassName: "text-violet-400",
+      iconClassName: "text-primary",
     },
     {
       id: "active",
@@ -146,7 +143,7 @@ export default function OrganizationsPage() {
         description={t("description")}
         actions={
           <Link href="/admin/organizations/new">
-            <Button className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500">
+            <Button className="flex items-center gap-2 bg-primary hover:bg-primary">
               <Plus className="h-4 w-4" />
               Nova organização
             </Button>
@@ -217,14 +214,16 @@ export default function OrganizationsPage() {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {organizations.map(org => (
                 <Link key={org.id} href={`/admin/organizations/${org.id}`}>
-                  <Card className="border-border bg-card transition-colors hover:border-violet-500/30 hover:bg-muted">
+                  <Card className="border-border bg-card transition-colors hover:border-primary/30 hover:bg-muted">
                     <CardContent className="p-5">
                       <div className="mb-3 flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <h3 className="truncate font-semibold text-foreground">
                             {org.name}
                           </h3>
-                          <p className="text-xs text-muted-foreground">{org.slug}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {org.slug}
+                          </p>
                         </div>
                         <AdminStatusBadge
                           status={org.status}

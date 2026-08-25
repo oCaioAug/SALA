@@ -5,8 +5,12 @@ import { Eye, Shield, UserCheck, Users, UserX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { AdminActionError } from "@/components/admin/AdminActionError";
 import { AdminFilterBar } from "@/components/admin/AdminFilterBar";
-import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
+import {
+  AdminPageContent,
+  AdminPageHeader,
+} from "@/components/admin/AdminLayout";
 import { AdminMetricCards } from "@/components/admin/AdminMetricCards";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import {
@@ -17,6 +21,8 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Pagination } from "@/components/ui/Pagination";
+import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 
 interface UserStats {
   total: number;
@@ -28,13 +34,19 @@ interface UserStats {
 
 export default function AdminUsersPage() {
   const t = useTranslations("Admin.users");
+  const { fromResponse } = useApiErrorMessage();
   const [users, setUsers] = useState<AdminUserDetail[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
+  const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(30);
+  const [total, setTotal] = useState(0);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<AdminUserDetail | null>(
     null
   );
@@ -50,15 +62,23 @@ export default function AdminUsersPage() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+      });
       if (search) params.set("search", search);
       if (roleFilter) params.set("platformRole", roleFilter);
+      if (includeDeleted) params.set("includeDeleted", "true");
       const res = await fetch(`/api/admin/users?${params}`);
-      if (res.ok) setUsers(await res.json());
+      if (res.ok) {
+        const json = await res.json();
+        setUsers(json.data);
+        setTotal(json.pagination?.total ?? json.data.length);
+      }
     } finally {
       setLoading(false);
     }
-  }, [search, roleFilter]);
+  }, [search, roleFilter, includeDeleted, page, pageSize]);
 
   useEffect(() => {
     const timer = setTimeout(fetchUsers, 300);
@@ -82,18 +102,21 @@ export default function AdminUsersPage() {
     if (!confirm(`${action} — ${user.email}?`)) return;
 
     setUpdatingId(user.id);
+    setActionError(null);
     try {
       const res = await fetch(`/api/admin/users/${user.id}/platform-role`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ platformRole: nextRole }),
       });
-      if (res.ok) {
-        await fetchUsers();
-        await refreshStats();
-        if (selectedUser?.id === user.id) {
-          setSelectedUser({ ...user, platformRole: nextRole });
-        }
+      if (!res.ok) {
+        setActionError(await fromResponse(res));
+        return;
+      }
+      await fetchUsers();
+      await refreshStats();
+      if (selectedUser?.id === user.id) {
+        setSelectedUser({ ...user, platformRole: nextRole });
       }
     } finally {
       setUpdatingId(null);
@@ -120,7 +143,7 @@ export default function AdminUsersPage() {
       value: stats?.superAdmins ?? 0,
       sub: t("stats.superAdminsSub"),
       icon: Shield,
-      iconClassName: "text-violet-400",
+      iconClassName: "text-primary",
     },
     {
       id: "withOrg",
@@ -144,6 +167,10 @@ export default function AdminUsersPage() {
     <>
       <AdminPageHeader title={t("title")} description={t("description")} />
       <AdminPageContent>
+        <AdminActionError
+          message={actionError}
+          onDismiss={() => setActionError(null)}
+        />
         <AdminMetricCards
           className="mb-6"
           metrics={metricCards}
@@ -155,13 +182,19 @@ export default function AdminUsersPage() {
           searchTitle={t("searchTitle")}
           searchPlaceholder={t("searchPlaceholder")}
           searchValue={search}
-          onSearchChange={setSearch}
+          onSearchChange={value => {
+            setSearch(value);
+            setPage(1);
+          }}
           filters={[
             {
               id: "platformRole",
               label: t("roleFilter"),
               value: roleFilter,
-              onChange: setRoleFilter,
+              onChange: value => {
+                setRoleFilter(value);
+                setPage(1);
+              },
               allLabel: t("allRoles"),
               options: [
                 { value: PlatformRole.NONE, label: t("regularUsers") },
@@ -169,6 +202,20 @@ export default function AdminUsersPage() {
               ],
             },
           ]}
+          actions={
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={includeDeleted}
+                onChange={e => {
+                  setIncludeDeleted(e.target.checked);
+                  setPage(1);
+                }}
+                className="h-4 w-4 rounded border-border"
+              />
+              {t("includeDeleted")}
+            </label>
+          }
         />
 
         {loading ? (
@@ -182,35 +229,49 @@ export default function AdminUsersPage() {
             description={t("emptyDesc")}
           />
         ) : (
-          <div className="space-y-3">
-            {users.map(user => (
-              <Card key={user.id} className="border-border bg-card">
-                <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <MotionlessUserBlock user={user} />
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openUserDetail(user)}
-                    >
-                      <Eye className="mr-1.5 h-4 w-4" />
-                      {t("viewDetails")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={updatingId === user.id}
-                      onClick={() => toggleSuperAdmin(user)}
-                    >
-                      {user.platformRole === PlatformRole.SUPER_ADMIN
-                        ? t("removeSuperAdmin")
-                        : t("promoteSuperAdmin")}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <>
+            <div className="space-y-3">
+              {users.map(user => (
+                <Card key={user.id} className="border-border bg-card">
+                  <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <MotionlessUserBlock user={user} />
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openUserDetail(user)}
+                      >
+                        <Eye className="mr-1.5 h-4 w-4" />
+                        {t("viewDetails")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={updatingId === user.id}
+                        onClick={() => toggleSuperAdmin(user)}
+                      >
+                        {user.platformRole === PlatformRole.SUPER_ADMIN
+                          ? t("removeSuperAdmin")
+                          : t("promoteSuperAdmin")}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Pagination
+              className="mt-6"
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              onPageChange={setPage}
+              onPageSizeChange={size => {
+                setPageSize(size);
+                setPage(1);
+              }}
+              pageSizeOptions={[15, 30, 50]}
+            />
+          </>
         )}
       </AdminPageContent>
 
@@ -229,18 +290,24 @@ export default function AdminUsersPage() {
 }
 
 function MotionlessUserBlock({ user }: { user: AdminUserDetail }) {
+  const t = useTranslations("Admin.users");
   return (
     <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="flex flex-wrap items-center gap-2 font-medium text-foreground">
           {user.name ?? user.email}
           <AdminStatusBadge status={user.platformRole} kind="platformRole" />
+          {user.deletedAt && (
+            <span className="rounded bg-red-500/15 px-2 py-0.5 text-xs text-red-300">
+              {t("deleted")}
+            </span>
+          )}
         </p>
         <p className="text-sm text-muted-foreground">{user.email}</p>
       </div>
       <p className="text-sm text-muted-foreground">
         {user.memberships.length === 0
-          ? "Sem organização"
+          ? t("noOrganizations")
           : user.memberships
               .map(m => `${m.organization.name} (${m.role})`)
               .join(", ")}

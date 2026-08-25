@@ -1,16 +1,7 @@
 "use client";
 
-import {
-  IncidentPriority,
-  IncidentStatus,
-} from "@prisma/client";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Eye,
-  Flame,
-  List,
-} from "lucide-react";
+import { IncidentPriority, IncidentStatus } from "@prisma/client";
+import { AlertTriangle, CheckCircle2, Eye, Flame, List } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
@@ -19,7 +10,10 @@ import {
   AdminIncidentDetailModal,
   AdminIncidentListItem,
 } from "@/components/admin/AdminIncidentDetailModal";
-import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
+import {
+  AdminPageContent,
+  AdminPageHeader,
+} from "@/components/admin/AdminLayout";
 import { AdminMetricCards } from "@/components/admin/AdminMetricCards";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
@@ -70,17 +64,33 @@ export default function AdminIncidentsPage() {
 
   useEffect(() => {
     fetchStats();
-    fetch("/api/admin/organizations?pageSize=100")
-      .then(r => (r.ok ? r.json() : { data: [] }))
-      .then(json =>
-        setOrganizations(
-          (json.data as OrganizationOption[]).map(o => ({
+
+    const loadOrganizations = async () => {
+      const all: OrganizationOption[] = [];
+      let page = 1;
+      let totalPages = 1;
+      try {
+        do {
+          const res = await fetch(
+            `/api/admin/organizations?page=${page}&pageSize=100`
+          );
+          if (!res.ok) break;
+          const json = await res.json();
+          const batch = (json.data as OrganizationOption[]).map(o => ({
             id: o.id,
             name: o.name,
-          }))
-        )
-      )
-      .catch(() => setOrganizations([]));
+          }));
+          all.push(...batch);
+          totalPages = json.pagination?.totalPages ?? 1;
+          page += 1;
+        } while (page <= totalPages);
+        setOrganizations(all);
+      } catch {
+        setOrganizations([]);
+      }
+    };
+
+    void loadOrganizations();
   }, [fetchStats]);
 
   const fetchIncidents = useCallback(async () => {
@@ -107,14 +117,7 @@ export default function AdminIncidentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [
-    scope,
-    page,
-    search,
-    statusFilter,
-    priorityFilter,
-    organizationFilter,
-  ]);
+  }, [scope, page, search, statusFilter, priorityFilter, organizationFilter]);
 
   useEffect(() => {
     const timer = setTimeout(fetchIncidents, 300);
@@ -163,7 +166,7 @@ export default function AdminIncidentsPage() {
       value: stats?.total ?? 0,
       sub: t("stats.totalSub"),
       icon: List,
-      iconClassName: "text-violet-400",
+      iconClassName: "text-primary",
     },
   ];
 
@@ -261,7 +264,7 @@ export default function AdminIncidentsPage() {
                 {incidents.map(incident => (
                   <Card
                     key={incident.id}
-                    className="border-border bg-card transition-colors hover:border-violet-500/30"
+                    className="border-border bg-card transition-colors hover:border-primary/30"
                   >
                     <CardContent className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
                       <div className="min-w-0 flex-1">
@@ -287,7 +290,7 @@ export default function AdminIncidentsPage() {
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           <Link
                             href={`/admin/organizations/${incident.organization.id}`}
-                            className="text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
+                            className="text-primary hover:text-primary dark:text-primary dark:text-primary dark:hover:text-primary"
                           >
                             {incident.organization.name}
                           </Link>

@@ -2,7 +2,10 @@
 
 import { Filter, Search } from "lucide-react";
 
-import { adminInputClass, adminSurfaceClass } from "@/components/admin/admin-styles";
+import {
+  adminInputClass,
+  adminSurfaceClass,
+} from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
 
 export interface AdminFilterOption {
@@ -83,9 +86,7 @@ export function AdminFilterBar({
                       onChange={e => filter.onChange(e.target.value)}
                       className={adminInputClass}
                     >
-                      <option value="">
-                        {filter.allLabel ?? "Todos"}
-                      </option>
+                      <option value="">{filter.allLabel ?? "Todos"}</option>
                       {filter.options.map(option => (
                         <option key={option.value} value={option.value}>
                           {option.label}

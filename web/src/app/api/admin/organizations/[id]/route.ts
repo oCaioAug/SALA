@@ -1,6 +1,5 @@
 import {
   apiErrorResponse,
-  apiInternalError,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { IncidentStatus } from "@prisma/client";
@@ -63,7 +62,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    if (!organization) {
+    if (!organization || organization.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
@@ -124,7 +123,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const data = updateOrganizationSchema.parse(body);
 
     const existing = await prisma.organization.findUnique({ where: { id } });
-    if (!existing) {
+    if (!existing || existing.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
@@ -173,6 +172,39 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(organization);
   } catch (error) {
     console.error("Erro ao atualizar organização:", error);
+    return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
+  }
+}
+
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+  try {
+    const auth = await requireSuperAdmin();
+    if (isNextResponse(auth)) return auth;
+
+    const { id } = await params;
+
+    const existing = await prisma.organization.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
+    }
+
+    const organization = await prisma.organization.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+
+    await writeAuditLog({
+      actorUserId: auth.id,
+      action: "organization.deleted",
+      entityType: "Organization",
+      entityId: id,
+      organizationId: id,
+      metadata: { name: existing.name, slug: existing.slug },
+    });
+
+    return NextResponse.json(organization);
+  } catch (error) {
+    console.error("Erro ao desativar organização:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

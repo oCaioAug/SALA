@@ -25,7 +25,8 @@ const organizationStatusConfig: Record<
 > = {
   ACTIVE: {
     label: "Ativa",
-    className: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
+    className:
+      "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
   },
   SUSPENDED: {
     label: "Suspensa",
@@ -33,7 +34,8 @@ const organizationStatusConfig: Record<
   },
   TRIAL: {
     label: "Trial",
-    className: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
+    className:
+      "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   },
 };
 
@@ -43,11 +45,12 @@ const platformRoleConfig: Record<
 > = {
   SUPER_ADMIN: {
     label: "Super Admin",
-    className: "bg-violet-500/20 text-violet-700 dark:text-violet-300 ring-violet-500/30",
+    className: "bg-primary/20 text-primary dark:text-primary ring-ring/30",
   },
   NONE: {
     label: "Usuário",
-    className: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
+    className:
+      "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
   },
 };
 
@@ -57,15 +60,18 @@ const subscriptionStatusConfig: Record<
 > = {
   ACTIVE: {
     label: "Ativa",
-    className: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
+    className:
+      "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
   },
   TRIALING: {
     label: "Trial",
-    className: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
+    className:
+      "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   },
   PAST_DUE: {
     label: "Inadimplente",
-    className: "bg-orange-500/20 text-orange-800 ring-orange-500/30 dark:text-orange-300",
+    className:
+      "bg-orange-500/20 text-orange-800 ring-orange-500/30 dark:text-orange-300",
   },
   CANCELLED: {
     label: "Cancelada",
@@ -79,23 +85,27 @@ const incidentStatusConfig: Record<
 > = {
   REPORTED: {
     label: "Reportado",
-    className: "bg-blue-500/20 text-blue-800 ring-blue-500/30 dark:text-blue-300",
+    className:
+      "bg-blue-500/20 text-blue-800 ring-blue-500/30 dark:text-blue-300",
   },
   IN_ANALYSIS: {
     label: "Em análise",
-    className: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
+    className:
+      "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   },
   IN_PROGRESS: {
     label: "Em progresso",
-    className: "bg-violet-500/20 text-violet-700 dark:text-violet-300 ring-violet-500/30",
+    className: "bg-primary/20 text-primary dark:text-primary ring-ring/30",
   },
   RESOLVED: {
     label: "Resolvido",
-    className: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
+    className:
+      "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
   },
   CANCELLED: {
     label: "Cancelado",
-    className: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
+    className:
+      "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
   },
 };
 
@@ -105,15 +115,18 @@ const incidentPriorityConfig: Record<
 > = {
   LOW: {
     label: "Baixa",
-    className: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
+    className:
+      "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
   },
   MEDIUM: {
     label: "Média",
-    className: "bg-blue-500/20 text-blue-800 ring-blue-500/30 dark:text-blue-300",
+    className:
+      "bg-blue-500/20 text-blue-800 ring-blue-500/30 dark:text-blue-300",
   },
   HIGH: {
     label: "Alta",
-    className: "bg-orange-500/20 text-orange-800 ring-orange-500/30 dark:text-orange-300",
+    className:
+      "bg-orange-500/20 text-orange-800 ring-orange-500/30 dark:text-orange-300",
   },
   CRITICAL: {
     label: "Crítica",
@@ -133,8 +146,10 @@ const variantFallback: Record<
   string
 > = {
   neutral: "bg-gray-500/20 text-gray-700 ring-gray-500/30 dark:text-gray-300",
-  success: "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
-  warning: "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
+  success:
+    "bg-emerald-500/20 text-emerald-800 ring-emerald-500/30 dark:text-emerald-300",
+  warning:
+    "bg-amber-500/20 text-amber-800 ring-amber-500/30 dark:text-amber-300",
   danger: "bg-red-500/20 text-red-800 ring-red-500/30 dark:text-red-300",
 };
 
@@ -161,8 +176,7 @@ export function AdminStatusBadge({
   let resolvedClassName = variantFallback.neutral;
 
   if (kind === "organization" && status in organizationStatusConfig) {
-    const config =
-      organizationStatusConfig[status as OrganizationStatus];
+    const config = organizationStatusConfig[status as OrganizationStatus];
     resolvedLabel = label ?? config.label;
     resolvedClassName = config.className;
   } else if (kind === "platformRole" && status in platformRoleConfig) {
@@ -170,8 +184,7 @@ export function AdminStatusBadge({
     resolvedLabel = label ?? config.label;
     resolvedClassName = config.className;
   } else if (kind === "subscription" && status in subscriptionStatusConfig) {
-    const config =
-      subscriptionStatusConfig[status as SubscriptionStatus];
+    const config = subscriptionStatusConfig[status as SubscriptionStatus];
     resolvedLabel = label ?? config.label;
     resolvedClassName = config.className;
   } else if (kind === "incident" && status in incidentStatusConfig) {
@@ -183,8 +196,7 @@ export function AdminStatusBadge({
     resolvedLabel = label ?? config.label;
     resolvedClassName = config.className;
   } else if (kind in variantFallback) {
-    resolvedClassName =
-      variantFallback[kind as keyof typeof variantFallback];
+    resolvedClassName = variantFallback[kind as keyof typeof variantFallback];
     resolvedLabel = label ?? String(status);
   } else {
     resolvedLabel = label ?? String(status);

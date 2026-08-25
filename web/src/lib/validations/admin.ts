@@ -25,6 +25,11 @@ export const createOrganizationSchema = z.object({
   ownerEmail: z.string().email(),
   ownerName: z.string().min(2).max(120).optional(),
   isSchool: z.boolean().default(false).optional(),
+  planId: z.string().min(1).optional(),
+});
+
+export const transferOwnershipSchema = z.object({
+  newOwnerUserId: z.string().min(1),
 });
 
 export const updateOrganizationSchema = z.object({
@@ -89,6 +94,8 @@ export const adminUsersQuerySchema = z.object({
   search: z.string().optional(),
   platformRole: z.nativeEnum(PlatformRole).optional(),
   includeDeleted: z.coerce.boolean().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(30),
 });
 
 export const organizationListQuerySchema = z.object({

@@ -101,7 +101,7 @@ function PlanDetail({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-violet-600 dark:text-violet-400" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary dark:text-primary" />
       <div className="min-w-0">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
         <p className="text-sm font-semibold text-foreground">{value}</p>
@@ -113,10 +113,12 @@ function PlanDetail({
 function AdminPlanCard({
   plan,
   onToggleActive,
+  onEdit,
   toggling,
 }: {
   plan: AdminPlan;
   onToggleActive: (plan: AdminPlan) => void;
+  onEdit: (plan: AdminPlan) => void;
   toggling: boolean;
 }) {
   const t = useTranslations("Admin.plans.card");
@@ -125,7 +127,7 @@ function AdminPlanCard({
     <article
       className={cn(
         adminCardClass,
-        "flex flex-col p-6 transition-all duration-200 hover:border-violet-500/30 hover:shadow-md"
+        "flex flex-col p-6 transition-all duration-200 hover:border-primary/30 hover:shadow-md"
       )}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -140,11 +142,7 @@ function AdminPlanCard({
       </div>
 
       <div className="grid grid-cols-2 gap-4 border-t border-border py-4">
-        <PlanDetail
-          icon={DoorOpen}
-          label={t("spaces")}
-          value={plan.maxRooms}
-        />
+        <PlanDetail icon={DoorOpen} label={t("spaces")} value={plan.maxRooms} />
         <PlanDetail icon={Users} label={t("users")} value={plan.maxUsers} />
         <PlanDetail
           icon={CalendarDays}
@@ -182,22 +180,33 @@ function AdminPlanCard({
           </span>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          disabled={toggling}
-          onClick={() => onToggleActive(plan)}
-        >
-          {plan.isActive ? t("deactivate") : t("activate")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => onEdit(plan)}
+          >
+            {t("edit")}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            disabled={toggling}
+            onClick={() => onToggleActive(plan)}
+          >
+            {plan.isActive ? t("deactivate") : t("activate")}
+          </Button>
+        </div>
       </div>
     </article>
   );
 }
 
-function CreatePlanModal({
+function PlanFormModal({
   open,
+  mode,
   saving,
   form,
   slugTouched,
@@ -208,6 +217,7 @@ function CreatePlanModal({
   onSubmit,
 }: {
   open: boolean;
+  mode: "create" | "edit";
   saving: boolean;
   form: PlanFormState;
   slugTouched: boolean;
@@ -222,13 +232,13 @@ function CreatePlanModal({
 
   useEffect(() => {
     if (open) {
-      setShowSlugField(slugTouched);
+      setShowSlugField(slugTouched || mode === "edit");
     }
-  }, [open, slugTouched]);
+  }, [open, slugTouched, mode]);
 
   if (!open) return null;
 
-  const showSlugEditor = showSlugField || slugTouched;
+  const showSlugEditor = showSlugField || slugTouched || mode === "edit";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -246,7 +256,7 @@ function CreatePlanModal({
       >
         <div className={cn(adminModalHeaderClass, "items-center")}>
           <h2 className="text-lg font-bold text-foreground">
-            {t("createTitle")}
+            {mode === "edit" ? t("editTitle") : t("createTitle")}
           </h2>
           <button
             type="button"
@@ -270,7 +280,9 @@ function CreatePlanModal({
                   const name = e.target.value;
                   onChange({
                     name,
-                    ...(!slugTouched ? { slug: slugify(name) } : {}),
+                    ...(!slugTouched && mode === "create"
+                      ? { slug: slugify(name) }
+                      : {}),
                   });
                 }}
                 className={cn(adminInputClass, "w-full")}
@@ -283,7 +295,9 @@ function CreatePlanModal({
                   className="mt-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
                 >
                   slug:{" "}
-                  <span className="font-mono text-foreground/90">{form.slug}</span>
+                  <span className="font-mono text-foreground/90">
+                    {form.slug}
+                  </span>
                   {" · "}
                   {t("actions.editSlug")}
                 </button>
@@ -362,13 +376,15 @@ function CreatePlanModal({
                 type="checkbox"
                 checked={form.isActive}
                 onChange={e => onChange({ isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-border text-violet-600 focus:ring-violet-500/40"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-ring/40"
               />
             </label>
           </div>
 
           {error && (
-            <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="mt-4 text-sm text-red-600 dark:text-red-400">
+              {error}
+            </p>
           )}
 
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -376,7 +392,11 @@ function CreatePlanModal({
               {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? t("actions.saving") : t("actions.create")}
+              {saving
+                ? t("actions.saving")
+                : mode === "edit"
+                  ? t("actions.save")
+                  : t("actions.create")}
             </Button>
           </div>
         </form>
@@ -393,8 +413,10 @@ export function AdminPlansSection() {
   const [slugTouched, setSlugTouched] = useState(false);
   const [saving, setSaving] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
 
   const fetchPlans = async () => {
     try {
@@ -413,42 +435,73 @@ export function AdminPlansSection() {
     setForm(emptyForm);
     setSlugTouched(false);
     setError(null);
+    setEditingPlanId(null);
   };
 
   const openCreateModal = () => {
     resetForm();
-    setShowCreateModal(true);
+    setModalMode("create");
   };
 
-  const closeCreateModal = () => {
-    setShowCreateModal(false);
+  const openEditModal = (plan: AdminPlan) => {
+    setForm({
+      name: plan.name,
+      slug: plan.slug,
+      maxRooms: String(plan.maxRooms),
+      maxUsers: String(plan.maxUsers),
+      maxReservationsPerMonth:
+        plan.maxReservationsPerMonth != null
+          ? String(plan.maxReservationsPerMonth)
+          : "",
+      isActive: plan.isActive,
+    });
+    setSlugTouched(true);
+    setEditingPlanId(plan.id);
+    setError(null);
+    setModalMode("edit");
+  };
+
+  const closeModal = () => {
+    setModalMode(null);
     resetForm();
   };
 
-  const createPlan = async (e: React.FormEvent) => {
+  const savePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
+    const payload = {
+      name: form.name.trim(),
+      slug: form.slug.trim(),
+      maxRooms: Number(form.maxRooms),
+      maxUsers: Number(form.maxUsers),
+      maxReservationsPerMonth: form.maxReservationsPerMonth
+        ? Number(form.maxReservationsPerMonth)
+        : null,
+      isActive: form.isActive,
+    };
     try {
-      const res = await fetch("/api/admin/plans", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          slug: form.slug.trim(),
-          maxRooms: Number(form.maxRooms),
-          maxUsers: Number(form.maxUsers),
-          maxReservationsPerMonth: form.maxReservationsPerMonth
-            ? Number(form.maxReservationsPerMonth)
-            : null,
-          isActive: form.isActive,
-        }),
-      });
+      const res =
+        modalMode === "edit" && editingPlanId
+          ? await fetch(`/api/admin/plans/${editingPlanId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            })
+          : await fetch("/api/admin/plans", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
       if (!res.ok) {
-        setError(t("errors.createFailed"));
+        setError(
+          modalMode === "edit"
+            ? t("errors.updateFailed")
+            : t("errors.createFailed")
+        );
         return;
       }
-      closeCreateModal();
+      closeModal();
       setLoading(true);
       await fetchPlans();
     } finally {
@@ -458,12 +511,17 @@ export function AdminPlansSection() {
 
   const toggleActive = async (plan: AdminPlan) => {
     setTogglingId(plan.id);
+    setListError(null);
     try {
-      await fetch(`/api/admin/plans/${plan.id}`, {
+      const res = await fetch(`/api/admin/plans/${plan.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !plan.isActive }),
       });
+      if (!res.ok) {
+        setListError(t("errors.updateFailed"));
+        return;
+      }
       await fetchPlans();
     } finally {
       setTogglingId(null);
@@ -488,6 +546,10 @@ export function AdminPlansSection() {
         </Button>
       </div>
 
+      {listError && (
+        <p className="mb-4 text-sm text-red-600 dark:text-red-400">{listError}</p>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-20">
           <LoadingSpinner size="lg" />
@@ -506,25 +568,27 @@ export function AdminPlansSection() {
               key={plan.id}
               plan={plan}
               onToggleActive={toggleActive}
+              onEdit={openEditModal}
               toggling={togglingId === plan.id}
             />
           ))}
         </div>
       )}
 
-      <CreatePlanModal
-        open={showCreateModal}
+      <PlanFormModal
+        open={modalMode !== null}
+        mode={modalMode === "edit" ? "edit" : "create"}
         saving={saving}
         form={form}
         slugTouched={slugTouched}
         error={error}
-        onClose={closeCreateModal}
+        onClose={closeModal}
         onChange={patch => setForm(prev => ({ ...prev, ...patch }))}
         onSlugChange={slug => {
           setSlugTouched(true);
           setForm(prev => ({ ...prev, slug: slugify(slug) }));
         }}
-        onSubmit={createPlan}
+        onSubmit={savePlan}
       />
     </>
   );

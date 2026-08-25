@@ -24,7 +24,7 @@ export default function NewOrganizationPage() {
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </header>
 
-        <div className="rounded-2xl border border-border bg-card/50 p-6 shadow-2xl shadow-black/10 backdrop-blur-xl sm:p-8">
+        <div className="rounded-lg border border-border bg-card/50 p-6 shadow-sm shadow-black/10 backdrop-blur-xl sm:p-8">
           <CreateOrganizationWizard cancelHref="/organizations" />
         </div>
       </OrganizationsShell>

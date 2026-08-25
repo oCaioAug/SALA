@@ -12,14 +12,17 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { AccountSecurityForm } from "@/components/account/AccountSecurityForm";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { organizationEntryPath } from "@/lib/organization/entry-path";
+import { navigateAfterOrgSwitch } from "@/lib/organization/navigate-after-org-switch";
+import { useApp } from "@/lib/hooks/useApp";
 import { cn } from "@/lib/utils";
 import { Link } from "@/navigation";
 
@@ -54,6 +57,8 @@ type OrganizationsHubProps = {
   createOrgHref: string;
   profileComplete: boolean;
   hasOrganization: boolean;
+  hasPassword: boolean;
+  onPasswordCreated?: () => void;
   invitesLoading: boolean;
   actionLoading: boolean;
   error: string | null;
@@ -67,19 +72,13 @@ const roleLabelKey: Record<OrganizationRole, string> = {
 };
 
 const ICON_ACCENTS = [
-  "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300",
-  "bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300",
-  "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300",
-  "bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300",
+  "bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300",
+  "bg-zinc-100 text-zinc-700 dark:bg-zinc-500/15 dark:text-zinc-300",
+  "bg-stone-100 text-stone-700 dark:bg-stone-500/15 dark:text-stone-300",
+  "bg-neutral-100 text-neutral-700 dark:bg-neutral-500/15 dark:text-neutral-300",
 ] as const;
 
-function SectionTitle({
-  title,
-  icon,
-}: {
-  title: string;
-  icon?: ReactNode;
-}) {
+function SectionTitle({ title, icon }: { title: string; icon?: ReactNode }) {
   return (
     <div className="mb-4 flex items-center gap-2">
       {icon}
@@ -95,13 +94,13 @@ function StatusPill({
   tone = "blue",
 }: {
   label: string;
-  tone?: "blue" | "violet" | "amber" | "emerald";
+  tone?: "blue" | "slate" | "amber" | "emerald";
 }) {
   const tones = {
-    blue: "bg-blue-600 text-white",
-    violet: "bg-violet-600 text-white",
-    amber: "bg-amber-500 text-white",
-    emerald: "bg-emerald-600 text-white",
+    blue: "bg-slate-700 text-white",
+    slate: "bg-slate-600 text-white",
+    amber: "bg-amber-600 text-white",
+    emerald: "bg-emerald-700 text-white",
   };
 
   return (
@@ -119,9 +118,9 @@ function StatusPill({
 
 function MembershipStatusBadge({ status }: { status: OrganizationStatus }) {
   const t = useTranslations("OrganizationsPage.status");
-  const tone: Record<OrganizationStatus, "emerald" | "violet" | "amber"> = {
+  const tone: Record<OrganizationStatus, "emerald" | "slate" | "amber"> = {
     ACTIVE: "emerald",
-    TRIAL: "violet",
+    TRIAL: "slate",
     SUSPENDED: "amber",
   };
 
@@ -159,13 +158,13 @@ function FeaturedOrgCard({
     role === OrganizationRole.OWNER || role === OrganizationRole.ADMIN;
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-7">
+    <article className="flex h-full flex-col rounded-lg border border-border bg-card p-6 shadow-sm sm:p-7">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {isActive && <StatusPill label={t("activeOrg")} tone="blue" />}
           {!isActive && <MembershipStatusBadge status={organization.status} />}
         </div>
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300">
           <Building2 className="h-6 w-6" />
         </div>
       </div>
@@ -236,7 +235,7 @@ function CompactOrgCard({
   const accent = ICON_ACCENTS[accentIndex % ICON_ACCENTS.length];
 
   return (
-    <article className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <article className="flex flex-col rounded-lg border border-border bg-card p-5 shadow-sm">
       <div className="flex gap-3">
         <div
           className={cn(
@@ -312,7 +311,7 @@ function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-4 shadow-sm transition-all duration-200 hover:border-blue-300 hover:shadow-md dark:hover:border-blue-500/40"
+      className="group flex items-center gap-4 rounded-lg border border-border bg-card px-4 py-4 shadow-sm transition-all duration-200 hover:border-slate-400 dark:hover:border-slate-500"
     >
       <div
         className={cn(
@@ -341,13 +340,16 @@ export function OrganizationsHub({
   createOrgHref,
   profileComplete,
   hasOrganization,
+  hasPassword,
+  onPasswordCreated,
   invitesLoading,
   actionLoading,
   error,
   onAcceptInvite,
 }: OrganizationsHubProps) {
   const t = useTranslations("OrganizationsPage");
-  const router = useRouter();
+  const tSecurity = useTranslations("ProfilePage");
+  const { showSuccess } = useApp();
   const { update } = useSession();
   const [enteringOrgId, setEnteringOrgId] = useState<string | null>(null);
 
@@ -356,17 +358,36 @@ export function OrganizationsHub({
     setEnteringOrgId(organization.id);
     try {
       await update({ preferOrganizationId: organization.id });
-      const href =
-        role === OrganizationRole.MEMBER ? "/explorar" : "/dashboard";
-      router.push(href);
-      router.refresh();
+      navigateAfterOrgSwitch(organizationEntryPath(role));
     } finally {
       setEnteringOrgId(null);
     }
   };
 
-  const showProfileHint =
-    !profileComplete && !hasOrganization && invites.length > 0;
+  const showProfileHint = !profileComplete && !hasOrganization;
+  const profileHintText =
+    invites.length > 0
+      ? t("completeProfileHint")
+      : t("completeProfileHintNoInvites");
+
+  const showEmptyState =
+    !isSuperAdmin &&
+    !hasOrganization &&
+    !invitesLoading &&
+    memberships.length === 0;
+
+  const showSuperAdminHub =
+    isSuperAdmin && !invitesLoading && memberships.length === 0;
+
+  const showCreateOrgQuickAction = hasOrganization || memberships.length > 0;
+  const showActionsSection =
+    showCreateOrgQuickAction || hasOrganization || isSuperAdmin;
+
+  const hubSubtitle = showSuperAdminHub
+    ? t("empty.superAdminSubtitle")
+    : memberships.length === 0
+      ? t("empty.subtitle")
+      : t("subtitle");
 
   const featuredMembership =
     memberships.find(m => m.organization.id === activeOrganizationId) ??
@@ -386,7 +407,7 @@ export function OrganizationsHub({
           {t("title")}
         </h1>
         <p className="max-w-2xl text-base text-muted-foreground">
-          {t("subtitle")}
+          {hubSubtitle}
         </p>
       </div>
 
@@ -401,8 +422,32 @@ export function OrganizationsHub({
 
       {showProfileHint && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-          {t("completeProfileHint")}
+          {profileHintText}
         </div>
+      )}
+
+      {!hasPassword && (
+        <section
+          className="rounded-lg border border-border bg-muted/40 px-4 py-4 sm:px-5 sm:py-5"
+          aria-labelledby="hub-security-title"
+        >
+          <h2
+            id="hub-security-title"
+            className="mb-1 text-base font-semibold text-foreground"
+          >
+            {t("security.title")}
+          </h2>
+          <AccountSecurityForm
+            hasPassword={false}
+            hint={t("security.createHint")}
+            compact
+            onSuccess={() => {
+              onPasswordCreated?.();
+              showSuccess(tSecurity("security.created"));
+            }}
+            onError={() => {}}
+          />
+        </section>
       )}
 
       {featuredMembership && (
@@ -419,9 +464,7 @@ export function OrganizationsHub({
                 featuredMembership.organization.id === activeOrganizationId
               }
               onEnter={() => handleEnterOrg(featuredMembership)}
-              entering={
-                enteringOrgId === featuredMembership.organization.id
-              }
+              entering={enteringOrgId === featuredMembership.organization.id}
             />
 
             {secondaryMemberships.length > 0 && (
@@ -444,68 +487,6 @@ export function OrganizationsHub({
         </section>
       )}
 
-      {!hasOrganization && !invitesLoading && memberships.length === 0 && (
-        <div className="rounded-2xl border border-border bg-card px-6 py-10 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-            <Building2 className="h-7 w-7" />
-          </div>
-          <h2 className="text-xl font-semibold text-foreground">
-            {t("empty.title")}
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            {t("empty.description")}
-          </p>
-          <Link
-            href={createOrgHref}
-            className="mt-6 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-          >
-            {t("empty.cta")}
-          </Link>
-        </div>
-      )}
-
-      <section>
-        <SectionTitle
-          title={t("sections.actions")}
-          icon={<Zap className="h-4 w-4 text-blue-600" />}
-        />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {hasOrganization && (
-            <QuickActionCard
-              href="/users"
-              icon={<Users className="h-5 w-5" />}
-              iconClassName="bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300"
-              title={t("manageOrg.title")}
-              description={t("manageOrg.description")}
-            />
-          )}
-
-          {isSuperAdmin && (
-            <QuickActionCard
-              href="/admin"
-              icon={<Shield className="h-5 w-5" />}
-              iconClassName="bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300"
-              title={t("platform.title")}
-              description={t("platform.description")}
-            />
-          )}
-
-          <QuickActionCard
-            href={createOrgHref}
-            icon={<Plus className="h-5 w-5" />}
-            iconClassName="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
-            title={
-              hasOrganization ? t("anotherOrg.title") : t("createOrg.title")
-            }
-            description={
-              hasOrganization
-                ? t("anotherOrg.description")
-                : t("createOrg.description")
-            }
-          />
-        </div>
-      </section>
-
       {(invites.length > 0 || invitesLoading) && (
         <section>
           <SectionTitle title={t("invites.title")} />
@@ -518,10 +499,10 @@ export function OrganizationsHub({
               {invites.map(invite => (
                 <div
                   key={invite.id}
-                  className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>
@@ -553,6 +534,92 @@ export function OrganizationsHub({
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {showSuperAdminHub && (
+        <div className="rounded-lg border border-border bg-card px-6 py-10 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-foreground">
+            <Shield className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">
+            {t("empty.superAdminTitle")}
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            {t("empty.superAdminDescription")}
+          </p>
+          <Link
+            href="/admin"
+            className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+          >
+            {t("platform.title")}
+          </Link>
+        </div>
+      )}
+
+      {showEmptyState && (
+        <div className="rounded-lg border border-border bg-card px-6 py-10 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-md border border-border bg-muted text-foreground">
+            <Building2 className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">
+            {t("empty.title")}
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            {t("empty.description")}
+          </p>
+          <Link
+            href={createOrgHref}
+            className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90"
+          >
+            {t("empty.cta")}
+          </Link>
+        </div>
+      )}
+
+      {showActionsSection && (
+        <section>
+          <SectionTitle
+            title={t("sections.actions")}
+            icon={<Zap className="h-4 w-4 text-blue-600" />}
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {hasOrganization && (
+              <QuickActionCard
+                href="/users"
+                icon={<Users className="h-5 w-5" />}
+                iconClassName="bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300"
+                title={t("manageOrg.title")}
+                description={t("manageOrg.description")}
+              />
+            )}
+
+            {isSuperAdmin && !showSuperAdminHub && (
+              <QuickActionCard
+                href="/admin"
+                icon={<Shield className="h-5 w-5" />}
+                iconClassName="bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300"
+                title={t("platform.title")}
+                description={t("platform.description")}
+              />
+            )}
+
+            {showCreateOrgQuickAction && (
+              <QuickActionCard
+                href={createOrgHref}
+                icon={<Plus className="h-5 w-5" />}
+                iconClassName="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
+                title={
+                  hasOrganization ? t("anotherOrg.title") : t("createOrg.title")
+                }
+                description={
+                  hasOrganization
+                    ? t("anotherOrg.description")
+                    : t("createOrg.description")
+                }
+              />
+            )}
+          </div>
         </section>
       )}
     </div>

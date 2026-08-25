@@ -11,7 +11,6 @@ import {
   Building2,
   DoorOpen,
   Mail,
-  Phone,
   Settings,
   Users,
 } from "lucide-react";
@@ -25,7 +24,6 @@ import { OrganizationDailyStatsChart } from "@/components/admin/OrganizationDail
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { maskPhone } from "@/lib/validations/brazilian-documents";
 
 export interface OrganizationUsage {
   planName: string | null;
@@ -109,6 +107,8 @@ interface OrganizationDetailViewProps {
   updating: boolean;
   memberEmail: string;
   setMemberEmail: (value: string) => void;
+  memberRole: OrganizationRole;
+  setMemberRole: (value: OrganizationRole) => void;
   updateStatus: (status: OrganizationStatus) => void;
   updateIsSchool: (isSchool: boolean) => void;
   memberRoleDrafts: Record<string, OrganizationRole>;
@@ -120,6 +120,23 @@ interface OrganizationDetailViewProps {
   updatePlan: (planId: string) => void;
   addMember: (e: React.FormEvent) => void;
   removeMember: (userId: string) => void;
+  profileDraft: {
+    name: string;
+    slug: string;
+    email: string;
+    phone: string;
+  };
+  setProfileDraft: React.Dispatch<
+    React.SetStateAction<{
+      name: string;
+      slug: string;
+      email: string;
+      phone: string;
+    }>
+  >;
+  saveProfile: (e: React.FormEvent) => void;
+  transferOwnership: (userId: string) => void;
+  deleteOrganization: () => void;
 }
 
 export function OrganizationDetailView({
@@ -128,6 +145,8 @@ export function OrganizationDetailView({
   updating,
   memberEmail,
   setMemberEmail,
+  memberRole,
+  setMemberRole,
   updateStatus,
   updateIsSchool,
   memberRoleDrafts,
@@ -137,6 +156,11 @@ export function OrganizationDetailView({
   updatePlan,
   addMember,
   removeMember,
+  profileDraft,
+  setProfileDraft,
+  saveProfile,
+  transferOwnership,
+  deleteOrganization,
 }: OrganizationDetailViewProps) {
   const t = useTranslations("Admin.organizations");
   const [activeTab, setActiveTab] = useState<OrgDetailTab>("general");
@@ -168,7 +192,7 @@ export function OrganizationDetailView({
       label: "Reservas (30d)",
       value: org.metrics.reservationsLast30Days,
       icon: BarChart3,
-      iconClassName: "text-violet-400",
+      iconClassName: "text-primary",
     },
     {
       id: "incidents",
@@ -199,12 +223,85 @@ export function OrganizationDetailView({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <form onSubmit={saveProfile} className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm text-muted-foreground">
+                    {t("fields.name")}
+                  </label>
+                  <input
+                    value={profileDraft.name}
+                    onChange={e =>
+                      setProfileDraft(prev => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-muted-foreground">
+                    {t("fields.slug")}
+                  </label>
+                  <input
+                    value={profileDraft.slug}
+                    onChange={e =>
+                      setProfileDraft(prev => ({
+                        ...prev,
+                        slug: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-muted-foreground">
+                    {t("fields.email")}
+                  </label>
+                  <input
+                    type="email"
+                    value={profileDraft.email}
+                    onChange={e =>
+                      setProfileDraft(prev => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-muted-foreground">
+                    {t("fields.phone")}
+                  </label>
+                  <input
+                    value={profileDraft.phone}
+                    onChange={e =>
+                      setProfileDraft(prev => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+                <Button type="submit" size="sm" disabled={updating}>
+                  {updating ? t("savingProfile") : t("saveProfile")}
+                </Button>
+              </form>
+
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm text-muted-foreground">Status atual:</span>
+                <span className="text-sm text-muted-foreground">
+                  {t("fields.status")}:
+                </span>
                 <AdminStatusBadge status={org.status} kind="organization" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t("changeStatus")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("changeStatus")}
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(
                     [
@@ -220,7 +317,7 @@ export function OrganizationDetailView({
                       disabled={updating || org.status === status}
                       onClick={() => updateStatus(status)}
                       className={
-                        org.status === status ? "bg-violet-600" : undefined
+                        org.status === status ? "bg-primary" : undefined
                       }
                     >
                       {statusLabels[status]}
@@ -229,7 +326,9 @@ export function OrganizationDetailView({
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Instituição de Ensino</p>
+                <p className="text-sm text-muted-foreground">
+                  Instituição de Ensino
+                </p>
                 <div className="mt-2 flex items-center gap-3">
                   <span className="text-sm text-foreground">
                     {org.isSchool ? "Sim" : "Não"}
@@ -249,28 +348,29 @@ export function OrganizationDetailView({
                 <div className="mt-1 flex items-center gap-2 text-foreground">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   {org.owner.name ?? org.owner.email}
-                  <span className="text-muted-foreground">({org.owner.email})</span>
+                  <span className="text-muted-foreground">
+                    ({org.owner.email})
+                  </span>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t("orgContactEmail")}</p>
-                <div className="mt-1 flex items-center gap-2 text-foreground">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  {org.email ?? "—"}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("orgContactPhone")}</p>
-                <div className="mt-1 flex items-center gap-2 text-foreground">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  {org.phone ? maskPhone(org.phone) : "—"}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("createdAt")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("createdAt")}
+                </p>
                 <p className="text-foreground">
                   {new Date(org.createdAt).toLocaleDateString("pt-BR")}
                 </p>
+              </div>
+              <div className="border-t border-border pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-red-500/40 text-red-300 hover:bg-red-500/10"
+                  disabled={updating}
+                  onClick={deleteOrganization}
+                >
+                  {t("deleteOrg")}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -282,17 +382,33 @@ export function OrganizationDetailView({
       <AdminTabPanel tabId="members" activeTab={activeTab}>
         <Card className="mt-6 border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-foreground">{t("tabs.members")}</CardTitle>
+            <CardTitle className="text-foreground">
+              {t("tabs.members")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form onSubmit={addMember} className="flex gap-2">
+            <form onSubmit={addMember} className="flex flex-wrap gap-2">
               <input
                 type="email"
                 placeholder={t("addMemberPlaceholder")}
                 value={memberEmail}
                 onChange={e => setMemberEmail(e.target.value)}
-                className="flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                className="min-w-[12rem] flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
               />
+              <select
+                value={memberRole}
+                onChange={e =>
+                  setMemberRole(e.target.value as OrganizationRole)
+                }
+                className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+              >
+                <option value={OrganizationRole.MEMBER}>
+                  {roleLabels.MEMBER}
+                </option>
+                <option value={OrganizationRole.ADMIN}>
+                  {roleLabels.ADMIN}
+                </option>
+              </select>
               <Button type="submit" size="sm">
                 {t("addMember")}
               </Button>
@@ -307,10 +423,12 @@ export function OrganizationDetailView({
                     <p className="text-sm font-medium text-foreground">
                       {member.user.name ?? member.user.email}
                     </p>
-                    <p className="text-xs text-muted-foreground">{member.user.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {member.user.email}
+                    </p>
                   </div>
                   {member.role === OrganizationRole.OWNER ? (
-                    <span className="text-xs font-medium text-violet-700 dark:text-violet-300">
+                    <span className="text-xs font-medium text-primary dark:text-primary">
                       Owner
                     </span>
                   ) : (
@@ -343,6 +461,15 @@ export function OrganizationDetailView({
                         {savingMemberRoleId === member.user.id
                           ? "..."
                           : t("saveRole")}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={updating}
+                        onClick={() => transferOwnership(member.user.id)}
+                      >
+                        {t("transferOwnership")}
                       </Button>
                       <button
                         type="button"
@@ -409,7 +536,9 @@ export function OrganizationDetailView({
 
           <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-foreground">{t("planSubscription")}</CardTitle>
+              <CardTitle className="text-foreground">
+                {t("planSubscription")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-foreground">
@@ -504,7 +633,7 @@ function UsageBar({
       ? Math.min(100, Math.round((current / max) * 100))
       : 0;
   const tone =
-    pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-violet-500";
+    pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-primary";
 
   return (
     <div>
