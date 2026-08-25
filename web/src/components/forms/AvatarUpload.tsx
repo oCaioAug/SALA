@@ -149,9 +149,9 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
               alt={t("previewAlt")}
               width={120}
               height={120}
-              className="w-30 h-30 rounded-2xl object-cover shadow-xl"
+              className="w-30 h-30 rounded-lg object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
               <LoadingSpinner size="md" />
             </div>
           </div>
@@ -162,12 +162,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             alt={`Avatar de ${userName}`}
             width={120}
             height={120}
-            className="w-30 h-30 rounded-2xl object-cover shadow-xl group-hover:opacity-80 transition-opacity"
+            className="w-30 h-30 rounded-lg object-cover group-hover:opacity-80 transition-opacity"
           />
         ) : (
           // Placeholder com iniciais
           <div
-            className={`w-30 h-30 bg-gradient-to-br ${getGradient(userName)} rounded-2xl flex items-center justify-center shadow-xl group-hover:opacity-80 transition-opacity`}
+            className={`w-30 h-30 ${getGradient(userName)} rounded-lg flex items-center justify-center group-hover:opacity-80 transition-opacity`}
           >
             <span className="text-white font-bold text-3xl">
               {getInitials(userName)}
@@ -177,7 +177,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
         {/* Overlay de hover */}
         {!isUploading && !disabled && (
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
             <Camera className="w-8 h-8 text-white" />
           </div>
         )}

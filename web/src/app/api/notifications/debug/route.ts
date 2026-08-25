@@ -34,11 +34,11 @@ export async function GET() {
     if (notifications.length > 0) {
       console.log("Todas as notificações no banco:");
       notifications.forEach((notif, index) => {
-        console.log(`  ${index + 1}. [${notif.type}] ${notif.title}`);
-        console.log(`      Para: ${notif.user.email} (${notif.user.role})`);
-        console.log(`      Status: ${notif.isRead ? "Lida" : "Não lida"}`);
-        console.log(`      Criada: ${notif.createdAt}`);
-        console.log(`      ---`);
+        console.log(` ${index + 1}. [${notif.type}] ${notif.title}`);
+        console.log(` Para: ${notif.user.email} (${notif.user.role})`);
+        console.log(` Status: ${notif.isRead ? "Lida" : "Não lida"}`);
+        console.log(` Criada: ${notif.createdAt}`);
+        console.log(` ---`);
       });
     }
 

@@ -22,9 +22,9 @@ const RoomItemsPage: React.FC = () => {
   const roomId = params.id as string;
 
   const [currentPage, setCurrentPage] = useState("salas");
-  const [room, setRoom] = useState<(Room & { canManageItems?: boolean }) | null>(
-    null
-  );
+  const [room, setRoom] = useState<
+    (Room & { canManageItems?: boolean }) | null
+  >(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -209,7 +209,7 @@ const RoomItemsPage: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                 {t("title")}: {room.name}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">

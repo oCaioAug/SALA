@@ -1,12 +1,8 @@
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
-import {
-  canApproveReservation,
-} from "@/lib/auth/permissions";
+import { canApproveReservation } from "@/lib/auth/permissions";
 import { isNextResponse } from "@/lib/auth/platform";
 import { isOrgAdmin } from "@/lib/auth/roles";
 import { requireTenantContext } from "@/lib/auth/tenant";

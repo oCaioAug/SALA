@@ -112,7 +112,7 @@ const Drawer: React.FC<DrawerProps> = ({
           aria-modal={!passThrough}
           aria-labelledby={titleId}
           className={cn(
-            "flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-transform duration-200 ease-out sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800",
+            "flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-transform duration-200 ease-out sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800",
             passThrough
               ? isLeft
                 ? "pointer-events-none -translate-x-full"

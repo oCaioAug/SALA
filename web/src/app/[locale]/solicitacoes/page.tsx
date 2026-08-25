@@ -54,9 +54,7 @@ const SolicitacoesPage: React.FC = () => {
   const { data: session } = useSession();
   const { isOrgAdmin } = useOrgPermissions();
   const [currentPage, setCurrentPage] = useState("solicitacoes");
-  const [solicitacoes, setSolicitacoes] = useState<ReservationWithSector[]>(
-    []
-  );
+  const [solicitacoes, setSolicitacoes] = useState<ReservationWithSector[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [scopeSectors, setScopeSectors] = useState<ScopeSector[]>([]);
@@ -113,13 +111,17 @@ const SolicitacoesPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [solicitacoesResponse, roomsResponse, usersResponse, sectorsResponse] =
-          await Promise.all([
-            fetch("/api/reservations?status=PENDING"),
-            fetch("/api/rooms"),
-            fetch("/api/users").catch(() => null),
-            fetch("/api/sectors").catch(() => null),
-          ]);
+        const [
+          solicitacoesResponse,
+          roomsResponse,
+          usersResponse,
+          sectorsResponse,
+        ] = await Promise.all([
+          fetch("/api/reservations?status=PENDING"),
+          fetch("/api/rooms"),
+          fetch("/api/users").catch(() => null),
+          fetch("/api/sectors").catch(() => null),
+        ]);
 
         if (!solicitacoesResponse.ok) {
           const errorData = await solicitacoesResponse.json().catch(() => ({}));
@@ -138,9 +140,7 @@ const SolicitacoesPage: React.FC = () => {
             solicitacoesResponse.json(),
             roomsResponse.json(),
             usersResponse?.ok ? usersResponse.json() : Promise.resolve([]),
-            sectorsResponse?.ok
-              ? sectorsResponse.json()
-              : Promise.resolve([]),
+            sectorsResponse?.ok ? sectorsResponse.json() : Promise.resolve([]),
           ]);
 
         // Agrupar reservas recorrentes para mostrar apenas uma por template
@@ -265,9 +265,7 @@ const SolicitacoesPage: React.FC = () => {
   const isOwnRequest = (solicitacao: ReservationWithDetails) => {
     const myId = session?.user?.id;
     if (!myId) return false;
-    return (
-      solicitacao.userId === myId || solicitacao.user?.id === myId
-    );
+    return solicitacao.userId === myId || solicitacao.user?.id === myId;
   };
 
   const scopeBannerText = useMemo(() => {
@@ -524,11 +522,8 @@ const SolicitacoesPage: React.FC = () => {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl">
-                    <ClipboardList className="w-8 h-8 text-amber-400" />
-                  </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                       {t("title")}
                     </h1>
                     <p className="text-slate-600 dark:text-gray-400">
@@ -678,36 +673,38 @@ const SolicitacoesPage: React.FC = () => {
 
                             {solicitacao.status === "PENDING" &&
                               !isOwnRequest(solicitacao) && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApprove(solicitacao)}
-                                  disabled={actionLoading === solicitacao.id}
-                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                                >
-                                  {actionLoading === solicitacao.id ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <CheckCircle className="w-4 h-4" />
-                                  )}
-                                </Button>
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleApprove(solicitacao)}
+                                    disabled={actionLoading === solicitacao.id}
+                                    className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                                  >
+                                    {actionLoading === solicitacao.id ? (
+                                      <LoadingSpinner size="sm" />
+                                    ) : (
+                                      <CheckCircle className="w-4 h-4" />
+                                    )}
+                                  </Button>
 
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openRejectDrawer(solicitacao)}
-                                  disabled={actionLoading === solicitacao.id}
-                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                >
-                                  {actionLoading === solicitacao.id ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <XCircle className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      openRejectDrawer(solicitacao)
+                                    }
+                                    disabled={actionLoading === solicitacao.id}
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                  >
+                                    {actionLoading === solicitacao.id ? (
+                                      <LoadingSpinner size="sm" />
+                                    ) : (
+                                      <XCircle className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                </>
+                              )}
                             {solicitacao.status === "PENDING" &&
                               isOwnRequest(solicitacao) && (
                                 <p className="max-w-[10rem] text-right text-xs text-slate-500 dark:text-slate-400">
@@ -865,45 +862,45 @@ const SolicitacoesPage: React.FC = () => {
 
                   {selectedSolicitacao.status === "PENDING" &&
                     !isOwnRequest(selectedSolicitacao) && (
-                    <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsDetailsModalOpen(false)}
-                        className="flex-1"
-                      >
-                        {t("modal.close")}
-                      </Button>
-                      <Button
-                        onClick={() => handleApprove(selectedSolicitacao)}
-                        disabled={actionLoading === selectedSolicitacao.id}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        {actionLoading === selectedSolicitacao.id ? (
-                          <LoadingSpinner size="sm" />
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            {t("card.approve")}
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => openRejectDrawer(selectedSolicitacao)}
-                        disabled={actionLoading === selectedSolicitacao.id}
-                        variant="outline"
-                        className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      >
-                        {actionLoading === selectedSolicitacao.id ? (
-                          <LoadingSpinner size="sm" />
-                        ) : (
-                          <>
-                            <XCircle className="w-4 h-4 mr-2" />
-                            {t("card.reject")}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
+                      <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsDetailsModalOpen(false)}
+                          className="flex-1"
+                        >
+                          {t("modal.close")}
+                        </Button>
+                        <Button
+                          onClick={() => handleApprove(selectedSolicitacao)}
+                          disabled={actionLoading === selectedSolicitacao.id}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          {actionLoading === selectedSolicitacao.id ? (
+                            <LoadingSpinner size="sm" />
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              {t("card.approve")}
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => openRejectDrawer(selectedSolicitacao)}
+                          disabled={actionLoading === selectedSolicitacao.id}
+                          variant="outline"
+                          className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        >
+                          {actionLoading === selectedSolicitacao.id ? (
+                            <LoadingSpinner size="sm" />
+                          ) : (
+                            <>
+                              <XCircle className="w-4 h-4 mr-2" />
+                              {t("card.reject")}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   {selectedSolicitacao.status === "PENDING" &&
                     isOwnRequest(selectedSolicitacao) && (
                       <p className="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-600 dark:border-slate-600 dark:text-slate-300">

@@ -5,56 +5,67 @@ import { AlertTriangle, ArrowRight, Calendar, DoorOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/Card";
-import { cn } from "@/lib/utils";
 import { Link } from "@/navigation";
+import { cn } from "@/lib/utils";
 
 function ShortcutCard({
   href,
   title,
   description,
   icon: Icon,
-  gradientClass,
   openLabel,
+  interactive = true,
 }: {
   href: string;
   title: string;
   description: string;
   icon: LucideIcon;
-  gradientClass: string;
   openLabel: string;
+  /** When false, renders a non-navigating card (landing demo). */
+  interactive?: boolean;
 }) {
+  const body = (
+    <Card
+      variant="elevated"
+      className={cn(
+        "group flex h-full min-h-0 flex-col justify-between gap-3 overflow-x-hidden overflow-y-auto p-4 transition-colors",
+        interactive && "hover:border-slate-400 dark:hover:border-slate-500"
+      )}
+    >
+      <Icon className="h-5 w-5 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <h3 className="mb-1 text-base font-semibold leading-snug text-foreground">
+          {title}
+        </h3>
+        <p className="text-xs leading-snug text-muted-foreground sm:text-sm">
+          {description}
+        </p>
+      </div>
+      {interactive ? (
+        <span className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary">
+          {openLabel}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </span>
+      ) : null}
+    </Card>
+  );
+
+  if (!interactive) {
+    return <div className="block h-full min-h-0 min-w-0">{body}</div>;
+  }
+
   return (
     <Link href={href} className="block h-full min-h-0 min-w-0">
-      <Card
-        variant="elevated"
-        className="group flex h-full min-h-0 flex-col justify-between gap-3 overflow-x-hidden overflow-y-auto p-4 transition-shadow hover:shadow-xl"
-      >
-        <div
-          className={cn(
-            "inline-flex w-fit shrink-0 rounded-xl bg-gradient-to-br p-3",
-            gradientClass
-          )}
-        >
-          <Icon className="h-6 w-6 text-slate-800 dark:text-white" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="mb-1 text-base font-semibold leading-snug text-slate-900 dark:text-white">
-            {title}
-          </h3>
-          <p className="text-xs leading-snug text-slate-600 dark:text-slate-400 sm:text-sm">
-            {description}
-          </p>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
-          {openLabel}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </span>
-      </Card>
+      {body}
     </Link>
   );
 }
 
-export function ShortcutSalasWidget() {
+export function ShortcutSalasWidget({
+  interactive = true,
+}: {
+  interactive?: boolean;
+}) {
   const th = useTranslations("DashboardHome");
   return (
     <ShortcutCard
@@ -62,13 +73,17 @@ export function ShortcutSalasWidget() {
       title={th("shortcutSalasTitle")}
       description={th("shortcutSalasDesc")}
       icon={DoorOpen}
-      gradientClass="from-blue-500/20 to-purple-500/20"
       openLabel={th("open")}
+      interactive={interactive}
     />
   );
 }
 
-export function ShortcutAgendamentosWidget() {
+export function ShortcutAgendamentosWidget({
+  interactive = true,
+}: {
+  interactive?: boolean;
+}) {
   const th = useTranslations("DashboardHome");
   return (
     <ShortcutCard
@@ -76,13 +91,17 @@ export function ShortcutAgendamentosWidget() {
       title={th("shortcutAgendamentosTitle")}
       description={th("shortcutAgendamentosDesc")}
       icon={Calendar}
-      gradientClass="from-emerald-500/20 to-teal-500/20"
       openLabel={th("open")}
+      interactive={interactive}
     />
   );
 }
 
-export function ShortcutIncidentesWidget() {
+export function ShortcutIncidentesWidget({
+  interactive = true,
+}: {
+  interactive?: boolean;
+}) {
   const th = useTranslations("DashboardHome");
   return (
     <ShortcutCard
@@ -90,8 +109,8 @@ export function ShortcutIncidentesWidget() {
       title={th("shortcutIncidentesTitle")}
       description={th("shortcutIncidentesDesc")}
       icon={AlertTriangle}
-      gradientClass="from-amber-500/20 to-orange-500/20"
       openLabel={th("open")}
+      interactive={interactive}
     />
   );
 }

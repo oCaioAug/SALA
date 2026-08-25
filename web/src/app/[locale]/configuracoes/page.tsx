@@ -92,7 +92,7 @@ const ConfiguracoesPage: React.FC = () => {
           <div className="flex items-center gap-3 mb-4">
             <Settings className="w-8 h-8 text-yellow-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">

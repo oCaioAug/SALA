@@ -287,7 +287,7 @@ const RoomDetailPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                   {room.name}
                 </h1>
                 <div className="flex flex-wrap items-center gap-4">
@@ -368,9 +368,7 @@ const RoomDetailPage: React.FC = () => {
                   <p className="font-medium text-slate-900 dark:text-white">
                     {t("sector")}
                   </p>
-                  <p>
-                    {room.sector?.name?.trim() || t("noSector")}
-                  </p>
+                  <p>{room.sector?.name?.trim() || t("noSector")}</p>
                 </div>
               </div>
               <div className="flex gap-3">

@@ -326,11 +326,8 @@ const RoomSchedulesPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <CalendarIcon className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                     Agendamentos - {room.name}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">

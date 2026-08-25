@@ -174,11 +174,8 @@ export default function ExplorarPage() {
         <div className="space-y-8">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-emerald-500/20 to-blue-500/20 p-3">
-                <Building2 className="h-8 w-8 text-emerald-400" />
-              </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                   {t("title")}
                 </h1>
                 <p className="text-slate-600 dark:text-gray-400">

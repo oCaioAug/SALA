@@ -183,7 +183,7 @@ const NotificationPage: React.FC = () => {
       case "SYSTEM_ANNOUNCEMENT":
         return <Info className="w-5 h-5 text-blue-500" />;
       case "RESERVATION_CREATED":
-        return <Bell className="w-5 h-5 text-purple-500" />;
+        return <Bell className="w-5 h-5 text-slate-600" />;
       case "RESERVATION_APPROVED":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
       case "RESERVATION_REJECTED":
@@ -391,7 +391,7 @@ const NotificationPage: React.FC = () => {
       case "SYSTEM_ANNOUNCEMENT":
         return "border-blue-200 dark:border-blue-500/50";
       case "RESERVATION_CREATED":
-        return "border-purple-200 dark:border-purple-500/50";
+        return "border-slate-200 dark:border-slate-500/50";
       case "RESERVATION_APPROVED":
         return "border-green-200 dark:border-green-500/50";
       case "RESERVATION_REJECTED":
@@ -430,11 +430,8 @@ const NotificationPage: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <Bell className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                     {t("title")}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">
@@ -622,8 +619,8 @@ const NotificationPage: React.FC = () => {
 
                 <Card variant="elevated" className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
-                      <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 bg-slate-100 dark:bg-slate-600/20 rounded-lg">
+                      <Bell className="w-5 h-5 text-slate-700 dark:text-slate-400" />
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -737,7 +734,7 @@ const NotificationPage: React.FC = () => {
                                 notification.type === "SYSTEM_ANNOUNCEMENT"
                                   ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
                                   : notification.type === "RESERVATION_CREATED"
-                                    ? "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300"
+                                    ? "bg-slate-100 text-slate-700 dark:bg-slate-600/20 dark:text-slate-300"
                                     : notification.type ===
                                         "RESERVATION_APPROVED"
                                       ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"

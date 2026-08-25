@@ -212,7 +212,7 @@ const UserProfilePage: React.FC = () => {
   if (!isAdmin && !isOwnProfile) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-white mb-2">
@@ -231,7 +231,7 @@ const UserProfilePage: React.FC = () => {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <LoadingSpinner size="lg" />
         </div>
       </ProtectedRoute>
@@ -241,7 +241,7 @@ const UserProfilePage: React.FC = () => {
   if (!userData) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <UserIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-white mb-2">
@@ -260,7 +260,7 @@ const UserProfilePage: React.FC = () => {
   // TODO: Implementar a página de configurações de perfil
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+      <div className="min-h-screen bg-background flex">
         <Sidebar
           currentPage={currentPage}
           onNavigate={navigate}
@@ -283,9 +283,6 @@ const UserProfilePage: React.FC = () => {
                   </Link>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                      <UserIcon className="w-8 h-8 text-blue-400" />
-                    </div>
                     <div>
                       <h1 className="text-3xl font-bold text-white mb-2">
                         {isOwnProfile
@@ -314,7 +311,7 @@ const UserProfilePage: React.FC = () => {
                       className={
                         userData.role === "ADMIN"
                           ? "text-orange-400 hover:text-orange-300"
-                          : "text-purple-400 hover:text-purple-300"
+                          : "text-slate-400 hover:text-slate-300"
                       }
                     >
                       {actionLoading ? (
@@ -383,7 +380,7 @@ const UserProfilePage: React.FC = () => {
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-medium ${
                               userData.role === "ADMIN"
-                                ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                ? "bg-slate-600/20 text-slate-300 border border-slate-500/30"
                                 : "bg-green-500/20 text-green-300 border border-green-500/30"
                             }`}
                           >
@@ -472,8 +469,8 @@ const UserProfilePage: React.FC = () => {
                         <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
                           {userData.role === "ADMIN" ? (
                             <>
-                              <Crown className="w-5 h-5 text-purple-400" />
-                              <span className="text-purple-400 font-medium">
+                              <Crown className="w-5 h-5 text-slate-400" />
+                              <span className="text-slate-400 font-medium">
                                 {t("roles.admin")}
                               </span>
                             </>

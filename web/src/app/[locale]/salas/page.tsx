@@ -33,7 +33,7 @@ const SalasPage: React.FC = () => {
   const ts = useTranslations("SalasPage");
 
   const { data: session } = useSession();
-  const { isOrgAdmin, isSectorManager } = useOrgPermissions();
+  const { isOrgAdmin, canAccessSalas } = useOrgPermissions();
   const [currentPageNav, setCurrentPageNav] = useState("salas");
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,9 @@ const SalasPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sectorFilter, setSectorFilter] = useState<string>("all");
-  const [sectors, setSectors] = useState<{ id: string; name: string }[]>([]);
+  const [sectors, setSectors] = useState<
+    { id: string; name: string; canManageInScope: boolean }[]
+  >([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
@@ -65,6 +67,35 @@ const SalasPage: React.FC = () => {
 
   const { handleNotificationClick: globalNotificationHandler } =
     useNotificationHandler();
+
+  const mapSectors = (
+    sectorsData: Array<{
+      id: string;
+      name: string;
+      members?: Array<{
+        userId: string;
+        canManageRooms?: boolean;
+        canEditRooms?: boolean;
+        canManageItems?: boolean;
+      }>;
+    }>
+  ) => {
+    const userId = session?.user?.id;
+    return sectorsData
+      .map(s => {
+        const me = s.members?.find(m => m.userId === userId);
+        return {
+          id: s.id,
+          name: s.name,
+          canManageInScope:
+            isOrgAdmin ||
+            Boolean(
+              me?.canManageRooms ?? me?.canEditRooms ?? me?.canManageItems
+            ),
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  };
 
   useEffect(() => {
     const stored = safeLocalStorage.getItem(VIEW_MODE_KEY);
@@ -101,14 +132,7 @@ const SalasPage: React.FC = () => {
             if (sectorsResponse.ok) {
               const sectorsData = await sectorsResponse.json();
               if (Array.isArray(sectorsData)) {
-                setSectors(
-                  sectorsData
-                    .map((s: { id: string; name: string }) => ({
-                      id: s.id,
-                      name: s.name,
-                    }))
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                );
+                setSectors(mapSectors(sectorsData));
               }
             }
           }
@@ -136,14 +160,7 @@ const SalasPage: React.FC = () => {
         if (sectorsResponse.ok) {
           const sectorsData = await sectorsResponse.json();
           if (Array.isArray(sectorsData)) {
-            setSectors(
-              sectorsData
-                .map((s: { id: string; name: string }) => ({
-                  id: s.id,
-                  name: s.name,
-                }))
-                .sort((a, b) => a.name.localeCompare(b.name))
-            );
+            setSectors(mapSectors(sectorsData));
           }
         }
       } catch (err) {
@@ -198,12 +215,12 @@ const SalasPage: React.FC = () => {
       (sectorFilter === "noSector" && !roomSectorId) ||
       (sectorFilter !== "noSector" && roomSectorId === sectorFilter);
 
-    const managedSectorIds = new Set(sectors.map(s => s.id));
+    const managedSectorIds = new Set(
+      sectors.filter(s => s.canManageInScope).map(s => s.id)
+    );
     const matchesManagerScope =
       isOrgAdmin ||
-      (isSectorManager &&
-        !!roomSectorId &&
-        managedSectorIds.has(roomSectorId));
+      (canAccessSalas && !!roomSectorId && managedSectorIds.has(roomSectorId));
 
     return (
       matchesSearch && matchesStatus && matchesSector && matchesManagerScope
@@ -267,11 +284,7 @@ const SalasPage: React.FC = () => {
     const inner = (
       <>
         <div
-          className={
-            list
-              ? "min-w-0 flex-1"
-              : "flex min-h-0 flex-1 flex-col"
-          }
+          className={list ? "min-w-0 flex-1" : "flex min-h-0 flex-1 flex-col"}
         >
           <div className="mb-4 flex min-h-7 items-center justify-between gap-3">
             <StatusBadge status={room.status} />
@@ -446,11 +459,8 @@ const SalasPage: React.FC = () => {
             <div className="mb-6 sm:mb-8">
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-                    <Building2 className="h-8 w-8 text-blue-400" />
-                  </div>
                   <div>
-                    <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                    <h1 className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
                       {ts("title")}
                     </h1>
                     <p className="text-slate-600 dark:text-gray-400">
@@ -564,23 +574,17 @@ const SalasPage: React.FC = () => {
                   <Building2 className="h-8 w-8 text-slate-500 dark:text-gray-400" />
                 }
                 title={
-                  searchTerm ||
-                  statusFilter !== "all" ||
-                  sectorFilter !== "all"
+                  searchTerm || statusFilter !== "all" || sectorFilter !== "all"
                     ? t("empty.notFoundTitle")
                     : t("empty.noDataTitle")
                 }
                 description={
-                  searchTerm ||
-                  statusFilter !== "all" ||
-                  sectorFilter !== "all"
+                  searchTerm || statusFilter !== "all" || sectorFilter !== "all"
                     ? t("empty.notFoundDesc")
                     : t("empty.noDataDesc")
                 }
                 action={
-                  searchTerm ||
-                  statusFilter !== "all" ||
-                  sectorFilter !== "all"
+                  searchTerm || statusFilter !== "all" || sectorFilter !== "all"
                     ? undefined
                     : { label: t("empty.createFirst"), onClick: handleAddRoom }
                 }
@@ -598,15 +602,13 @@ const SalasPage: React.FC = () => {
                       className="flex h-full min-h-[280px] cursor-pointer flex-col items-center justify-center border-2 border-dashed border-slate-300 animate-scaleIn group dark:border-slate-500/50 dark:hover:border-blue-500/50"
                       onClick={handleAddRoom}
                     >
-                      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 transition-transform duration-300 group-hover:scale-110">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600">
-                          <Plus className="h-6 w-6 text-white" />
-                        </div>
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-foreground">
+                        <Plus className="h-5 w-5" />
                       </div>
-                      <h3 className="mb-2 text-xl font-semibold text-slate-900 transition-colors duration-300 group-hover:text-blue-400 dark:text-white">
+                      <h3 className="mb-2 text-lg font-semibold text-foreground">
                         {t("card.createTitle")}
                       </h3>
-                      <p className="max-w-48 text-center text-sm text-slate-600 dark:text-slate-400">
+                      <p className="max-w-48 text-center text-sm text-muted-foreground">
                         {t("card.createDescription")}
                       </p>
                     </Card>

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { canManageRoomItems } from "@/lib/auth/permissions";
 import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";

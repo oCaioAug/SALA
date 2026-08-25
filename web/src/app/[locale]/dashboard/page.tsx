@@ -1,6 +1,5 @@
 "use client";
 
-import { Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -160,30 +159,13 @@ const DashboardPage: React.FC = () => {
             retryLabel={t("actions.retry")}
           />
         ) : (
-          <div className="mb-8">
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-                <Building2 className="h-8 w-8 text-blue-400" />
-              </div>
-              <div>
-                <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-                  {th("title")}
-                </h1>
-                <p className="text-slate-600 dark:text-gray-400">
-                  {th("subtitle")}
-                </p>
-                <p className="mt-3 max-w-3xl text-sm text-slate-500 dark:text-slate-400">
-                  {t("header.description")}
-                </p>
-              </div>
-            </div>
-
-            <DashboardGrid
-              rooms={rooms}
-              chartStats={chartStats}
-              chartStatsLoading={chartStatsLoading}
-            />
-          </div>
+          <DashboardGrid
+            rooms={rooms}
+            chartStats={chartStats}
+            chartStatsLoading={chartStatsLoading}
+            title={th("title")}
+            subtitle={th("subtitle")}
+          />
         )}
       </PageLayout>
     </OrgAdminGuard>
