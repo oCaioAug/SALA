@@ -17,7 +17,7 @@ import {
   deleteCargaHoraria,
   getTurmas,
   getDisciplinas,
-  getProfessores
+  getProfessores,
 } from "../actions";
 
 const CargasHorariasPage: React.FC = () => {
@@ -33,7 +33,7 @@ const CargasHorariasPage: React.FC = () => {
   const [disciplinas, setDisciplinas] = useState<any[]>([]);
   const [professores, setProfessores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Form state
   const [turmaId, setTurmaId] = useState("");
   const [disciplinaId, setDisciplinaId] = useState("");
@@ -44,12 +44,13 @@ const CargasHorariasPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [cargasData, turmasData, disciplinasData, professoresData] = await Promise.all([
-        getCargasHorarias(),
-        getTurmas(),
-        getDisciplinas(),
-        getProfessores()
-      ]);
+      const [cargasData, turmasData, disciplinasData, professoresData] =
+        await Promise.all([
+          getCargasHorarias(),
+          getTurmas(),
+          getDisciplinas(),
+          getProfessores(),
+        ]);
       setCargas(cargasData);
       setTurmas(turmasData);
       setDisciplinas(disciplinasData);
@@ -67,21 +68,30 @@ const CargasHorariasPage: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!turmaId || !disciplinaId || !professorId || quantidadeAulas <= 0) return;
+    if (!turmaId || !disciplinaId || !professorId || quantidadeAulas <= 0)
+      return;
 
     try {
       setIsSubmitting(true);
-      const newCarga = await createCargaHoraria(turmaId, disciplinaId, professorId, Number(quantidadeAulas));
+      const newCarga = await createCargaHoraria(
+        turmaId,
+        disciplinaId,
+        professorId,
+        Number(quantidadeAulas)
+      );
       showSuccess("Carga horária vinculada com sucesso!");
-      
+
       // Reset form (keep turma/disciplina to make multiple entries easier)
       setQuantidadeAulas(1);
-      
+
       // Update with all relations for the UI
       const turma = turmas.find(t => t.id === turmaId);
       const disciplina = disciplinas.find(d => d.id === disciplinaId);
       const professor = professores.find(p => p.id === professorId);
-      setCargas(prev => [...prev, { ...newCarga, turma, disciplina, professor }]);
+      setCargas(prev => [
+        ...prev,
+        { ...newCarga, turma, disciplina, professor },
+      ]);
     } catch (err: any) {
       showError(err.message || "Erro ao vincular carga horária");
     } finally {
@@ -111,11 +121,12 @@ const CargasHorariasPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Clock className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 Cargas Horárias
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Associe Turmas, Disciplinas e Professores com suas respectivas aulas por semana.
+                Associe Turmas, Disciplinas e Professores com suas respectivas
+                aulas por semana.
               </p>
             </div>
           </div>
@@ -130,37 +141,60 @@ const CargasHorariasPage: React.FC = () => {
             <CardContent className="p-6">
               <h2 className="text-xl font-semibold mb-4">Nova Carga Horária</h2>
               <form onSubmit={handleCreate} className="space-y-4">
-                
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Turma</label>
-                  <select 
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Turma
+                  </label>
+                  <select
                     className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                    value={turmaId} onChange={(e) => setTurmaId(e.target.value)} disabled={isSubmitting}
+                    value={turmaId}
+                    onChange={e => setTurmaId(e.target.value)}
+                    disabled={isSubmitting}
                   >
                     <option value="">Selecione a turma...</option>
-                    {turmas.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    {turmas.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Disciplina</label>
-                  <select 
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Disciplina
+                  </label>
+                  <select
                     className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                    value={disciplinaId} onChange={(e) => setDisciplinaId(e.target.value)} disabled={isSubmitting}
+                    value={disciplinaId}
+                    onChange={e => setDisciplinaId(e.target.value)}
+                    disabled={isSubmitting}
                   >
                     <option value="">Selecione a disciplina...</option>
-                    {disciplinas.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    {disciplinas.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Professor</label>
-                  <select 
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Professor
+                  </label>
+                  <select
                     className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                    value={professorId} onChange={(e) => setProfessorId(e.target.value)} disabled={isSubmitting}
+                    value={professorId}
+                    onChange={e => setProfessorId(e.target.value)}
+                    disabled={isSubmitting}
                   >
                     <option value="">Selecione o professor...</option>
-                    {professores.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    {professores.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -170,14 +204,20 @@ const CargasHorariasPage: React.FC = () => {
                   min="1"
                   max="40"
                   value={quantidadeAulas}
-                  onChange={(e) => setQuantidadeAulas(Number(e.target.value))}
+                  onChange={e => setQuantidadeAulas(Number(e.target.value))}
                   disabled={isSubmitting}
                 />
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isSubmitting || !turmaId || !disciplinaId || !professorId || quantidadeAulas <= 0}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={
+                    isSubmitting ||
+                    !turmaId ||
+                    !disciplinaId ||
+                    !professorId ||
+                    quantidadeAulas <= 0
+                  }
                 >
                   <Plus className="w-4 h-4 mr-2" /> Vincular Carga
                 </Button>
@@ -189,22 +229,30 @@ const CargasHorariasPage: React.FC = () => {
           <Card className="md:col-span-2">
             <CardContent className="p-0">
               {loading ? (
-                <div className="p-8 text-center text-slate-500">Carregando...</div>
+                <div className="p-8 text-center text-slate-500">
+                  Carregando...
+                </div>
               ) : cargas.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   Nenhuma carga horária vinculada.
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {cargas.map((c) => (
-                    <div key={c.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  {cargas.map(c => (
+                    <div
+                      key={c.id}
+                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">
                           {c.turma.name} - {c.disciplina.name}
                         </div>
                         <div className="text-sm text-slate-500 flex gap-4 mt-1">
                           <span>Professor: {c.professor.name}</span>
-                          <span>{c.quantidadeAulas} {c.quantidadeAulas > 1 ? 'aulas' : 'aula'}</span>
+                          <span>
+                            {c.quantidadeAulas}{" "}
+                            {c.quantidadeAulas > 1 ? "aulas" : "aula"}
+                          </span>
                         </div>
                       </div>
                       <Button

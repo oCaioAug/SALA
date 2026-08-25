@@ -7,7 +7,7 @@ import {
   BookOpen,
   Clock,
   Play,
-  GraduationCap
+  GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -44,7 +44,8 @@ const GradeHorariaPage: React.FC = () => {
     {
       id: "professores",
       title: "Professores",
-      description: "Cadastre os professores independentemente de seus usuários.",
+      description:
+        "Cadastre os professores independentemente de seus usuários.",
       icon: <GraduationCap className="w-6 h-6" />,
       url: "/grade-horaria/professores",
     },
@@ -89,11 +90,12 @@ const GradeHorariaPage: React.FC = () => {
           <div className="flex items-center gap-3 mb-4">
             <Calendar className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 Alocação de Grade Horária
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Configure os parâmetros e gere a grade horária automaticamente para sua instituição.
+                Configure os parâmetros e gere a grade horária automaticamente
+                para sua instituição.
               </p>
             </div>
           </div>
@@ -117,11 +119,7 @@ const GradeHorariaPage: React.FC = () => {
                     <p className="text-slate-600 dark:text-gray-400 text-sm mb-4">
                       {item.description}
                     </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                    >
+                    <Button size="sm" variant="outline" className="w-full">
                       <Link href={item.url} className="w-full">
                         Acessar
                       </Link>

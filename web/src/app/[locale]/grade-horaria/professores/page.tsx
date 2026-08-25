@@ -106,7 +106,7 @@ const ProfessoresPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <GraduationCap className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 Professores
               </h1>
               <p className="text-slate-600 dark:text-gray-400">

@@ -11,7 +11,12 @@ import { Input } from "@/components/ui/Input";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useApp } from "@/lib/hooks/useApp";
 
-import { getTurmas, createTurma, deleteTurma, getGradeSettings } from "../actions";
+import {
+  getTurmas,
+  createTurma,
+  deleteTurma,
+  getGradeSettings,
+} from "../actions";
 
 const TurmasPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState("grade-horaria");
@@ -33,10 +38,10 @@ const TurmasPage: React.FC = () => {
       setLoading(true);
       const [tData, settings] = await Promise.all([
         getTurmas(),
-        getGradeSettings()
+        getGradeSettings(),
       ]);
       setTurmas(tData);
-      
+
       const loadedShifts = settings.timetabling.shifts || [];
       setShifts(loadedShifts);
       if (loadedShifts.length > 0) {
@@ -62,7 +67,9 @@ const TurmasPage: React.FC = () => {
       const newTurma = await createTurma(newTurmaName, newTurmaShift);
       showSuccess("Turma criada com sucesso!");
       setNewTurmaName("");
-      setTurmas(prev => [...prev, newTurma].sort((a,b) => a.name.localeCompare(b.name)));
+      setTurmas(prev =>
+        [...prev, newTurma].sort((a, b) => a.name.localeCompare(b.name))
+      );
     } catch (err: any) {
       showError(err.message || "Erro ao criar turma");
     } finally {
@@ -92,7 +99,7 @@ const TurmasPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Users className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 Turmas
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
@@ -115,27 +122,37 @@ const TurmasPage: React.FC = () => {
                   label="Nome da Turma"
                   placeholder="Ex: 1º Ano A"
                   value={newTurmaName}
-                  onChange={(e) => setNewTurmaName(e.target.value)}
+                  onChange={e => setNewTurmaName(e.target.value)}
                   disabled={isSubmitting}
                 />
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-1">
                     Turno da Turma
                   </label>
-                  <select 
+                  <select
                     className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-900"
                     value={newTurmaShift}
-                    onChange={(e) => setNewTurmaShift(e.target.value)}
+                    onChange={e => setNewTurmaShift(e.target.value)}
                     disabled={isSubmitting || shifts.length === 0}
                   >
-                    {shifts.length === 0 && <option value="">Nenhum turno configurado</option>}
+                    {shifts.length === 0 && (
+                      <option value="">Nenhum turno configurado</option>
+                    )}
                     {shifts.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
                     ))}
                   </select>
                 </div>
-                
-                <Button type="submit" className="w-full" disabled={isSubmitting || !newTurmaName.trim() || !newTurmaShift}>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={
+                    isSubmitting || !newTurmaName.trim() || !newTurmaShift
+                  }
+                >
                   <Plus className="w-4 h-4 mr-2" /> Adicionar Turma
                 </Button>
               </form>
@@ -146,20 +163,26 @@ const TurmasPage: React.FC = () => {
           <Card className="md:col-span-2">
             <CardContent className="p-0">
               {loading ? (
-                <div className="p-8 text-center text-slate-500">Carregando...</div>
+                <div className="p-8 text-center text-slate-500">
+                  Carregando...
+                </div>
               ) : turmas.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   Nenhuma turma cadastrada.
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {turmas.map((t) => (
-                    <div key={t.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  {turmas.map(t => (
+                    <div
+                      key={t.id}
+                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
                       <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
                         {t.name}
                         {t.shiftId && (
                           <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                            {shifts.find(s => s.id === t.shiftId)?.name || t.shiftId}
+                            {shifts.find(s => s.id === t.shiftId)?.name ||
+                              t.shiftId}
                           </span>
                         )}
                       </div>

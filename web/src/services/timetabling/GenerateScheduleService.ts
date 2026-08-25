@@ -75,7 +75,7 @@ export class GenerateScheduleService {
         disciplinaId: c.disciplinaId,
         professorId: c.professorId,
         requiredSlots: c.quantidadeAulas,
-        validSlots
+        validSlots,
       };
     });
 

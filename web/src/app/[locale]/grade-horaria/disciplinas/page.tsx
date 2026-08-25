@@ -53,7 +53,9 @@ const DisciplinasPage: React.FC = () => {
       showSuccess("Disciplina criada com sucesso!");
       setNewNome("");
       setNewCodigo("");
-      setDisciplinas(prev => [...prev, newDisc].sort((a,b) => a.name.localeCompare(b.name)));
+      setDisciplinas(prev =>
+        [...prev, newDisc].sort((a, b) => a.name.localeCompare(b.name))
+      );
     } catch (err: any) {
       showError(err.message || "Erro ao criar disciplina");
     } finally {
@@ -83,7 +85,7 @@ const DisciplinasPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 Disciplinas
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
@@ -106,17 +108,21 @@ const DisciplinasPage: React.FC = () => {
                   label="Nome da Disciplina"
                   placeholder="Ex: Matemática"
                   value={newNome}
-                  onChange={(e) => setNewNome(e.target.value)}
+                  onChange={e => setNewNome(e.target.value)}
                   disabled={isSubmitting}
                 />
                 <Input
                   label="Código (Opcional)"
                   placeholder="Ex: MAT01"
                   value={newCodigo}
-                  onChange={(e) => setNewCodigo(e.target.value)}
+                  onChange={e => setNewCodigo(e.target.value)}
                   disabled={isSubmitting}
                 />
-                <Button type="submit" className="w-full" disabled={isSubmitting || !newNome.trim()}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting || !newNome.trim()}
+                >
                   <Plus className="w-4 h-4 mr-2" /> Adicionar
                 </Button>
               </form>
@@ -127,21 +133,28 @@ const DisciplinasPage: React.FC = () => {
           <Card className="md:col-span-2">
             <CardContent className="p-0">
               {loading ? (
-                <div className="p-8 text-center text-slate-500">Carregando...</div>
+                <div className="p-8 text-center text-slate-500">
+                  Carregando...
+                </div>
               ) : disciplinas.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
                   Nenhuma disciplina cadastrada.
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {disciplinas.map((d) => (
-                    <div key={d.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  {disciplinas.map(d => (
+                    <div
+                      key={d.id}
+                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">
                           {d.name}
                         </div>
                         {d.code && (
-                          <div className="text-sm text-slate-500">Código: {d.code}</div>
+                          <div className="text-sm text-slate-500">
+                            Código: {d.code}
+                          </div>
                         )}
                       </div>
                       <Button
