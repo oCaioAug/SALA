@@ -1,7 +1,7 @@
 import "../globals.css";
 
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -16,7 +16,11 @@ import { routing } from "@/navigation";
 
 import AuthProvider from "../_providers/auth";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-ibm-plex-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
@@ -86,7 +90,7 @@ export default async function LocaleLayout({
         )}
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${ibmPlexSans.variable} ${jetbrainsMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <Script src="/theme-init.js" strategy="beforeInteractive" />
