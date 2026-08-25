@@ -21,8 +21,8 @@
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU1, CDU5, CDU6, CDU8, CDU10
 - **Critérios de Aceitação**:
-  - Apenas ADMIN/OWNER podem aprovar/rejeitar qualquer sala; gestores de setor aprovam no escopo
-  - Criar/excluir salas e vincular setor: apenas ADMIN/OWNER; editar infos da sala e itens: ADMIN/OWNER ou gestor no escopo do setor
+  - Apenas ADMIN/OWNER podem aprovar/rejeitar qualquer sala; membros de setor aprovam só se tiverem a função de confirmar agendas no escopo
+  - Criar/excluir salas e vincular setor: apenas ADMIN/OWNER; editar infos da sala e itens: ADMIN/OWNER ou membro de setor com a função correspondente
   - Apenas ADMIN pode gerenciar usuários
   - Apenas ADMIN pode atribuir e resolver incidentes
 
@@ -101,7 +101,7 @@
 - **Casos de Uso Relacionados**: CDU5 (Aprovar / Rejeitar Reserva)
 - **Critérios de Aceitação**:
   - OWNER/ADMIN da organização podem aprovar/rejeitar qualquer sala
-  - Gestores de setor (SectorMember MANAGER) podem aprovar/rejeitar apenas salas do(s) setor(es) que gerenciam
+  - Gestores de setor (SectorMember) podem aprovar/rejeitar apenas salas do(s) setor(es) em que tiverem `canApproveReservations`
   - Salas sem setor responsável: apenas OWNER/ADMIN aprovam
   - Fila `/solicitacoes` e notificações de criação respeitam o escopo do aprovador
   - Decisão registra `decidedById`, `decidedAt` e `decisionReason` opcional
@@ -110,14 +110,15 @@
 
 #### RF09A - Gestão de Setores
 
-- **Descrição**: Administrador da organização deve poder criar setores, vincular salas e designar gestores responsáveis pela aprovação daquelas salas.
+- **Descrição**: Administrador da organização deve poder criar setores, vincular salas e designar membros com funções independentes naquele setor.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU12 (Gerenciar Setores)
 - **Critérios de Aceitação**:
   - Cada sala pertence a no máximo um setor (`Room.sectorId`)
-  - Setor contém membros com papel MANAGER
+  - Setor contém membros com papel MANAGER e funções (`canApproveReservations`, `canManageRooms`)
+  - ADMIN escolhe, por pessoa, quais funções estão ativas; ao menos uma é obrigatória
   - Soft-delete de setor desvincula salas
-  - Gestores não gerenciam criar/excluir salas, usuários ou setores — aprovam reservas e editam infos/itens das salas do setor
+  - Membros de setor não gerenciam criar/excluir salas, usuários ou setores — só as funções marcadas no vínculo
 
 #### RF10 - Verificação de Conflitos
 
@@ -156,12 +157,12 @@
 
 #### RF13 - Gestão de Salas
 
-- **Descrição**: Administradores da organização gerenciam o ciclo completo de salas; gestores de setor podem editar informações das salas do respectivo escopo.
+- **Descrição**: Administradores da organização gerenciam o ciclo completo de salas; membros de setor com `canManageRooms` podem editar salas (infos + itens) no respectivo escopo.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - OWNER/ADMIN podem criar nova sala com nome, descrição e capacidade
-  - OWNER/ADMIN e gestores de setor podem editar informações da sala (nome, descrição, capacidade, localização, tomadas, clima, status) no respectivo escopo
+  - OWNER/ADMIN e membros de setor com `canManageRooms` podem editar informações da sala e gerenciar itens no respectivo escopo
   - Alterar status da sala (LIVRE, EM_USO, RESERVADO) no mesmo escopo de edição
   - Excluir sala permanece exclusivo de OWNER/ADMIN
   - Vincular/desvincular setor (`sectorId`) permanece exclusivo de OWNER/ADMIN
@@ -169,16 +170,15 @@
 
 #### RF14 - Gestão de Itens
 
-- **Descrição**: Administradores da organização e gestores de setor devem poder gerenciar itens/equipamentos das salas no respectivo escopo.
+- **Descrição**: Coberta por `canManageRooms` no escopo do setor (ver RF13). OWNER/ADMIN em qualquer sala.
 - **Prioridade**: Média
 - **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - OWNER/ADMIN podem gerenciar itens de qualquer sala da organização
-  - Gestores de setor (SectorMember MANAGER) podem adicionar, editar e remover itens apenas das salas do(s) setor(es) que gerenciam
-  - Salas sem setor: apenas OWNER/ADMIN gerenciam itens
-  - Upload de imagens dos itens no mesmo escopo
-  - Visualização de imagens dos itens
-  - Criar e excluir sala permanece exclusivo de OWNER/ADMIN; editar infos da sala no escopo do gestor (ver RF13)
+  - Membros de setor com `canManageRooms` gerenciam itens das salas do(s) setor(es) correspondentes
+  - Salas sem setor: apenas OWNER/ADMIN
+  - Upload de imagens no mesmo escopo
+  - Criar/excluir sala permanece exclusivo de OWNER/ADMIN
 
 ### 1.5 Gestão de Incidentes
 

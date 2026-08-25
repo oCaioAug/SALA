@@ -47,6 +47,28 @@ describe("Rooms [id] API", () => {
       expect(data.canEditRoom).toBe(true);
     });
 
+    it("should return room flags for sector member with manage-rooms", async () => {
+      mockRequireTenantContext.mockResolvedValueOnce(mockTenantContextValue);
+      prismaMock.room.findFirst.mockResolvedValue({
+        ...mockRoom,
+        sectorId: "sector-1",
+      } as any);
+      prismaMock.sectorMember.findUnique.mockResolvedValue({
+        role: SectorMemberRole.MANAGER,
+        canApproveReservations: false,
+        canManageRooms: true,
+        sector: { deletedAt: null },
+      } as any);
+
+      const req = new NextRequest("http://localhost:3000/api/rooms/room-1");
+      const response = await GET(req, mockParams("room-1"));
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.canManageItems).toBe(true);
+      expect(data.canEditRoom).toBe(true);
+    });
+
     it("should return 404 when room is not found", async () => {
       prismaMock.room.findFirst.mockResolvedValue(null);
 
@@ -122,6 +144,8 @@ describe("Rooms [id] API", () => {
       } as any);
       prismaMock.sectorMember.findUnique.mockResolvedValue({
         role: SectorMemberRole.MANAGER,
+        canApproveReservations: true,
+        canManageRooms: true,
         sector: { deletedAt: null },
       } as any);
       prismaMock.room.update.mockResolvedValue({
@@ -157,6 +181,33 @@ describe("Rooms [id] API", () => {
         data: Record<string, unknown>;
       };
       expect(updateArg.data.sectorId).toBeUndefined();
+    });
+
+    it("should deny approve-only sector member from updating room", async () => {
+      mockRequireTenantContext.mockResolvedValueOnce(mockTenantContextValue);
+      mockGetRoomInOrganization.mockResolvedValueOnce({
+        id: "room-1",
+        organizationId: TEST_ORG_ID,
+        sectorId: "sector-1",
+        deletedAt: null,
+      } as any);
+      prismaMock.sectorMember.findUnique.mockResolvedValue({
+        role: SectorMemberRole.MANAGER,
+        canApproveReservations: true,
+        canManageRooms: false,
+        sector: { deletedAt: null },
+      } as any);
+
+      const req = new NextRequest("http://localhost:3000/api/rooms/room-1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Sala 1" }),
+      });
+      const response = await PUT(req, mockParams("room-1"));
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.errorCode).toBe("ACCESS_DENIED");
+      expect(prismaMock.room.update).not.toHaveBeenCalled();
     });
 
     it("should deny member without sector manage rights", async () => {

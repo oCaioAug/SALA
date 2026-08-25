@@ -1,6 +1,6 @@
 "use client";
 
-import { Network, Plus, Search, Trash2, UserPlus, X } from "lucide-react";
+import { Archive, Network, Plus, Search, UserPlus, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -21,6 +21,8 @@ type SectorMember = {
   id: string;
   userId: string;
   role: string;
+  canApproveReservations: boolean;
+  canManageRooms: boolean;
   user: {
     id: string;
     name: string | null;
@@ -28,6 +30,52 @@ type SectorMember = {
     image?: string | null;
   };
 };
+
+const defaultMemberCaps = {
+  canApproveReservations: true,
+  canManageRooms: true,
+};
+
+function withMemberCaps(
+  member: Omit<SectorMember, "canApproveReservations" | "canManageRooms"> &
+    Partial<Pick<SectorMember, "canApproveReservations" | "canManageRooms">> & {
+      canEditRooms?: boolean;
+      canManageItems?: boolean;
+    }
+): SectorMember {
+  let canManageRooms = member.canManageRooms;
+  if (canManageRooms === undefined) {
+    if (
+      member.canEditRooms !== undefined ||
+      member.canManageItems !== undefined
+    ) {
+      canManageRooms = Boolean(member.canEditRooms || member.canManageItems);
+    } else {
+      canManageRooms = defaultMemberCaps.canManageRooms;
+    }
+  }
+
+  return {
+    ...member,
+    canApproveReservations:
+      member.canApproveReservations ?? defaultMemberCaps.canApproveReservations,
+    canManageRooms,
+  };
+}
+
+function membersSignature(members: SectorMember[]) {
+  return [...members]
+    .map(
+      m =>
+        `${m.userId}:${Number(m.canApproveReservations)}:${Number(m.canManageRooms)}`
+    )
+    .sort()
+    .join("|");
+}
+
+function memberHasAnyCapability(member: SectorMember) {
+  return member.canApproveReservations || member.canManageRooms;
+}
 type Sector = {
   id: string;
   name: string;
@@ -72,7 +120,7 @@ const SetoresPage: React.FC = () => {
     name: "",
     description: "",
     roomIds: [] as string[],
-    memberIds: [] as string[],
+    membersKey: "",
   });
 
   const sortedIds = (ids: string[]) => [...ids].sort().join(",");
@@ -82,8 +130,7 @@ const SetoresPage: React.FC = () => {
       name.trim() !== baseline.name ||
       (description.trim() || "") !== baseline.description ||
       sortedIds(selectedRoomIds) !== sortedIds(baseline.roomIds) ||
-      sortedIds(draftMembers.map(m => m.userId)) !==
-        sortedIds(baseline.memberIds)
+      membersSignature(draftMembers) !== baseline.membersKey
     );
   }, [name, description, selectedRoomIds, draftMembers, baseline]);
 
@@ -91,13 +138,13 @@ const SetoresPage: React.FC = () => {
     name: string;
     description: string;
     roomIds: string[];
-    memberIds: string[];
+    members: SectorMember[];
   }) => {
     setBaseline({
       name: next.name.trim(),
       description: next.description.trim(),
       roomIds: [...next.roomIds],
-      memberIds: [...next.memberIds],
+      membersKey: membersSignature(next.members),
     });
   };
 
@@ -106,32 +153,42 @@ const SetoresPage: React.FC = () => {
     setDrawerOpen(false);
   };
 
-  const loadData = useCallback(async (opts?: { silent?: boolean }) => {
-    try {
-      if (!opts?.silent) setLoading(true);
-      const [sectorsRes, roomsRes, usersRes] = await Promise.all([
-        fetch("/api/sectors"),
-        fetch("/api/rooms"),
-        fetch("/api/users"),
-      ]);
-      if (!sectorsRes.ok) throw new Error(t("errors.load"));
-      const sectorsData = await sectorsRes.json();
-      setSectors(Array.isArray(sectorsData) ? sectorsData : []);
-      if (roomsRes.ok) {
-        const roomsData = await roomsRes.json();
-        setRooms(Array.isArray(roomsData) ? roomsData : []);
+  const loadData = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      try {
+        if (!opts?.silent) setLoading(true);
+        const [sectorsRes, roomsRes, usersRes] = await Promise.all([
+          fetch("/api/sectors"),
+          fetch("/api/rooms"),
+          fetch("/api/users"),
+        ]);
+        if (!sectorsRes.ok) throw new Error(t("errors.load"));
+        const sectorsData = await sectorsRes.json();
+        setSectors(
+          Array.isArray(sectorsData)
+            ? sectorsData.map((sector: Sector) => ({
+                ...sector,
+                members: (sector.members ?? []).map(withMemberCaps),
+              }))
+            : []
+        );
+        if (roomsRes.ok) {
+          const roomsData = await roomsRes.json();
+          setRooms(Array.isArray(roomsData) ? roomsData : []);
+        }
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          setUsers(Array.isArray(usersData) ? usersData : []);
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t("errors.load");
+        showError(msg);
+      } finally {
+        if (!opts?.silent) setLoading(false);
       }
-      if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        setUsers(Array.isArray(usersData) ? usersData : []);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t("errors.load");
-      showError(msg);
-    } finally {
-      if (!opts?.silent) setLoading(false);
-    }
-  }, [showError, t]);
+    },
+    [showError, t]
+  );
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -160,14 +217,14 @@ const SetoresPage: React.FC = () => {
       name: "",
       description: "",
       roomIds: [],
-      memberIds: [],
+      members: [],
     });
     setDrawerOpen(true);
   };
 
   const openEdit = (sector: Sector) => {
     const roomIds = sector.rooms.map(r => r.id);
-    const members = sector.members ?? [];
+    const members = (sector.members ?? []).map(withMemberCaps);
     setEditing(sector);
     setName(sector.name);
     setDescription(sector.description ?? "");
@@ -178,7 +235,7 @@ const SetoresPage: React.FC = () => {
       name: sector.name,
       description: sector.description ?? "",
       roomIds,
-      memberIds: members.map(m => m.userId),
+      members,
     });
     setDrawerOpen(true);
   };
@@ -212,20 +269,35 @@ const SetoresPage: React.FC = () => {
       showError(t("errors.nameRequired"));
       return;
     }
+    if (draftMembers.some(m => !memberHasAnyCapability(m))) {
+      showError(t("errors.memberNeedsCapability"));
+      return;
+    }
     setSaving(true);
     try {
-      const memberUserIds = draftMembers.map(m => m.userId);
+      const membersPayload = draftMembers.map(m => ({
+        userId: m.userId,
+        canApproveReservations: m.canApproveReservations,
+        canManageRooms: m.canManageRooms,
+      }));
       const myId = session?.user?.id;
       const wasMember =
         !!myId && (editing?.members.some(m => m.userId === myId) ?? false);
-      const willBeMember = !!myId && memberUserIds.includes(myId);
-      const membershipChanged = wasMember !== willBeMember;
+      const willBeMember = !!myId && draftMembers.some(m => m.userId === myId);
+      const previousMe = editing?.members.find(m => m.userId === myId);
+      const nextMe = draftMembers.find(m => m.userId === myId);
+      const myCapsChanged =
+        Boolean(previousMe) &&
+        Boolean(nextMe) &&
+        membersSignature([withMemberCaps(previousMe!)]) !==
+          membersSignature([nextMe!]);
+      const membershipChanged = wasMember !== willBeMember || myCapsChanged;
 
       const payload = {
         name: name.trim(),
         description: description.trim() || null,
         roomIds: selectedRoomIds,
-        memberUserIds,
+        members: membersPayload,
       };
       const res = editing
         ? await fetch(`/api/sectors/${editing.id}`, {
@@ -269,12 +341,9 @@ const SetoresPage: React.FC = () => {
   };
 
   const handleArchive = async (sector: Sector) => {
-    const roomCount =
-      sector.rooms?.length ?? sector._count?.rooms ?? 0;
+    const roomCount = sector.rooms?.length ?? sector._count?.rooms ?? 0;
     if (
-      !confirm(
-        t("confirmArchive", { name: sector.name, count: roomCount })
-      )
+      !confirm(t("confirmArchive", { name: sector.name, count: roomCount }))
     ) {
       return;
     }
@@ -318,6 +387,7 @@ const SetoresPage: React.FC = () => {
           name: user.name,
           email: user.email,
         },
+        ...defaultMemberCaps,
       },
     ]);
     setMemberUserId("");
@@ -325,6 +395,19 @@ const SetoresPage: React.FC = () => {
 
   const handleRemoveMember = (userId: string) => {
     setDraftMembers(prev => prev.filter(m => m.userId !== userId));
+  };
+
+  const toggleMemberCapability = (
+    userId: string,
+    field: "canApproveReservations" | "canManageRooms"
+  ) => {
+    setDraftMembers(prev =>
+      prev.map(member =>
+        member.userId === userId
+          ? { ...member, [field]: !member[field] }
+          : member
+      )
+    );
   };
 
   const memberCandidates = users.filter(
@@ -341,11 +424,8 @@ const SetoresPage: React.FC = () => {
         <div className="mb-6 sm:mb-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-                <Network className="h-8 w-8 text-blue-400" />
-              </div>
               <div>
-                <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                <h1 className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
                   {t("title")}
                 </h1>
                 <p className="text-slate-600 dark:text-gray-400">
@@ -380,8 +460,22 @@ const SetoresPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={<Network className="h-8 w-8 text-slate-400" />}
-            title={t("emptyTitle")}
-            description={t("emptyDescription")}
+            title={
+              searchTerm.trim() ? t("emptySearchTitle") : t("emptyTitle")
+            }
+            description={
+              searchTerm.trim()
+                ? t("emptySearchDescription")
+                : t("emptyDescription")
+            }
+            action={
+              searchTerm.trim()
+                ? undefined
+                : {
+                    label: t("create"),
+                    onClick: openCreate,
+                  }
+            }
           />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -407,7 +501,7 @@ const SetoresPage: React.FC = () => {
                         onClick={() => handleArchive(sector)}
                         aria-label={t("archive")}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Archive className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -426,9 +520,7 @@ const SetoresPage: React.FC = () => {
                     <span>
                       {t("membersCount", {
                         count:
-                          sector.members?.length ??
-                          sector._count?.members ??
-                          0,
+                          sector.members?.length ?? sector._count?.members ?? 0,
                       })}
                     </span>
                   </div>
@@ -651,26 +743,63 @@ const SetoresPage: React.FC = () => {
                   {draftMembers.map(member => (
                     <li
                       key={member.userId}
-                      className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
                     >
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-slate-900 dark:text-white">
-                          {member.user.name || member.user.email}
-                        </p>
-                        {member.user.name ? (
-                          <p className="truncate text-xs text-slate-500">
-                            {member.user.email}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-slate-900 dark:text-white">
+                            {member.user.name || member.user.email}
                           </p>
-                        ) : null}
+                          {member.user.name ? (
+                            <p className="truncate text-xs text-slate-500">
+                              {member.user.email}
+                            </p>
+                          ) : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(member.userId)}
+                          className="ml-2 rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+                          aria-label={t("removeMember")}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMember(member.userId)}
-                        className="ml-2 rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
-                        aria-label={t("removeMember")}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                      <div className="mt-2 flex flex-col gap-1.5">
+                        <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                          <input
+                            type="checkbox"
+                            checked={member.canApproveReservations}
+                            onChange={() =>
+                              toggleMemberCapability(
+                                member.userId,
+                                "canApproveReservations"
+                              )
+                            }
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          {t("capabilityApprove")}
+                        </label>
+                        <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                          <input
+                            type="checkbox"
+                            checked={member.canManageRooms}
+                            onChange={() =>
+                              toggleMemberCapability(
+                                member.userId,
+                                "canManageRooms"
+                              )
+                            }
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          {t("capabilityManageRooms")}
+                        </label>
+                      </div>
+                      {!memberHasAnyCapability(member) ? (
+                        <p className="mt-1.5 text-xs text-amber-700 dark:text-amber-300">
+                          {t("capabilityRequiredHint")}
+                        </p>
+                      ) : null}
                     </li>
                   ))}
                 </ul>

@@ -57,7 +57,9 @@ const RoomForm: React.FC<RoomFormProps> = ({
         if (!res.ok) return;
         const data = await res.json();
         if (!cancelled && Array.isArray(data)) {
-          setSectors(data.map((s: SectorOption) => ({ id: s.id, name: s.name })));
+          setSectors(
+            data.map((s: SectorOption) => ({ id: s.id, name: s.name }))
+          );
         }
       } catch {
         // Setores são opcionais no formulário

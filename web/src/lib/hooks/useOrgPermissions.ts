@@ -6,7 +6,7 @@ import { isOrgAdminRole, isPlatformSuperAdmin } from "@/lib/auth/roles";
 
 /**
  * Papéis/capabilities do tenant na sessão.
- * `isSectorManager` é reavaliado no callback JWT do NextAuth a cada
+ * Flags de setor são reavaliadas no callback JWT do NextAuth a cada
  * refresh de sessão — sem forçar `update()` aqui (evita rajadas de
  * /api/auth/session e erros de fetch sob Turbopack/HMR instável).
  */
@@ -21,14 +21,20 @@ export function useOrgPermissions() {
 
   const hasOrganization = !!session?.user?.organizationId;
 
-  const isSectorManager = Boolean(session?.user?.isSectorManager);
+  const sectorCanApprove = Boolean(session?.user?.sectorCanApprove);
+  const sectorCanManageRooms = Boolean(session?.user?.sectorCanManageRooms);
 
-  const canAccessSolicitacoes = isOrgAdmin || isSectorManager;
+  const isSectorManager =
+    Boolean(session?.user?.isSectorManager) ||
+    sectorCanApprove ||
+    sectorCanManageRooms;
 
-  /** Menu/list access to /salas — item mutations still checked per room on the API. */
-  const canAccessSalas = isOrgAdmin || isSectorManager;
+  const canAccessSolicitacoes = isOrgAdmin || sectorCanApprove;
 
-  const canManageSectorRoomItems = isOrgAdmin || isSectorManager;
+  /** Menu/list access to /salas — room + item mutations checked per room on the API. */
+  const canAccessSalas = isOrgAdmin || sectorCanManageRooms;
+
+  const canManageSectorRoomItems = isOrgAdmin || sectorCanManageRooms;
 
   const isOrgMember =
     status === "authenticated" && hasOrganization && !isOrgAdmin;
@@ -43,6 +49,8 @@ export function useOrgPermissions() {
     isOrgAdmin,
     isOrgMember,
     isSectorManager,
+    sectorCanApprove,
+    sectorCanManageRooms,
     canAccessSolicitacoes,
     canAccessSalas,
     canManageSectorRoomItems,

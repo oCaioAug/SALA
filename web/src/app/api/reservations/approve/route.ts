@@ -1,13 +1,9 @@
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import {
-  canApproveReservation,
-} from "@/lib/auth/permissions";
+import { canApproveReservation } from "@/lib/auth/permissions";
 import {
   isNextResponse,
   requireReservationApprover,

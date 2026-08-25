@@ -13,6 +13,27 @@ import {
 
 import { prismaMock } from "../../../../prisma/mock";
 
+const membership = (
+  flags: Partial<{
+    canApproveReservations: boolean;
+    canManageRooms: boolean;
+  }> = {}
+) =>
+  ({
+    role: SectorMemberRole.MANAGER,
+    canApproveReservations: true,
+    canManageRooms: true,
+    sector: { deletedAt: null },
+    ...flags,
+  }) as any;
+
+const membershipSelect = {
+  role: true,
+  canApproveReservations: true,
+  canManageRooms: true,
+  sector: { select: { deletedAt: true } },
+};
+
 describe("permissions", () => {
   const orgId = "org-1";
   const roomWithSector = {
@@ -67,11 +88,8 @@ describe("permissions", () => {
       expect(ok).toBe(false);
     });
 
-    it("allows sector MANAGER for room in their sector", async () => {
-      prismaMock.sectorMember.findUnique.mockResolvedValue({
-        role: SectorMemberRole.MANAGER,
-        sector: { deletedAt: null },
-      } as any);
+    it("allows sector MANAGER with approve flag for room in their sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(membership());
 
       const ok = await canApproveRoom(
         {
@@ -86,8 +104,24 @@ describe("permissions", () => {
         where: {
           sectorId_userId: { sectorId: "sector-1", userId: "manager-1" },
         },
-        select: { role: true, sector: { select: { deletedAt: true } } },
+        select: membershipSelect,
       });
+    });
+
+    it("denies sector member without approve flag", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(
+        membership({ canApproveReservations: false })
+      );
+
+      const ok = await canApproveRoom(
+        {
+          id: "manager-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(false);
     });
 
     it("denies sector manager of another sector", async () => {
@@ -173,8 +207,10 @@ describe("permissions", () => {
       expect(ok).toBe(true);
     });
 
-    it("allows sector manager", async () => {
-      prismaMock.sectorMember.findFirst.mockResolvedValue({ id: "sm-1" } as any);
+    it("allows sector member with approve flag", async () => {
+      prismaMock.sectorMember.findFirst.mockResolvedValue({
+        id: "sm-1",
+      } as any);
       const ok = await canViewSolicitacoes({
         id: "manager-1",
         organizationId: orgId,
@@ -226,11 +262,8 @@ describe("permissions", () => {
       expect(ok).toBe(true);
     });
 
-    it("allows sector MANAGER for room in their sector", async () => {
-      prismaMock.sectorMember.findUnique.mockResolvedValue({
-        role: SectorMemberRole.MANAGER,
-        sector: { deletedAt: null },
-      } as any);
+    it("allows sector member with manage-rooms flag for room in their sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(membership());
 
       const ok = await canEditRoom(
         {
@@ -241,6 +274,22 @@ describe("permissions", () => {
         roomWithSector
       );
       expect(ok).toBe(true);
+    });
+
+    it("denies sector member without manage-rooms flag", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(
+        membership({ canManageRooms: false })
+      );
+
+      const ok = await canEditRoom(
+        {
+          id: "manager-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(false);
     });
 
     it("denies MEMBER for room without sector", async () => {
@@ -283,11 +332,8 @@ describe("permissions", () => {
       expect(ok).toBe(true);
     });
 
-    it("allows sector MANAGER for room in their sector", async () => {
-      prismaMock.sectorMember.findUnique.mockResolvedValue({
-        role: SectorMemberRole.MANAGER,
-        sector: { deletedAt: null },
-      } as any);
+    it("allows sector member with manage-rooms flag for room in their sector", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(membership());
 
       const ok = await canManageRoomItems(
         {
@@ -298,6 +344,22 @@ describe("permissions", () => {
         roomWithSector
       );
       expect(ok).toBe(true);
+    });
+
+    it("denies sector member without manage-rooms flag", async () => {
+      prismaMock.sectorMember.findUnique.mockResolvedValue(
+        membership({ canManageRooms: false })
+      );
+
+      const ok = await canManageRoomItems(
+        {
+          id: "manager-1",
+          organizationId: orgId,
+          organizationRole: OrganizationRole.MEMBER,
+        },
+        roomWithSector
+      );
+      expect(ok).toBe(false);
     });
 
     it("denies MEMBER for room without sector", async () => {

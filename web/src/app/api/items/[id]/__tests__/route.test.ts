@@ -7,6 +7,7 @@ import {
   mockAdminContextValue,
   mockGetItemInOrganization,
   mockRequireTenantContext,
+  mockTenantContextValue,
   TEST_ORG_ID,
 } from "../../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../../prisma/mock";
@@ -81,6 +82,8 @@ describe("Items [id] API", () => {
       mockRequireTenantContext.mockResolvedValue(mockAdminContextValue);
       prismaMock.sectorMember.findUnique.mockResolvedValue({
         role: "MANAGER",
+        canApproveReservations: true,
+        canManageRooms: true,
         sector: { deletedAt: null },
       } as any);
     });
@@ -136,6 +139,28 @@ describe("Items [id] API", () => {
           data: expect.objectContaining({ quantity: 1 }),
         })
       );
+    });
+
+    it("should deny approve-only sector member from updating items", async () => {
+      mockRequireTenantContext.mockResolvedValueOnce(mockTenantContextValue);
+      prismaMock.item.findFirst.mockResolvedValue(itemWithRoom as any);
+      prismaMock.sectorMember.findUnique.mockResolvedValue({
+        role: "MANAGER",
+        canApproveReservations: true,
+        canManageRooms: false,
+        sector: { deletedAt: null },
+      } as any);
+
+      const req = new NextRequest("http://localhost:3000/api/items/item-1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Projetor" }),
+      });
+      const response = await PUT(req, mockParams("item-1"));
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.errorCode).toBe("ACCESS_DENIED");
+      expect(prismaMock.item.update).not.toHaveBeenCalled();
     });
 
     it("should return 500 on DB error", async () => {

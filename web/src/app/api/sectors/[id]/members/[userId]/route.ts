@@ -1,6 +1,4 @@
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -27,7 +25,10 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       select: { id: true },
     });
     if (!sector) {
-      return NextResponse.json({ error: "Setor não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Setor não encontrado" },
+        { status: 404 }
+      );
     }
 
     const existing = await prisma.sectorMember.findUnique({

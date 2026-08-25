@@ -226,14 +226,14 @@ graph LR
 
 | Campo | Conteudo |
 |-------|----------|
-| **Descricao** | Permite aprovar ou rejeitar solicitacoes de reserva pendentes no escopo permitido: OWNER/ADMIN em qualquer sala; gestor de setor apenas nas salas do(s) setor(es) que gerencia. |
-| **Ator Principal** | Administrador da organização (OWNER/ADMIN) ou Gestor de Setor (SectorMember MANAGER) |
+| **Descricao** | Permite aprovar ou rejeitar solicitacoes de reserva pendentes no escopo permitido: OWNER/ADMIN em qualquer sala; membro de setor com `canApproveReservations` apenas nas salas daquele setor. |
+| **Ator Principal** | Administrador da organização (OWNER/ADMIN) ou membro de setor com funcao de confirmar agendas |
 | **Pre-condicao** | Usuario autenticado com capability de aprovacao. Existem reservas `PENDING` no escopo. |
 | **Pos-condicao** | Reserva com status `APPROVED` ou `REJECTED`, com auditoria (`decidedById`, `decidedAt`, `decisionReason`). Notificacao ao solicitante. Sync Google Calendar best-effort. |
 
 **Fluxo Principal:**
 1. Aprovador acessa a tela de solicitacoes.
-2. Sistema lista reservas `PENDING` do escopo (admin: todas; gestor: salas do setor).
+2. Sistema lista reservas `PENDING` do escopo (admin: todas; membro com aprovacao: salas do setor).
 3. Aprovador seleciona uma reserva e escolhe aprovar ou rejeitar.
 4. Sistema valida `canApproveRoom` e atualiza via `POST /api/reservations/approve` (ou `/[id]/approve` / `/[id]/reject`).
 5. Sistema notifica o solicitante.
@@ -244,10 +244,10 @@ graph LR
 - **FA1 - Reserva recorrente:** Aprovar/rejeitar todas as instancias do template (todas devem estar no escopo).
 - **FA2 - Conflito na aprovacao:** Sistema alerta antes de confirmar.
 - **FA3 - Falha Google Calendar:** Decisao permanece; falha so em log.
-- **FA4 - Fora do escopo:** Gestor tenta sala de outro setor → 403.
+- **FA4 - Fora do escopo:** Membro tenta sala de outro setor ou sem a funcao de aprovar → 403.
 
 **Regras de Negocio:**
-- `RN16` - OWNER/ADMIN aprovam qualquer sala da org; gestores apenas salas do setor; sala sem setor so OWNER/ADMIN.
+- `RN16` - OWNER/ADMIN aprovam qualquer sala da org; membro de setor so com `canApproveReservations` nas salas do setor; sala sem setor so OWNER/ADMIN.
 - `RN17` - Aprovacao/rejeicao em lote afeta todas as instancias do mesmo `recurringTemplateId`.
 - `RN18` - Sync Google Calendar e best-effort.
 
@@ -257,7 +257,7 @@ graph LR
 
 | Campo | Conteudo |
 |-------|----------|
-| **Descricao** | Permite criar/editar/arquivar setores, vincular salas e adicionar gestores (MANAGER) responsaveis pela aprovacao daquelas salas. |
+| **Descricao** | Permite criar/editar/arquivar setores, vincular salas e adicionar membros com funcoes independentes: confirmar agendas (`canApproveReservations`) e gerenciar salas (`canManageRooms`, infos + itens). |
 | **Ator Principal** | OWNER/ADMIN da organização |
 | **Pre-condicao** | Usuario autenticado como admin da org. |
 | **Pos-condicao** | Setor criado/atualizado/arquivado; salas vinculadas; membros atualizados. |
@@ -266,13 +266,13 @@ graph LR
 1. Admin acessa `/setores`.
 2. Cria setor com nome e descricao opcional.
 3. Vincula salas (cada sala no maximo um setor).
-4. Adiciona membros gestores a partir dos membros da org.
-5. Soft-delete arquiva o setor e desvincula salas.
+4. Adiciona membros a partir da org e marca as funcoes de cada um.
+5. Soft-delete arquiva o setor, remove membros do setor e desvincula salas (permite recriar o mesmo nome).
 
 **Regras de Negocio:**
-- `RN34` - Nome do setor e unico por organização.
-- `RN35` - Gestor de setor nao ganha `OrganizationRole` ADMIN; permanece MEMBER com `SectorMember`.
-- `RN36` - Criar/excluir salas e CRUD de setores permanece exclusivo de OWNER/ADMIN. Gestores de setor podem editar infos e itens das salas do setor (ver RN19).
+- `RN34` - Nome do setor e unico por organização entre setores ativos (`deletedAt` nulo).
+- `RN35` - Membro de setor nao ganha `OrganizationRole` ADMIN; permanece MEMBER com `SectorMember` e flags de funcao.
+- `RN36` - Criar/excluir salas e CRUD de setores permanece exclusivo de OWNER/ADMIN. Funcoes de setor: aprovar agendas (`canApproveReservations`) e gerenciar salas (`canManageRooms`, infos + itens).
 
 ---
 
@@ -280,8 +280,8 @@ graph LR
 
 | Campo | Conteudo |
 |-------|----------|
-| **Descricao** | Permite a visualizacao de salas a todos os usuarios. Administradores criam/excluem salas e gerenciam itens. Gestores de setor editam infos e itens apenas nas salas do(s) setor(es) que gerenciam. |
-| **Ator Principal** | Usuario (visualizacao) / Administrador (gestao completa) / Gestor de setor (edicao de sala e itens no escopo) |
+| **Descricao** | Permite a visualizacao de salas a todos os usuarios. Administradores criam/excluem salas e gerenciam itens. Membros de setor com `canManageRooms` editam infos e itens apenas nas salas do setor. |
+| **Ator Principal** | Usuario (visualizacao) / Administrador (gestao completa) / Membro de setor (funcoes no escopo) |
 | **Pre-condicao** | Usuario autenticado. |
 | **Pos-condicao** | Sala ou item criado, atualizado ou excluido. Status da sala refletido para todos os usuarios. |
 
@@ -297,20 +297,20 @@ graph LR
 4. Adiciona, edita ou remove itens da sala via `POST|PUT|DELETE /api/items`.
 5. Faz upload de imagens dos itens via `POST /api/items/upload-image`.
 
-**Fluxo Principal (sala e itens - Gestor de setor):**
-1. Gestor acessa `/salas` e ve apenas salas dos setores que gerencia.
-2. Edita infos da sala (localizacao, tomadas, clima, status, etc.) via `PUT /api/rooms/[id]` quando `canEditRoom`.
-3. Adiciona, edita ou remove itens no escopo (`canManageRoomItems`).
+**Fluxo Principal (sala - Membro de setor):**
+1. Membro com `canManageRooms` acessa `/salas` e ve as salas desses setores.
+2. Edita infos da sala via `PUT /api/rooms/[id]`.
+3. Adiciona, edita ou remove itens no mesmo escopo.
 4. Upload de imagens dos itens respeita o mesmo escopo.
 5. Nao pode criar/excluir sala nem alterar o setor da sala.
 
 **Fluxo Alternativo:**
 - **FA1 - Exclusao com reservas ativas:** Sistema impede a exclusao da sala se existirem reservas `ACTIVE` ou `APPROVED` associadas.
 - **FA2 - Falha no upload de imagem:** Cloudinary indisponivel: sistema mantem imagem anterior e exibe mensagem de erro.
-- **FA3 - Fora do escopo:** Gestor tenta mutar sala/item de outro setor ou sem setor → 403.
+- **FA3 - Fora do escopo:** Membro tenta mutar sala/item de outro setor, sem setor, ou sem `canManageRooms` → 403.
 
 **Regras de Negocio:**
-- `RN19` - OWNER/ADMIN criam e excluem salas e vinculam setor. Edicao de infos da sala e itens: OWNER/ADMIN em qualquer sala; gestor de setor apenas salas do setor; sala sem setor so OWNER/ADMIN.
+- `RN19` - OWNER/ADMIN criam e excluem salas e vinculam setor. Gerenciar sala (infos + itens) exige `canManageRooms`; sala sem setor so OWNER/ADMIN.
 - `RN20` - Status da sala e gerenciado de forma independente do ciclo de reservas.
 - `RN21` - A exclusao de uma sala remove em cascata os itens e imagens associados.
 

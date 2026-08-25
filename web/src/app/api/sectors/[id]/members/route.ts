@@ -1,6 +1,4 @@
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { Prisma, SectorMemberRole } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,7 +27,10 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       select: { id: true },
     });
     if (!sector) {
-      return NextResponse.json({ error: "Setor não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Setor não encontrado" },
+        { status: 404 }
+      );
     }
 
     const members = await prisma.sectorMember.findMany({
@@ -65,7 +66,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       select: { id: true },
     });
     if (!sector) {
-      return NextResponse.json({ error: "Setor não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Setor não encontrado" },
+        { status: 404 }
+      );
     }
 
     const json = await request.json();
@@ -77,7 +81,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { userId, role } = parsed.data;
+    const { userId, role, canApproveReservations, canManageRooms } =
+      parsed.data;
 
     const orgMember = await prisma.organizationMember.findUnique({
       where: {
@@ -101,6 +106,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           sectorId: id,
           userId,
           role: role ?? SectorMemberRole.MANAGER,
+          canApproveReservations,
+          canManageRooms,
         },
         include: {
           user: { select: { id: true, name: true, email: true, image: true } },
