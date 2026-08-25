@@ -326,6 +326,11 @@
     "activeOrg": "Active",
     "inviteError": "Failed to accept invite",
     "completeProfileHint": "Complete your profile (CPF and phone) before creating an organization, or accept an invite below.",
+    "completeProfileHintNoInvites": "Complete your profile (CPF and phone) before creating your organization.",
+    "security": {
+      "title": "Account security",
+      "createHint": "You signed in with Google. Create a password here to also sign in with email — no organization required."
+    },
     "superAdminOrgHint": "As a platform administrator, manage organizations from the platform panel.",
     "shell": {
       "brand": "Dashboard"
@@ -356,9 +361,13 @@
       "rooms": "{count, plural, one {# room} other {# rooms}}"
     },
     "empty": {
-      "title": "No organizations yet",
-      "description": "Create your first organization to start managing rooms and reservations on SALA.",
-      "cta": "Create organization"
+      "title": "You don't have a company yet",
+      "subtitle": "Create your organization or accept an invite to get started.",
+      "description": "Register your company to start managing rooms and reservations on SALA.",
+      "cta": "Create now",
+      "superAdminTitle": "Platform panel",
+      "superAdminSubtitle": "Manage organizations, plans, and users across the SALA platform.",
+      "superAdminDescription": "As a platform administrator, you do not need a linked company to access the global panel."
     },
     "platform": {
       "title": "Platform panel",
@@ -420,9 +429,9 @@
   },
   "OrganizationSetup": {
     "title": "Set up your account",
-    "subtitle": "Complete your profile and create your first organization",
+    "subtitle": "Complete your profile and create your first organization, or go back to the hub to accept an invite.",
     "backToHub": "Back to organizations",
-    "hintProfile": "Step 1: complete your profile with CPF and phone.",
+    "hintProfile": "Step 1: complete your profile with CPF and phone. If you were invited, go back and accept the invite.",
     "hintOrganization": "Step 2: register your organization and choose a plan."
   },
   "ExplorarPage": {
@@ -561,6 +570,21 @@
       "notifications": "Notifications",
       "security": "Security",
       "preferences": "Preferences"
+    },
+    "security": {
+      "title": "Security",
+      "createHint": "This account signed in with Google. Create a password to also sign in with email. Google will keep working.",
+      "changeHint": "Change your email password. Google sign-in is not affected.",
+      "password": "Password",
+      "newPassword": "New password",
+      "currentPassword": "Current password",
+      "confirmPassword": "Confirm password",
+      "createSubmit": "Create password",
+      "changeSubmit": "Change password",
+      "saving": "Saving...",
+      "created": "Password created. You can now sign in with email and password.",
+      "changed": "Password updated successfully.",
+      "error": "Could not update the password."
     },
     "errors": {
       "userNotFound": "User not found",
@@ -1126,18 +1150,48 @@
       "noAccount": "Don't have an account?",
       "createAccount": "Sign up",
       "or": "or",
-      "invalidCredentials": "Incorrect email or password. Google accounts must use the button above.",
+      "invalidCredentials": "Incorrect email or password.",
+      "oauthOnlyAccount": "This account was created with Google. Sign in with Google; you can then create a password here in the hub or in your profile.",
       "oauthAccountNotLinked": "This account uses a different sign-in method. Try Google or email and password.",
-      "googleHint": "Accounts created with Google must use the Sign in with Google button.",
+      "passwordResetSuccess": "Password reset. Sign in with your new password.",
+      "googleHint": "Google also creates a new account. You can then register a company or accept an invite.",
       "registeredSuccess": "Account created successfully. Sign in to continue.",
       "legalConsent": "By signing in, you agree to our",
       "legalAnd": "and our",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy"
     },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email. If an account with a password exists, we will send a reset link.",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send link",
+      "loading": "Sending...",
+      "success": "If an account with a password exists for this email, we will send a reset link.",
+      "error": "Could not process your request.",
+      "errorTitle": "Error:",
+      "connectionError": "Connection error. Please try again.",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "title": "New password",
+      "subtitle": "Choose a new password for your account.",
+      "password": "New password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat new password",
+      "submit": "Reset password",
+      "loading": "Saving...",
+      "missingToken": "Invalid or expired link. Request a new password reset.",
+      "error": "Could not reset password.",
+      "errorTitle": "Error:",
+      "connectionError": "Connection error. Please try again.",
+      "backToLogin": "Back to login"
+    },
     "register": {
       "title": "Create account",
-      "subtitle": "Register your organization and start using SALA",
+      "subtitle": "Create your account. Then register a company or accept an invite.",
       "subtitles": {
         "step1": "Enter your personal and organization details",
         "step2": "Choose the best plan for your team",
@@ -1237,6 +1291,7 @@
       "submit": "Create account",
       "submitting": "Creating account...",
       "googleSignUp": "Sign up with Google",
+      "googleHint": "Sign in now and complete your company afterwards.",
       "hasAccount": "Already have an account?",
       "loginLink": "Sign in",
       "errors": {
@@ -1246,7 +1301,7 @@
     "errorPage": {
       "title": "Erro de Autenticação",
       "tryAgain": "Tentar Novamente",
-      "goDashboard": "Ir para Dashboard",
+      "goToHub": "Go to access hub",
       "loading": "Carregando...",
       "errorCodeLabel": "Código do erro:",
       "errorDescriptionLabel": "Descrição:",
@@ -1526,13 +1581,19 @@
     "CPF_IN_USE": "This CPF is already registered",
     "PROFILE_INCOMPLETE": "Complete your profile with CPF and phone before continuing",
     "CNPJ_IN_USE": "This CNPJ is already registered",
-    "OAUTH_ONLY_ACCOUNT": "This account was created with Google. Use the Sign in with Google button.",
+    "OAUTH_ONLY_ACCOUNT": "This account was created with Google. Sign in with Google; you can then create a password in your profile.",
+    "CURRENT_PASSWORD_REQUIRED": "Enter your current password to change it",
+    "CURRENT_PASSWORD_INVALID": "Current password is incorrect",
+    "RESET_TOKEN_INVALID": "Invalid or already used reset link",
+    "RESET_TOKEN_EXPIRED": "Reset link expired. Request a new one.",
+    "INVALID_CREDENTIALS": "Incorrect email or password",
     "NO_IMAGE": "No image provided",
     "LOGIN_CREDENTIALS_REQUIRED": "Email and password are required",
     "LOGIN_INVALID": "Incorrect email or password",
     "ADMIN_USER_NOT_FOUND": "Admin user not found. Run the seed first.",
     "CANNOT_REMOVE_OWN_SUPER_ADMIN": "You cannot remove your own super admin access",
     "SUBSCRIPTION_NO_PLAN": "Organization has no subscription. Provide planId.",
+    "SUBSCRIPTION_NOT_FOUND": "Subscription not found.",
     "USER_ID_REQUIRED": "userId is required",
     "MEMBER_ALREADY_EXISTS": "User is already a member of this organization",
     "PLAN_LIMIT_ROOMS": "Room limit reached ({max}). Upgrade your plan.",
@@ -1547,7 +1608,7 @@
     "appDescription": "Complete system for managing rooms, items and reservations",
     "adminTitle": "SALA Admin - Platform Dashboard",
     "adminDescription": "Global SALA platform management",
-    "landingTitle": "S.A.L.A. — Room Booking and Space Management",
+    "landingTitle": "S.A.L.A. · Room Booking and Space Management",
     "landingDescription": "Institutional system for room reservations and space management.",
     "termsTitle": "Terms of Service - SALA",
     "termsDescription": "SALA System Terms of Service.",
@@ -1659,84 +1720,160 @@
   },
   "LandingPage": {
     "nav": {
-      "terms": "Termos de Serviço",
-      "privacy": "Privacidade",
-      "login": "Entrar"
+      "product": "Product",
+      "features": "Features",
+      "howItWorks": "How it works",
+      "login": "Log in",
+      "start": "Get started",
+      "terms": "Terms",
+      "privacy": "Privacy"
     },
     "hero": {
-      "badge": "Sistema Institucional",
-      "titleLine1": "S.A.L.A.",
-      "titleLine2": "Gerenciamento inteligente",
-      "titleLine3": "de espaços",
-      "subtitleBold": "Sistema de Agendamento e Locação de Ambientes.",
-      "subtitle": "Uma plataforma institucional para reserva de salas, controle de equipamentos e gestão de incidentes — tudo em um só lugar.",
-      "ctaLogin": "Acessar o sistema →",
-      "ctaFeatures": "Conhecer recursos"
+      "badge": "Institutional space management",
+      "titleLine1": "Reserve rooms. Approve flows.",
+      "titleLine2": "Control every space.",
+      "subtitle": "S.A.L.A. is the platform for organizations, universities, and schools to book rooms, manage equipment, and track incidents, in one place.",
+      "ctaLogin": "Log in",
+      "ctaStart": "Create organization",
+      "dashboardAlt": "S.A.L.A. dashboard with room summary, charts, and shortcuts"
+    },
+    "product": {
+      "title": "See the product in action",
+      "subtitle": "Explore the dashboard, approve bookings, track incidents, and browse the schedule. All mocked, no login.",
+      "dashboardCta": "Adapt the layout to what you need most.",
+      "tabs": {
+        "dashboard": "Dashboard",
+        "reservations": "Bookings",
+        "incidents": "Incidents",
+        "calendar": "Calendar"
+      },
+      "rooms": {
+        "lab1": "Lab 1",
+        "lab2": "Lab 2",
+        "auditorium": "Auditorium"
+      },
+      "demos": {
+        "reservations": {
+          "hint": "Approve or reject pending requests. Local demo only.",
+          "approve": "Approve",
+          "reject": "Reject",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "empty": "No pending requests. Nice work.",
+          "reset": "Reload list",
+          "by": "Requested by {name}",
+          "when": {
+            "r1": "Today · 14:00–16:00",
+            "r2": "Tomorrow · 10:00–12:00",
+            "r3": "Thursday · 09:00–11:00",
+            "r4": "Friday · 15:00–17:00"
+          },
+          "requesters": {
+            "u1": "Ana Costa",
+            "u2": "Bruno Lima",
+            "u3": "Carla Mendes",
+            "u4": "Diego Santos"
+          }
+        },
+        "incidents": {
+          "hint": "Advance incident status like real operations.",
+          "reset": "Reset demo",
+          "items": {
+            "i1": "Projector has no image",
+            "i2": "Noisy air conditioner",
+            "i3": "Damaged power outlet"
+          },
+          "status": {
+            "OPEN": "Open",
+            "IN_PROGRESS": "In progress",
+            "RESOLVED": "Resolved"
+          },
+          "actions": {
+            "OPEN": "Start work",
+            "IN_PROGRESS": "Mark resolved"
+          }
+        },
+        "calendar": {
+          "hint": "Click a time slot to highlight your selection.",
+          "free": "Free",
+          "days": {
+            "mon": "Mon",
+            "tue": "Tue",
+            "wed": "Wed",
+            "thu": "Thu",
+            "fri": "Fri"
+          },
+          "slots": {
+            "morning": "Morning",
+            "afternoon": "Afternoon"
+          },
+          "bookings": {
+            "b1": "Team meeting",
+            "b2": "Lecture",
+            "b3": "Workshop"
+          },
+          "selectedFree": "{day} · {slot}: free slot",
+          "selectedBusy": "{day} · {slot}: {room} · {title}"
+        }
+      },
+      "dragHint": "Drag and resize the cards. This is how the real dashboard works.",
+      "restore": "Reset layout"
     },
     "features": {
-      "title": "Tudo que sua instituição precisa",
-      "subtitle": "O S.A.L.A. facilita o gerenciamento de espaços físicos para escolas, universidades e organizações institucionais.",
+      "title": "Everything your institution needs",
+      "subtitle": "Built for physical space operations: clear status, approvals, and accountability.",
       "f1": {
-        "aria": "Calendário",
-        "title": "Reserva de Salas",
-        "desc": "Agende salas com calendário e reservas recorrentes."
+        "title": "Room booking",
+        "desc": "Calendar views and recurring reservations for labs, classrooms, and halls."
       },
       "f2": {
-        "aria": "Aprovação",
-        "title": "Fluxo de Aprovação",
-        "desc": "Solicitações passam por aprovação de administradores."
+        "title": "Approval workflow",
+        "desc": "Requests go through admins or sector owners before they hit the schedule."
       },
       "f3": {
-        "aria": "Incidentes",
-        "title": "Gestão de Incidentes",
-        "desc": "Reporte e acompanhe problemas em salas e equipamentos."
+        "title": "Incident tracking",
+        "desc": "Report and follow issues with rooms and equipment until they are resolved."
       },
       "f4": {
-        "aria": "Notificações",
-        "title": "Notificações em Tempo Real",
-        "desc": "Alertas sobre aprovações, rejeições e lembretes."
-      },
-      "f5": {
-        "aria": "Google Calendar",
-        "title": "Integração Google Calendar",
-        "desc": "Sincronize reservas aprovadas com sua agenda."
-      },
-      "f6": {
-        "aria": "Autenticação",
-        "title": "Login com Google",
-        "desc": "Acesso seguro via OAuth 2.0 institucional."
+        "title": "Google Calendar sync",
+        "desc": "Approved bookings sync to institutional calendars automatically."
       }
     },
+    "story": {
+      "aria": "Product story",
+      "text": "Book. Approve. Occupy. Resolve, one continuous flow."
+    },
     "howItWorks": {
-      "title": "Como funciona",
-      "subtitle": "Em poucos passos, sua instituição tem controle total dos espaços.",
+      "title": "How it works",
+      "subtitle": "Four steps from invite to a managed space.",
       "step1": {
-        "title": "Entre com sua conta Google",
-        "desc": "Login institucional sem cadastro manual."
+        "title": "Sign in",
+        "desc": "Use email or Google: institutional access without friction."
       },
       "step2": {
-        "title": "Visualize e reserve uma sala",
-        "desc": "Veja disponibilidade e escolha horários."
+        "title": "Browse and book",
+        "desc": "Check availability and pick a slot that fits your team."
       },
       "step3": {
-        "title": "Aguarde a aprovação",
-        "desc": "Administradores aprovam ou rejeitam com notificação."
+        "title": "Get approval",
+        "desc": "Admins review and notify you when the request is decided."
       },
       "step4": {
-        "title": "Use o espaço",
-        "desc": "Com a reserva aprovada, utilize o espaço e reporte incidentes."
+        "title": "Use the space",
+        "desc": "Show up with a confirmed booking, and report incidents if needed."
       }
     },
     "cta": {
-      "title": "Pronto para organizar os espaços da sua instituição?",
-      "subtitle": "Faça login com sua conta Google institucional.",
-      "button": "Acessar o S.A.L.A. →"
+      "title": "Ready to organize your institution’s spaces?",
+      "subtitle": "Create an organization or sign in to continue.",
+      "button": "Get started with S.A.L.A.",
+      "login": "Already have an account? Log in"
     },
     "footer": {
-      "brand": "S.A.L.A. — Sistema de Agendamento e Locação de Ambientes",
-      "terms": "Termos de Serviço",
-      "privacy": "Política de Privacidade",
-      "login": "Login"
+      "brand": "S.A.L.A. · Room booking and space management",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "login": "Log in"
     }
   },
   "Invites": {
@@ -1791,20 +1928,27 @@
       "refreshMetrics": "Atualizar métricas diárias",
       "refreshing": "Atualizando...",
       "activeOrgs": "Organizações ativas",
-      "totalUsers": "Usuários",
-      "totalRooms": "Salas",
-      "reservations30d": "Reservas (30d)",
-      "openIncidents": "Incidentes abertos",
-      "weeklyOrgs": "Novas organizações por semana",
-      "weeklyUsers": "Novos usuários por semana",
-      "topOrgs": "Top organizações por reservas",
-      "orgsByPlan": "Organizações por plano",
-      "expiringTrials": "Trials expirando",
-      "inactiveOrgs": "Organizações inativas",
-      "viewAllOrgs": "Ver todas as organizações",
-      "retention": "Retenção (30d)",
-      "activeOrgs30d": "Orgs ativas (30d)",
-      "analyticsDescription": "Analytics global da plataforma SALA"
+      "organizationsTotal": "Organizations",
+      "organizationsActiveSub": "{count} active",
+      "totalUsers": "Users",
+      "totalUsersSub": "Registered on the platform (all roles)",
+      "totalRooms": "Rooms",
+      "totalRoomsSub": "Across all orgs",
+      "reservations30d": "Reservations (30d)",
+      "reservations30dSub": "Last 30 days",
+      "openIncidents": "Open incidents",
+      "openIncidentsSub": "Need attention",
+      "loadDataError": "Failed to load data",
+      "weeklyOrgs": "New organizations per week",
+      "weeklyUsers": "New users per week",
+      "topOrgs": "Top organizations by reservations",
+      "orgsByPlan": "Organizations by plan",
+      "expiringTrials": "Expiring trials",
+      "inactiveOrgs": "Inactive organizations",
+      "viewAllOrgs": "View all organizations",
+      "retention": "Retention (30d)",
+      "activeOrgs30d": "Active orgs (30d)",
+      "analyticsDescription": "Global analytics for the SALA platform"
     },
     "organizations": {
       "title": "Organizations",
@@ -1832,6 +1976,31 @@
       "changePlan": "Change plan",
       "noRoomsTitle": "No rooms",
       "noRoomsDesc": "This organization has no rooms yet",
+      "formTitle": "Organization details",
+      "unknownError": "Unknown error",
+      "ownerWithoutPasswordWarning": "The owner was created without a password. Ask them to use password recovery to sign in.",
+      "statusActive": "Active",
+      "statusTrial": "Trial",
+      "statusSuspended": "Suspended",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "create": "Create organization",
+      "saveProfile": "Save details",
+      "savingProfile": "Saving...",
+      "deleteOrg": "Deactivate organization",
+      "deleteOrgConfirm": "Soft-delete this organization? It will disappear from listings.",
+      "transferOwnership": "Transfer ownership",
+      "transferOwnershipConfirm": "Transfer ownership to this member?",
+      "fields": {
+        "name": "Organization name",
+        "slug": "Slug (URL)",
+        "status": "Status",
+        "plan": "Plan",
+        "ownerEmail": "Owner email",
+        "ownerName": "Owner name (optional)",
+        "email": "Contact email",
+        "phone": "Contact phone"
+      },
       "tabs": {
         "general": "General",
         "members": "Members",
@@ -1858,6 +2027,8 @@
       "noOrganizations": "No organization membership",
       "promoteSuperAdmin": "Promote SUPER_ADMIN",
       "removeSuperAdmin": "Remove SUPER_ADMIN",
+      "includeDeleted": "Include deleted",
+      "deleted": "Deleted",
       "stats": {
         "total": "Total",
         "totalSub": "Users on the platform",
@@ -1874,6 +2045,7 @@
       "description": "Platform limits and commercial packages",
       "createButton": "Create new plan",
       "createTitle": "Create new plan",
+      "editTitle": "Edit plan",
       "createSubtitle": "Set identification, usage limits, and availability for the package.",
       "summaryPlanOne": "plan registered",
       "summaryPlanMany": "plans registered",
@@ -1913,21 +2085,28 @@
         "active": "Active",
         "inactive": "Inactive",
         "activate": "Activate plan",
-        "deactivate": "Deactivate plan"
+        "deactivate": "Deactivate plan",
+        "edit": "Edit"
       },
       "actions": {
         "cancel": "Cancel",
         "create": "Create plan",
+        "save": "Save changes",
         "saving": "Saving...",
         "editSlug": "edit"
       },
       "errors": {
-        "createFailed": "Could not create the plan. Check the data and try again."
+        "createFailed": "Could not create the plan. Check the data and try again.",
+        "updateFailed": "Could not update the plan. Check the data and try again."
       }
     },
     "audit": {
       "title": "Audit Log",
-      "description": "Trilha de ações administrativas na plataforma"
+      "description": "Administrative action trail on the platform",
+      "searchPlaceholder": "Filter by action...",
+      "refresh": "Refresh",
+      "emptyTitle": "No records found",
+      "emptyDesc": "There are no audit logs for the current filter"
     },
     "incidents": {
       "title": "Incidents",
@@ -1954,6 +2133,8 @@
       "status": "Status",
       "priority": "Priority",
       "resolutionNotes": "Resolution notes",
+      "assignedTo": "Assigned to",
+      "unassigned": "Unassigned",
       "history": "Status history",
       "resolve": "Mark resolved",
       "saveChanges": "Save changes",
@@ -2107,16 +2288,18 @@
   "InvitePage": {
     "invalidInvite": "Convite inválido",
     "notFound": "Convite não encontrado",
-    "goOnboarding": "Ir para onboarding",
+    "goToHub": "Go to access hub",
     "title": "Convite para {org}",
     "invitedAs": "Você foi convidado para participar como {role}.",
     "inviteEmail": "Email do convite: {email}",
     "sentBy": "Enviado por: {name}",
     "expiresAt": "Expira em: {date}",
-    "loginGoogle": "Entrar com Google para aceitar",
-    "wrongAccount": "Você está logado como {current}, mas o convite foi enviado para {expected}.",
-    "switchAccount": "Trocar conta",
-    "alreadyInOrg": "Você já pertence a uma organização.",
+    "loginGoogle": "Sign in with Google",
+    "loginEmail": "Sign in with email and password",
+    "createAccount": "Create account",
+    "wrongAccount": "You are signed in as {current}, but the invite was sent to {expected}.",
+    "switchAccount": "Switch account",
+    "alreadyInOrg": "You already belong to this organization.",
     "accepting": "Aceitando...",
     "acceptInvite": "Aceitar convite",
     "createOwnOrg": "Criar minha própria organização",
@@ -2242,27 +2425,25 @@
   },
   "SetoresPage": {
     "title": "Sectors",
-    "subtitle": "Control who approves bookings: assign rooms and managers to each sector",
+    "subtitle": "Assign rooms and choose, per person, what they can do in the sector",
     "create": "New sector",
-    "edit": "Edit",
     "archive": "Archive",
     "searchPlaceholder": "Search sectors...",
     "emptyTitle": "No sectors yet",
-    "emptyDescription": "Create a sector, click Manage, then assign rooms and approval managers.",
+    "emptyDescription": "Create a sector and, in the same flow, assign rooms and per-person functions.",
+    "emptySearchTitle": "No sectors found",
+    "emptySearchDescription": "Try another search term or clear the filter.",
     "drawerCreateTitle": "Create sector",
     "drawerEditTitle": "Manage sector",
     "nameLabel": "Name",
     "namePlaceholder": "e.g. IT Coordination",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Optional",
-    "roomsLabel": "Sector rooms",
     "noRooms": "No rooms available",
-    "membersLabel": "Sector managers",
     "selectMember": "Select manager...",
     "removeMember": "Remove manager",
     "roomsCount": "{count} rooms",
     "membersCount": "{count} managers",
-    "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
     "confirmArchive": "Archive sector \"{name}\"? {count} room(s) will have no sector and only org admins will approve their bookings.",
@@ -2270,10 +2451,7 @@
       "created": "Sector created successfully",
       "updated": "Sector updated successfully",
       "archived": "Sector archived",
-      "memberAdded": "Manager added",
-      "memberRemoved": "Manager removed",
-      "memberRefreshHint": "Managers already signed in elsewhere must refresh the page to see Requests",
-      "createdContinue": "Sector created. Review rooms and add managers below."
+      "memberRefreshHint": "People already signed in elsewhere must refresh the page to see the new functions"
     },
     "errors": {
       "load": "Failed to load sectors",
@@ -2281,29 +2459,26 @@
       "archive": "Failed to archive sector",
       "nameRequired": "Name is required",
       "addMember": "Failed to add manager",
-      "removeMember": "Failed to remove manager"
+      "memberNeedsCapability": "Each sector member needs at least one function"
     },
     "managersLabel": "Managers",
     "otherSector": "another sector",
     "assignedToSector": "already in {name}",
     "manage": "Manage",
     "drawerHintCreate": "Fill in details, rooms, and managers. Everything is created at once when you save.",
-    "drawerHintEdit": "Assign rooms and managers. Managers only control rooms linked to this sector.",
+    "drawerHintEdit": "Assign rooms and functions. Each person only acts on this sector's rooms, with the functions you check.",
     "sectionBasicsTitle": "Sector details",
     "sectionBasicsHelp": "Display name in the organization",
     "sectionRoomsTitle": "Assign rooms",
-    "sectionRoomsHelp": "Rooms under this sector — managers will be able to manage them",
+    "sectionRoomsHelp": "Rooms under this sector",
     "sectionMembersTitle": "Add managers",
-    "sectionMembersHelp": "People who can approve, reject, and see the queue for these rooms",
+    "sectionMembersHelp": "Choose each person's functions: confirm bookings and/or manage rooms (details + items)",
     "roomsSelected": "{count} selected",
-    "roomsSaveHint": "Checked rooms are saved when you click \"Save changes\".",
-    "membersAfterCreate": "Managers can only be added after the sector exists. Click \"Create and continue\" to unlock this step.",
     "noMembersYet": "No managers in the list yet. Add below, then save.",
     "addMemberLabel": "Add manager",
     "addMember": "Add",
-    "addMemberHint": "The list is only saved when you save. Managers in another session must refresh to see Requests.",
+    "addMemberHint": "The list and functions are only saved when you save. People in another session must refresh the page.",
     "noMemberCandidates": "No other members available. Add users under Users first.",
-    "saveAndContinue": "Create and continue",
     "saveChanges": "Save changes",
     "cardEmptyHint": "No rooms or managers yet. Click Manage to configure.",
     "roomsSaveHintCreate": "Checked rooms are linked when you save the sector.",
@@ -2313,10 +2488,11 @@
     "checklistMembers": "Managers",
     "checklistReady": "Done",
     "checklistPending": "Pending",
-    "checklistAfterCreate": "After create",
-    "roomsManageEffect": "Effect: managers of this sector can approve, reject, and track reservations for these rooms.",
-    "membersSaveHint": "Managers in the list are saved with rooms when you click \"Save changes\".",
+    "roomsManageEffect": "Effect: approvers see Requests; room managers can edit room details and items in these rooms.",
     "createSubmit": "Create sector",
-    "confirmDiscard": "You have unsaved changes. Discard and close?"
+    "confirmDiscard": "You have unsaved changes. Discard and close?",
+    "capabilityApprove": "Confirm bookings",
+    "capabilityManageRooms": "Manage rooms (details + items)",
+    "capabilityRequiredHint": "Select at least one function for this person."
   }
 }

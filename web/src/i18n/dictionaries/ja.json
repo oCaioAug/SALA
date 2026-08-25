@@ -308,6 +308,94 @@
   "LoadingPage": {
     "loading": "読み込み中..."
   },
+  "OrganizationsPage": {
+    "greeting": "こんにちは",
+    "title": "所属組織",
+    "subtitle": "ダッシュボードにアクセスする組織を選択してください。",
+    "hubBadge": "アクセスハブ",
+    "signOut": "ログアウト",
+    "enter": "アクセス",
+    "enterAdmin": "ダッシュボードを開く",
+    "enterMember": "部屋を探す",
+    "activeOrg": "アクティブ",
+    "inviteError": "招待の承認に失敗しました",
+    "completeProfileHint": "組織を作成する前にプロフィール（CPFと電話番号）を完成させるか、下の招待を承認してください。",
+    "completeProfileHintNoInvites": "会社を作成する前にプロフィール（CPFと電話番号）を完成させてください。",
+    "security": {
+      "title": "アカウントのセキュリティ",
+      "createHint": "Googleでサインインしました。ここでパスワードを作成すると、メールでもログインできます — 組織は不要です。"
+    },
+    "superAdminOrgHint": "プラットフォーム管理者として、プラットフォームパネルから組織を管理できます。",
+    "shell": {
+      "brand": "ダッシュボード"
+    },
+    "card": {
+      "planLine": "{plan}プラン · {role}",
+      "roleLine": "役割: {role}",
+      "createdAt": "{date} に作成"
+    },
+    "sections": {
+      "organizations": "所属組織",
+      "organizationsDesc": "ダッシュボードにアクセスする組織を選択してください。",
+      "actions": "クイックアクション",
+      "actionsDesc": "新しい組織を登録するか、プラットフォームパネルにアクセス"
+    },
+    "roles": {
+      "owner": "オーナー",
+      "admin": "管理者",
+      "member": "メンバー"
+    },
+    "status": {
+      "active": "アクティブ",
+      "trial": "トライアル",
+      "suspended": "停止中"
+    },
+    "stats": {
+      "members": "{count, plural, other {# 名のメンバー}}",
+      "rooms": "{count, plural, other {# 部屋}}"
+    },
+    "empty": {
+      "title": "まだ会社がありません",
+      "subtitle": "会社を作成するか、招待を承認して始めましょう。",
+      "description": "SALAで部屋と予約を管理するために会社を登録してください。",
+      "cta": "今すぐ作成",
+      "superAdminTitle": "プラットフォームパネル",
+      "superAdminSubtitle": "SALAプラットフォームの組織、プラン、ユーザーを管理します。",
+      "superAdminDescription": "プラットフォーム管理者は、グローバルパネルにアクセスするためにリンクされた会社は必要ありません。"
+    },
+    "platform": {
+      "title": "プラットフォームパネル",
+      "description": "すべての組織、プラン、ユーザー、SALA監査を管理",
+      "badge": "スーパー管理者"
+    },
+    "manageOrg": {
+      "title": "組織を管理",
+      "description": "メンバーを招待し、権限を変更します。"
+    },
+    "organization": {
+      "adminTitle": "組織パネル",
+      "adminDescription": "部屋、予約、ユーザー、組織設定",
+      "memberTitle": "部屋を探す",
+      "memberDescription": "利用可能な部屋を確認し、予約して問題を報告",
+      "namedTitle": "{name}"
+    },
+    "createOrg": {
+      "title": "新しい組織を作成",
+      "description": "ゼロから新しい組織を始めます。",
+      "action": "登録"
+    },
+    "anotherOrg": {
+      "title": "新しい組織を作成",
+      "description": "ゼロから新しい組織を始めます。"
+    },
+    "invites": {
+      "title": "保留中の招待",
+      "subtitle": "承認して既存のチームに参加",
+      "role": "役割: {role}",
+      "invitedBy": "{name} からの招待",
+      "accept": "招待を承認"
+    }
+  },
   "Calendar": {
     "monthNames": {
       "january": "1月",
@@ -384,6 +472,21 @@
       "notifications": "通知",
       "security": "セキュリティ",
       "preferences": "設定"
+    },
+    "security": {
+      "title": "セキュリティ",
+      "createHint": "このアカウントはGoogleでログインしています。メールでもログインできるようパスワードを作成できます。Googleはそのまま使えます。",
+      "changeHint": "メール用パスワードを変更します。Googleログインには影響しません。",
+      "password": "パスワード",
+      "newPassword": "新しいパスワード",
+      "currentPassword": "現在のパスワード",
+      "confirmPassword": "パスワードの確認",
+      "createSubmit": "パスワードを作成",
+      "changeSubmit": "パスワードを変更",
+      "saving": "保存中...",
+      "created": "パスワードを作成しました。メールとパスワードでログインできます。",
+      "changed": "パスワードを更新しました。",
+      "error": "パスワードを更新できませんでした。"
     },
     "errors": {
       "userNotFound": "ユーザーが見つかりません",
@@ -949,18 +1052,48 @@
       "noAccount": "アカウントをお持ちではありませんか？",
       "createAccount": "登録する",
       "or": "または",
-      "invalidCredentials": "メールまたはパスワードが正しくありません。Googleアカウントは上のボタンを使用してください。",
+      "invalidCredentials": "メールまたはパスワードが正しくありません。",
+      "oauthOnlyAccount": "このアカウントはGoogleで作成されました。Googleでログインしてください。その後、ハブまたはプロフィールでパスワードを作成できます。",
       "oauthAccountNotLinked": "このアカウントは別のログイン方法を使用しています。Googleまたはメールとパスワードをお試しください。",
-      "googleHint": "Googleで作成されたアカウントはGoogleログインボタンを使用する必要があります。",
+      "passwordResetSuccess": "パスワードをリセットしました。新しいパスワードでログインしてください。",
+      "googleHint": "Googleでも新しいアカウントを作成できます。その後、企業を登録するか招待を承認できます。",
       "registeredSuccess": "アカウントが作成されました。ログインして続行してください。",
       "legalConsent": "サインインすることで、当社の",
       "legalAnd": "および",
       "termsOfService": "利用規約",
       "privacyPolicy": "プライバシーポリシー》に同意したことになります"
     },
+    "forgotPassword": {
+      "title": "パスワードをお忘れですか",
+      "subtitle": "メールアドレスを入力してください。パスワード付きのアカウントが存在する場合、リセットリンクを送信します。",
+      "email": "メール",
+      "emailPlaceholder": "you@email.com",
+      "submit": "リンクを送信",
+      "loading": "送信中...",
+      "success": "このメールにパスワード付きのアカウントが存在する場合、リセットリンクを送信します。",
+      "error": "リクエストを処理できませんでした。",
+      "errorTitle": "エラー：",
+      "connectionError": "接続エラー。もう一度お試しください。",
+      "backToLogin": "ログインに戻る"
+    },
+    "resetPassword": {
+      "title": "新しいパスワード",
+      "subtitle": "アカウントの新しいパスワードを選択してください。",
+      "password": "新しいパスワード",
+      "passwordPlaceholder": "8文字以上",
+      "confirmPassword": "パスワード確認",
+      "confirmPasswordPlaceholder": "新しいパスワードを再入力",
+      "submit": "パスワードをリセット",
+      "loading": "保存中...",
+      "missingToken": "リンクが無効または期限切れです。新しいリセットをリクエストしてください。",
+      "error": "パスワードをリセットできませんでした。",
+      "errorTitle": "エラー：",
+      "connectionError": "接続エラー。もう一度お試しください。",
+      "backToLogin": "ログインに戻る"
+    },
     "register": {
       "title": "アカウント作成",
-      "subtitle": "組織を登録してSALAを始めましょう",
+      "subtitle": "アカウントを作成します。その後、企業を登録するか招待を承認できます。",
       "subtitles": {
         "step1": "個人情報と組織情報を入力してください",
         "step2": "チームに最適なプランを選択してください",
@@ -1060,6 +1193,7 @@
       "submit": "アカウント作成",
       "submitting": "作成中...",
       "googleSignUp": "Googleで登録",
+      "googleHint": "今すぐログインし、続けて企業情報を入力できます。",
       "hasAccount": "すでにアカウントをお持ちですか？",
       "loginLink": "ログイン",
       "errors": {
@@ -1069,7 +1203,7 @@
     "errorPage": {
       "title": "Erro de Autenticação",
       "tryAgain": "Tentar Novamente",
-      "goDashboard": "Ir para Dashboard",
+      "goToHub": "アクセスハブへ",
       "loading": "Carregando...",
       "errorCodeLabel": "Código do erro:",
       "errorDescriptionLabel": "Descrição:",
@@ -1348,13 +1482,19 @@
     "EMAIL_IN_USE": "このメールは既に使用されています",
     "CPF_IN_USE": "このCPFは既に登録されています",
     "CNPJ_IN_USE": "このCNPJは既に登録されています",
-    "OAUTH_ONLY_ACCOUNT": "このアカウントはGoogleで作成されました。Googleログインボタンを使用してください。",
+    "OAUTH_ONLY_ACCOUNT": "このアカウントはGoogleで作成されました。Googleでログインしてください。その後、プロフィールでパスワードを作成できます。",
+    "CURRENT_PASSWORD_REQUIRED": "変更するには現在のパスワードを入力してください",
+    "CURRENT_PASSWORD_INVALID": "現在のパスワードが正しくありません",
+    "RESET_TOKEN_INVALID": "リセットリンクが無効または既に使用されています",
+    "RESET_TOKEN_EXPIRED": "リセットリンクの期限が切れました。新しいリンクをリクエストしてください。",
+    "INVALID_CREDENTIALS": "メールまたはパスワードが正しくありません",
     "NO_IMAGE": "画像が提供されていません",
     "LOGIN_CREDENTIALS_REQUIRED": "メールとパスワードは必須です",
     "LOGIN_INVALID": "メールまたはパスワードが正しくありません",
     "ADMIN_USER_NOT_FOUND": "管理者ユーザーが見つかりません。先に seed を実行してください。",
     "CANNOT_REMOVE_OWN_SUPER_ADMIN": "自分のスーパー管理者アクセスは削除できません",
     "SUBSCRIPTION_NO_PLAN": "組織にサブスクリプションがありません。planId を指定してください。",
+    "SUBSCRIPTION_NOT_FOUND": "サブスクリプションが見つかりません。",
     "USER_ID_REQUIRED": "userId は必須です",
     "MEMBER_ALREADY_EXISTS": "ユーザーは既にこの組織のメンバーです",
     "PLAN_LIMIT_ROOMS": "部屋の上限に達しました（{max}）。プランをアップグレードしてください。",
@@ -1369,7 +1509,7 @@
     "appDescription": "部屋、アイテム、予約を管理する完全なシステム",
     "adminTitle": "SALA Admin - プラットフォームダッシュボード",
     "adminDescription": "SALA プラットフォームのグローバル管理",
-    "landingTitle": "S.A.L.A. — 空間予約・管理システム",
+    "landingTitle": "S.A.L.A. · 空間予約・管理システム",
     "landingDescription": "部屋予約と空間管理のための機関向けシステム。",
     "termsTitle": "利用規約 - SALA",
     "termsDescription": "SALA システムの利用規約。",
@@ -1481,84 +1621,160 @@
   },
   "LandingPage": {
     "nav": {
-      "terms": "Termos de Serviço",
-      "privacy": "Privacidade",
-      "login": "Entrar"
+      "product": "製品",
+      "features": "機能",
+      "howItWorks": "使い方",
+      "login": "ログイン",
+      "start": "始める",
+      "terms": "利用規約",
+      "privacy": "プライバシー"
     },
     "hero": {
-      "badge": "Sistema Institucional",
-      "titleLine1": "S.A.L.A.",
-      "titleLine2": "Gerenciamento inteligente",
-      "titleLine3": "de espaços",
-      "subtitleBold": "Sistema de Agendamento e Locação de Ambientes.",
-      "subtitle": "Uma plataforma institucional para reserva de salas, controle de equipamentos e gestão de incidentes — tudo em um só lugar.",
-      "ctaLogin": "Acessar o sistema →",
-      "ctaFeatures": "Conhecer recursos"
+      "badge": "施設向けスペース管理",
+      "titleLine1": "部屋を予約。承認を回す。",
+      "titleLine2": "すべてのスペースを把握。",
+      "subtitle": "S.A.L.A. は組織・大学・学校向けに、部屋予約・設備管理・インシデント追跡をひとつの場所で行うプラットフォームです。",
+      "ctaLogin": "ログイン",
+      "ctaStart": "組織を作成",
+      "dashboardAlt": "S.A.L.A. ダッシュボード（部屋の概要、グラフ、ショートカット）"
+    },
+    "product": {
+      "title": "製品の動きを見る",
+      "subtitle": "ダッシュボード、予約承認、インシデント、カレンダーを試せます。すべてデモ、ログイン不要。",
+      "dashboardCta": "いちばん必要なものに合わせて表示を変えましょう。",
+      "tabs": {
+        "dashboard": "ダッシュボード",
+        "reservations": "予約",
+        "incidents": "インシデント",
+        "calendar": "カレンダー"
+      },
+      "rooms": {
+        "lab1": "Lab 1",
+        "lab2": "Lab 2",
+        "auditorium": "講堂"
+      },
+      "demos": {
+        "reservations": {
+          "hint": "承認待ちの申請を承認または却下できます。ローカルデモのみです。",
+          "approve": "承認",
+          "reject": "却下",
+          "approved": "承認済み",
+          "rejected": "却下済み",
+          "empty": "承認待ちはありません。お疲れさまです。",
+          "reset": "リストを再読込",
+          "by": "{name} が申請",
+          "when": {
+            "r1": "今日 · 14:00–16:00",
+            "r2": "明日 · 10:00–12:00",
+            "r3": "木曜 · 09:00–11:00",
+            "r4": "金曜 · 15:00–17:00"
+          },
+          "requesters": {
+            "u1": "Ana Costa",
+            "u2": "Bruno Lima",
+            "u3": "Carla Mendes",
+            "u4": "Diego Santos"
+          }
+        },
+        "incidents": {
+          "hint": "本番と同じようにインシデントの状態を進められます。",
+          "reset": "デモをリセット",
+          "items": {
+            "i1": "プロジェクターに映像が出ない",
+            "i2": "空調の騒音",
+            "i3": "コンセント破損"
+          },
+          "status": {
+            "OPEN": "オープン",
+            "IN_PROGRESS": "対応中",
+            "RESOLVED": "解決済み"
+          },
+          "actions": {
+            "OPEN": "対応を開始",
+            "IN_PROGRESS": "解決にする"
+          }
+        },
+        "calendar": {
+          "hint": "時間枠をクリックして選択を強調できます。",
+          "free": "空き",
+          "days": {
+            "mon": "月",
+            "tue": "火",
+            "wed": "水",
+            "thu": "木",
+            "fri": "金"
+          },
+          "slots": {
+            "morning": "午前",
+            "afternoon": "午後"
+          },
+          "bookings": {
+            "b1": "チーム会議",
+            "b2": "講義",
+            "b3": "ワークショップ"
+          },
+          "selectedFree": "{day} · {slot}: 空き枠",
+          "selectedBusy": "{day} · {slot}: {room} · {title}"
+        }
+      },
+      "dragHint": "カードをドラッグ＆リサイズできます。本番のダッシュボードと同じ操作です。",
+      "restore": "レイアウトをリセット"
     },
     "features": {
-      "title": "Tudo que sua instituição precisa",
-      "subtitle": "O S.A.L.A. facilita o gerenciamento de espaços físicos para escolas, universidades e organizações institucionais.",
+      "title": "機関に必要なすべて",
+      "subtitle": "物理スペース運用向け: 明確なステータス、承認、説明責任。",
       "f1": {
-        "aria": "Calendário",
-        "title": "Reserva de Salas",
-        "desc": "Agende salas com calendário e reservas recorrentes."
+        "title": "部屋予約",
+        "desc": "ラボ・教室・ホール向けのカレンダーと繰り返し予約。"
       },
       "f2": {
-        "aria": "Aprovação",
-        "title": "Fluxo de Aprovação",
-        "desc": "Solicitações passam por aprovação de administradores."
+        "title": "承認ワークフロー",
+        "desc": "申請はスケジュール前に管理者または部門担当が確認。"
       },
       "f3": {
-        "aria": "Incidentes",
-        "title": "Gestão de Incidentes",
-        "desc": "Reporte e acompanhe problemas em salas e equipamentos."
+        "title": "インシデント管理",
+        "desc": "部屋・設備の問題を報告し、解決まで追跡。"
       },
       "f4": {
-        "aria": "Notificações",
-        "title": "Notificações em Tempo Real",
-        "desc": "Alertas sobre aprovações, rejeições e lembretes."
-      },
-      "f5": {
-        "aria": "Google Calendar",
-        "title": "Integração Google Calendar",
-        "desc": "Sincronize reservas aprovadas com sua agenda."
-      },
-      "f6": {
-        "aria": "Autenticação",
-        "title": "Login com Google",
-        "desc": "Acesso seguro via OAuth 2.0 institucional."
+        "title": "Google Calendar",
+        "desc": "承認済み予約を機関カレンダーへ自動同期。"
       }
     },
+    "story": {
+      "aria": "プロダクトストーリー",
+      "text": "予約。承認。利用。解決。ひとつの流れで。"
+    },
     "howItWorks": {
-      "title": "Como funciona",
-      "subtitle": "Em poucos passos, sua instituição tem controle total dos espaços.",
+      "title": "使い方",
+      "subtitle": "招待から管理されたスペースまで、4ステップ。",
       "step1": {
-        "title": "Entre com sua conta Google",
-        "desc": "Login institucional sem cadastro manual."
+        "title": "サインイン",
+        "desc": "メールまたは Google: スムーズな機関アクセス。"
       },
       "step2": {
-        "title": "Visualize e reserve uma sala",
-        "desc": "Veja disponibilidade e escolha horários."
+        "title": "閲覧して予約",
+        "desc": "空き状況を確認し、チームに合う枠を選ぶ。"
       },
       "step3": {
-        "title": "Aguarde a aprovação",
-        "desc": "Administradores aprovam ou rejeitam com notificação."
+        "title": "承認を待つ",
+        "desc": "管理者が確認し、結果を通知。"
       },
       "step4": {
-        "title": "Use o espaço",
-        "desc": "Com a reserva aprovada, utilize o espaço e reporte incidentes."
+        "title": "スペースを使う",
+        "desc": "確定予約で現地へ。必要ならインシデントも報告。"
       }
     },
     "cta": {
-      "title": "Pronto para organizar os espaços da sua instituição?",
-      "subtitle": "Faça login com sua conta Google institucional.",
-      "button": "Acessar o S.A.L.A. →"
+      "title": "機関のスペースを整理する準備はできましたか？",
+      "subtitle": "組織を作成するか、ログインして続けてください。",
+      "button": "S.A.L.A. を始める",
+      "login": "アカウントをお持ちですか？ログイン"
     },
     "footer": {
-      "brand": "S.A.L.A. — Sistema de Agendamento e Locação de Ambientes",
-      "terms": "Termos de Serviço",
-      "privacy": "Política de Privacidade",
-      "login": "Login"
+      "brand": "S.A.L.A. · 部屋予約とスペース管理",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "login": "ログイン"
     }
   },
   "Invites": {
@@ -1778,6 +1994,8 @@
       "status": "Status",
       "priority": "Prioridade",
       "resolutionNotes": "Notas de resolução",
+      "assignedTo": "担当者",
+      "unassigned": "未割り当て",
       "history": "Histórico de status",
       "resolve": "Marcar resolvido",
       "saveChanges": "Salvar alterações",
@@ -1879,6 +2097,13 @@
       "accept": "Aceitar convite"
     }
   },
+  "OrganizationSetup": {
+    "title": "アカウントを設定",
+    "subtitle": "プロフィールを完成させ、最初の組織を作成するか、ハブに戻って招待を承認してください。",
+    "backToHub": "組織一覧に戻る",
+    "hintProfile": "ステップ1: CPFと電話番号でプロフィールを完成させてください。招待された場合は戻って招待を承認してください。",
+    "hintOrganization": "ステップ2: 組織を登録し、プランを選択します。"
+  },
   "ExplorarPage": {
     "title": "Explorar salas",
     "subtitle": "Encontre salas livres, veja quem está usando e confira os materiais disponíveis",
@@ -1917,16 +2142,18 @@
   "InvitePage": {
     "invalidInvite": "Convite inválido",
     "notFound": "Convite não encontrado",
-    "goOnboarding": "Ir para onboarding",
+    "goToHub": "アクセスハブへ",
     "title": "Convite para {org}",
     "invitedAs": "Você foi convidado para participar como {role}.",
     "inviteEmail": "Email do convite: {email}",
     "sentBy": "Enviado por: {name}",
     "expiresAt": "Expira em: {date}",
-    "loginGoogle": "Entrar com Google para aceitar",
-    "wrongAccount": "Você está logado como {current}, mas o convite foi enviado para {expected}.",
-    "switchAccount": "Trocar conta",
-    "alreadyInOrg": "Você já pertence a uma organização.",
+    "loginGoogle": "Googleでログイン",
+    "loginEmail": "メールとパスワードでログイン",
+    "createAccount": "アカウントを作成",
+    "wrongAccount": "{current} でログインしていますが、招待は {expected} 宛です。",
+    "switchAccount": "アカウントを切り替える",
+    "alreadyInOrg": "この組織には既に所属しています。",
     "accepting": "Aceitando...",
     "acceptInvite": "Aceitar convite",
     "createOwnOrg": "Criar minha própria organização",
@@ -1960,27 +2187,25 @@
   },
   "SetoresPage": {
     "title": "部門",
-    "subtitle": "予約承認者を整理：各部門に部屋とマネージャーを割り当て",
+    "subtitle": "部屋を割り当て、部門内で各人ができることを設定します",
     "create": "新しい部門",
-    "edit": "編集",
     "archive": "アーカイブ",
     "searchPlaceholder": "部門を検索...",
     "emptyTitle": "部門がありません",
-    "emptyDescription": "部門を作成し、「管理」から部屋と承認マネージャーを設定します。",
+    "emptyDescription": "部門を作成し、同じ流れで部屋と個人ごとの機能を割り当てます。",
+    "emptySearchTitle": "部門が見つかりません",
+    "emptySearchDescription": "別の検索語を試すか、フィルターをクリアしてください。",
     "drawerCreateTitle": "部門を作成",
     "drawerEditTitle": "部門を管理",
     "nameLabel": "名前",
     "namePlaceholder": "例: IT調整",
     "descriptionLabel": "説明",
     "descriptionPlaceholder": "任意",
-    "roomsLabel": "部門の部屋",
     "noRooms": "利用可能な部屋がありません",
-    "membersLabel": "部門マネージャー",
     "selectMember": "マネージャーを選択...",
     "removeMember": "マネージャーを外す",
     "roomsCount": "{count} 部屋",
     "membersCount": "{count} マネージャー",
-    "save": "保存",
     "saving": "保存中...",
     "cancel": "キャンセル",
     "confirmArchive": "部門「{name}」をアーカイブしますか？{count}件の部屋が部門なしになり、承認は組織管理者のみになります。",
@@ -1988,10 +2213,7 @@
       "created": "部門を作成しました",
       "updated": "部門を更新しました",
       "archived": "部門をアーカイブしました",
-      "memberAdded": "マネージャーを追加しました",
-      "memberRemoved": "マネージャーを削除しました",
-      "memberRefreshHint": "別デバイスでログイン中のマネージャーは、リクエスト表示のためページ更新が必要です",
-      "createdContinue": "部門を作成しました。部屋を確認し、下でマネージャーを追加してください。"
+      "memberRefreshHint": "別デバイスでログイン中の人は、新しい機能を見るためにページ更新が必要です"
     },
     "errors": {
       "load": "部門の読み込みに失敗しました",
@@ -1999,29 +2221,26 @@
       "archive": "部門のアーカイブに失敗しました",
       "nameRequired": "名前は必須です",
       "addMember": "マネージャーの追加に失敗しました",
-      "removeMember": "マネージャーの削除に失敗しました"
+      "memberNeedsCapability": "部門メンバーには少なくとも1つの機能が必要です"
     },
     "managersLabel": "マネージャー",
     "otherSector": "別の部門",
     "assignedToSector": "既に {name}",
     "manage": "管理",
     "drawerHintCreate": "基本情報・部屋・マネージャーを入力。保存時にまとめて作成されます。",
-    "drawerHintEdit": "部屋とマネージャーを設定。マネージャーはこの部門の部屋だけ管理できます。",
+    "drawerHintEdit": "部屋と機能を設定。各人はこの部門の部屋だけで、選んだ機能のみ実行できます。",
     "sectionBasicsTitle": "部門情報",
     "sectionBasicsHelp": "組織内に表示される名前",
     "sectionRoomsTitle": "部屋を割り当て",
-    "sectionRoomsHelp": "この部門の担当部屋 — マネージャーが管理できるようになります",
+    "sectionRoomsHelp": "この部門の担当部屋",
     "sectionMembersTitle": "マネージャーを追加",
-    "sectionMembersHelp": "これらの部屋の予約を承認・却下できる人",
+    "sectionMembersHelp": "各人の機能を選択：予約承認および／または部屋管理（情報＋備品）",
     "roomsSelected": "{count} 件選択",
-    "roomsSaveHint": "チェックした部屋は「変更を保存」で保存されます。",
-    "membersAfterCreate": "マネージャーは部門作成後に追加できます。「作成して続ける」を押してください。",
     "noMembersYet": "リストにマネージャーがいません。下で追加してから保存してください。",
     "addMemberLabel": "マネージャーを追加",
     "addMember": "追加",
-    "addMemberHint": "リストは保存時のみ反映されます。別セッションのマネージャーはページ更新が必要です。",
+    "addMemberHint": "リストと機能は保存時のみ反映されます。別セッションの人はページ更新が必要です。",
     "noMemberCandidates": "他のメンバーがいません。先にユーザーを登録してください。",
-    "saveAndContinue": "作成して続ける",
     "saveChanges": "変更を保存",
     "cardEmptyHint": "部屋もマネージャーもありません。管理をクリック。",
     "roomsSaveHintCreate": "チェックした部屋は部門の保存時に紐づきます。",
@@ -2031,10 +2250,11 @@
     "checklistMembers": "管理者",
     "checklistReady": "完了",
     "checklistPending": "未設定",
-    "checklistAfterCreate": "作成後",
-    "roomsManageEffect": "効果: この部門のマネージャーは、これらの部屋の予約を承認・却下・確認できます。",
-    "membersSaveHint": "リストのマネージャーは「変更を保存」で部屋と一緒に保存されます。",
+    "roomsManageEffect": "効果: 予約を承認する人はリクエストを見られ、部屋を管理する人はこれらの部屋の情報と備品を編集できます。",
     "createSubmit": "部門を作成",
-    "confirmDiscard": "未保存の変更があります。破棄して閉じますか？"
+    "confirmDiscard": "未保存の変更があります。破棄して閉じますか？",
+    "capabilityApprove": "予約を承認",
+    "capabilityManageRooms": "部屋を管理（情報＋備品）",
+    "capabilityRequiredHint": "この人に少なくとも1つの機能を選んでください。"
   }
 }
