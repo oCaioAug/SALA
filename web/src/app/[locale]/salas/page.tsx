@@ -17,6 +17,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/Card";
 import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
@@ -46,6 +47,7 @@ const SalasPage: React.FC = () => {
   >([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+  const [createRoomLoading, setCreateRoomLoading] = useState(false);
 
   const {
     searchTerm,
@@ -253,6 +255,7 @@ const SalasPage: React.FC = () => {
     >
   ) => {
     try {
+      setCreateRoomLoading(true);
       const response = await fetch("/api/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -272,6 +275,8 @@ const SalasPage: React.FC = () => {
       const errorMessage =
         err instanceof Error ? err.message : t("feedback.errorCreate");
       showError(errorMessage);
+    } finally {
+      setCreateRoomLoading(false);
     }
   };
 
@@ -514,21 +519,22 @@ const SalasPage: React.FC = () => {
                     </option>
                   </select>
 
-                  <select
+                  <SearchableSelect
                     value={sectorFilter}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                      setSectorFilter(e.target.value)
-                    }
-                    className="rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  >
-                    <option value="all">{ts("filters.sectorAll")}</option>
-                    <option value="noSector">{ts("filters.noSector")}</option>
-                    {sectorOptions.map(sector => (
-                      <option key={sector.id} value={sector.id}>
-                        {sector.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSectorFilter}
+                    options={[
+                      { value: "all", label: ts("filters.sectorAll") },
+                      { value: "noSector", label: ts("filters.noSector") },
+                      ...sectorOptions.map(sector => ({
+                        value: sector.id,
+                        label: sector.name,
+                      })),
+                    ]}
+                    placeholder={ts("filters.sectorAll")}
+                    allowEmpty={false}
+                    className="min-w-[10rem]"
+                    triggerClassName="h-auto rounded-lg border-slate-300 bg-white px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  />
 
                   <div className="flex rounded-lg border border-slate-300 bg-white dark:border-gray-600 dark:bg-gray-800">
                     <button
@@ -643,6 +649,7 @@ const SalasPage: React.FC = () => {
               <RoomForm
                 onSubmit={handleCreateRoom}
                 onCancel={() => setCreateRoomModalOpen(false)}
+                loading={createRoomLoading}
               />
             </Drawer>
           </>

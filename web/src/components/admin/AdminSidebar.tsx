@@ -138,7 +138,7 @@ export function AdminSidebar() {
         <AppPreferencesControls
           variant="marketing"
           className="mb-4 justify-center"
-          languageDropdownPlacement="auto"
+          languageDropdownPlacement="top"
         />
         <p className="mb-3 truncate text-sm text-foreground">
           {session?.user?.name ?? session?.user?.email}

@@ -10,6 +10,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
@@ -19,6 +20,8 @@ import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 const GradeHorariaPage: React.FC = () => {
+  const t = useTranslations("GradeHoraria.hub");
+  const tCommon = useTranslations("GradeHoraria.common");
   const [currentPage, setCurrentPage] = useState("grade-horaria");
 
   const { navigate, isNavigating } = useNavigation({
@@ -29,51 +32,50 @@ const GradeHorariaPage: React.FC = () => {
   const menuItems = [
     {
       id: "turmas",
-      title: "Turmas",
-      description: "Gerencie as turmas da instituição e seus períodos.",
+      title: t("menu.classes.title"),
+      description: t("menu.classes.description"),
       icon: <Users className="w-6 h-6" />,
       url: "/grade-horaria/turmas",
     },
     {
       id: "disciplinas",
-      title: "Disciplinas",
-      description: "Cadastre as matérias e disciplinas ofertadas.",
+      title: t("menu.subjects.title"),
+      description: t("menu.subjects.description"),
       icon: <BookOpen className="w-6 h-6" />,
       url: "/grade-horaria/disciplinas",
     },
     {
       id: "professores",
-      title: "Professores",
-      description:
-        "Cadastre os professores independentemente de seus usuários.",
+      title: t("menu.teachers.title"),
+      description: t("menu.teachers.description"),
       icon: <GraduationCap className="w-6 h-6" />,
       url: "/grade-horaria/professores",
     },
     {
       id: "cargas",
-      title: "Carga Horária",
-      description: "Associe professores, disciplinas e turmas.",
+      title: t("menu.loads.title"),
+      description: t("menu.loads.description"),
       icon: <Clock className="w-6 h-6" />,
       url: "/grade-horaria/cargas",
     },
     {
       id: "disponibilidades",
-      title: "Disponibilidades",
-      description: "Defina os horários disponíveis de cada professor.",
+      title: t("menu.availability.title"),
+      description: t("menu.availability.description"),
       icon: <Calendar className="w-6 h-6" />,
       url: "/grade-horaria/disponibilidades",
     },
     {
       id: "gerar",
-      title: "Gerar Grade",
-      description: "Execute o motor de alocação para gerar os horários.",
+      title: t("menu.generate.title"),
+      description: t("menu.generate.description"),
       icon: <Play className="w-6 h-6" />,
       url: "/grade-horaria/gerar",
     },
     {
       id: "configuracoes",
-      title: "Configurações da Grade",
-      description: "Defina os turnos e os horários de início e fim das aulas.",
+      title: t("menu.settings.title"),
+      description: t("menu.settings.description"),
       icon: <Settings className="w-6 h-6" />,
       url: "/grade-horaria/configuracoes",
     },
@@ -91,11 +93,10 @@ const GradeHorariaPage: React.FC = () => {
             <Calendar className="w-8 h-8 text-blue-500" />
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Alocação de Grade Horária
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Configure os parâmetros e gere a grade horária automaticamente
-                para sua instituição.
+                {t("description")}
               </p>
             </div>
           </div>
@@ -121,7 +122,7 @@ const GradeHorariaPage: React.FC = () => {
                     </p>
                     <Button size="sm" variant="outline" className="w-full">
                       <Link href={item.url} className="w-full">
-                        Acessar
+                        {tCommon("access")}
                       </Link>
                     </Button>
                   </div>

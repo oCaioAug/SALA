@@ -85,7 +85,7 @@ export default function OrganizationsPage() {
         if (planFilter) params.set("planId", planFilter);
 
         const res = await fetch(`/api/admin/organizations?${params}`);
-        if (!res.ok) throw new Error("Erro ao carregar");
+        if (!res.ok) throw new Error(t("loadError"));
         const json = await res.json();
         setOrganizations(json.data);
         setTotalPages(json.pagination.totalPages);
@@ -99,38 +99,38 @@ export default function OrganizationsPage() {
 
     const debounce = setTimeout(fetchOrgs, 300);
     return () => clearTimeout(debounce);
-  }, [search, statusFilter, planFilter, page]);
+  }, [search, statusFilter, planFilter, page, t]);
 
   const metricCards = [
     {
       id: "total",
-      label: "Total",
+      label: t("metricTotal"),
       value: stats?.total ?? 0,
-      sub: "Organizações cadastradas",
+      sub: t("metricTotalSub"),
       icon: Building2,
       iconClassName: "text-primary",
     },
     {
       id: "active",
-      label: "Ativas",
+      label: t("metricActive"),
       value: stats?.active ?? 0,
-      sub: "Em operação",
+      sub: t("metricActiveSub"),
       icon: CheckCircle2,
       iconClassName: "text-emerald-400",
     },
     {
       id: "trial",
-      label: "Trial",
+      label: t("metricTrial"),
       value: stats?.trial ?? 0,
-      sub: "Período de teste",
+      sub: t("metricTrialSub"),
       icon: Clock,
       iconClassName: "text-amber-400",
     },
     {
       id: "suspended",
-      label: "Suspensas",
+      label: t("metricSuspended"),
       value: stats?.suspended ?? 0,
-      sub: "Acesso bloqueado",
+      sub: t("metricSuspendedSub"),
       icon: XCircle,
       iconClassName: "text-red-400",
     },
@@ -145,7 +145,7 @@ export default function OrganizationsPage() {
           <Link href="/admin/organizations/new">
             <Button className="flex items-center gap-2 bg-primary hover:bg-primary">
               <Plus className="h-4 w-4" />
-              Nova organização
+              {t("newOrg")}
             </Button>
           </Link>
         }
@@ -159,8 +159,8 @@ export default function OrganizationsPage() {
 
         <AdminFilterBar
           className="mb-6"
-          searchTitle="Buscar organização"
-          searchPlaceholder="Nome, slug ou e-mail do owner..."
+          searchTitle={t("searchTitle")}
+          searchPlaceholder={t("searchPlaceholder")}
           searchValue={search}
           onSearchChange={value => {
             setSearch(value);
@@ -169,28 +169,35 @@ export default function OrganizationsPage() {
           filters={[
             {
               id: "status",
-              label: "Status",
+              label: t("filterStatus"),
               value: statusFilter,
               onChange: value => {
                 setStatusFilter(value);
                 setPage(1);
               },
-              allLabel: "Todos os status",
+              allLabel: t("allStatuses"),
+              native: true,
               options: [
-                { value: OrganizationStatus.ACTIVE, label: "Ativas" },
-                { value: OrganizationStatus.SUSPENDED, label: "Suspensas" },
-                { value: OrganizationStatus.TRIAL, label: "Trial" },
+                {
+                  value: OrganizationStatus.ACTIVE,
+                  label: t("filterActive"),
+                },
+                {
+                  value: OrganizationStatus.SUSPENDED,
+                  label: t("filterSuspended"),
+                },
+                { value: OrganizationStatus.TRIAL, label: t("filterTrial") },
               ],
             },
             {
               id: "plan",
-              label: "Plano",
+              label: t("filterPlan"),
               value: planFilter,
               onChange: value => {
                 setPlanFilter(value);
                 setPage(1);
               },
-              allLabel: "Todos os planos",
+              allLabel: t("allPlans"),
               options: plans.map(plan => ({
                 value: plan.id,
                 label: plan.name,
@@ -232,20 +239,22 @@ export default function OrganizationsPage() {
                       </div>
                       <div className="space-y-1 text-sm text-muted-foreground">
                         <p>
-                          Owner:{" "}
+                          {t("ownerPrefix")}{" "}
                           <span className="text-muted-foreground">
                             {org.owner.name ?? org.owner.email}
                           </span>
                         </p>
                         <p>
-                          Plano:{" "}
+                          {t("planPrefix")}{" "}
                           <span className="text-muted-foreground">
                             {org.plan?.name ?? t("noPlan")}
                           </span>
                         </p>
                         <p>
-                          {org._count.members} membros · {org._count.rooms}{" "}
-                          salas
+                          {t("membersRooms", {
+                            members: org._count.members,
+                            rooms: org._count.rooms,
+                          })}
                         </p>
                       </div>
                     </CardContent>

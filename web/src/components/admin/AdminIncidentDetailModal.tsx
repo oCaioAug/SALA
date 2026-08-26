@@ -9,6 +9,7 @@ import { AdminActionError } from "@/components/admin/AdminActionError";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 import { Link } from "@/navigation";
 
@@ -301,18 +302,17 @@ export function AdminIncidentDetailModal({
                 <label className="mb-1 block text-sm text-muted-foreground">
                   {t("assignedTo")}
                 </label>
-                <select
+                <SearchableSelect
                   value={assignedToDraft}
-                  onChange={e => setAssignedToDraft(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                >
-                  <option value="">{t("unassigned")}</option>
-                  {assignableUsers.map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.name ?? user.email}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setAssignedToDraft}
+                  options={assignableUsers.map(user => ({
+                    value: user.id,
+                    label: user.name ?? user.email,
+                  }))}
+                  placeholder={t("unassigned")}
+                  allowEmpty
+                  triggerClassName="rounded-lg border-border bg-background px-3 py-2"
+                />
               </div>
 
               <div>

@@ -157,7 +157,17 @@ const Calendar: React.FC<CalendarProps> = ({
 
   const calendarDays = getCalendarDays();
 
+  const isPastEmptyDay = (day: CalendarDay): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dayDate = new Date(day.date);
+    dayDate.setHours(0, 0, 0, 0);
+    return dayDate.getTime() < today.getTime() && day.reservations.length === 0;
+  };
+
   const handleDayClick = (day: CalendarDay) => {
+    // Past days without reservations are not actionable (no create).
+    if (isPastEmptyDay(day)) return;
     setSelectedDay(day.date);
     onDateSelect?.(day.date);
     onDateClick?.(day.date);
@@ -236,11 +246,18 @@ const Calendar: React.FC<CalendarProps> = ({
 
       {/* Grid do calendário */}
       <div className="grid grid-cols-7">
-        {calendarDays.map((day, index) => (
+        {calendarDays.map((day, index) => {
+          const pastEmpty = isPastEmptyDay(day);
+          return (
           <div
             key={index}
             className={`
- min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-600 last:border-r-0 cursor-pointer transition-colors
+ min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-600 last:border-r-0 transition-colors
+ ${
+   pastEmpty
+     ? "cursor-default opacity-50"
+     : "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50"
+ }
  ${
    day.isCurrentMonth
      ? "bg-white dark:bg-slate-800"
@@ -252,9 +269,9 @@ const Calendar: React.FC<CalendarProps> = ({
      : ""
  }
  ${day.isSelected ? "bg-blue-100 dark:bg-blue-600/20 border-blue-500" : ""}
- hover:bg-slate-100 dark:hover:bg-slate-700/50
  `}
             onClick={() => handleDayClick(day)}
+            aria-disabled={pastEmpty}
           >
             <div className="flex flex-col h-full">
               {/* Número do dia */}
@@ -332,7 +349,8 @@ const Calendar: React.FC<CalendarProps> = ({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Legenda */}

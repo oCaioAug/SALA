@@ -1,11 +1,13 @@
 "use client";
 
 import { Filter, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   adminInputClass,
   adminSurfaceClass,
 } from "@/components/admin/admin-styles";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { cn } from "@/lib/utils";
 
 export interface AdminFilterOption {
@@ -20,6 +22,8 @@ export interface AdminFilterConfig {
   onChange: (value: string) => void;
   options: AdminFilterOption[];
   allLabel?: string;
+  /** Keep native select (status/role/priority). Default: SearchableSelect */
+  native?: boolean;
 }
 
 interface AdminFilterBarProps {
@@ -33,7 +37,7 @@ interface AdminFilterBarProps {
 }
 
 export function AdminFilterBar({
-  searchPlaceholder = "Pesquisar...",
+  searchPlaceholder,
   searchValue = "",
   onSearchChange,
   searchTitle,
@@ -41,7 +45,10 @@ export function AdminFilterBar({
   actions,
   className,
 }: AdminFilterBarProps) {
+  const tCommon = useTranslations("Common");
   const showSearch = onSearchChange !== undefined;
+  const resolvedSearchPlaceholder =
+    searchPlaceholder ?? tCommon("search");
 
   return (
     <div className={cn(adminSurfaceClass, className)}>
@@ -58,7 +65,7 @@ export function AdminFilterBar({
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder={searchPlaceholder}
+                placeholder={resolvedSearchPlaceholder}
                 value={searchValue}
                 onChange={e => onSearchChange(e.target.value)}
                 className={cn(adminInputClass, "w-full py-2 pl-10 pr-4")}
@@ -71,30 +78,49 @@ export function AdminFilterBar({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             {filters.length > 0 && (
               <div className="grid flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {filters.map(filter => (
-                  <div key={filter.id} className="flex flex-col gap-2">
-                    <label
-                      htmlFor={`admin-filter-${filter.id}`}
-                      className="flex items-center gap-2 text-sm font-medium text-foreground"
-                    >
-                      <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                      {filter.label}
-                    </label>
-                    <select
-                      id={`admin-filter-${filter.id}`}
-                      value={filter.value}
-                      onChange={e => filter.onChange(e.target.value)}
-                      className={adminInputClass}
-                    >
-                      <option value="">{filter.allLabel ?? "Todos"}</option>
-                      {filter.options.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
+                {filters.map(filter => {
+                  const allLabel = filter.allLabel ?? tCommon("all");
+                  const options = [
+                    { value: "", label: allLabel },
+                    ...filter.options,
+                  ];
+                  return (
+                    <div key={filter.id} className="flex flex-col gap-2">
+                      <label
+                        htmlFor={`admin-filter-${filter.id}`}
+                        className="flex items-center gap-2 text-sm font-medium text-foreground"
+                      >
+                        <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                        {filter.label}
+                      </label>
+                      {filter.native ? (
+                        <select
+                          id={`admin-filter-${filter.id}`}
+                          value={filter.value}
+                          onChange={e => filter.onChange(e.target.value)}
+                          className={adminInputClass}
+                        >
+                          <option value="">{allLabel}</option>
+                          {filter.options.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <SearchableSelect
+                          id={`admin-filter-${filter.id}`}
+                          value={filter.value}
+                          onChange={filter.onChange}
+                          options={options}
+                          placeholder={allLabel}
+                          allowEmpty={false}
+                          triggerClassName={adminInputClass}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
             {actions && (

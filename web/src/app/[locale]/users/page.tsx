@@ -14,7 +14,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
-import { HiBeaker } from "react-icons/hi2";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -231,14 +230,6 @@ const UsersPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={testSession}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm"
-            >
-              <HiBeaker className="h-4 w-4 shrink-0" aria-hidden />
-              {t("testSession")}
-            </Button>
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {users.length}

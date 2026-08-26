@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { Settings as SettingsIcon, Plus, Trash2, Save } from "lucide-react";
+import { useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import { getGradeSettings, updateGradeSettings } from "../actions";
 
 export default function ConfiguracoesGradePage() {
+  const t = useTranslations("GradeHoraria.settings");
+  const tCommon = useTranslations("GradeHoraria.common");
   const [currentPage, setCurrentPage] = useState("grade-horaria");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -31,18 +34,19 @@ export default function ConfiguracoesGradePage() {
         const settings = await getGradeSettings();
         setShifts(settings.timetabling.shifts || []);
       } catch (err: any) {
-        showError(err.message || "Erro ao carregar configurações");
+        showError(err.message || t("toastLoadError"));
       } finally {
         setLoading(false);
       }
     };
     fetchSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddShift = () => {
     const newShift = {
       id: `shift_${Date.now()}`,
-      name: "Novo Turno",
+      name: t("newShiftName"),
       daysPerWeek: 5,
       slots: [],
     };
@@ -50,7 +54,7 @@ export default function ConfiguracoesGradePage() {
   };
 
   const handleRemoveShift = (shiftId: string) => {
-    if (!confirm("Tem certeza que deseja remover este turno?")) return;
+    if (!confirm(t("confirmRemoveShift"))) return;
     setShifts(shifts.filter(s => s.id !== shiftId));
   };
 
@@ -66,7 +70,7 @@ export default function ConfiguracoesGradePage() {
         if (s.id === shiftId) {
           const newSlot = {
             id: `slot_${Date.now()}`,
-            label: `Aula ${s.slots.length + 1}`,
+            label: t("defaultLessonLabel", { n: s.slots.length + 1 }),
             startTime: "00:00",
             endTime: "00:00",
           };
@@ -116,9 +120,9 @@ export default function ConfiguracoesGradePage() {
     try {
       setIsSubmitting(true);
       await updateGradeSettings({ shifts });
-      showSuccess("Configurações salvas com sucesso!");
+      showSuccess(t("toastSaveSuccess"));
     } catch (err: any) {
-      showError(err.message || "Erro ao salvar configurações");
+      showError(err.message || t("toastSaveError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -136,10 +140,10 @@ export default function ConfiguracoesGradePage() {
             <SettingsIcon className="w-8 h-8 text-blue-500" />
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Configurações da Grade
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Gerencie os turnos e os horários das aulas da instituição.
+                {t("description")}
               </p>
             </div>
           </div>
@@ -148,7 +152,7 @@ export default function ConfiguracoesGradePage() {
               variant="outline"
               onClick={() => navigate("/grade-horaria")}
             >
-              Voltar
+              {tCommon("back")}
             </Button>
             <Button
               variant="secondary"
@@ -157,21 +161,19 @@ export default function ConfiguracoesGradePage() {
                   setIsSubmitting(true);
                   const { injectMockData } = await import("../seed");
                   await injectMockData();
-                  showSuccess(
-                    "Mocks injetados com sucesso! Pressione F5 para recarregar."
-                  );
+                  showSuccess(t("toastMocksSuccess"));
                 } catch (e: any) {
-                  showError(e.message || "Erro ao injetar mocks");
+                  showError(e.message || t("toastMocksError"));
                 } finally {
                   setIsSubmitting(false);
                 }
               }}
               disabled={loading || isSubmitting}
             >
-              Injetar Dados de Teste
+              {t("injectMocks")}
             </Button>
             <Button onClick={handleSave} disabled={loading || isSubmitting}>
-              <Save className="w-4 h-4 mr-2" /> Salvar Alterações
+              <Save className="w-4 h-4 mr-2" /> {t("saveChanges")}
             </Button>
           </div>
         </div>
@@ -193,7 +195,7 @@ export default function ConfiguracoesGradePage() {
                           handleUpdateShiftName(shift.id, e.target.value)
                         }
                         className="text-lg font-bold w-64 border-none hover:bg-slate-50 focus:bg-white focus:ring-1 focus:ring-blue-500 p-2 h-auto"
-                        placeholder="Nome do Turno (ex: Manhã)"
+                        placeholder={t("shiftNamePlaceholder")}
                       />
                     </div>
                     <Button
@@ -201,27 +203,27 @@ export default function ConfiguracoesGradePage() {
                       size="sm"
                       onClick={() => handleRemoveShift(shift.id)}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" /> Remover Turno
+                      <Trash2 className="w-4 h-4 mr-2" /> {t("removeShift")}
                     </Button>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold text-slate-700 dark:text-slate-300">
-                        Horários das Aulas
+                        {t("lessonSlotsTitle")}
                       </h3>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleAddSlot(shift.id)}
                       >
-                        <Plus className="w-4 h-4 mr-2" /> Adicionar Aula
+                        <Plus className="w-4 h-4 mr-2" /> {t("addLesson")}
                       </Button>
                     </div>
 
                     {shift.slots.length === 0 ? (
                       <p className="text-sm text-slate-500 text-center py-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
-                        Nenhum horário cadastrado neste turno.
+                        {t("emptySlots")}
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -232,7 +234,7 @@ export default function ConfiguracoesGradePage() {
                           >
                             <div className="flex-1">
                               <label className="text-xs text-slate-500 mb-1 block">
-                                Rótulo da Aula
+                                {t("lessonLabel")}
                               </label>
                               <Input
                                 value={slot.label}
@@ -244,12 +246,12 @@ export default function ConfiguracoesGradePage() {
                                     e.target.value
                                   )
                                 }
-                                placeholder="ex: 1ª Aula"
+                                placeholder={t("lessonLabelPlaceholder")}
                               />
                             </div>
                             <div className="w-32">
                               <label className="text-xs text-slate-500 mb-1 block">
-                                Início
+                                {t("start")}
                               </label>
                               <Input
                                 type="time"
@@ -266,7 +268,7 @@ export default function ConfiguracoesGradePage() {
                             </div>
                             <div className="w-32">
                               <label className="text-xs text-slate-500 mb-1 block">
-                                Fim
+                                {t("end")}
                               </label>
                               <Input
                                 type="time"
@@ -307,7 +309,7 @@ export default function ConfiguracoesGradePage() {
               className="w-full border-dashed border-2 text-slate-600 hover:text-slate-900 h-16"
               onClick={handleAddShift}
             >
-              <Plus className="w-5 h-5 mr-2" /> Adicionar Novo Turno
+              <Plus className="w-5 h-5 mr-2" /> {t("addShift")}
             </Button>
           </div>
         )}

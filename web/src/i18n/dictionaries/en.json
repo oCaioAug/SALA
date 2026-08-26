@@ -70,7 +70,8 @@
       "sectorLabel": "Responsible sector",
       "sectorNone": "No sector",
       "sectorHelp": "Managers of this sector can approve reservations for this room.",
-      "sectorHelpNone": "With no sector, only organization admins approve reservations for this room."
+      "sectorHelpNone": "With no sector, only organization admins approve reservations for this room.",
+      "sectorLoadError": "Could not load sectors. Please try again."
     }
   },
   "Pagination": {
@@ -204,9 +205,17 @@
     "info": "Information",
     "redirectingToLogin": "Redirecionando para login...",
     "a11y": {
-      "closePanel": "Fechar painel",
-      "close": "Fechar"
-    }
+      "closePanel": "Close panel",
+      "close": "Close",
+      "dismiss": "Dismiss"
+    },
+    "searchSelect": {
+      "searchPlaceholder": "Search...",
+      "empty": "No results",
+      "placeholder": "Select..."
+    },
+    "all": "All",
+    "search": "Search..."
   },
   "ErrorBoundary": {
     "title": "Oops! Something went wrong",
@@ -276,6 +285,10 @@
       "setores": {
         "label": "Sectors",
         "description": "Room responsibility and approvals"
+      },
+      "gradeHoraria": {
+        "label": "Grade Horária",
+        "description": "Alocação e horários"
       }
     }
   },
@@ -762,8 +775,14 @@
       "listView": "Lista",
       "calendarView": "Calendário",
       "searchPlaceholder": "Buscar por usuário ou propósito...",
-      "statusAll": "Todos os Status"
-    }
+      "statusAll": "Todos os Status",
+      "emptyFiltered": "Try adjusting the search filters to find reservations.",
+      "emptyRoom": "This room has no schedules yet.",
+      "createFirst": "Create First Reservation",
+      "reservationsOnDay": "{count} reservation(s) on this day"
+    },
+    "roomTitle": "Reservations - {name}",
+    "roomReservationsFound": "{count} reservation(s) found for this room"
   },
   "SettingsPage": {
     "title": "Settings",
@@ -864,7 +883,9 @@
       "title": "Reservation Conflict",
       "message": "This request conflicts with the following reservations:",
       "forceApprove": "Approve Anyway",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "listTitle": "Conflicting reservations:",
+      "badge": "Conflict"
     },
     "feedback": {
       "successApprove": "Request approved successfully!",
@@ -889,7 +910,18 @@
       "org": "Scope: entire organization",
       "manager": "Scope: {sectors} — {count} room(s)",
       "managerEmpty": "Scope: no sectors with linked rooms"
-    }
+    },
+    "unknownRoom": "Unknown room",
+    "errors": {
+      "loadRooms": "Failed to load rooms",
+      "unknown": "Unknown error",
+      "checkConflicts": "Failed to check conflicts",
+      "approve": "Failed to approve request",
+      "reject": "Failed to reject request",
+      "httpStatus": "Error {status}: {statusText}",
+      "instancesSuffix": " ({count} instances)"
+    },
+    "unknownUser": "Unknown user"
   },
   "Notifications": {
     "title": "Notifications",
@@ -1325,6 +1357,7 @@
     "backToDashboard": "Back to Dashboard",
     "back": "Back",
     "capacity": "Capacity: {count} people",
+    "capacityLabel": "Capacity",
     "viewReservations": "View Reservations",
     "editRoom": "Edit Room",
     "addItem": "Add Item",
@@ -1914,20 +1947,20 @@
       "logout": "Sair"
     },
     "charts": {
-      "usageTitle": "Uso ao longo do tempo (30d)",
-      "noHistory": "Sem histórico materializado. Use \"Atualizar métricas diárias\" no dashboard.",
-      "reservations": "Reservas",
-      "activeUsers": "Usuários ativos",
-      "openIncidents": "Incidentes abertos"
+      "usageTitle": "Usage over time (30d)",
+      "noHistory": "No materialized history. Use \"Refresh daily metrics\" on the dashboard.",
+      "reservations": "Reservations",
+      "activeUsers": "Active users",
+      "openIncidents": "Open incidents"
     },
     "dashboard": {
       "title": "Dashboard",
-      "description": "Visão geral da plataforma",
-      "loadError": "Falha ao carregar estatísticas",
-      "unknownError": "Erro desconhecido",
-      "refreshMetrics": "Atualizar métricas diárias",
-      "refreshing": "Atualizando...",
-      "activeOrgs": "Organizações ativas",
+      "description": "Platform overview",
+      "loadError": "Failed to load statistics",
+      "unknownError": "Unknown error",
+      "refreshMetrics": "Refresh daily metrics",
+      "refreshing": "Refreshing...",
+      "activeOrgs": "Active organizations",
       "organizationsTotal": "Organizations",
       "organizationsActiveSub": "{count} active",
       "totalUsers": "Users",
@@ -1948,7 +1981,18 @@
       "viewAllOrgs": "View all organizations",
       "retention": "Retention (30d)",
       "activeOrgs30d": "Active orgs (30d)",
-      "analyticsDescription": "Global analytics for the SALA platform"
+      "analyticsDescription": "Global analytics for the SALA platform",
+      "retentionLine": "Retention (30d): {rate}% · Active orgs: {active}/{total}",
+      "chartCount": "Count",
+      "noData": "No data",
+      "orgsCount": "{count} orgs",
+      "expiringTrialsWindow": "Expiring trials (7d)",
+      "noExpiringTrials": "No trials expiring",
+      "inactiveOrgsWindow": "Organizations with no activity (30d)",
+      "createdOn": "created on {date}",
+      "topOrgsWindow": "Top organizations by reservations (30d)",
+      "noRecentReservations": "No recent reservations",
+      "reservationsCount": "{count} reservations"
     },
     "organizations": {
       "title": "Organizations",
@@ -2006,7 +2050,44 @@
         "members": "Members",
         "rooms": "Rooms",
         "usage": "Usage and plan"
-      }
+      },
+      "roleOwner": "Owner",
+      "roleAdmin": "Admin",
+      "roleMember": "Member",
+      "metricMembers": "Members",
+      "metricRooms": "Rooms",
+      "metricReservations30d": "Reservations (30d)",
+      "metricOpenIncidents": "Open incidents",
+      "metricUsers": "Users",
+      "metricReservationsMonth": "Reservations (month)",
+      "isSchool": "Educational institution",
+      "toggle": "Toggle",
+      "yes": "Yes",
+      "no": "No",
+      "ownerLabel": "Owner",
+      "seats": "{count} seats",
+      "newOrg": "New organization",
+      "searchTitle": "Search organization",
+      "searchPlaceholder": "Name, slug or owner email...",
+      "filterStatus": "Status",
+      "allStatuses": "All statuses",
+      "filterActive": "Active",
+      "filterSuspended": "Suspended",
+      "filterTrial": "Trial",
+      "filterPlan": "Plan",
+      "allPlans": "All plans",
+      "ownerPrefix": "Owner:",
+      "planPrefix": "Plan:",
+      "membersRooms": "{members} members · {rooms} rooms",
+      "loadError": "Failed to load",
+      "metricTotal": "Total",
+      "metricTotalSub": "Registered organizations",
+      "metricActive": "Active",
+      "metricActiveSub": "In operation",
+      "metricTrial": "Trial",
+      "metricTrialSub": "Trial period",
+      "metricSuspended": "Suspended",
+      "metricSuspendedSub": "Access blocked"
     },
     "users": {
       "title": "Users",
@@ -2199,6 +2280,36 @@
         "total": "Total",
         "totalSub": "{count} org(s) without subscription"
       }
+    },
+    "badges": {
+      "organization": {
+        "ACTIVE": "Active",
+        "SUSPENDED": "Suspended",
+        "TRIAL": "Trial"
+      },
+      "platformRole": {
+        "SUPER_ADMIN": "Super Admin",
+        "NONE": "User"
+      },
+      "subscription": {
+        "ACTIVE": "Active",
+        "TRIALING": "Trial",
+        "PAST_DUE": "Past due",
+        "CANCELLED": "Cancelled"
+      },
+      "incident": {
+        "REPORTED": "Reported",
+        "IN_ANALYSIS": "In analysis",
+        "IN_PROGRESS": "In progress",
+        "RESOLVED": "Resolved",
+        "CANCELLED": "Cancelled"
+      },
+      "incidentPriority": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High",
+        "CRITICAL": "Critical"
+      }
     }
   },
   "CreateOrganizationPage": {
@@ -2218,7 +2329,8 @@
       "phone": "Organization phone",
       "planName": "Plan",
       "planLimits": "Limits",
-      "trial": "Trial period"
+      "trial": "Trial period",
+      "isSchool": "Educational institution"
     },
     "placeholders": {
       "name": "Organization name",
@@ -2265,7 +2377,11 @@
     "submitting": "Creating...",
     "errors": {
       "generic": "Failed to create organization. Check your data and try again."
-    }
+    },
+    "isSchoolHint": "Enable Timetable module for Schools/Universities",
+    "yes": "Yes",
+    "no": "No",
+    "emptyValue": "—"
   },
   "OnboardingPage": {
     "title": "Bem-vindo ao SALA",
@@ -2324,8 +2440,30 @@
       "unknown": "Erro desconhecido",
       "addItem": "Erro ao adicionar item",
       "updateItem": "Erro ao atualizar item",
-      "deleteItem": "Erro ao deletar item"
-    }
+      "deleteItem": "Erro ao deletar item",
+      "saveItem": "Failed to save item"
+    },
+    "emptyDescription": "Start by adding items for this room",
+    "addFirstItem": "Add First Item",
+    "quantityLabel": "Quantity: {count}",
+    "specifications": "Specifications:",
+    "confirmDelete": "Are you sure you want to delete this item?",
+    "form": {
+      "itemName": "Item Name",
+      "itemNamePlaceholder": "E.g.: Computer",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the item...",
+      "specifications": "Specifications (comma-separated)",
+      "specificationsPlaceholder": "E.g.: Windows 11, 16GB RAM, Core i7",
+      "quantity": "Quantity",
+      "icon": "Icon",
+      "iconHint": "Optional — used as fallback if there is no image",
+      "saving": "Saving...",
+      "updateItem": "Update Item",
+      "addItem": "Add Item",
+      "cancel": "Cancel"
+    },
+    "itemsRegistered": "{count} items registered"
   },
   "Vision": {
     "title": "Computer Vision & Automation",
@@ -2372,7 +2510,8 @@
     "console": {
       "title": "Business Automation Terminal",
       "subtitle": "Real-time Event Logs",
-      "waiting": "Awaiting image upload for processing..."
+      "waiting": "Awaiting image upload for processing...",
+      "empty": "No logs..."
     },
     "controls": {
       "selectRoom": "Select a Room",
@@ -2393,7 +2532,8 @@
       "presetEmpty": "Empty Laboratory",
       "presetFull": "Class in Session",
       "presetAudit": "Missing Equipment",
-      "presetProvision": "New Lab Onboarding"
+      "presetProvision": "New Lab Onboarding",
+      "previewAlt": "Lab preview"
     },
     "auditTable": {
       "item": "Equipment",
@@ -2420,7 +2560,46 @@
       "processing": "Processing...",
       "success": "Room successfully provisioned! {count} items created.",
       "successBanner": "Room provisioned successfully. Equipment was saved and is now active.",
-      "empty": "No assets detected for onboarding. Try uploading a different photo."
+      "empty": "No assets detected for onboarding. Try uploading a different photo.",
+      "removeSuggestion": "Remove suggestion",
+      "aiClassSuggested": "AI Class: Suggested"
+    },
+    "toasts": {
+      "loadRoomsError": "Failed to load rooms list.",
+      "saveKeysError": "Failed to save keys.",
+      "clearCredsError": "Failed to remove credentials.",
+      "cameraAccessError": "Could not access the device camera.",
+      "invalidImageFile": "Select a valid image file.",
+      "needImageOrPreset": "Please upload a photo or use a test scenario before analyzing.",
+      "needRoom": "Select a destination room to sync the data.",
+      "auditMissing": "Warning! Audit found missing equipment. An incident was generated automatically.",
+      "auditOk": "Great! All registered equipment was identified.",
+      "provisionFound": "AI identified {count} equipment types ready for provisioning.",
+      "provisionNone": "No registerable equipment identified.",
+      "processError": "An error occurred while processing the image.",
+      "provisionConfirmError": "Failed to confirm provisioning."
+    },
+    "logs": {
+      "cameraEnabled": "Lab camera enabled.",
+      "cameraDisabled": "Camera disabled.",
+      "snapshotOk": "Camera snapshot captured successfully!",
+      "imageLoaded": "Image \"{name}\" loaded by the user.",
+      "presetSelected": "Preset scenario selected: \"{name}\".",
+      "analysisStarted": "Starting smart analysis in \"{mode}\" mode...",
+      "processError": "Processing error: {message}",
+      "httpFailure": "HTTP failure.",
+      "suggestionRemoved": "Provisioning suggestion removed from the list.",
+      "provisionSending": "Sending bulk provisioning request...",
+      "syncDone": "[DATABASE] Sync complete! {count} equipment items registered in the room.",
+      "tabChanged": "Tab changed to: \"{tab}\"",
+      "roomChanged": "Destination room changed to ID: {id}"
+    },
+    "errors": {
+      "loadRooms": "Failed to load rooms",
+      "saveCreds": "Failed to save credentials",
+      "clearCreds": "Failed to remove settings",
+      "processImage": "Failed to process image via API",
+      "saveProvision": "Failed to save provisioning"
     }
   },
   "SetoresPage": {
@@ -2504,5 +2683,187 @@
     "capabilityApprove": "Confirm bookings",
     "capabilityManageRooms": "Manage rooms (details + items)",
     "capabilityRequiredHint": "Select at least one function for this person."
+  },
+  "GradeHoraria": {
+    "common": {
+      "back": "Back",
+      "loading": "Loading...",
+      "access": "Open",
+      "add": "Add",
+      "days": {
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday"
+      }
+    },
+    "hub": {
+      "title": "Timetable Allocation",
+      "description": "Configure the parameters and generate the timetable automatically for your institution.",
+      "menu": {
+        "classes": {
+          "title": "Classes",
+          "description": "Manage the institution's classes and their periods."
+        },
+        "subjects": {
+          "title": "Subjects",
+          "description": "Register the courses and subjects offered."
+        },
+        "teachers": {
+          "title": "Teachers",
+          "description": "Register teachers independently of their user accounts."
+        },
+        "loads": {
+          "title": "Teaching Load",
+          "description": "Link teachers, subjects, and classes."
+        },
+        "availability": {
+          "title": "Availability",
+          "description": "Define each teacher's available time slots."
+        },
+        "generate": {
+          "title": "Generate Timetable",
+          "description": "Run the allocation engine to generate the schedule."
+        },
+        "settings": {
+          "title": "Timetable Settings",
+          "description": "Define shifts and the start and end times of lessons."
+        }
+      }
+    },
+    "settings": {
+      "title": "Timetable Settings",
+      "description": "Manage shifts and lesson times for the institution.",
+      "saveChanges": "Save Changes",
+      "injectMocks": "Inject Test Data",
+      "newShiftName": "New Shift",
+      "shiftNamePlaceholder": "Shift name (e.g. Morning)",
+      "removeShift": "Remove Shift",
+      "confirmRemoveShift": "Are you sure you want to remove this shift?",
+      "lessonSlotsTitle": "Lesson Times",
+      "addLesson": "Add Lesson",
+      "emptySlots": "No times registered for this shift.",
+      "lessonLabel": "Lesson Label",
+      "lessonLabelPlaceholder": "e.g. 1st Lesson",
+      "defaultLessonLabel": "Lesson {n}",
+      "start": "Start",
+      "end": "End",
+      "addShift": "Add New Shift",
+      "toastLoadError": "Failed to load settings",
+      "toastSaveSuccess": "Settings saved successfully!",
+      "toastSaveError": "Failed to save settings",
+      "toastMocksSuccess": "Mocks injected successfully! Press F5 to reload.",
+      "toastMocksError": "Failed to inject mocks"
+    },
+    "classes": {
+      "title": "Classes",
+      "description": "Manage the classes available for timetable allocation.",
+      "formTitle": "New Class",
+      "nameLabel": "Class Name",
+      "namePlaceholder": "E.g. Year 1 A",
+      "shiftLabel": "Class Shift",
+      "noShifts": "No shifts configured",
+      "addButton": "Add Class",
+      "empty": "No classes registered.",
+      "confirmDelete": "Are you sure you want to delete this class?",
+      "toastLoadError": "Failed to load data",
+      "toastCreateSuccess": "Class created successfully!",
+      "toastCreateError": "Failed to create class",
+      "toastDeleteSuccess": "Class deleted successfully!",
+      "toastDeleteError": "Failed to delete class"
+    },
+    "teachers": {
+      "title": "Teachers",
+      "description": "Register the teachers who will be allocated in the timetable.",
+      "formTitle": "New Teacher",
+      "nameLabel": "Teacher Name",
+      "namePlaceholder": "E.g. John Smith",
+      "emailLabel": "Email (Optional)",
+      "emailPlaceholder": "E.g. john@school.com",
+      "linkUserLabel": "Link to User (Optional)",
+      "linkUserNone": "Do not link...",
+      "linkUserHint": "If linked, the teacher will be able to log in to the system in the future.",
+      "linkedBadge": "Linked",
+      "empty": "No teachers registered.",
+      "confirmDelete": "Are you sure you want to delete this teacher? All associated teaching loads and availability will be lost.",
+      "toastLoadError": "Failed to load teachers",
+      "toastCreateSuccess": "Teacher added successfully!",
+      "toastCreateError": "Failed to add teacher",
+      "toastDeleteSuccess": "Teacher deleted successfully!",
+      "toastDeleteError": "Failed to delete teacher"
+    },
+    "subjects": {
+      "title": "Subjects",
+      "description": "Manage the courses and subjects offered by the institution.",
+      "formTitle": "New Subject",
+      "nameLabel": "Subject Name",
+      "namePlaceholder": "E.g. Mathematics",
+      "codeLabel": "Code (Optional)",
+      "codePlaceholder": "E.g. MATH01",
+      "codeDisplay": "Code: {code}",
+      "empty": "No subjects registered.",
+      "confirmDelete": "Are you sure you want to delete this subject?",
+      "toastLoadError": "Failed to load subjects",
+      "toastCreateSuccess": "Subject created successfully!",
+      "toastCreateError": "Failed to create subject",
+      "toastDeleteSuccess": "Subject deleted successfully!",
+      "toastDeleteError": "Failed to delete subject"
+    },
+    "loads": {
+      "title": "Teaching Loads",
+      "description": "Link Classes, Subjects, and Teachers with their weekly lesson counts.",
+      "formTitle": "New Teaching Load",
+      "classLabel": "Class",
+      "classPlaceholder": "Select class...",
+      "subjectLabel": "Subject",
+      "subjectPlaceholder": "Select subject...",
+      "teacherLabel": "Teacher",
+      "teacherPlaceholder": "Select teacher...",
+      "lessonsPerWeek": "Lessons per Week",
+      "linkButton": "Link Load",
+      "empty": "No teaching loads linked.",
+      "teacherPrefix": "Teacher: {name}",
+      "lessonsCount": "{count, plural, one {# lesson} other {# lessons}}",
+      "confirmDelete": "Are you sure you want to delete this teaching load?",
+      "toastLoadError": "Failed to load data",
+      "toastCreateSuccess": "Teaching load linked successfully!",
+      "toastCreateError": "Failed to link teaching load",
+      "toastDeleteSuccess": "Teaching load deleted successfully!",
+      "toastDeleteError": "Failed to delete teaching load"
+    },
+    "availability": {
+      "title": "Teacher Availability",
+      "description": "Select a teacher and mark the times when they can teach.",
+      "selectTeacher": "Select Teacher",
+      "selectPlaceholder": "Select...",
+      "gridTitle": "Timetable Grid",
+      "saveButton": "Save Availability",
+      "lessonColumn": "Lesson",
+      "emptyShiftSlots": "No lessons configured for this shift.",
+      "toastLoadError": "Failed to load data",
+      "toastLoadAvailabilityError": "Failed to load availability",
+      "toastSaveSuccess": "Availability saved successfully!",
+      "toastSaveError": "Failed to save availability"
+    },
+    "generate": {
+      "title": "Generate Timetable",
+      "description": "Run the allocation engine to distribute lessons based on availability.",
+      "readyTitle": "Ready to generate?",
+      "readyDescription": "The engine will analyze all teaching loads and availability to create the best possible conflict-free timetable.",
+      "runButton": "Run Allocation Engine",
+      "processing": "Processing Algorithm...",
+      "perfectTitle": "Perfect Allocation!",
+      "partialTitle": "Partial Allocation",
+      "fitnessScore": "Fitness Score: {score}%",
+      "unallocatedTitle": "Unallocated loads:",
+      "unallocatedItem": "{className} - {subjectName} ({teacherName}): {count} lessons missing",
+      "errorsTitle": "Constraint Errors:",
+      "schedulesByClass": "Schedules by Class",
+      "timeColumn": "Time",
+      "toastSuccess": "Timetable generated successfully!",
+      "toastPartial": "Timetable generated with constraints (some lessons unallocated).",
+      "toastError": "Failed to generate timetable"
+    }
   }
 }

@@ -196,6 +196,7 @@ export default function AdminUsersPage() {
                 setPage(1);
               },
               allLabel: t("allRoles"),
+              native: true,
               options: [
                 { value: PlatformRole.NONE, label: t("regularUsers") },
                 { value: PlatformRole.SUPER_ADMIN, label: t("superAdmins") },

@@ -11,6 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Room, User } from "@/lib/types";
 import { getIntlLocale } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
   loading = false,
 }) => {
   const t = useTranslations("ReservationForm");
+  const tCommon = useTranslations("Common.searchSelect");
   const locale = useLocale();
   const [formData, setFormData] = useState({
     userId: "",
@@ -252,33 +254,37 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Usuário */}
       <div>
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
           {t("user")} *
         </label>
         <div className="relative">
-          <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
-          <select
+          <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2">
+            <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          </div>
+          <SearchableSelect
             name="userId"
             value={formData.userId}
-            onChange={handleInputChange}
-            className={`w-full rounded-lg border bg-white py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
-              errors.userId
-                ? "border-red-500"
-                : "border-slate-300 dark:border-slate-600"
-            }`}
-            required
-          >
-            <option value="">{t("selectUser")}</option>
-            {users.map(user => (
-              <option key={user.id} value={user.id}>
-                {user.name} ({user.email})
-              </option>
-            ))}
-          </select>
+            onChange={v => {
+              setFormData(prev => ({ ...prev, userId: v }));
+              if (errors.userId) {
+                setErrors(prev => ({ ...prev, userId: "" }));
+              }
+            }}
+            options={users.map(user => ({
+              value: user.id,
+              label: `${user.name} (${user.email})`,
+            }))}
+            placeholder={t("selectUser")}
+            searchPlaceholder={tCommon("searchPlaceholder")}
+            emptyMessage={tCommon("empty")}
+            error={Boolean(errors.userId)}
+            triggerClassName="h-auto py-3 pl-10"
+            allowEmpty
+          />
         </div>
         {errors.userId && (
-          <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />
+          <p className="mt-1 flex items-center gap-1 text-xs text-red-400">
+            <AlertCircle className="h-3 w-3" />
             {errors.userId}
           </p>
         )}
@@ -286,33 +292,39 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Sala */}
       <div>
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
           {t("room")} *
         </label>
         <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-500 dark:text-slate-400" />
-          <select
+          <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2">
+            <Building2 className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          </div>
+          <SearchableSelect
             name="roomId"
             value={formData.roomId}
-            onChange={handleInputChange}
-            className={`w-full rounded-lg border bg-white py-3 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white ${
-              errors.roomId
-                ? "border-red-500"
-                : "border-slate-300 dark:border-slate-600"
-            }`}
-            required
-          >
-            <option value="">{t("selectRoom")}</option>
-            {getAvailableRooms().map(room => (
-              <option key={room.id} value={room.id}>
-                {room.name} {room.capacity && `(${room.capacity} pessoas)`}
-              </option>
-            ))}
-          </select>
+            onChange={v => {
+              setFormData(prev => ({ ...prev, roomId: v }));
+              if (errors.roomId) {
+                setErrors(prev => ({ ...prev, roomId: "" }));
+              }
+            }}
+            options={getAvailableRooms().map(room => ({
+              value: room.id,
+              label: room.capacity
+                ? `${room.name} (${room.capacity})`
+                : room.name,
+            }))}
+            placeholder={t("selectRoom")}
+            searchPlaceholder={tCommon("searchPlaceholder")}
+            emptyMessage={tCommon("empty")}
+            error={Boolean(errors.roomId)}
+            triggerClassName="h-auto py-3 pl-10"
+            allowEmpty
+          />
         </div>
         {errors.roomId && (
-          <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />
+          <p className="mt-1 flex items-center gap-1 text-xs text-red-400">
+            <AlertCircle className="h-3 w-3" />
             {errors.roomId}
           </p>
         )}
@@ -550,16 +562,16 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
         <Button
           type="submit"
           className="flex-1"
-          disabled={isSubmitting || loading}
+          loading={isSubmitting || loading}
         >
-          {isSubmitting ? t("creating") : t("create")}
+          {isSubmitting || loading ? t("creating") : t("create")}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           className="flex-1"
-          disabled={isSubmitting}
+          disabled={isSubmitting || loading}
         >
           {t("cancel")}
         </Button>

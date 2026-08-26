@@ -214,6 +214,7 @@ function WidgetShell({
   onRemoveFromDashboard?: () => void;
   removeLabel?: string;
 }) {
+  const tGrid = useTranslations("DashboardHome.grid");
   return (
     <div
       className={cn(
@@ -255,7 +256,7 @@ function WidgetShell({
                 type="button"
                 className="dashboard-widget-no-drag shrink-0 rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400"
                 onClick={onRemoveFromDashboard}
-                aria-label={removeLabel ?? "Remove"}
+                aria-label={removeLabel ?? tGrid("removeWidget")}
               >
                 <Trash2 className="h-4 w-4" aria-hidden />
               </button>

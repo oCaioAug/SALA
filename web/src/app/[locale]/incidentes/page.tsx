@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -21,6 +21,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Drawer } from "@/components/ui/Drawer";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useIncidents } from "@/hooks/useIncidents";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
@@ -87,8 +88,8 @@ export default function IncidentsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+  const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [editFormStatus, setEditFormStatus] = useState<string>("");
-  const itemSelectRef = useRef<HTMLSelectElement>(null);
 
   const { isOrgAdmin: isAdmin } = useOrgPermissions();
 
@@ -286,6 +287,7 @@ export default function IncidentsPage() {
         // Fechar modal e resetar estado
         setIsCreateModalOpen(false);
         setSelectedRoomId("");
+        setSelectedItemId("");
 
         console.log("Incidente criado com sucesso!");
       }
@@ -1099,6 +1101,7 @@ export default function IncidentsPage() {
             onClose={() => {
               setIsCreateModalOpen(false);
               setSelectedRoomId("");
+              setSelectedItemId("");
             }}
             title={t("form.title")}
             size="xl"
@@ -1219,25 +1222,21 @@ export default function IncidentsPage() {
                       ({t("form.selectRoomOrItem")})
                     </span>
                   </label>
-                  <select
+                  <SearchableSelect
                     name="roomId"
                     value={selectedRoomId}
-                    onChange={e => {
-                      setSelectedRoomId(e.target.value);
-                      // Resetar seleção de item quando a sala mudar
-                      if (itemSelectRef.current) {
-                        itemSelectRef.current.value = "";
-                      }
+                    onChange={v => {
+                      setSelectedRoomId(v);
+                      setSelectedItemId("");
                     }}
-                    className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">{t("form.selectRoom")}</option>
-                    {rooms.map(room => (
-                      <option key={room.id} value={room.id}>
-                        {room.name} - {room.description}
-                      </option>
-                    ))}
-                  </select>
+                    options={rooms.map(room => ({
+                      value: room.id,
+                      label: `${room.name} - ${room.description}`,
+                    }))}
+                    placeholder={t("form.selectRoom")}
+                    allowEmpty
+                    triggerClassName="h-auto rounded-lg border-slate-300 bg-slate-100 p-3 text-slate-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
@@ -1248,23 +1247,25 @@ export default function IncidentsPage() {
                       </span>
                     )}
                   </label>
-                  <select
-                    ref={itemSelectRef}
+                  <SearchableSelect
                     name="itemId"
-                    className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">
-                      {selectedRoomId && getFilteredItems().length === 0
+                    value={selectedItemId}
+                    onChange={setSelectedItemId}
+                    options={getFilteredItems().map(item => ({
+                      value: item.id,
+                      label:
+                        !selectedRoomId && item.room
+                          ? `${item.name} (${item.room.name})`
+                          : item.name,
+                    }))}
+                    placeholder={
+                      selectedRoomId && getFilteredItems().length === 0
                         ? t("form.noItemAvailableInThisRoom")
-                        : t("form.noSpecificItem")}
-                    </option>
-                    {getFilteredItems().map(item => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}{" "}
-                        {!selectedRoomId && item.room && `(${item.room.name})`}
-                      </option>
-                    ))}
-                  </select>
+                        : t("form.noSpecificItem")
+                    }
+                    allowEmpty
+                    triggerClassName="h-auto rounded-lg border-slate-300 bg-slate-100 p-3 text-slate-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
               </div>
 
@@ -1316,7 +1317,11 @@ export default function IncidentsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setSelectedRoomId("");
+                    setSelectedItemId("");
+                  }}
                   className="flex-1"
                   disabled={createLoading}
                 >

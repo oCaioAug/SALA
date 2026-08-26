@@ -127,12 +127,15 @@ const SolicitacoesPage: React.FC = () => {
           const errorData = await solicitacoesResponse.json().catch(() => ({}));
           throw new Error(
             errorData.error ||
-              `Erro ${solicitacoesResponse.status}: ${solicitacoesResponse.statusText}`
+              t("errors.httpStatus", {
+                status: solicitacoesResponse.status,
+                statusText: solicitacoesResponse.statusText,
+              })
           );
         }
 
         if (!roomsResponse.ok) {
-          throw new Error("Erro ao carregar salas");
+          throw new Error(t("errors.loadRooms"));
         }
 
         const [solicitacoesData, roomsData, usersData, sectorsData] =
@@ -177,7 +180,7 @@ const SolicitacoesPage: React.FC = () => {
       } catch (err) {
         console.error("Erro ao carregar solicitações:", err);
         const errorMessage =
-          err instanceof Error ? err.message : "Erro desconhecido";
+          err instanceof Error ? err.message : t("errors.unknown");
         setError(errorMessage);
         showError(errorMessage);
       } finally {
@@ -251,7 +254,7 @@ const SolicitacoesPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao verificar conflitos");
+        throw new Error(t("errors.checkConflicts"));
       }
 
       const conflictData = await response.json();
@@ -361,7 +364,7 @@ const SolicitacoesPage: React.FC = () => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Erro ao aprovar solicitação");
+      throw new Error(errorData.error || t("errors.approve"));
     }
 
     const data = await response.json();
@@ -382,7 +385,9 @@ const SolicitacoesPage: React.FC = () => {
       data.message ||
         t("feedback.successApprove") +
           (data.recurringInstances
-            ? ` (${data.recurringInstances} instâncias)`
+            ? t("errors.instancesSuffix", {
+                count: data.recurringInstances,
+              })
             : "")
     );
     setIsDetailsModalOpen(false);
@@ -404,7 +409,7 @@ const SolicitacoesPage: React.FC = () => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Erro ao rejeitar solicitação");
+      throw new Error(errorData.error || t("errors.reject"));
     }
 
     const data = await response.json();
@@ -425,7 +430,9 @@ const SolicitacoesPage: React.FC = () => {
       data.message ||
         t("feedback.successReject") +
           (data.recurringInstances
-            ? ` (${data.recurringInstances} instâncias)`
+            ? t("errors.instancesSuffix", {
+                count: data.recurringInstances,
+              })
             : "")
     );
     setIsDetailsModalOpen(false);
@@ -614,7 +621,7 @@ const SolicitacoesPage: React.FC = () => {
                               {solicitacao.room?.name ||
                                 rooms.find(r => r.id === solicitacao.roomId)
                                   ?.name ||
-                                "Sala desconhecida"}
+                                t("unknownRoom")}
                             </h3>
                             {solicitacao.room?.sector?.name ? (
                               <p className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">
@@ -639,8 +646,7 @@ const SolicitacoesPage: React.FC = () => {
                             {solicitacao.isRecurring &&
                               solicitacao.recurringTemplateId && (
                                 <p className="text-xs text-blue-400 mt-1">
-                                  {t("recurringInfo") ||
-                                    "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
+                                  {t("recurringInfo")}
                                 </p>
                               )}
                             {solicitacao.purpose && (
@@ -749,7 +755,7 @@ const SolicitacoesPage: React.FC = () => {
                           {selectedSolicitacao.room?.name ||
                             rooms.find(r => r.id === selectedSolicitacao.roomId)
                               ?.name ||
-                            "Sala desconhecida"}
+                            t("unknownRoom")}
                         </span>
                       </div>
                       {selectedSolicitacao.room?.sector?.name ? (
@@ -933,7 +939,7 @@ const SolicitacoesPage: React.FC = () => {
 
                   <div>
                     <h4 className="font-medium text-white mb-3">
-                      Reservas Conflitantes:
+                      {t("conflict.listTitle")}
                     </h4>
                     <div className="space-y-3">
                       {conflictData.conflicts.map(
@@ -945,8 +951,7 @@ const SolicitacoesPage: React.FC = () => {
                             <div className="flex items-center justify-between">
                               <div>
                                 <p className="font-medium text-white">
-                                  {conflict.user?.name ||
-                                    "Usuário desconhecido"}
+                                  {conflict.user?.name || t("unknownUser")}
                                 </p>
                                 <p className="text-sm text-gray-400">
                                   {formatDateTime(new Date(conflict.startTime))}{" "}
@@ -954,7 +959,7 @@ const SolicitacoesPage: React.FC = () => {
                                 </p>
                               </div>
                               <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
-                                Conflito
+                                {t("conflict.badge")}
                               </span>
                             </div>
                           </div>

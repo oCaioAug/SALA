@@ -70,7 +70,8 @@
       "sectorLabel": "担当部門",
       "sectorNone": "部門なし",
       "sectorHelp": "この部門のマネージャーがこの部屋の予約を承認できます。",
-      "sectorHelpNone": "部門なしの場合、この部屋の予約承認は組織管理者のみです。"
+      "sectorHelpNone": "部門なしの場合、この部屋の予約承認は組織管理者のみです。",
+      "sectorLoadError": "部門を読み込めませんでした。もう一度お試しください。"
     }
   },
   "Pagination": {
@@ -204,9 +205,17 @@
     "info": "情報",
     "redirectingToLogin": "Redirecionando para login...",
     "a11y": {
-      "closePanel": "Fechar painel",
-      "close": "Fechar"
-    }
+      "closePanel": "パネルを閉じる",
+      "close": "閉じる",
+      "dismiss": "閉じる"
+    },
+    "searchSelect": {
+      "searchPlaceholder": "検索...",
+      "empty": "結果なし",
+      "placeholder": "選択..."
+    },
+    "all": "すべて",
+    "search": "検索..."
   },
   "ErrorBoundary": {
     "title": "おっと！何かがうまくいきませんでした",
@@ -272,6 +281,14 @@
       "setores": {
         "label": "部門",
         "description": "部屋の責任と承認"
+      },
+      "gradeHoraria": {
+        "label": "Grade Horária",
+        "description": "Alocação e horários"
+      },
+      "vision": {
+        "label": "Visão Computacional",
+        "description": "Automações e Auditorias com IA"
       }
     }
   },
@@ -295,7 +312,13 @@
       "login": "ログイン"
     },
     "openMenu": "メニューを開く",
-    "menuTitle": "メニュー"
+    "menuTitle": "メニュー",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrador",
+      "member": "Membro",
+      "platformSuperAdmin": "Super Admin (plataforma)"
+    }
   },
   "LanguageSwitcher": {
     "changeLanguage": "言語を変更",
@@ -664,8 +687,14 @@
       "listView": "Lista",
       "calendarView": "Calendário",
       "searchPlaceholder": "Buscar por usuário ou propósito...",
-      "statusAll": "Todos os Status"
-    }
+      "statusAll": "Todos os Status",
+      "emptyFiltered": "検索フィルターを調整して予約を見つけてください。",
+      "emptyRoom": "この部屋にはまだ予約がありません。",
+      "createFirst": "最初の予約を作成",
+      "reservationsOnDay": "この日の予約: {count} 件"
+    },
+    "roomTitle": "予約 - {name}",
+    "roomReservationsFound": "この部屋で見つかった予約: {count} 件"
   },
   "SettingsPage": {
     "title": "設定",
@@ -766,7 +795,9 @@
       "title": "予約の競合",
       "message": "このリクエストは以下の予約と競合しています：",
       "forceApprove": "強制的に承認",
-      "cancel": "キャンセル"
+      "cancel": "キャンセル",
+      "listTitle": "競合する予約:",
+      "badge": "競合"
     },
     "feedback": {
       "successApprove": "リクエストが承認されました！",
@@ -791,7 +822,18 @@
       "org": "範囲: 組織全体",
       "manager": "範囲: {sectors} — {count}件の部屋",
       "managerEmpty": "範囲: 部屋が紐づいた部門がありません"
-    }
+    },
+    "unknownRoom": "不明な部屋",
+    "errors": {
+      "loadRooms": "部屋の読み込みに失敗しました",
+      "unknown": "不明なエラー",
+      "checkConflicts": "競合の確認に失敗しました",
+      "approve": "申請の承認に失敗しました",
+      "reject": "申請の却下に失敗しました",
+      "httpStatus": "エラー {status}: {statusText}",
+      "instancesSuffix": "（{count} 件）"
+    },
+    "unknownUser": "不明なユーザー"
   },
   "Notifications": {
     "title": "通知",
@@ -1227,6 +1269,7 @@
     "backToDashboard": "ダッシュボードに戻る",
     "back": "戻る",
     "capacity": "定員：{count} 名",
+    "capacityLabel": "定員",
     "viewReservations": "予約を見る",
     "editRoom": "部屋を編集",
     "addItem": "備品を追加",
@@ -1502,7 +1545,8 @@
     "PLAN_LIMIT_RESERVATIONS": "月間予約の上限に達しました（{max}）。プランをアップグレードしてください。",
     "UPLOAD_INVALID_FORMAT": "サポートされていない画像形式。JPG、PNG または WebP を使用してください。",
     "UPLOAD_TOO_LARGE": "画像が大きすぎます。最大サイズ：15MB",
-    "UNKNOWN": "予期しないエラーが発生しました"
+    "UNKNOWN": "予期しないエラーが発生しました",
+    "PROFILE_INCOMPLETE": "Complete seu perfil com CPF e telefone antes de continuar"
   },
   "Metadata": {
     "appTitle": "SALA - 部屋管理システム",
@@ -1815,11 +1859,11 @@
       "myOrganizations": "My Organizations"
     },
     "charts": {
-      "usageTitle": "Uso ao longo do tempo (30d)",
-      "noHistory": "Sem histórico materializado. Use \"Atualizar métricas diárias\" no dashboard.",
-      "reservations": "Reservas",
-      "activeUsers": "Usuários ativos",
-      "openIncidents": "Incidentes abertos"
+      "usageTitle": "期間中の利用 (30日)",
+      "noHistory": "履歴がありません。ダッシュボードで日次メトリクスを更新してください。",
+      "reservations": "予約",
+      "activeUsers": "アクティブユーザー",
+      "openIncidents": "未対応インシデント"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -1842,7 +1886,25 @@
       "viewAllOrgs": "Ver todas as organizações",
       "retention": "Retenção (30d)",
       "activeOrgs30d": "Orgs ativas (30d)",
-      "analyticsDescription": "Analytics global da plataforma SALA"
+      "analyticsDescription": "Analytics global da plataforma SALA",
+      "retentionLine": "定着率(30日): {rate}% · アクティブ組織: {active}/{total}",
+      "chartCount": "件数",
+      "noData": "データなし",
+      "orgsCount": "{count} 組織",
+      "expiringTrialsWindow": "まもなく終了するトライアル (7日)",
+      "noExpiringTrials": "期限切れ間近のトライアルなし",
+      "inactiveOrgsWindow": "活動のない組織 (30日)",
+      "createdOn": "作成日 {date}",
+      "topOrgsWindow": "予約数トップ組織 (30日)",
+      "noRecentReservations": "最近の予約なし",
+      "reservationsCount": "{count} 件の予約",
+      "organizationsTotal": "Organizações",
+      "organizationsActiveSub": "{count} ativas",
+      "totalUsersSub": "Cadastrados na plataforma (todos os papéis)",
+      "totalRoomsSub": "Em todas as orgs",
+      "reservations30dSub": "Últimos 30 dias",
+      "openIncidentsSub": "Requerem atenção",
+      "loadDataError": "Erro ao carregar dados"
     },
     "organizations": {
       "title": "Organizações",
@@ -1875,7 +1937,69 @@
         "members": "Membros",
         "rooms": "Salas",
         "usage": "Uso e plano"
-      }
+      },
+      "roleOwner": "オーナー",
+      "roleAdmin": "管理者",
+      "roleMember": "メンバー",
+      "metricMembers": "メンバー",
+      "metricRooms": "部屋",
+      "metricReservations30d": "予約 (30日)",
+      "metricOpenIncidents": "未対応インシデント",
+      "metricUsers": "ユーザー",
+      "metricReservationsMonth": "予約 (月)",
+      "isSchool": "教育機関",
+      "toggle": "切替",
+      "yes": "はい",
+      "no": "いいえ",
+      "ownerLabel": "オーナー",
+      "seats": "{count} 席",
+      "formTitle": "Dados da organização",
+      "unknownError": "Erro desconhecido",
+      "ownerWithoutPasswordWarning": "O owner foi criado sem senha. Peça que use a recuperação de senha para acessar.",
+      "statusActive": "Ativa",
+      "statusTrial": "Trial",
+      "statusSuspended": "Suspensa",
+      "cancel": "Cancelar",
+      "creating": "Criando...",
+      "create": "Criar organização",
+      "saveProfile": "Salvar dados",
+      "savingProfile": "Salvando...",
+      "deleteOrg": "Desativar organização",
+      "deleteOrgConfirm": "Desativar (soft-delete) esta organização? Ela deixará de aparecer nas listagens.",
+      "transferOwnership": "Transferir ownership",
+      "transferOwnershipConfirm": "Transferir ownership para este membro?",
+      "fields": {
+        "name": "Nome da organização",
+        "slug": "Slug (URL)",
+        "status": "Status",
+        "plan": "Plano",
+        "ownerEmail": "E-mail do owner",
+        "ownerName": "Nome do owner (opcional)",
+        "email": "E-mail de contato",
+        "phone": "Telefone de contato"
+      },
+      "newOrg": "新しい組織",
+      "searchTitle": "組織を検索",
+      "searchPlaceholder": "名前、スラッグ、またはオーナーのメール...",
+      "filterStatus": "ステータス",
+      "allStatuses": "すべてのステータス",
+      "filterActive": "有効",
+      "filterSuspended": "停止中",
+      "filterTrial": "トライアル",
+      "filterPlan": "プラン",
+      "allPlans": "すべてのプラン",
+      "ownerPrefix": "オーナー:",
+      "planPrefix": "プラン:",
+      "membersRooms": "{members} メンバー · {rooms} 部屋",
+      "loadError": "読み込みに失敗しました",
+      "metricTotal": "合計",
+      "metricTotalSub": "登録済み組織",
+      "metricActive": "有効",
+      "metricActiveSub": "運用中",
+      "metricTrial": "トライアル",
+      "metricTrialSub": "試用期間",
+      "metricSuspended": "停止中",
+      "metricSuspendedSub": "アクセスブロック"
     },
     "users": {
       "title": "Usuários",
@@ -1905,7 +2029,9 @@
         "withOrgSub": "Membros ativos",
         "withoutOrg": "Sem organização",
         "withoutOrgSub": "Sem membership"
-      }
+      },
+      "includeDeleted": "Incluir excluídos",
+      "deleted": "Excluído"
     },
     "plans": {
       "title": "Plans",
@@ -1949,25 +2075,33 @@
         "active": "Active",
         "inactive": "Inactive",
         "activate": "Activate plan",
-        "deactivate": "Deactivate plan"
+        "deactivate": "Deactivate plan",
+        "edit": "Editar"
       },
       "actions": {
         "cancel": "Cancel",
         "create": "Create plan",
         "saving": "Saving...",
-        "editSlug": "edit"
+        "editSlug": "edit",
+        "save": "Salvar alterações"
       },
       "errors": {
-        "createFailed": "Could not create the plan. Check the data and try again."
+        "createFailed": "Could not create the plan. Check the data and try again.",
+        "updateFailed": "Não foi possível atualizar o plano. Verifique os dados e tente novamente."
       },
       "summaryPlanOne": "plan registered",
       "summaryPlanMany": "plans registered",
       "summaryActiveOne": "active",
-      "summaryActiveMany": "active"
+      "summaryActiveMany": "active",
+      "editTitle": "Editar plano"
     },
     "audit": {
       "title": "Audit Log",
-      "description": "Trilha de ações administrativas na plataforma"
+      "description": "Trilha de ações administrativas na plataforma",
+      "searchPlaceholder": "Filtrar por ação...",
+      "refresh": "Atualizar",
+      "emptyTitle": "Nenhum registro encontrado",
+      "emptyDesc": "Não há logs de auditoria com o filtro atual"
     },
     "incidents": {
       "title": "Incidentes",
@@ -2059,6 +2193,36 @@
         "cancelledSub": "Assinaturas encerradas",
         "total": "Total",
         "totalSub": "{count} org(s) sem assinatura"
+      }
+    },
+    "badges": {
+      "organization": {
+        "ACTIVE": "有効",
+        "SUSPENDED": "停止中",
+        "TRIAL": "トライアル"
+      },
+      "platformRole": {
+        "SUPER_ADMIN": "スーパー管理者",
+        "NONE": "ユーザー"
+      },
+      "subscription": {
+        "ACTIVE": "有効",
+        "TRIALING": "トライアル",
+        "PAST_DUE": "未払い",
+        "CANCELLED": "キャンセル"
+      },
+      "incident": {
+        "REPORTED": "報告済み",
+        "IN_ANALYSIS": "分析中",
+        "IN_PROGRESS": "対応中",
+        "RESOLVED": "解決済み",
+        "CANCELLED": "キャンセル"
+      },
+      "incidentPriority": {
+        "LOW": "低",
+        "MEDIUM": "中",
+        "HIGH": "高",
+        "CRITICAL": "緊急"
       }
     }
   },
@@ -2178,8 +2342,30 @@
       "unknown": "Erro desconhecido",
       "addItem": "Erro ao adicionar item",
       "updateItem": "Erro ao atualizar item",
-      "deleteItem": "Erro ao deletar item"
-    }
+      "deleteItem": "Erro ao deletar item",
+      "saveItem": "アイテムの保存に失敗しました"
+    },
+    "emptyDescription": "この部屋にアイテムを追加して始めましょう",
+    "addFirstItem": "最初のアイテムを追加",
+    "quantityLabel": "数量: {count}",
+    "specifications": "仕様:",
+    "confirmDelete": "このアイテムを削除してもよろしいですか？",
+    "form": {
+      "itemName": "アイテム名",
+      "itemNamePlaceholder": "例: パソコン",
+      "description": "説明",
+      "descriptionPlaceholder": "アイテムを説明...",
+      "specifications": "仕様（カンマ区切り）",
+      "specificationsPlaceholder": "例: Windows 11, 16GB RAM, Core i7",
+      "quantity": "数量",
+      "icon": "アイコン",
+      "iconHint": "任意 — 画像がない場合のフォールバック",
+      "saving": "保存中...",
+      "updateItem": "アイテムを更新",
+      "addItem": "アイテムを追加",
+      "cancel": "キャンセル"
+    },
+    "itemsRegistered": "登録済みアイテム {count} 件"
   },
   "Preferences": {
     "switchToLight": "Switch to light theme",
@@ -2266,5 +2452,420 @@
     "capabilityApprove": "予約を承認",
     "capabilityManageRooms": "部屋を管理（情報＋備品）",
     "capabilityRequiredHint": "この人に少なくとも1つの機能を選んでください。"
+  },
+  "GradeHoraria": {
+    "common": {
+      "back": "戻る",
+      "loading": "読み込み中...",
+      "access": "開く",
+      "add": "追加",
+      "days": {
+        "1": "月曜",
+        "2": "火曜",
+        "3": "水曜",
+        "4": "木曜",
+        "5": "金曜"
+      }
+    },
+    "hub": {
+      "title": "時間割の割り当て",
+      "description": "パラメータを設定し、機関の時間割を自動生成します。",
+      "menu": {
+        "classes": {
+          "title": "クラス",
+          "description": "機関のクラスとその期間を管理します。"
+        },
+        "subjects": {
+          "title": "科目",
+          "description": "開講される科目・教科を登録します。"
+        },
+        "teachers": {
+          "title": "教員",
+          "description": "ユーザーアカウントとは別に教員を登録します。"
+        },
+        "loads": {
+          "title": "授業コマ数",
+          "description": "教員・科目・クラスを関連付けます。"
+        },
+        "availability": {
+          "title": "空き時間",
+          "description": "各教員の担当可能な時間帯を設定します。"
+        },
+        "generate": {
+          "title": "時間割を生成",
+          "description": "割り当てエンジンを実行して時間割を生成します。"
+        },
+        "settings": {
+          "title": "時間割設定",
+          "description": "時限と授業の開始・終了時刻を定義します。"
+        }
+      }
+    },
+    "settings": {
+      "title": "時間割設定",
+      "description": "機関の時限と授業時間を管理します。",
+      "saveChanges": "変更を保存",
+      "injectMocks": "テストデータを投入",
+      "newShiftName": "新しい時限",
+      "shiftNamePlaceholder": "時限名（例：午前）",
+      "removeShift": "時限を削除",
+      "confirmRemoveShift": "この時限を削除してもよろしいですか？",
+      "lessonSlotsTitle": "授業時間",
+      "addLesson": "授業を追加",
+      "emptySlots": "この時限に登録された時間はありません。",
+      "lessonLabel": "授業ラベル",
+      "lessonLabelPlaceholder": "例：1限",
+      "defaultLessonLabel": "授業 {n}",
+      "start": "開始",
+      "end": "終了",
+      "addShift": "新しい時限を追加",
+      "toastLoadError": "設定の読み込みに失敗しました",
+      "toastSaveSuccess": "設定を保存しました！",
+      "toastSaveError": "設定の保存に失敗しました",
+      "toastMocksSuccess": "モックを投入しました！F5で再読み込みしてください。",
+      "toastMocksError": "モックの投入に失敗しました"
+    },
+    "classes": {
+      "title": "クラス",
+      "description": "時間割割り当て用のクラスを管理します。",
+      "formTitle": "新しいクラス",
+      "nameLabel": "クラス名",
+      "namePlaceholder": "例：1年A組",
+      "shiftLabel": "クラスの時限",
+      "noShifts": "時限が設定されていません",
+      "addButton": "クラスを追加",
+      "empty": "登録されたクラスはありません。",
+      "confirmDelete": "このクラスを削除してもよろしいですか？",
+      "toastLoadError": "データの読み込みに失敗しました",
+      "toastCreateSuccess": "クラスを作成しました！",
+      "toastCreateError": "クラスの作成に失敗しました",
+      "toastDeleteSuccess": "クラスを削除しました！",
+      "toastDeleteError": "クラスの削除に失敗しました"
+    },
+    "teachers": {
+      "title": "教員",
+      "description": "時間割に割り当てる教員を登録します。",
+      "formTitle": "新しい教員",
+      "nameLabel": "教員名",
+      "namePlaceholder": "例：山田太郎",
+      "emailLabel": "メール（任意）",
+      "emailPlaceholder": "例：taro@school.com",
+      "linkUserLabel": "ユーザーに紐付け（任意）",
+      "linkUserNone": "紐付けない...",
+      "linkUserHint": "紐付けると、将来システムにログインできるようになります。",
+      "linkedBadge": "紐付け済み",
+      "empty": "登録された教員はありません。",
+      "confirmDelete": "この教員を削除してもよろしいですか？関連する授業コマ数と空き時間がすべて失われます。",
+      "toastLoadError": "教員の読み込みに失敗しました",
+      "toastCreateSuccess": "教員を追加しました！",
+      "toastCreateError": "教員の追加に失敗しました",
+      "toastDeleteSuccess": "教員を削除しました！",
+      "toastDeleteError": "教員の削除に失敗しました"
+    },
+    "subjects": {
+      "title": "科目",
+      "description": "機関で開講される科目・教科を管理します。",
+      "formTitle": "新しい科目",
+      "nameLabel": "科目名",
+      "namePlaceholder": "例：数学",
+      "codeLabel": "コード（任意）",
+      "codePlaceholder": "例：MAT01",
+      "codeDisplay": "コード: {code}",
+      "empty": "登録された科目はありません。",
+      "confirmDelete": "この科目を削除してもよろしいですか？",
+      "toastLoadError": "科目の読み込みに失敗しました",
+      "toastCreateSuccess": "科目を作成しました！",
+      "toastCreateError": "科目の作成に失敗しました",
+      "toastDeleteSuccess": "科目を削除しました！",
+      "toastDeleteError": "科目の削除に失敗しました"
+    },
+    "loads": {
+      "title": "授業コマ数",
+      "description": "クラス・科目・教員を週あたりの授業数と関連付けます。",
+      "formTitle": "新しい授業コマ",
+      "classLabel": "クラス",
+      "classPlaceholder": "クラスを選択...",
+      "subjectLabel": "科目",
+      "subjectPlaceholder": "科目を選択...",
+      "teacherLabel": "教員",
+      "teacherPlaceholder": "教員を選択...",
+      "lessonsPerWeek": "週あたりの授業数",
+      "linkButton": "コマを紐付け",
+      "empty": "紐付けられた授業コマはありません。",
+      "teacherPrefix": "教員: {name}",
+      "lessonsCount": "{count, plural, other {# コマ}}",
+      "confirmDelete": "この授業コマを削除してもよろしいですか？",
+      "toastLoadError": "データの読み込みに失敗しました",
+      "toastCreateSuccess": "授業コマを紐付けました！",
+      "toastCreateError": "授業コマの紐付けに失敗しました",
+      "toastDeleteSuccess": "授業コマを削除しました！",
+      "toastDeleteError": "授業コマの削除に失敗しました"
+    },
+    "availability": {
+      "title": "教員の空き時間",
+      "description": "教員を選択し、担当可能な時間帯をマークします。",
+      "selectTeacher": "教員を選択",
+      "selectPlaceholder": "選択...",
+      "gridTitle": "時間割グリッド",
+      "saveButton": "空き時間を保存",
+      "lessonColumn": "授業",
+      "emptyShiftSlots": "この時限に設定された授業はありません。",
+      "toastLoadError": "データの読み込みに失敗しました",
+      "toastLoadAvailabilityError": "空き時間の読み込みに失敗しました",
+      "toastSaveSuccess": "空き時間を保存しました！",
+      "toastSaveError": "空き時間の保存に失敗しました"
+    },
+    "generate": {
+      "title": "時間割を生成",
+      "description": "割り当てエンジンを実行し、空き時間に基づいて授業を配分します。",
+      "readyTitle": "生成の準備はできましたか？",
+      "readyDescription": "エンジンがすべての授業コマと空き時間を分析し、競合のない最適な時間割を作成します。",
+      "runButton": "割り当てエンジンを実行",
+      "processing": "アルゴリズム処理中...",
+      "perfectTitle": "完全な割り当て！",
+      "partialTitle": "部分的な割り当て",
+      "fitnessScore": "適合度スコア: {score}%",
+      "unallocatedTitle": "未割り当てのコマ:",
+      "unallocatedItem": "{className} - {subjectName}（{teacherName}）: {count} コマ不足",
+      "errorsTitle": "制約エラー:",
+      "schedulesByClass": "クラス別時間割",
+      "timeColumn": "時間",
+      "toastSuccess": "時間割を生成しました！",
+      "toastPartial": "制約付きで時間割を生成しました（一部の授業が未割り当て）。",
+      "toastError": "時間割の生成に失敗しました"
+    }
+  },
+  "ProfileSetup": {
+    "title": "Complete seu perfil",
+    "subtitle": "Informe CPF e telefone para continuar. Esses dados identificam o responsável pela conta.",
+    "sections": {
+      "account": "Conta",
+      "personal": "Dados pessoais"
+    },
+    "fields": {
+      "name": "Nome",
+      "email": "Email",
+      "cpf": "CPF",
+      "phone": "Telefone"
+    },
+    "placeholders": {
+      "cpf": "000.000.000-00",
+      "phone": "(00) 00000-0000"
+    },
+    "submit": "Continuar",
+    "messages": {
+      "fixErrors": "Corrija os campos destacados"
+    },
+    "errors": {
+      "generic": "Erro ao salvar perfil. Tente novamente."
+    }
+  },
+  "CreateOrganizationPage": {
+    "title": "Nova organização",
+    "subtitle": "Cadastre uma empresa ou equipe e escolha o plano",
+    "backToInicio": "Voltar ao início",
+    "backToHub": "Voltar às organizações",
+    "sections": {
+      "organization": "Dados da organização",
+      "plan": "Plano selecionado"
+    },
+    "fields": {
+      "name": "Nome fantasia",
+      "legalName": "Razão social",
+      "cnpj": "CNPJ",
+      "email": "Email da organização",
+      "phone": "Telefone da organização",
+      "planName": "Plano",
+      "planLimits": "Limites",
+      "trial": "Período trial",
+      "isSchool": "教育機関"
+    },
+    "placeholders": {
+      "name": "Nome da organização",
+      "legalName": "Razão social completa",
+      "cnpj": "00.000.000/0000-00",
+      "email": "contato@empresa.com",
+      "phone": "(00) 00000-0000"
+    },
+    "steps": {
+      "step1": "Organização",
+      "step2": "Plano",
+      "step3": "Confirmar"
+    },
+    "buttons": {
+      "next": "Continuar",
+      "back": "Voltar",
+      "cancel": "Cancelar"
+    },
+    "messages": {
+      "fixErrors": "Corrija os campos destacados para continuar"
+    },
+    "step2": {
+      "title": "Escolha o plano",
+      "subtitle": "Todos os planos incluem 30 dias de trial gratuito",
+      "loading": "Carregando planos...",
+      "error": "Não foi possível carregar os planos. Tente novamente.",
+      "empty": "Nenhum plano disponível no momento.",
+      "selectPlan": "Selecione um plano para continuar",
+      "select": "Selecionar",
+      "selected": "Selecionado",
+      "rooms": "Até {count} salas",
+      "users": "Até {count} usuários",
+      "reservations": "Até {count} reservas/mês",
+      "unlimitedReservations": "Reservas ilimitadas",
+      "trialDays": "30 dias de trial incluídos"
+    },
+    "step3": {
+      "title": "Revise os dados",
+      "subtitle": "Confira as informações antes de criar a organização",
+      "planLimitsValue": "{rooms} salas · {users} usuários",
+      "trialValue": "30 dias"
+    },
+    "submit": "Criar organização",
+    "submitting": "Criando...",
+    "errors": {
+      "generic": "Erro ao criar organização. Verifique os dados e tente novamente."
+    },
+    "isSchoolHint": "学校/大学向け時間割モジュールを有効化",
+    "yes": "はい",
+    "no": "いいえ",
+    "emptyValue": "—"
+  },
+  "Vision": {
+    "title": "Visão Computacional e Automação",
+    "description": "Automatize a gestão de salas, realize auditorias em tempo real e faça provisionamento de itens com Inteligência Artificial.",
+    "tabs": {
+      "occupancy": "Ocupação de Sala",
+      "audit": "Auditoria de Itens",
+      "provision": "Provisionamento de Itens"
+    },
+    "workflow": {
+      "stepRoom": "Sala",
+      "stepImage": "Imagem",
+      "stepAnalyze": "Análise",
+      "imageStatus": "Status da imagem",
+      "imageReady": "Pronta para análise",
+      "imageMissing": "Aguardando upload ou captura",
+      "webcamActive": "Webcam ativa",
+      "needRoom": "Selecione uma sala para continuar.",
+      "needImage": "Envie ou capture uma imagem antes de analisar."
+    },
+    "provider": {
+      "title": "Motor de Inteligência Artificial",
+      "mock": "Simulador Offline (Alta Fidelidade)",
+      "real": "Roboflow API (Nuvem Real)",
+      "usingEnv": "Usando Chaves Globais (.env)",
+      "notConfigured": "Não Configurado (Simulador Ativo)"
+    },
+    "credentials": {
+      "title": "Configurações Administrativas do Roboflow",
+      "apiKey": "Chave de API do Roboflow",
+      "apiKeyPlaceholder": "Insira sua Chave Privada do Roboflow...",
+      "modelId": "ID do Modelo (Model ID)",
+      "modelIdPlaceholder": "Ex: yolov8n, s-a-l-a-detector/1",
+      "save": "Criptografar e Salvar no Banco",
+      "clear": "Remover do Banco (Reverter)",
+      "clearShort": "Limpar",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "saved": "Credenciais criptografadas e salvas com sucesso!",
+      "cleared": "Credenciais removidas do banco de dados.",
+      "onlyAdmins": "Apenas administradores podem gerenciar chaves de API.",
+      "securedLabel": "Armazenamento Criptografado AES-256-GCM ativo no Servidor"
+    },
+    "console": {
+      "title": "Terminal de Automação de Negócio",
+      "subtitle": "Logs de Eventos em Tempo Real",
+      "waiting": "Aguardando envio de imagem para processamento...",
+      "empty": "ログなし..."
+    },
+    "controls": {
+      "selectRoom": "Selecione uma Sala",
+      "selectRoomPlaceholder": "Selecione...",
+      "captureArea": "Área de captura",
+      "useWebcam": "Usar Webcam",
+      "stopCamera": "Desativar Câmera",
+      "selectFile": "Selecionar Arquivo",
+      "clearImage": "Remover imagem",
+      "uploadTitle": "Enviar Foto para Análise",
+      "uploadSubtitle": "Arraste uma foto ou clique para fazer upload",
+      "analyzeBtn": "Executar Análise com IA",
+      "analyzing": "Analisando...",
+      "camera": "Webcam do Laboratório",
+      "capture": "Capturar Foto",
+      "presets": "Cenários de teste",
+      "presetsSubtitle": "Carregue uma imagem pré-configurada para validar o fluxo rapidamente.",
+      "presetEmpty": "Laboratório Vazio",
+      "presetFull": "Laboratório em Uso",
+      "presetAudit": "Falta de Equipamentos",
+      "presetProvision": "Nova Sala para Provisionar",
+      "previewAlt": "ラボのプレビュー"
+    },
+    "auditTable": {
+      "item": "Equipamento",
+      "expected": "Registrado no Banco",
+      "detected": "Detectado pela IA",
+      "status": "Status da Auditoria",
+      "statusOk": "OK",
+      "statusMissing": "Faltando!",
+      "statusExcess": "Excesso",
+      "auditSummary": "Resumo da Auditoria",
+      "summaryHint": "Reconciliação entre itens registrados e objetos identificados visualmente.",
+      "noDiscrepancy": "Nenhuma discrepância encontrada. Todos os equipamentos estão em ordem!",
+      "discrepancyFound": "Discrepâncias detectadas! {count} equipamento(s) cadastrado(s) não foram identificados.",
+      "incidentGenerated": "Incidente automático gerado com sucesso pelo SALA-BOT!",
+      "viewIncident": "Ver Chamado Gerado"
+    },
+    "provisionPanel": {
+      "title": "Revisão de Provisionamento",
+      "description": "Edite e confirme as quantidades sugeridas pela Visão Computacional para esta sala antes de salvar.",
+      "nameCol": "Nome do Ativo",
+      "qtyCol": "Quantidade Sugerida",
+      "iconCol": "Ícone",
+      "saveBtn": "Confirmar e Cadastrar no Banco",
+      "processing": "Processando...",
+      "success": "Sala provisionada com sucesso! {count} itens foram criados.",
+      "successBanner": "Sala provisionada com sucesso. Os equipamentos foram salvos e estão ativos.",
+      "empty": "Nenhum item detectado para provisionamento. Tente carregar outra foto.",
+      "removeSuggestion": "提案を削除",
+      "aiClassSuggested": "AIクラス: 提案"
+    },
+    "toasts": {
+      "loadRoomsError": "部屋リストの読み込みに失敗しました。",
+      "saveKeysError": "キーの保存に失敗しました。",
+      "clearCredsError": "認証情報の削除に失敗しました。",
+      "cameraAccessError": "デバイスのカメラにアクセスできませんでした。",
+      "invalidImageFile": "有効な画像ファイルを選択してください。",
+      "needImageOrPreset": "分析前に写真をアップロードするか、テストシナリオを使用してください。",
+      "needRoom": "データを同期する先の部屋を選択してください。",
+      "auditMissing": "注意！監査で備品の不足が検出されました。インシデントが自動生成されました。",
+      "auditOk": "完了！登録済みの備品がすべて識別されました。",
+      "provisionFound": "AIがプロビジョニング可能な備品タイプを {count} 件識別しました。",
+      "provisionNone": "登録可能な備品は識別されませんでした。",
+      "processError": "画像の処理中にエラーが発生しました。",
+      "provisionConfirmError": "プロビジョニングの確認に失敗しました。"
+    },
+    "logs": {
+      "cameraEnabled": "ラボのカメラを有効にしました。",
+      "cameraDisabled": "カメラを無効にしました。",
+      "snapshotOk": "カメラのスナップショットを正常に取得しました！",
+      "imageLoaded": "画像「{name}」がユーザーによって読み込まれました。",
+      "presetSelected": "プリセットシナリオを選択: 「{name}」。",
+      "analysisStarted": "「{mode}」モードでスマート分析を開始...",
+      "processError": "処理エラー: {message}",
+      "httpFailure": "HTTP失敗。",
+      "suggestionRemoved": "プロビジョニング候補をリストから削除しました。",
+      "provisionSending": "一括プロビジョニング要求を送信中...",
+      "syncDone": "[DATABASE] 同期完了！部屋に {count} 件の備品を登録しました。",
+      "tabChanged": "タブを変更: 「{tab}」",
+      "roomChanged": "対象部屋IDを変更: {id}"
+    },
+    "errors": {
+      "loadRooms": "部屋の読み込みに失敗しました",
+      "saveCreds": "認証情報の保存に失敗しました",
+      "clearCreds": "設定の削除に失敗しました",
+      "processImage": "API経由の画像処理に失敗しました",
+      "saveProvision": "プロビジョニングの保存に失敗しました"
+    }
   }
 }

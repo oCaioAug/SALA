@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { CalendarDays, Save } from "lucide-react";
+import { useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
-import { useNavigation } from "@/lib/hooks/useNavigation";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
   getProfessores,
@@ -17,15 +19,11 @@ import {
   getGradeSettings,
 } from "../actions";
 
-const DIAS_SEMANA = [
-  { id: 1, nome: "Segunda" },
-  { id: 2, nome: "Terça" },
-  { id: 3, nome: "Quarta" },
-  { id: 4, nome: "Quinta" },
-  { id: 5, nome: "Sexta" },
-];
+const DAY_IDS = [1, 2, 3, 4, 5] as const;
 
 const DisponibilidadesPage: React.FC = () => {
+  const t = useTranslations("GradeHoraria.availability");
+  const tCommon = useTranslations("GradeHoraria.common");
   const [currentPage, setCurrentPage] = useState("grade-horaria");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -52,12 +50,13 @@ const DisponibilidadesPage: React.FC = () => {
         setProfessores(profs);
         setShifts(settings.timetabling.shifts || []);
       } catch (err: any) {
-        showError(err.message || "Erro ao carregar dados");
+        showError(err.message || t("toastLoadError"));
       } finally {
         setLoading(false);
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -72,8 +71,8 @@ const DisponibilidadesPage: React.FC = () => {
         const disp = await getDisponibilidades(selectedProfId);
 
         const newGrid: Record<number, Set<string>> = {};
-        DIAS_SEMANA.forEach(d => {
-          newGrid[d.id] = new Set();
+        DAY_IDS.forEach(id => {
+          newGrid[id] = new Set();
         });
 
         disp.forEach(d => {
@@ -84,13 +83,14 @@ const DisponibilidadesPage: React.FC = () => {
 
         setGrid(newGrid);
       } catch (err: any) {
-        showError(err.message || "Erro ao carregar disponibilidades");
+        showError(err.message || t("toastLoadAvailabilityError"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchDisp();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProfId]);
 
   const toggleSlot = (dia: number, slotId: string) => {
@@ -112,14 +112,14 @@ const DisponibilidadesPage: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      const promises = DIAS_SEMANA.map(dia => {
-        const slots = Array.from(grid[dia.id] || []);
-        return setDisponibilidade(selectedProfId, dia.id, slots);
+      const promises = DAY_IDS.map(diaId => {
+        const slots = Array.from(grid[diaId] || []);
+        return setDisponibilidade(selectedProfId, diaId, slots);
       });
       await Promise.all(promises);
-      showSuccess("Disponibilidades salvas com sucesso!");
+      showSuccess(t("toastSaveSuccess"));
     } catch (err: any) {
-      showError(err.message || "Erro ao salvar disponibilidades");
+      showError(err.message || t("toastSaveError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -137,16 +137,15 @@ const DisponibilidadesPage: React.FC = () => {
             <CalendarDays className="w-8 h-8 text-blue-500" />
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Disponibilidade dos Professores
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Selecione um professor e marque os horários em que ele pode
-                lecionar.
+                {t("description")}
               </p>
             </div>
           </div>
           <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            Voltar
+            {tCommon("back")}
           </Button>
         </div>
 
@@ -155,21 +154,20 @@ const DisponibilidadesPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="max-w-md">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
-                  Selecione o Professor
+                  {t("selectTeacher")}
                 </label>
-                <select
-                  className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                <SearchableSelect
                   value={selectedProfId}
-                  onChange={e => setSelectedProfId(e.target.value)}
+                  onChange={setSelectedProfId}
+                  options={professores.map(p => ({
+                    value: p.id,
+                    label: p.name,
+                  }))}
+                  placeholder={t("selectPlaceholder")}
+                  allowEmpty
                   disabled={loading || isSubmitting}
-                >
-                  <option value="">Selecione...</option>
-                  {professores.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
+                  triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                />
               </div>
             </CardContent>
           </Card>
@@ -178,12 +176,12 @@ const DisponibilidadesPage: React.FC = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <CardTitle>Grade de Horários</CardTitle>
+                  <CardTitle>{t("gridTitle")}</CardTitle>
                   <Button
                     onClick={handleSave}
                     disabled={isSubmitting || loading}
                   >
-                    <Save className="w-4 h-4 mr-2" /> Salvar Disponibilidade
+                    <Save className="w-4 h-4 mr-2" /> {t("saveButton")}
                   </Button>
                 </div>
 
@@ -201,13 +199,13 @@ const DisponibilidadesPage: React.FC = () => {
                       <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
                         <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800/50 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                           <tr>
-                            <th className="px-6 py-3 w-48">Aula</th>
-                            {DIAS_SEMANA.map(dia => (
+                            <th className="px-6 py-3 w-48">{t("lessonColumn")}</th>
+                            {DAY_IDS.map(diaId => (
                               <th
-                                key={dia.id}
+                                key={diaId}
                                 className="px-6 py-3 text-center"
                               >
-                                {dia.nome}
+                                {tCommon(`days.${diaId}`)}
                               </th>
                             ))}
                           </tr>
@@ -216,7 +214,7 @@ const DisponibilidadesPage: React.FC = () => {
                           {shift.slots.length === 0 ? (
                             <tr>
                               <td colSpan={6} className="text-center py-4">
-                                Nenhuma aula configurada para este turno.
+                                {t("emptyShiftSlots")}
                               </td>
                             </tr>
                           ) : (
@@ -231,11 +229,11 @@ const DisponibilidadesPage: React.FC = () => {
                                     {slot.startTime} - {slot.endTime}
                                   </span>
                                 </td>
-                                {DIAS_SEMANA.map(dia => {
-                                  const isSelected = grid[dia.id]?.has(slot.id);
+                                {DAY_IDS.map(diaId => {
+                                  const isSelected = grid[diaId]?.has(slot.id);
                                   return (
                                     <td
-                                      key={dia.id}
+                                      key={diaId}
                                       className="px-6 py-4 text-center"
                                     >
                                       <label className="relative inline-flex items-center cursor-pointer">
@@ -244,7 +242,7 @@ const DisponibilidadesPage: React.FC = () => {
                                           className="sr-only peer"
                                           checked={isSelected || false}
                                           onChange={() =>
-                                            toggleSlot(dia.id, slot.id)
+                                            toggleSlot(diaId, slot.id)
                                           }
                                           disabled={isSubmitting}
                                         />

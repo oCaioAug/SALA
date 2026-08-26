@@ -1,6 +1,7 @@
 "use client";
 
 import { GraduationCap, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
@@ -8,6 +9,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
@@ -19,6 +21,8 @@ import {
 } from "../actions";
 
 const ProfessoresPage: React.FC = () => {
+  const t = useTranslations("GradeHoraria.teachers");
+  const tCommon = useTranslations("GradeHoraria.common");
   const [currentPage, setCurrentPage] = useState("grade-horaria");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -44,7 +48,7 @@ const ProfessoresPage: React.FC = () => {
       setProfessores(profs);
       setOrgUsers(users);
     } catch (err: any) {
-      showError(err.message || "Erro ao carregar professores");
+      showError(err.message || t("toastLoadError"));
     } finally {
       setLoading(false);
     }
@@ -52,6 +56,7 @@ const ProfessoresPage: React.FC = () => {
 
   useEffect(() => {
     fetchProfessores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -65,7 +70,7 @@ const ProfessoresPage: React.FC = () => {
         newEmail || undefined,
         newUserId || undefined
       );
-      showSuccess("Professor adicionado com sucesso!");
+      showSuccess(t("toastCreateSuccess"));
       setNewNome("");
       setNewEmail("");
       setNewUserId("");
@@ -73,25 +78,20 @@ const ProfessoresPage: React.FC = () => {
         [...prev, newProf].sort((a, b) => a.name.localeCompare(b.name))
       );
     } catch (err: any) {
-      showError(err.message || "Erro ao adicionar professor");
+      showError(err.message || t("toastCreateError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (
-      !confirm(
-        "Tem certeza que deseja excluir este professor? Todas as cargas horárias e disponibilidades associadas serão perdidas."
-      )
-    )
-      return;
+    if (!confirm(t("confirmDelete"))) return;
     try {
       await deleteProfessor(id);
-      showSuccess("Professor excluído com sucesso!");
+      showSuccess(t("toastDeleteSuccess"));
       setProfessores(prev => prev.filter(p => p.id !== id));
     } catch (err: any) {
-      showError(err.message || "Erro ao excluir professor");
+      showError(err.message || t("toastDeleteError"));
     }
   };
 
@@ -107,15 +107,15 @@ const ProfessoresPage: React.FC = () => {
             <GraduationCap className="w-8 h-8 text-blue-500" />
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Professores
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Cadastre os professores que serão alocados na grade horária.
+                {t("description")}
               </p>
             </div>
           </div>
           <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            Voltar
+            {tCommon("back")}
           </Button>
         </div>
 
@@ -123,19 +123,19 @@ const ProfessoresPage: React.FC = () => {
           {/* Form */}
           <Card className="md:col-span-1">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Novo Professor</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("formTitle")}</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <Input
-                  label="Nome do Professor"
-                  placeholder="Ex: João da Silva"
+                  label={t("nameLabel")}
+                  placeholder={t("namePlaceholder")}
                   value={newNome}
                   onChange={e => setNewNome(e.target.value)}
                   disabled={isSubmitting}
                 />
                 <Input
-                  label="E-mail (Opcional)"
+                  label={t("emailLabel")}
                   type="email"
-                  placeholder="Ex: joao@escola.com"
+                  placeholder={t("emailPlaceholder")}
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
                   disabled={isSubmitting}
@@ -143,25 +143,21 @@ const ProfessoresPage: React.FC = () => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Vincular a Usuário (Opcional)
+                    {t("linkUserLabel")}
                   </label>
-                  <select
-                    className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  <SearchableSelect
                     value={newUserId}
-                    onChange={e => setNewUserId(e.target.value)}
+                    onChange={setNewUserId}
+                    options={orgUsers.map(u => ({
+                      value: u.id,
+                      label: u.name || u.email,
+                    }))}
+                    placeholder={t("linkUserNone")}
+                    allowEmpty
                     disabled={isSubmitting}
-                  >
-                    <option value="">Não vincular...</option>
-                    {orgUsers.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.name || u.email}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-slate-500">
-                    Se vinculado, o professor poderá fazer login no sistema no
-                    futuro.
-                  </p>
+                    triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
+                  <p className="text-xs text-slate-500">{t("linkUserHint")}</p>
                 </div>
 
                 <Button
@@ -169,7 +165,7 @@ const ProfessoresPage: React.FC = () => {
                   className="w-full"
                   disabled={isSubmitting || !newNome.trim()}
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Adicionar
+                  <Plus className="w-4 h-4 mr-2" /> {tCommon("add")}
                 </Button>
               </form>
             </CardContent>
@@ -180,11 +176,11 @@ const ProfessoresPage: React.FC = () => {
             <CardContent className="p-0">
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
-                  Carregando...
+                  {tCommon("loading")}
                 </div>
               ) : professores.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
-                  Nenhum professor cadastrado.
+                  {t("empty")}
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -198,7 +194,7 @@ const ProfessoresPage: React.FC = () => {
                           {p.name}
                           {p.user && (
                             <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
-                              Vinculado
+                              {t("linkedBadge")}
                             </span>
                           )}
                         </div>

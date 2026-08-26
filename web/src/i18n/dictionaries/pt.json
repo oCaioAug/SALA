@@ -70,7 +70,8 @@
       "submitUpdate": "Atualizar Sala",
       "cancel": "Cancelar",
       "sectorHelp": "Os gestores deste setor poderão aprovar reservas desta sala.",
-      "sectorHelpNone": "Sem setor, apenas administradores da organização aprovam reservas desta sala."
+      "sectorHelpNone": "Sem setor, apenas administradores da organização aprovam reservas desta sala.",
+      "sectorLoadError": "Não foi possível carregar os setores. Tente novamente."
     }
   },
   "Pagination": {
@@ -150,7 +151,7 @@
     "sectionRoomsTitle": "Atribuir salas",
     "sectionRoomsHelp": "Salas sob responsabilidade deste setor",
     "sectionMembersTitle": "Adicionar gestores",
-    "sectionMembersHelp": "Marque as funções de cada pessoa: confirmar agendas e/ou gerenciar salas (infos + itens)",
+    "sectionMembersHelp": "Marque as funções de cada pessoa: confirmar agendamentos e/ou gerenciar salas (infos + itens)",
     "roomsSelected": "{count} selecionada(s)",
     "noMembersYet": "Nenhum gestor na lista. Inclua abaixo e depois salve.",
     "addMemberLabel": "Incluir gestor",
@@ -166,10 +167,10 @@
     "checklistMembers": "Gestores",
     "checklistReady": "Ok",
     "checklistPending": "Pendente",
-    "roomsManageEffect": "Efeito: quem confirmar agendas vê Solicitações; quem gerenciar salas edita a sala e os itens destas salas.",
+    "roomsManageEffect": "Efeito: quem confirmar agendamentos vê Solicitações; quem gerenciar salas edita a sala e os itens destas salas.",
     "createSubmit": "Criar setor",
     "confirmDiscard": "Há alterações não salvas. Descartar e fechar?",
-    "capabilityApprove": "Confirmar agendas",
+    "capabilityApprove": "Confirmar agendamentos",
     "capabilityManageRooms": "Gerenciar salas (infos + itens)",
     "capabilityRequiredHint": "Marque ao menos uma função para esta pessoa."
   },
@@ -287,8 +288,16 @@
     "redirectingToLogin": "Redirecionando para login...",
     "a11y": {
       "closePanel": "Fechar painel",
-      "close": "Fechar"
-    }
+      "close": "Fechar",
+      "dismiss": "Dispensar"
+    },
+    "searchSelect": {
+      "searchPlaceholder": "Buscar...",
+      "empty": "Nenhum resultado",
+      "placeholder": "Selecione..."
+    },
+    "all": "Todos",
+    "search": "Pesquisar..."
   },
   "Invites": {
     "title": "Convidar membros",
@@ -362,7 +371,18 @@
       "viewAllOrgs": "Ver todas as organizações",
       "retention": "Retenção (30d)",
       "activeOrgs30d": "Orgs ativas (30d)",
-      "analyticsDescription": "Analytics global da plataforma SALA"
+      "analyticsDescription": "Analytics global da plataforma SALA",
+      "retentionLine": "Retenção (30d): {rate}% · Orgs ativas: {active}/{total}",
+      "chartCount": "Quantidade",
+      "noData": "Sem dados",
+      "orgsCount": "{count} orgs",
+      "expiringTrialsWindow": "Trials expirando (7d)",
+      "noExpiringTrials": "Nenhum trial expirando",
+      "inactiveOrgsWindow": "Organizações sem atividade (30d)",
+      "createdOn": "criada em {date}",
+      "topOrgsWindow": "Top organizações por reservas (30d)",
+      "noRecentReservations": "Nenhuma reserva recente",
+      "reservationsCount": "{count} reservas"
     },
     "organizations": {
       "title": "Organizações",
@@ -420,7 +440,44 @@
         "members": "Membros",
         "rooms": "Salas",
         "usage": "Uso e plano"
-      }
+      },
+      "roleOwner": "Owner",
+      "roleAdmin": "Admin",
+      "roleMember": "Membro",
+      "metricMembers": "Membros",
+      "metricRooms": "Salas",
+      "metricReservations30d": "Reservas (30d)",
+      "metricOpenIncidents": "Incidentes abertos",
+      "metricUsers": "Usuários",
+      "metricReservationsMonth": "Reservas (mês)",
+      "isSchool": "Instituição de Ensino",
+      "toggle": "Alternar",
+      "yes": "Sim",
+      "no": "Não",
+      "ownerLabel": "Owner",
+      "seats": "{count} lugares",
+      "newOrg": "Nova organização",
+      "searchTitle": "Buscar organização",
+      "searchPlaceholder": "Nome, slug ou e-mail do owner...",
+      "filterStatus": "Status",
+      "allStatuses": "Todos os status",
+      "filterActive": "Ativas",
+      "filterSuspended": "Suspensas",
+      "filterTrial": "Trial",
+      "filterPlan": "Plano",
+      "allPlans": "Todos os planos",
+      "ownerPrefix": "Owner:",
+      "planPrefix": "Plano:",
+      "membersRooms": "{members} membros · {rooms} salas",
+      "loadError": "Erro ao carregar",
+      "metricTotal": "Total",
+      "metricTotalSub": "Organizações cadastradas",
+      "metricActive": "Ativas",
+      "metricActiveSub": "Em operação",
+      "metricTrial": "Trial",
+      "metricTrialSub": "Período de teste",
+      "metricSuspended": "Suspensas",
+      "metricSuspendedSub": "Acesso bloqueado"
     },
     "users": {
       "title": "Usuários",
@@ -612,6 +669,36 @@
         "cancelledSub": "Assinaturas encerradas",
         "total": "Total",
         "totalSub": "{count} org(s) sem assinatura"
+      }
+    },
+    "badges": {
+      "organization": {
+        "ACTIVE": "Ativa",
+        "SUSPENDED": "Suspensa",
+        "TRIAL": "Trial"
+      },
+      "platformRole": {
+        "SUPER_ADMIN": "Super Admin",
+        "NONE": "Usuário"
+      },
+      "subscription": {
+        "ACTIVE": "Ativa",
+        "TRIALING": "Trial",
+        "PAST_DUE": "Inadimplente",
+        "CANCELLED": "Cancelada"
+      },
+      "incident": {
+        "REPORTED": "Reportado",
+        "IN_ANALYSIS": "Em análise",
+        "IN_PROGRESS": "Em progresso",
+        "RESOLVED": "Resolvido",
+        "CANCELLED": "Cancelado"
+      },
+      "incidentPriority": {
+        "LOW": "Baixa",
+        "MEDIUM": "Média",
+        "HIGH": "Alta",
+        "CRITICAL": "Crítica"
       }
     }
   },
@@ -1173,8 +1260,14 @@
       "listView": "Lista",
       "calendarView": "Calendário",
       "searchPlaceholder": "Buscar por usuário ou propósito...",
-      "statusAll": "Todos os Status"
-    }
+      "statusAll": "Todos os Status",
+      "emptyFiltered": "Tente ajustar os filtros de busca para encontrar reservas.",
+      "emptyRoom": "Esta sala ainda não possui agendamentos.",
+      "createFirst": "Criar Primeira Reserva",
+      "reservationsOnDay": "{count} reserva(s) neste dia"
+    },
+    "roomTitle": "Agendamentos - {name}",
+    "roomReservationsFound": "{count} reserva(s) encontrada(s) para esta sala"
   },
   "SettingsPage": {
     "title": "Configurações",
@@ -1275,7 +1368,9 @@
       "title": "Conflito de Reserva",
       "message": "Esta solicitação conflita com as seguintes reservas:",
       "forceApprove": "Aprovar Mesmo Assim",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "listTitle": "Reservas Conflitantes:",
+      "badge": "Conflito"
     },
     "feedback": {
       "successApprove": "Solicitação aprovada com sucesso!",
@@ -1300,7 +1395,18 @@
       "org": "Escopo: toda a organização",
       "manager": "Escopo: {sectors} — {count} sala(s)",
       "managerEmpty": "Escopo: nenhum setor com salas vinculadas"
-    }
+    },
+    "unknownRoom": "Sala desconhecida",
+    "errors": {
+      "loadRooms": "Erro ao carregar salas",
+      "unknown": "Erro desconhecido",
+      "checkConflicts": "Erro ao verificar conflitos",
+      "approve": "Erro ao aprovar solicitação",
+      "reject": "Erro ao rejeitar solicitação",
+      "httpStatus": "Erro {status}: {statusText}",
+      "instancesSuffix": " ({count} instâncias)"
+    },
+    "unknownUser": "Usuário desconhecido"
   },
   "Notifications": {
     "title": "Notificações",
@@ -1742,7 +1848,8 @@
       "phone": "Telefone da organização",
       "planName": "Plano",
       "planLimits": "Limites",
-      "trial": "Período trial"
+      "trial": "Período trial",
+      "isSchool": "Instituição de Ensino"
     },
     "placeholders": {
       "name": "Nome da organização",
@@ -1789,7 +1896,11 @@
     "submitting": "Criando...",
     "errors": {
       "generic": "Erro ao criar organização. Verifique os dados e tente novamente."
-    }
+    },
+    "isSchoolHint": "Ativar módulo de Grade Horária para Escolas/Universidades",
+    "yes": "Sim",
+    "no": "Não",
+    "emptyValue": "—"
   },
   "OnboardingPage": {
     "title": "Bem-vindo ao SALA",
@@ -1848,8 +1959,30 @@
       "unknown": "Erro desconhecido",
       "addItem": "Erro ao adicionar item",
       "updateItem": "Erro ao atualizar item",
-      "deleteItem": "Erro ao deletar item"
-    }
+      "deleteItem": "Erro ao deletar item",
+      "saveItem": "Erro ao salvar item"
+    },
+    "emptyDescription": "Comece adicionando itens para esta sala",
+    "addFirstItem": "Adicionar Primeiro Item",
+    "quantityLabel": "Quantidade: {count}",
+    "specifications": "Especificações:",
+    "confirmDelete": "Tem certeza que deseja deletar este item?",
+    "form": {
+      "itemName": "Nome do Item",
+      "itemNamePlaceholder": "Ex: Computador",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Descreva o item...",
+      "specifications": "Especificações (separadas por vírgula)",
+      "specificationsPlaceholder": "Ex: Windows 11, 16GB RAM, Core i7",
+      "quantity": "Quantidade",
+      "icon": "Ícone",
+      "iconHint": "Opcional - usado como fallback se não houver imagem",
+      "saving": "Salvando...",
+      "updateItem": "Atualizar Item",
+      "addItem": "Adicionar Item",
+      "cancel": "Cancelar"
+    },
+    "itemsRegistered": "{count} itens cadastrados"
   },
   "RoomDetail": {
     "loading": "Carregando sala...",
@@ -1857,6 +1990,7 @@
     "backToDashboard": "Voltar ao Dashboard",
     "back": "Voltar",
     "capacity": "Capacidade: {count} pessoas",
+    "capacityLabel": "Capacidade",
     "viewReservations": "Ver Agendamentos",
     "editRoom": "Editar Sala",
     "addItem": "Adicionar Item",
@@ -2451,7 +2585,8 @@
     "console": {
       "title": "Terminal de Automação de Negócio",
       "subtitle": "Logs de Eventos em Tempo Real",
-      "waiting": "Aguardando envio de imagem para processamento..."
+      "waiting": "Aguardando envio de imagem para processamento...",
+      "empty": "Nenhum log..."
     },
     "controls": {
       "selectRoom": "Selecione uma Sala",
@@ -2472,7 +2607,8 @@
       "presetEmpty": "Laboratório Vazio",
       "presetFull": "Laboratório em Uso",
       "presetAudit": "Falta de Equipamentos",
-      "presetProvision": "Nova Sala para Provisionar"
+      "presetProvision": "Nova Sala para Provisionar",
+      "previewAlt": "Preview de laboratório"
     },
     "auditTable": {
       "item": "Equipamento",
@@ -2499,7 +2635,228 @@
       "processing": "Processando...",
       "success": "Sala provisionada com sucesso! {count} itens foram criados.",
       "successBanner": "Sala provisionada com sucesso. Os equipamentos foram salvos e estão ativos.",
-      "empty": "Nenhum item detectado para provisionamento. Tente carregar outra foto."
+      "empty": "Nenhum item detectado para provisionamento. Tente carregar outra foto.",
+      "removeSuggestion": "Remover sugestão",
+      "aiClassSuggested": "IA Class: Suggested"
+    },
+    "toasts": {
+      "loadRoomsError": "Erro ao carregar lista de salas.",
+      "saveKeysError": "Erro ao salvar chaves.",
+      "clearCredsError": "Falha ao remover credenciais.",
+      "cameraAccessError": "Não foi possível acessar a câmera do dispositivo.",
+      "invalidImageFile": "Selecione um arquivo de imagem válido.",
+      "needImageOrPreset": "Por favor, envie uma foto ou use um cenário de teste antes de analisar.",
+      "needRoom": "Selecione uma sala de destino para sincronizar os dados.",
+      "auditMissing": "Atenção! Auditoria acusou falta de equipamentos. Um incidente foi gerado automaticamente.",
+      "auditOk": "Parabéns! Todos os equipamentos registrados foram identificados.",
+      "provisionFound": "IA identificou {count} tipos de equipamentos prontos para provisionamento.",
+      "provisionNone": "Nenhum equipamento cadastrável identificado.",
+      "processError": "Ocorreu um erro ao processar a imagem.",
+      "provisionConfirmError": "Erro ao confirmar provisionamento."
+    },
+    "logs": {
+      "cameraEnabled": "Câmera do laboratório ativada.",
+      "cameraDisabled": "Câmera desativada.",
+      "snapshotOk": "Snapshot da câmera capturado com sucesso!",
+      "imageLoaded": "Imagem \"{name}\" carregada pelo usuário.",
+      "presetSelected": "Cenário Preset selecionado: \"{name}\".",
+      "analysisStarted": "Iniciando análise inteligente em modo \"{mode}\"...",
+      "processError": "Erro no processamento: {message}",
+      "httpFailure": "Falha HTTP.",
+      "suggestionRemoved": "Sugestão de provisionamento removida da lista.",
+      "provisionSending": "Enviando solicitação de provisionamento em massa...",
+      "syncDone": "[DATABASE] Sincronização concluída! {count} equipamentos cadastrados na sala.",
+      "tabChanged": "Aba alterada para: \"{tab}\"",
+      "roomChanged": "Sala de destino alterada para ID: {id}"
+    },
+    "errors": {
+      "loadRooms": "Falha ao carregar salas",
+      "saveCreds": "Falha ao salvar credenciais",
+      "clearCreds": "Erro ao remover configurações",
+      "processImage": "Erro ao processar imagem via API",
+      "saveProvision": "Erro ao salvar provisionamento"
+    }
+  },
+  "GradeHoraria": {
+    "common": {
+      "back": "Voltar",
+      "loading": "Carregando...",
+      "access": "Acessar",
+      "add": "Adicionar",
+      "days": {
+        "1": "Segunda",
+        "2": "Terça",
+        "3": "Quarta",
+        "4": "Quinta",
+        "5": "Sexta"
+      }
+    },
+    "hub": {
+      "title": "Alocação de Grade Horária",
+      "description": "Configure os parâmetros e gere a grade horária automaticamente para sua instituição.",
+      "menu": {
+        "classes": {
+          "title": "Turmas",
+          "description": "Gerencie as turmas da instituição e seus períodos."
+        },
+        "subjects": {
+          "title": "Disciplinas",
+          "description": "Cadastre as matérias e disciplinas ofertadas."
+        },
+        "teachers": {
+          "title": "Professores",
+          "description": "Cadastre os professores independentemente de seus usuários."
+        },
+        "loads": {
+          "title": "Carga Horária",
+          "description": "Associe professores, disciplinas e turmas."
+        },
+        "availability": {
+          "title": "Disponibilidades",
+          "description": "Defina os horários disponíveis de cada professor."
+        },
+        "generate": {
+          "title": "Gerar Grade",
+          "description": "Execute o motor de alocação para gerar os horários."
+        },
+        "settings": {
+          "title": "Configurações da Grade",
+          "description": "Defina os turnos e os horários de início e fim das aulas."
+        }
+      }
+    },
+    "settings": {
+      "title": "Configurações da Grade",
+      "description": "Gerencie os turnos e os horários das aulas da instituição.",
+      "saveChanges": "Salvar Alterações",
+      "injectMocks": "Injetar Dados de Teste",
+      "newShiftName": "Novo Turno",
+      "shiftNamePlaceholder": "Nome do Turno (ex: Manhã)",
+      "removeShift": "Remover Turno",
+      "confirmRemoveShift": "Tem certeza que deseja remover este turno?",
+      "lessonSlotsTitle": "Horários das Aulas",
+      "addLesson": "Adicionar Aula",
+      "emptySlots": "Nenhum horário cadastrado neste turno.",
+      "lessonLabel": "Rótulo da Aula",
+      "lessonLabelPlaceholder": "ex: 1ª Aula",
+      "defaultLessonLabel": "Aula {n}",
+      "start": "Início",
+      "end": "Fim",
+      "addShift": "Adicionar Novo Turno",
+      "toastLoadError": "Erro ao carregar configurações",
+      "toastSaveSuccess": "Configurações salvas com sucesso!",
+      "toastSaveError": "Erro ao salvar configurações",
+      "toastMocksSuccess": "Mocks injetados com sucesso! Pressione F5 para recarregar.",
+      "toastMocksError": "Erro ao injetar mocks"
+    },
+    "classes": {
+      "title": "Turmas",
+      "description": "Gerencie as turmas disponíveis para alocação de horários.",
+      "formTitle": "Nova Turma",
+      "nameLabel": "Nome da Turma",
+      "namePlaceholder": "Ex: 1º Ano A",
+      "shiftLabel": "Turno da Turma",
+      "noShifts": "Nenhum turno configurado",
+      "addButton": "Adicionar Turma",
+      "empty": "Nenhuma turma cadastrada.",
+      "confirmDelete": "Tem certeza que deseja excluir esta turma?",
+      "toastLoadError": "Erro ao carregar dados",
+      "toastCreateSuccess": "Turma criada com sucesso!",
+      "toastCreateError": "Erro ao criar turma",
+      "toastDeleteSuccess": "Turma excluída com sucesso!",
+      "toastDeleteError": "Erro ao excluir turma"
+    },
+    "teachers": {
+      "title": "Professores",
+      "description": "Cadastre os professores que serão alocados na grade horária.",
+      "formTitle": "Novo Professor",
+      "nameLabel": "Nome do Professor",
+      "namePlaceholder": "Ex: João da Silva",
+      "emailLabel": "E-mail (Opcional)",
+      "emailPlaceholder": "Ex: joao@escola.com",
+      "linkUserLabel": "Vincular a Usuário (Opcional)",
+      "linkUserNone": "Não vincular...",
+      "linkUserHint": "Se vinculado, o professor poderá fazer login no sistema no futuro.",
+      "linkedBadge": "Vinculado",
+      "empty": "Nenhum professor cadastrado.",
+      "confirmDelete": "Tem certeza que deseja excluir este professor? Todas as cargas horárias e disponibilidades associadas serão perdidas.",
+      "toastLoadError": "Erro ao carregar professores",
+      "toastCreateSuccess": "Professor adicionado com sucesso!",
+      "toastCreateError": "Erro ao adicionar professor",
+      "toastDeleteSuccess": "Professor excluído com sucesso!",
+      "toastDeleteError": "Erro ao excluir professor"
+    },
+    "subjects": {
+      "title": "Disciplinas",
+      "description": "Gerencie as matérias e disciplinas ofertadas pela instituição.",
+      "formTitle": "Nova Disciplina",
+      "nameLabel": "Nome da Disciplina",
+      "namePlaceholder": "Ex: Matemática",
+      "codeLabel": "Código (Opcional)",
+      "codePlaceholder": "Ex: MAT01",
+      "codeDisplay": "Código: {code}",
+      "empty": "Nenhuma disciplina cadastrada.",
+      "confirmDelete": "Tem certeza que deseja excluir esta disciplina?",
+      "toastLoadError": "Erro ao carregar disciplinas",
+      "toastCreateSuccess": "Disciplina criada com sucesso!",
+      "toastCreateError": "Erro ao criar disciplina",
+      "toastDeleteSuccess": "Disciplina excluída com sucesso!",
+      "toastDeleteError": "Erro ao excluir disciplina"
+    },
+    "loads": {
+      "title": "Cargas Horárias",
+      "description": "Associe Turmas, Disciplinas e Professores com suas respectivas aulas por semana.",
+      "formTitle": "Nova Carga Horária",
+      "classLabel": "Turma",
+      "classPlaceholder": "Selecione a turma...",
+      "subjectLabel": "Disciplina",
+      "subjectPlaceholder": "Selecione a disciplina...",
+      "teacherLabel": "Professor",
+      "teacherPlaceholder": "Selecione o professor...",
+      "lessonsPerWeek": "Aulas por Semana",
+      "linkButton": "Vincular Carga",
+      "empty": "Nenhuma carga horária vinculada.",
+      "teacherPrefix": "Professor: {name}",
+      "lessonsCount": "{count, plural, one {# aula} other {# aulas}}",
+      "confirmDelete": "Tem certeza que deseja excluir esta carga horária?",
+      "toastLoadError": "Erro ao carregar os dados",
+      "toastCreateSuccess": "Carga horária vinculada com sucesso!",
+      "toastCreateError": "Erro ao vincular carga horária",
+      "toastDeleteSuccess": "Carga horária excluída com sucesso!",
+      "toastDeleteError": "Erro ao excluir carga horária"
+    },
+    "availability": {
+      "title": "Disponibilidade dos Professores",
+      "description": "Selecione um professor e marque os horários em que ele pode lecionar.",
+      "selectTeacher": "Selecione o Professor",
+      "selectPlaceholder": "Selecione...",
+      "gridTitle": "Grade de Horários",
+      "saveButton": "Salvar Disponibilidade",
+      "lessonColumn": "Aula",
+      "emptyShiftSlots": "Nenhuma aula configurada para este turno.",
+      "toastLoadError": "Erro ao carregar dados",
+      "toastLoadAvailabilityError": "Erro ao carregar disponibilidades",
+      "toastSaveSuccess": "Disponibilidades salvas com sucesso!",
+      "toastSaveError": "Erro ao salvar disponibilidades"
+    },
+    "generate": {
+      "title": "Gerar Grade Horária",
+      "description": "Execute o motor de alocação para distribuir as aulas baseadas nas disponibilidades.",
+      "readyTitle": "Pronto para gerar?",
+      "readyDescription": "O motor irá analisar todas as cargas horárias e disponibilidades para criar a melhor grade possível sem conflitos.",
+      "runButton": "Executar Motor de Alocação",
+      "processing": "Processando Algoritmo...",
+      "perfectTitle": "Alocação Perfeita!",
+      "partialTitle": "Alocação Parcial",
+      "fitnessScore": "Fitness Score: {score}%",
+      "unallocatedTitle": "Cargas não alocadas:",
+      "unallocatedItem": "{className} - {subjectName} ({teacherName}): Faltam {count} aulas",
+      "errorsTitle": "Erros de Restrição:",
+      "schedulesByClass": "Grades por Turma",
+      "timeColumn": "Horário",
+      "toastSuccess": "Grade gerada com sucesso!",
+      "toastPartial": "Grade gerada com restrições (algumas aulas não alocadas).",
+      "toastError": "Erro ao gerar grade"
     }
   }
 }

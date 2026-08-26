@@ -14,7 +14,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { AdminMetricCards } from "@/components/admin/AdminMetricCards";
@@ -24,6 +24,7 @@ import { OrganizationDailyStatsChart } from "@/components/admin/OrganizationDail
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getIntlLocale } from "@/lib/utils";
 
 export interface OrganizationUsage {
   planName: string | null;
@@ -87,16 +88,16 @@ export interface OrganizationDetail {
   _count: { members: number; rooms: number };
 }
 
-const roleLabels: Record<OrganizationRole, string> = {
-  OWNER: "Owner",
-  ADMIN: "Admin",
-  MEMBER: "Membro",
+const statusLabelsKey: Record<OrganizationStatus, string> = {
+  ACTIVE: "statusActive",
+  SUSPENDED: "statusSuspended",
+  TRIAL: "statusTrial",
 };
 
-const statusLabels: Record<OrganizationStatus, string> = {
-  ACTIVE: "Ativa",
-  SUSPENDED: "Suspensa",
-  TRIAL: "Trial",
+const roleLabelsKey: Record<OrganizationRole, string> = {
+  OWNER: "roleOwner",
+  ADMIN: "roleAdmin",
+  MEMBER: "roleMember",
 };
 
 type OrgDetailTab = "general" | "members" | "rooms" | "usage";
@@ -163,6 +164,8 @@ export function OrganizationDetailView({
   deleteOrganization,
 }: OrganizationDetailViewProps) {
   const t = useTranslations("Admin.organizations");
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const [activeTab, setActiveTab] = useState<OrgDetailTab>("general");
 
   const tabs = [
@@ -175,28 +178,28 @@ export function OrganizationDetailView({
   const summaryMetrics = [
     {
       id: "members",
-      label: "Membros",
+      label: t("metricMembers"),
       value: org._count.members,
       icon: Users,
       iconClassName: "text-blue-400",
     },
     {
       id: "rooms",
-      label: "Salas",
+      label: t("metricRooms"),
       value: org._count.rooms,
       icon: DoorOpen,
       iconClassName: "text-emerald-400",
     },
     {
       id: "reservations",
-      label: "Reservas (30d)",
+      label: t("metricReservations30d"),
       value: org.metrics.reservationsLast30Days,
       icon: BarChart3,
       iconClassName: "text-primary",
     },
     {
       id: "incidents",
-      label: "Incidentes abertos",
+      label: t("metricOpenIncidents"),
       value: org.metrics.openIncidents,
       icon: AlertTriangle,
       iconClassName: "text-orange-400",
@@ -320,18 +323,18 @@ export function OrganizationDetailView({
                         org.status === status ? "bg-primary" : undefined
                       }
                     >
-                      {statusLabels[status]}
+                      {t(statusLabelsKey[status])}
                     </Button>
                   ))}
                 </div>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Instituição de Ensino
+                  {t("isSchool")}
                 </p>
                 <div className="mt-2 flex items-center gap-3">
                   <span className="text-sm text-foreground">
-                    {org.isSchool ? "Sim" : "Não"}
+                    {org.isSchool ? t("yes") : t("no")}
                   </span>
                   <Button
                     size="sm"
@@ -339,12 +342,12 @@ export function OrganizationDetailView({
                     onClick={() => updateIsSchool(!org.isSchool)}
                     disabled={updating}
                   >
-                    Alternar
+                    {t("toggle")}
                   </Button>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Owner</p>
+                <p className="text-sm text-muted-foreground">{t("ownerLabel")}</p>
                 <div className="mt-1 flex items-center gap-2 text-foreground">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   {org.owner.name ?? org.owner.email}
@@ -358,7 +361,7 @@ export function OrganizationDetailView({
                   {t("createdAt")}
                 </p>
                 <p className="text-foreground">
-                  {new Date(org.createdAt).toLocaleDateString("pt-BR")}
+                  {new Date(org.createdAt).toLocaleDateString(intlLocale)}
                 </p>
               </div>
               <div className="border-t border-border pt-4">
@@ -403,10 +406,10 @@ export function OrganizationDetailView({
                 className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
               >
                 <option value={OrganizationRole.MEMBER}>
-                  {roleLabels.MEMBER}
+                  {t(roleLabelsKey.MEMBER)}
                 </option>
                 <option value={OrganizationRole.ADMIN}>
-                  {roleLabels.ADMIN}
+                  {t(roleLabelsKey.ADMIN)}
                 </option>
               </select>
               <Button type="submit" size="sm">
@@ -429,7 +432,7 @@ export function OrganizationDetailView({
                   </div>
                   {member.role === OrganizationRole.OWNER ? (
                     <span className="text-xs font-medium text-primary dark:text-primary">
-                      Owner
+                      {t("roleOwner")}
                     </span>
                   ) : (
                     <div className="flex flex-wrap items-center gap-2">
@@ -444,8 +447,10 @@ export function OrganizationDetailView({
                         }
                         className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground"
                       >
-                        <option value="ADMIN">{roleLabels.ADMIN}</option>
-                        <option value="MEMBER">{roleLabels.MEMBER}</option>
+                        <option value="ADMIN">{t(roleLabelsKey.ADMIN)}</option>
+                        <option value="MEMBER">
+                          {t(roleLabelsKey.MEMBER)}
+                        </option>
                       </select>
                       <Button
                         type="button"
@@ -511,7 +516,9 @@ export function OrganizationDetailView({
                     <p className="font-medium text-foreground">{room.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {room.status}
-                      {room.capacity ? ` · ${room.capacity} lugares` : ""}
+                      {room.capacity
+                        ? ` · ${t("seats", { count: room.capacity })}`
+                        : ""}
                     </p>
                   </div>
                 ))}
@@ -592,19 +599,20 @@ export function OrganizationDetailView({
 }
 
 function UsageSection({ usage }: { usage: OrganizationUsage }) {
+  const t = useTranslations("Admin.organizations");
   const rows = [
     {
-      label: "Salas",
+      label: t("metricRooms"),
       current: usage.roomsCount,
       max: usage.maxRooms,
     },
     {
-      label: "Usuários",
+      label: t("metricUsers"),
       current: usage.membersCount,
       max: usage.maxUsers,
     },
     {
-      label: "Reservas (mês)",
+      label: t("metricReservationsMonth"),
       current: usage.reservationsThisMonth,
       max: usage.maxReservationsPerMonth,
     },

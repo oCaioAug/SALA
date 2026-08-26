@@ -1,16 +1,26 @@
 import React from "react";
+import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "sm" | "md" | "lg" | "icon";
+  loading?: boolean;
   children: React.ReactNode;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = "primary", size = "md", children, ...props },
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      loading = false,
+      disabled,
+      children,
+      ...props
+    },
     ref
   ) => {
     const baseStyles =
@@ -32,13 +42,24 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       icon: "h-9 w-9 p-0",
     };
 
+    const spinnerSize =
+      size === "sm" ? "h-3.5 w-3.5" : size === "lg" ? "h-5 w-5" : "h-4 w-4";
+
     return (
       <button
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         ref={ref}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
         {...props}
       >
-        {children}
+        {loading ? (
+          <Loader2
+            className={cn(spinnerSize, size === "icon" ? "" : "mr-2", "animate-spin")}
+            aria-hidden
+          />
+        ) : null}
+        {loading && size === "icon" ? null : children}
       </button>
     );
   }

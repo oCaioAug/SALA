@@ -159,10 +159,17 @@ const AgendamentosPage: React.FC = () => {
     if (dayReservations.length > 0) {
       setSelectedReservation(dayReservations[0]);
       setIsDetailsModalOpen(true);
-    } else {
-      // Se não há reservas no dia, abrir modal de criação
-      setIsCreateModalOpen(true);
+      return;
     }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const clicked = new Date(date);
+    clicked.setHours(0, 0, 0, 0);
+    // Empty past days: do not open create
+    if (clicked.getTime() < today.getTime()) return;
+
+    setIsCreateModalOpen(true);
   };
 
   const handleCreateReservation = () => {

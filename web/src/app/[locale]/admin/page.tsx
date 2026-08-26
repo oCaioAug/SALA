@@ -8,7 +8,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import {
   Bar,
@@ -30,6 +30,7 @@ import { useTheme } from "@/lib/providers/ThemeProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { getIntlLocale } from "@/lib/utils";
 
 interface AdminStats {
   organizations: {
@@ -63,6 +64,8 @@ interface AdminStats {
 
 export default function AdminDashboardPage() {
   const t = useTranslations("Admin.dashboard");
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const { fromResponse } = useApiErrorMessage();
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -182,17 +185,20 @@ export default function AdminDashboardPage() {
           <Button
             type="button"
             onClick={refreshDailyStats}
-            disabled={refreshing}
+            loading={refreshing}
           >
-            {refreshing ? "Atualizando..." : "Atualizar métricas diárias"}
+            {refreshing ? t("refreshing") : t("refreshMetrics")}
           </Button>
         }
       />
       <AdminPageContent>
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            Retenção (30d): {stats.retentionRate}% · Orgs ativas:{" "}
-            {stats.activeOrganizationsLast30Days}/{stats.organizations.total}
+            {t("retentionLine", {
+              rate: stats.retentionRate,
+              active: stats.activeOrganizationsLast30Days,
+              total: stats.organizations.total,
+            })}
           </p>
         </div>
         <div className="space-y-8">
@@ -230,7 +236,7 @@ export default function AdminDashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  Novas organizações por semana
+                  {t("weeklyOrgs")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="h-64">
@@ -243,7 +249,12 @@ export default function AdminDashboardPage() {
                     />
                     <YAxis tick={{ fill: chartTick, fontSize: 11 }} />
                     <Tooltip contentStyle={chartTooltipStyle} />
-                    <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="count"
+                      name={t("chartCount")}
+                      fill="#8b5cf6"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -253,7 +264,7 @@ export default function AdminDashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-foreground">
                   <Users className="h-5 w-5 text-blue-400" />
-                  Novos usuários por semana
+                  {t("weeklyUsers")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="h-64">
@@ -266,7 +277,12 @@ export default function AdminDashboardPage() {
                     />
                     <YAxis tick={{ fill: chartTick, fontSize: 11 }} />
                     <Tooltip contentStyle={chartTooltipStyle} />
-                    <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="count"
+                      name={t("chartCount")}
+                      fill="#3b82f6"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -277,12 +293,12 @@ export default function AdminDashboardPage() {
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="text-foreground">
-                  Distribuição por plano
+                  {t("orgsByPlan")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {stats.organizationsByPlan.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Sem dados</p>
+                  <p className="text-sm text-muted-foreground">{t("noData")}</p>
                 ) : (
                   stats.organizationsByPlan.map(row => (
                     <div
@@ -291,7 +307,7 @@ export default function AdminDashboardPage() {
                     >
                       <span className="text-foreground">{row.planName}</span>
                       <span className="text-muted-foreground">
-                        {row.count} orgs
+                        {t("orgsCount", { count: row.count })}
                       </span>
                     </div>
                   ))
@@ -302,13 +318,13 @@ export default function AdminDashboardPage() {
             <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="text-foreground">
-                  Trials expirando (7d)
+                  {t("expiringTrialsWindow")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {stats.expiringTrials.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    Nenhum trial expirando
+                    {t("noExpiringTrials")}
                   </p>
                 ) : (
                   stats.expiringTrials.map(trial => (
@@ -324,7 +340,7 @@ export default function AdminDashboardPage() {
                       </Link>
                       <span className="text-muted-foreground">
                         {new Date(trial.currentPeriodEnd).toLocaleDateString(
-                          "pt-BR"
+                          intlLocale
                         )}
                       </span>
                     </div>
@@ -338,7 +354,7 @@ export default function AdminDashboardPage() {
             <Card className="border-amber-500/20 bg-amber-500/5">
               <CardHeader>
                 <CardTitle className="text-amber-900 dark:text-amber-200">
-                  Organizações sem atividade (30d)
+                  {t("inactiveOrgsWindow")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -354,8 +370,11 @@ export default function AdminDashboardPage() {
                       {org.name}
                     </Link>
                     <span className="text-muted-foreground">
-                      criada em{" "}
-                      {new Date(org.createdAt).toLocaleDateString("pt-BR")}
+                      {t("createdOn", {
+                        date: new Date(org.createdAt).toLocaleDateString(
+                          intlLocale
+                        ),
+                      })}
                     </span>
                   </div>
                 ))}
@@ -366,23 +385,26 @@ export default function AdminDashboardPage() {
           <Card className="border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-foreground">
-                Top organizações por reservas (30d)
+                {t("topOrgsWindow")}
               </CardTitle>
               <Link
                 href="/admin/organizations"
-                className="text-sm text-primary hover:text-primary dark:text-primary dark:hover:text-primary dark:text-primary"
+                className="text-sm text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
               >
-                Ver todas
+                {t("viewAllOrgs")}
               </Link>
             </CardHeader>
             <CardContent>
               {stats.topOrganizationsByReservations.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Nenhuma reserva recente
+                  {t("noRecentReservations")}
                 </p>
               ) : (
                 <MotionlessTopOrgsList
                   orgs={stats.topOrganizationsByReservations}
+                  reservationsLabel={count =>
+                    t("reservationsCount", { count })
+                  }
                 />
               )}
             </CardContent>
@@ -407,8 +429,10 @@ function MotionlessChartsGrid({ children }: { children: React.ReactNode }) {
 
 function MotionlessTopOrgsList({
   orgs,
+  reservationsLabel,
 }: {
   orgs: { id: string; name: string; count: number }[];
+  reservationsLabel: (count: number) => string;
 }) {
   return (
     <div className="space-y-3">
@@ -429,7 +453,7 @@ function MotionlessTopOrgsList({
             </Link>
           </div>
           <span className="text-sm text-muted-foreground">
-            {org.count} reservas
+            {reservationsLabel(org.count)}
           </span>
         </div>
       ))}

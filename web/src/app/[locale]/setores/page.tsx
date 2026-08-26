@@ -25,6 +25,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
@@ -688,10 +689,11 @@ const SetoresPage: React.FC = () => {
                       {step.label}
                     </p>
                     <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-                      {step.meta ??
-                        (step.done
+                      {"meta" in step && step.meta
+                        ? step.meta
+                        : step.done
                           ? t("checklistReady")
-                          : t("checklistPending"))}
+                          : t("checklistPending")}
                     </p>
                   </div>
                 </div>
@@ -927,18 +929,17 @@ const SetoresPage: React.FC = () => {
                   {t("addMemberLabel")}
                 </p>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <select
+                  <SearchableSelect
                     value={memberUserId}
-                    onChange={e => setMemberUserId(e.target.value)}
-                    className="h-9 min-w-0 flex-1 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                  >
-                    <option value="">{t("selectMember")}</option>
-                    {memberCandidates.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.name ? `${u.name} (${u.email})` : u.email}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setMemberUserId}
+                    options={memberCandidates.map(u => ({
+                      value: u.id,
+                      label: u.name ? `${u.name} (${u.email})` : u.email,
+                    }))}
+                    placeholder={t("selectMember")}
+                    allowEmpty
+                    className="min-w-0 flex-1"
+                  />
                   <Button
                     type="button"
                     onClick={handleAddMember}

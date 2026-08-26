@@ -226,6 +226,7 @@ export default function AdminIncidentsPage() {
                   setPage(1);
                 },
                 allLabel: t("allStatuses"),
+                native: true,
                 options: Object.values(IncidentStatus).map(value => ({
                   value,
                   label: value,
@@ -240,6 +241,7 @@ export default function AdminIncidentsPage() {
                   setPage(1);
                 },
                 allLabel: t("allPriorities"),
+                native: true,
                 options: Object.values(IncidentPriority).map(value => ({
                   value,
                   label: value,

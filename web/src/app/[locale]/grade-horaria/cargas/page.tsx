@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { Clock, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { useNavigation } from "@/lib/hooks/useNavigation";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
   getCargasHorarias,
@@ -21,6 +23,8 @@ import {
 } from "../actions";
 
 const CargasHorariasPage: React.FC = () => {
+  const t = useTranslations("GradeHoraria.loads");
+  const tCommon = useTranslations("GradeHoraria.common");
   const [currentPage, setCurrentPage] = useState("grade-horaria");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -56,7 +60,7 @@ const CargasHorariasPage: React.FC = () => {
       setDisciplinas(disciplinasData);
       setProfessores(professoresData);
     } catch (err: any) {
-      showError(err.message || "Erro ao carregar os dados");
+      showError(err.message || t("toastLoadError"));
     } finally {
       setLoading(false);
     }
@@ -64,6 +68,7 @@ const CargasHorariasPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -79,34 +84,34 @@ const CargasHorariasPage: React.FC = () => {
         professorId,
         Number(quantidadeAulas)
       );
-      showSuccess("Carga horária vinculada com sucesso!");
+      showSuccess(t("toastCreateSuccess"));
 
       // Reset form (keep turma/disciplina to make multiple entries easier)
       setQuantidadeAulas(1);
 
       // Update with all relations for the UI
-      const turma = turmas.find(t => t.id === turmaId);
-      const disciplina = disciplinas.find(d => d.id === disciplinaId);
-      const professor = professores.find(p => p.id === professorId);
+      const turma = turmas.find(item => item.id === turmaId);
+      const disciplina = disciplinas.find(item => item.id === disciplinaId);
+      const professor = professores.find(item => item.id === professorId);
       setCargas(prev => [
         ...prev,
         { ...newCarga, turma, disciplina, professor },
       ]);
     } catch (err: any) {
-      showError(err.message || "Erro ao vincular carga horária");
+      showError(err.message || t("toastCreateError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta carga horária?")) return;
+    if (!confirm(t("confirmDelete"))) return;
     try {
       await deleteCargaHoraria(id);
-      showSuccess("Carga horária excluída com sucesso!");
+      showSuccess(t("toastDeleteSuccess"));
       setCargas(prev => prev.filter(c => c.id !== id));
     } catch (err: any) {
-      showError(err.message || "Erro ao excluir carga horária");
+      showError(err.message || t("toastDeleteError"));
     }
   };
 
@@ -122,16 +127,15 @@ const CargasHorariasPage: React.FC = () => {
             <Clock className="w-8 h-8 text-blue-500" />
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Cargas Horárias
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Associe Turmas, Disciplinas e Professores com suas respectivas
-                aulas por semana.
+                {t("description")}
               </p>
             </div>
           </div>
           <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            Voltar
+            {tCommon("back")}
           </Button>
         </div>
 
@@ -139,67 +143,64 @@ const CargasHorariasPage: React.FC = () => {
           {/* Form */}
           <Card className="md:col-span-1">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Nova Carga Horária</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("formTitle")}</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Turma
+                    {t("classLabel")}
                   </label>
-                  <select
-                    className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  <SearchableSelect
                     value={turmaId}
-                    onChange={e => setTurmaId(e.target.value)}
+                    onChange={setTurmaId}
+                    options={turmas.map(item => ({
+                      value: item.id,
+                      label: item.name,
+                    }))}
+                    placeholder={t("classPlaceholder")}
+                    allowEmpty
                     disabled={isSubmitting}
-                  >
-                    <option value="">Selecione a turma...</option>
-                    {turmas.map(t => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                    triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Disciplina
+                    {t("subjectLabel")}
                   </label>
-                  <select
-                    className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  <SearchableSelect
                     value={disciplinaId}
-                    onChange={e => setDisciplinaId(e.target.value)}
+                    onChange={setDisciplinaId}
+                    options={disciplinas.map(item => ({
+                      value: item.id,
+                      label: item.name,
+                    }))}
+                    placeholder={t("subjectPlaceholder")}
+                    allowEmpty
                     disabled={isSubmitting}
-                  >
-                    <option value="">Selecione a disciplina...</option>
-                    {disciplinas.map(d => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
+                    triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Professor
+                    {t("teacherLabel")}
                   </label>
-                  <select
-                    className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  <SearchableSelect
                     value={professorId}
-                    onChange={e => setProfessorId(e.target.value)}
+                    onChange={setProfessorId}
+                    options={professores.map(item => ({
+                      value: item.id,
+                      label: item.name,
+                    }))}
+                    placeholder={t("teacherPlaceholder")}
+                    allowEmpty
                     disabled={isSubmitting}
-                  >
-                    <option value="">Selecione o professor...</option>
-                    {professores.map(p => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
+                    triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
 
                 <Input
-                  label="Aulas por Semana"
+                  label={t("lessonsPerWeek")}
                   type="number"
                   min="1"
                   max="40"
@@ -219,7 +220,7 @@ const CargasHorariasPage: React.FC = () => {
                     quantidadeAulas <= 0
                   }
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Vincular Carga
+                  <Plus className="w-4 h-4 mr-2" /> {t("linkButton")}
                 </Button>
               </form>
             </CardContent>
@@ -230,11 +231,11 @@ const CargasHorariasPage: React.FC = () => {
             <CardContent className="p-0">
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
-                  Carregando...
+                  {tCommon("loading")}
                 </div>
               ) : cargas.length === 0 ? (
                 <div className="p-8 text-center text-slate-500">
-                  Nenhuma carga horária vinculada.
+                  {t("empty")}
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -248,10 +249,11 @@ const CargasHorariasPage: React.FC = () => {
                           {c.turma.name} - {c.disciplina.name}
                         </div>
                         <div className="text-sm text-slate-500 flex gap-4 mt-1">
-                          <span>Professor: {c.professor.name}</span>
                           <span>
-                            {c.quantidadeAulas}{" "}
-                            {c.quantidadeAulas > 1 ? "aulas" : "aula"}
+                            {t("teacherPrefix", { name: c.professor.name })}
+                          </span>
+                          <span>
+                            {t("lessonsCount", { count: c.quantidadeAulas })}
                           </span>
                         </div>
                       </div>

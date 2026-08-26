@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface AdminActionErrorProps {
   message: string | null;
@@ -13,6 +14,7 @@ export function AdminActionError({
   onDismiss,
   className = "",
 }: AdminActionErrorProps) {
+  const t = useTranslations("Common.a11y");
   if (!message) return null;
 
   return (
@@ -26,7 +28,7 @@ export function AdminActionError({
           type="button"
           onClick={onDismiss}
           className="shrink-0 rounded p-0.5 text-red-300/80 hover:bg-red-500/20 hover:text-red-200"
-          aria-label="Dismiss"
+          aria-label={t("dismiss")}
         >
           <X className="h-4 w-4" />
         </button>

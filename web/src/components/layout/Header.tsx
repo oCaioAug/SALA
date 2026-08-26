@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
   const [notificationCount, setNotificationCount] = useState(0);
 
   const fetchNotificationCount = useCallback(async () => {
-    if (!session?.user?.email) {
+    if (!session?.user?.email && !session?.user?.id) {
       return;
     }
 
@@ -65,17 +65,18 @@ const Header: React.FC<HeaderProps> = ({
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const userKey = session.user.id || session.user.email;
 
       const response = await fetch(
-        `/api/notifications/count?userId=${session.user.email}`,
-        { signal: controller.signal }
+        `/api/notifications/count?userId=${encodeURIComponent(userKey!)}`,
+        { signal: controller.signal, cache: "no-store" }
       );
 
       clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
-        setNotificationCount(data.count);
+        setNotificationCount(typeof data.count === "number" ? data.count : 0);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -89,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({
         }
       }
     }
-  }, [session?.user?.email]);
+  }, [session?.user?.email, session?.user?.id, session?.user?.platformRole]);
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -176,8 +177,11 @@ const Header: React.FC<HeaderProps> = ({
 
               <NotificationModal
                 isOpen={isNotificationModalOpen}
-                onClose={() => setIsNotificationModalOpen(false)}
-                userId={session.user.email || session.user.id || ""}
+                onClose={() => {
+                  setIsNotificationModalOpen(false);
+                  fetchNotificationCount();
+                }}
+                userId={session.user.id || session.user.email || ""}
                 onNotificationChange={fetchNotificationCount}
                 onNotificationClick={onNotificationItemClick}
               />

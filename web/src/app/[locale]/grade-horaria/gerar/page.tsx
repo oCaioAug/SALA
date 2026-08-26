@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import { Play, CalendarCheck, AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
-import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useApp } from "@/lib/hooks/useApp";
+import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
   runTimetablingEngine,
@@ -18,15 +19,11 @@ import {
   getGradeSettings,
 } from "../actions";
 
-const DIAS_SEMANA = [
-  { id: 1, nome: "Segunda" },
-  { id: 2, nome: "Terça" },
-  { id: 3, nome: "Quarta" },
-  { id: 4, nome: "Quinta" },
-  { id: 5, nome: "Sexta" },
-];
+const DAY_IDS = [1, 2, 3, 4, 5] as const;
 
 const GerarGradePage: React.FC = () => {
+  const t = useTranslations("GradeHoraria.generate");
+  const tCommon = useTranslations("GradeHoraria.common");
   const [currentPage, setCurrentPage] = useState("grade-horaria");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
@@ -56,9 +53,9 @@ const GerarGradePage: React.FC = () => {
 
         const tMap: Record<string, string> = {};
         const tsMap: Record<string, string> = {};
-        turmas.forEach(t => {
-          tMap[t.id] = t.name;
-          if (t.shiftId) tsMap[t.id] = t.shiftId;
+        turmas.forEach(turma => {
+          tMap[turma.id] = turma.name;
+          if (turma.shiftId) tsMap[turma.id] = turma.shiftId;
         });
         setTurmasMap(tMap);
         setTurmaShiftsMap(tsMap);
@@ -88,12 +85,12 @@ const GerarGradePage: React.FC = () => {
       setResult(res);
 
       if (res.success) {
-        showSuccess("Grade gerada com sucesso!");
+        showSuccess(t("toastSuccess"));
       } else {
-        showError("Grade gerada com restrições (algumas aulas não alocadas).");
+        showError(t("toastPartial"));
       }
     } catch (err: any) {
-      showError(err.message || "Erro ao gerar grade");
+      showError(err.message || t("toastError"));
     } finally {
       setIsGenerating(false);
     }
@@ -129,16 +126,15 @@ const GerarGradePage: React.FC = () => {
             <CalendarCheck className="w-8 h-8 text-blue-500" />
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-                Gerar Grade Horária
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Execute o motor de alocação para distribuir as aulas baseadas
-                nas disponibilidades.
+                {t("description")}
               </p>
             </div>
           </div>
           <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            Voltar
+            {tCommon("back")}
           </Button>
         </div>
 
@@ -148,20 +144,15 @@ const GerarGradePage: React.FC = () => {
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full inline-block">
                 <Play className="w-12 h-12" />
               </div>
-              <h2 className="text-2xl font-semibold">Pronto para gerar?</h2>
-              <p className="text-slate-500">
-                O motor irá analisar todas as cargas horárias e disponibilidades
-                para criar a melhor grade possível sem conflitos.
-              </p>
+              <h2 className="text-2xl font-semibold">{t("readyTitle")}</h2>
+              <p className="text-slate-500">{t("readyDescription")}</p>
               <Button
                 size="lg"
                 className="w-full text-lg h-14"
                 onClick={handleGenerate}
                 disabled={isGenerating}
               >
-                {isGenerating
-                  ? "Processando Algoritmo..."
-                  : "Executar Motor de Alocação"}
+                {isGenerating ? t("processing") : t("runButton")}
               </Button>
             </div>
           </CardContent>
@@ -186,27 +177,28 @@ const GerarGradePage: React.FC = () => {
                   )}
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {result.success
-                        ? "Alocação Perfeita!"
-                        : "Alocação Parcial"}
+                      {result.success ? t("perfectTitle") : t("partialTitle")}
                     </h3>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">
-                      Fitness Score:{" "}
-                      <strong>{result.fitness.toFixed(1)}%</strong>
+                      {t("fitnessScore", {
+                        score: result.fitness.toFixed(1),
+                      })}
                     </p>
                     {result.unallocatedRequirements && (
                       <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-yellow-200">
                         <p className="font-semibold text-yellow-700 dark:text-yellow-500 mb-2">
-                          Cargas não alocadas:
+                          {t("unallocatedTitle")}
                         </p>
                         <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
                           {result.unallocatedRequirements.map(
                             (req: any, i: number) => (
                               <li key={i}>
-                                {turmasMap[req.turmaId]} -{" "}
-                                {discMap[req.disciplinaId]} (
-                                {profMap[req.professorId]}): Faltam{" "}
-                                {req.requiredSlots} aulas
+                                {t("unallocatedItem", {
+                                  className: turmasMap[req.turmaId],
+                                  subjectName: discMap[req.disciplinaId],
+                                  teacherName: profMap[req.professorId],
+                                  count: req.requiredSlots,
+                                })}
                               </li>
                             )
                           )}
@@ -216,7 +208,7 @@ const GerarGradePage: React.FC = () => {
                     {result.errors && (
                       <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-red-200">
                         <p className="font-semibold text-red-700 dark:text-red-500 mb-2">
-                          Erros de Restrição:
+                          {t("errorsTitle")}
                         </p>
                         <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
                           {result.errors.map((err: string, i: number) => (
@@ -231,12 +223,14 @@ const GerarGradePage: React.FC = () => {
             </Card>
 
             {/* Visualização da Grade por Turma */}
-            <h3 className="text-2xl font-bold mt-8 mb-4">Grades por Turma</h3>
+            <h3 className="text-2xl font-bold mt-8 mb-4">
+              {t("schedulesByClass")}
+            </h3>
             {sortedTurmaIds.map(turmaId => {
               const shiftId = turmaShiftsMap[turmaId];
               const shift = shifts.find(s => s.id === shiftId) || shifts[0];
               const shiftSlots = shift?.slots || [];
-              const days = DIAS_SEMANA.slice(0, shift?.daysPerWeek || 5);
+              const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
 
               return (
                 <Card key={turmaId} className="overflow-hidden">
@@ -256,14 +250,14 @@ const GerarGradePage: React.FC = () => {
                         <thead className="bg-white dark:bg-slate-950 border-b dark:border-slate-800">
                           <tr>
                             <th className="py-3 px-4 font-semibold text-slate-500">
-                              Horário
+                              {t("timeColumn")}
                             </th>
-                            {days.map(dia => (
+                            {days.map(diaId => (
                               <th
-                                key={dia.id}
+                                key={diaId}
                                 className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800"
                               >
-                                {dia.nome}
+                                {tCommon(`days.${diaId}`)}
                               </th>
                             ))}
                           </tr>
@@ -277,12 +271,12 @@ const GerarGradePage: React.FC = () => {
                               <td className="py-4 px-4 text-slate-500 font-medium whitespace-nowrap">
                                 {slot.label}
                               </td>
-                              {days.map(dia => {
-                                const timeSlotStr = `${dia.id}_${slot.id}`;
+                              {days.map(diaId => {
+                                const timeSlotStr = `${diaId}_${slot.id}`;
                                 const classInfo = grouped[turmaId][timeSlotStr];
                                 return (
                                   <td
-                                    key={dia.id}
+                                    key={diaId}
                                     className="p-2 border-l dark:border-slate-800"
                                   >
                                     {classInfo ? (

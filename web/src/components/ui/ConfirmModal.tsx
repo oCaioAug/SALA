@@ -118,7 +118,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
               type="button"
               variant={variant === "destructive" ? "destructive" : "primary"}
               onClick={onConfirm}
-              disabled={loading}
+              loading={loading}
               className="sm:min-w-[6.5rem]"
             >
               {confirmLabel}

@@ -218,6 +218,7 @@ export default function AdminBillingPage() {
                   setPage(1);
                 },
                 allLabel: t("allStatuses"),
+                native: true,
                 options: Object.values(SubscriptionStatus).map(value => ({
                   value,
                   label: value,

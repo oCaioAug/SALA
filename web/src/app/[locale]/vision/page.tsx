@@ -25,6 +25,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
@@ -61,6 +62,7 @@ export const dynamic = "force-dynamic";
 
 export default function VisionPage() {
   const t = useTranslations("Vision");
+  const tCommon = useTranslations("Common.searchSelect");
   const locale = useLocale();
   const [currentPage, setCurrentPage] = useState("vision");
   const { showSuccess, showError, showInfo } = useApp();
@@ -141,7 +143,7 @@ export default function VisionPage() {
     try {
       setLoadingRooms(true);
       const res = await fetch("/api/rooms");
-      if (!res.ok) throw new Error("Falha ao carregar salas");
+      if (!res.ok) throw new Error(t("errors.loadRooms"));
       const data = await res.json();
       setRooms(data);
       if (data.length > 0) {
@@ -149,7 +151,7 @@ export default function VisionPage() {
       }
     } catch (err) {
       console.error(err);
-      showError("Erro ao carregar lista de salas.");
+      showError(t("toasts.loadRoomsError"));
     } finally {
       setLoadingRooms(false);
     }
@@ -186,14 +188,14 @@ export default function VisionPage() {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.error || "Falha ao salvar credenciais");
+        throw new Error(errData.error || t("errors.saveCreds"));
       }
 
       showSuccess(t("credentials.saved"));
       setApiKeyInput("");
       fetchCredentialsInfo();
     } catch (err: any) {
-      showError(err.message || "Erro ao salvar chaves.");
+      showError(err.message || t("toasts.saveKeysError"));
     } finally {
       setSavingCreds(false);
     }
@@ -209,13 +211,13 @@ export default function VisionPage() {
         body: JSON.stringify({ apiKey: "", modelId: "" }),
       });
 
-      if (!res.ok) throw new Error("Erro ao remover configurações");
+      if (!res.ok) throw new Error(t("errors.clearCreds"));
 
       showSuccess(t("credentials.cleared"));
       setApiKeyInput("");
       fetchCredentialsInfo();
     } catch (_err: unknown) {
-      showError("Falha ao remover credenciais.");
+      showError(t("toasts.clearCredsError"));
     } finally {
       setSavingCreds(false);
     }
@@ -234,10 +236,10 @@ export default function VisionPage() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      addLog("Câmera do laboratório ativada.");
+      addLog(t("logs.cameraEnabled"));
     } catch (err) {
       console.error(err);
-      showError("Não foi possível acessar a câmera do dispositivo.");
+      showError(t("toasts.cameraAccessError"));
       setWebcamActive(false);
     }
   };
@@ -248,7 +250,7 @@ export default function VisionPage() {
       streamRef.current = null;
     }
     setWebcamActive(false);
-    addLog("Câmera desativada.");
+    addLog(t("logs.cameraDisabled"));
   };
 
   const captureSnapshot = () => {
@@ -266,7 +268,7 @@ export default function VisionPage() {
         setBase64Image(dataUrl);
         setImagePreviewUrl(dataUrl);
         stopWebcam();
-        addLog("Snapshot da câmera capturado com sucesso!");
+        addLog(t("logs.snapshotOk"));
       }
     }
   };
@@ -277,7 +279,7 @@ export default function VisionPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      showError("Selecione um arquivo de imagem válido.");
+      showError(t("toasts.invalidImageFile"));
       return;
     }
 
@@ -292,7 +294,7 @@ export default function VisionPage() {
       setAuditComparisons([]);
       setProvisionSuggestions([]);
       setCreatedIncidentId(null);
-      addLog(`Imagem "${file.name}" carregada pelo usuário.`);
+      addLog(t("logs.imageLoaded", { name: file.name }));
     };
     reader.readAsDataURL(file);
   };
@@ -331,19 +333,17 @@ export default function VisionPage() {
     setProvisionSuggestions([]);
     setCreatedIncidentId(null);
 
-    addLog(`Cenário Preset selecionado: "${name}".`);
+    addLog(t("logs.presetSelected", { name }));
   };
 
   // --- Rodar Análise com IA ---
   const handleAnalyzeImage = async () => {
     if (!base64Image) {
-      showError(
-        "Por favor, envie uma foto ou use um cenário de teste para executar a análise."
-      );
+      showError(t("toasts.needImageOrPreset"));
       return;
     }
     if (!selectedRoomId) {
-      showError("Selecione uma sala de destino para sincronizar os dados.");
+      showError(t("toasts.needRoom"));
       return;
     }
 
@@ -354,7 +354,7 @@ export default function VisionPage() {
       setProvisionSuggestions([]);
       setCreatedIncidentId(null);
       addLog(
-        `Iniciando análise inteligente em modo "${t(`tabs.${activeTab}`)}"...`
+        t("logs.analysisStarted", { mode: t(`tabs.${activeTab}`) })
       );
 
       const res = await fetch("/api/vision/analyze", {
@@ -369,7 +369,7 @@ export default function VisionPage() {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.error || "Erro ao processar imagem via API");
+        throw new Error(errData.error || t("errors.processImage"));
       }
 
       const data = await res.json();
@@ -389,13 +389,9 @@ export default function VisionPage() {
         setCreatedIncidentId(data.createdIncidentId || null);
 
         if (data.hasDiscrepancies) {
-          showError(
-            "Atenção! Auditoria acusou falta de equipamentos cadastrados! Incidente aberto pelo SALA-Bot."
-          );
+          showError(t("toasts.auditMissing"));
         } else {
-          showSuccess(
-            "Parabéns! Todos os equipamentos registrados no banco estão presentes na sala!"
-          );
+          showSuccess(t("toasts.auditOk"));
         }
       }
 
@@ -403,16 +399,20 @@ export default function VisionPage() {
         setProvisionSuggestions(data.suggestions);
         if (data.suggestions.length > 0) {
           showSuccess(
-            `IA identificou ${data.suggestions.length} tipos de equipamentos prontos para provisionamento.`
+            t("toasts.provisionFound", { count: data.suggestions.length })
           );
         } else {
-          showInfo("Nenhum equipamento cadastrável identificado.");
+          showInfo(t("toasts.provisionNone"));
         }
       }
     } catch (err: any) {
       console.error(err);
-      showError(err.message || "Ocorreu um erro ao processar a imagem.");
-      addLog(`❌ Erro no processamento: ${err.message || "Falha HTTP."}`);
+      showError(err.message || t("toasts.processError"));
+      addLog(
+        t("logs.processError", {
+          message: err.message || t("logs.httpFailure"),
+        })
+      );
     } finally {
       setAnalyzing(false);
     }
@@ -446,7 +446,7 @@ export default function VisionPage() {
 
   const handleRemoveSuggestion = (index: number) => {
     setProvisionSuggestions(prev => prev.filter((_, idx) => idx !== index));
-    addLog("Sugestão de provisionamento removida pelo administrador.");
+    addLog(t("logs.suggestionRemoved"));
   };
 
   // --- Enviar Provisionamento Final ao Banco ---
@@ -454,9 +454,7 @@ export default function VisionPage() {
     if (!selectedRoomId) return;
     try {
       setSavingProvision(true);
-      addLog(
-        "Enviando solicitação de provisionamento em massa para o PostgreSQL..."
-      );
+      addLog(t("logs.provisionSending"));
 
       const res = await fetch("/api/vision/provision-confirm", {
         method: "POST",
@@ -469,19 +467,19 @@ export default function VisionPage() {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.error || "Erro ao salvar provisionamento");
+        throw new Error(errData.error || t("errors.saveProvision"));
       }
 
       const data = await res.json();
       showSuccess(data.message);
       addLog(
-        `[DATABASE] Sincronização concluída! ${data.itemsCreatedCount} equipamentos cadastrados na sala.`
+        t("logs.syncDone", { count: data.itemsCreatedCount })
       );
       setProvisionSuggestions([]);
       setProvisioningSuccess(true);
     } catch (err: any) {
-      showError(err.message || "Erro ao confirmar provisionamento.");
-      addLog(`❌ Erro no banco: ${err.message}`);
+      showError(err.message || t("toasts.provisionConfirmError"));
+      addLog(t("logs.processError", { message: err.message }));
     } finally {
       setSavingProvision(false);
     }
@@ -544,7 +542,7 @@ export default function VisionPage() {
               setAuditComparisons([]);
               setProvisionSuggestions([]);
               setCreatedIncidentId(null);
-              addLog(`Aba alterada para: "${t(`tabs.${tab}`)}"`);
+              addLog(t("logs.tabChanged", { tab: t(`tabs.${tab}`) }));
             }}
             className={`flex-1 rounded-md py-2.5 text-center text-sm font-medium transition-colors ${
               activeTab === tab
@@ -594,87 +592,76 @@ export default function VisionPage() {
             </span>
           </div>
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 w-full sm:max-w-md sm:flex-1">
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 {t("controls.selectRoom")}
               </label>
               {loadingRooms ? (
                 <div className="h-9 animate-pulse rounded-md bg-muted" />
               ) : (
-                <div className="relative">
-                  <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <select
-                    value={selectedRoomId}
-                    onChange={e => {
-                      setSelectedRoomId(e.target.value);
-                      setPredictions([]);
-                      setAuditComparisons([]);
-                      setProvisionSuggestions([]);
-                      setCreatedIncidentId(null);
-                      addLog(
-                        `Sala de destino alterada para ID: ${e.target.value}`
-                      );
-                    }}
-                    className="h-9 w-full appearance-none rounded-md border border-input bg-card py-2 pl-10 pr-8 text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                  >
-                    <option value="">
-                      {t("controls.selectRoomPlaceholder")}
-                    </option>
-                    {rooms.map(room => (
-                      <option key={room.id} value={room.id}>
-                        {room.name} ({room.status})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <SearchableSelect
+                  value={selectedRoomId}
+                  onChange={v => {
+                    setSelectedRoomId(v);
+                    setPredictions([]);
+                    setAuditComparisons([]);
+                    setProvisionSuggestions([]);
+                    setCreatedIncidentId(null);
+                    addLog(t("logs.roomChanged", { id: v }));
+                  }}
+                  options={rooms.map(room => ({
+                    value: room.id,
+                    label: `${room.name} (${room.status})`,
+                  }))}
+                  placeholder={t("controls.selectRoomPlaceholder")}
+                  searchPlaceholder={tCommon("searchPlaceholder")}
+                  emptyMessage={tCommon("empty")}
+                  allowEmpty
+                />
               )}
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:w-auto">
-              <div
-                className={`rounded-md border px-3 py-2 text-xs sm:min-w-[11rem] ${
-                  imageReady
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
-                    : "border-border bg-muted text-muted-foreground"
-                }`}
-              >
-                <p className="font-medium">{t("workflow.imageStatus")}</p>
-                <p className="mt-0.5 truncate">
-                  {webcamActive
-                    ? t("workflow.webcamActive")
-                    : imagePreviewUrl
-                      ? t("workflow.imageReady")
-                      : t("workflow.imageMissing")}
-                </p>
-              </div>
+            <Button
+              size="lg"
+              className="min-w-[12rem] shrink-0"
+              onClick={handleAnalyzeImage}
+              disabled={!canAnalyze}
+              loading={analyzing}
+              title={
+                !selectedRoomId
+                  ? t("workflow.needRoom")
+                  : !base64Image
+                    ? t("workflow.needImage")
+                    : undefined
+              }
+            >
+              {analyzing ? (
+                t("controls.analyzing")
+              ) : (
+                <>
+                  <Cpu className="mr-2 h-4 w-4" />
+                  {t("controls.analyzeBtn")}
+                </>
+              )}
+            </Button>
+          </div>
 
-              <Button
-                size="lg"
-                className="min-w-[12rem]"
-                onClick={handleAnalyzeImage}
-                disabled={!canAnalyze}
-                title={
-                  !selectedRoomId
-                    ? t("workflow.needRoom")
-                    : !base64Image
-                      ? t("workflow.needImage")
-                      : undefined
-                }
-              >
-                {analyzing ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    {t("controls.analyzing")}
-                  </>
-                ) : (
-                  <>
-                    <Cpu className="mr-2 h-4 w-4" />
-                    {t("controls.analyzeBtn")}
-                  </>
-                )}
-              </Button>
-            </div>
+          <div
+            className={`mt-3 rounded-md border px-3 py-2 text-xs sm:max-w-md ${
+              imageReady
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+                : "border-border bg-muted text-muted-foreground"
+            }`}
+          >
+            <p className="font-medium">{t("workflow.imageStatus")}</p>
+            <p className="mt-0.5 truncate">
+              {webcamActive
+                ? t("workflow.webcamActive")
+                : imagePreviewUrl
+                  ? t("workflow.imageReady")
+                  : t("workflow.imageMissing")}
+            </p>
           </div>
 
           {!canAnalyze && !analyzing && (
@@ -762,7 +749,7 @@ export default function VisionPage() {
                   <div className="relative inline-block max-h-[480px] max-w-full">
                     <img
                       src={imagePreviewUrl}
-                      alt="Preview de laboratório"
+                      alt={t("controls.previewAlt")}
                       onLoad={handleImageLoad}
                       className="block h-auto max-h-[480px] w-auto select-none rounded-md"
                     />
@@ -866,7 +853,7 @@ export default function VisionPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    loadPreset("missing-laptop", "Laboratório com Falta")
+                    loadPreset("missing-laptop", t("controls.presetAudit"))
                   }
                   className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
                     base64Image.includes("preset-missing-laptop")
@@ -890,7 +877,7 @@ export default function VisionPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    loadPreset("onboarding", "Provisionamento Inicial")
+                    loadPreset("onboarding", t("controls.presetProvision"))
                   }
                   className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
                     base64Image.includes("preset-onboarding")
@@ -930,7 +917,7 @@ export default function VisionPage() {
 
               <div className="flex h-56 flex-col gap-1.5 overflow-y-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
                 {logs.length === 0 ? (
-                  <span className="italic">No logs...</span>
+                  <span className="italic">{t("console.empty")}</span>
                 ) : (
                   logs.map((log, index) => (
                     <div
@@ -1160,7 +1147,7 @@ export default function VisionPage() {
                           className="border-b border-transparent bg-transparent px-1 py-0.5 text-sm font-medium text-foreground hover:border-border focus:border-ring focus:outline-none"
                         />
                         <span className="font-mono text-[10px] text-muted-foreground">
-                          IA Class: Suggested
+                          {t("provisionPanel.aiClassSuggested")}
                         </span>
                       </div>
                     </div>
@@ -1187,7 +1174,7 @@ export default function VisionPage() {
                         type="button"
                         onClick={() => handleRemoveSuggestion(index)}
                         className="ml-1 rounded-md p-1.5 text-destructive transition-colors hover:bg-red-500/10"
-                        title="Remover sugestão"
+                        title={t("provisionPanel.removeSuggestion")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
