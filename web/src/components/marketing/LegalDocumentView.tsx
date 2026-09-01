@@ -43,7 +43,9 @@ export function LegalDocumentView({ type }: LegalDocumentViewProps) {
 
       <div className="mx-auto max-w-3xl px-6 py-16">
         <div className="mb-10">
-          <h1 className="mt-2 text-3xl font-bold text-foreground">{t("title")}</h1>
+          <h1 className="mt-2 text-3xl font-bold text-foreground">
+            {t("title")}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {t("lastUpdatedLabel")}: {t("lastUpdated")}
           </p>

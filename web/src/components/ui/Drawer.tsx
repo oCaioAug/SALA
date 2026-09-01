@@ -10,6 +10,10 @@ interface DrawerProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /** Fixed actions bar below the scrollable body */
+  footer?: React.ReactNode;
+  /** Secondary line under the title */
+  description?: string;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
   /** Painel à esquerda (ex.: navegação mobile) ou à direita (padrão) */
@@ -35,6 +39,8 @@ const Drawer: React.FC<DrawerProps> = ({
   onClose,
   title,
   children,
+  footer,
+  description,
   className,
   size = "md",
   side = "right",
@@ -45,12 +51,21 @@ const Drawer: React.FC<DrawerProps> = ({
   const isLeft = side === "left";
   const titleId = useId();
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      return;
+    }
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closeOnEscape) onClose();
+      if (e.key === "Escape" && closeOnEscape) onCloseRef.current();
     };
     document.addEventListener("keydown", onKey);
 
@@ -58,8 +73,12 @@ const Drawer: React.FC<DrawerProps> = ({
     if (!passThrough) {
       prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      queueMicrotask(() => closeBtnRef.current?.focus());
+      // Focus close only when the drawer opens, not on every parent re-render
+      if (!wasOpenRef.current) {
+        queueMicrotask(() => closeBtnRef.current?.focus());
+      }
     }
+    wasOpenRef.current = true;
 
     return () => {
       document.removeEventListener("keydown", onKey);
@@ -67,7 +86,7 @@ const Drawer: React.FC<DrawerProps> = ({
         document.body.style.overflow = prevOverflow;
       }
     };
-  }, [isOpen, onClose, closeOnEscape, passThrough]);
+  }, [isOpen, closeOnEscape, passThrough]);
 
   if (!isOpen) return null;
 
@@ -99,7 +118,7 @@ const Drawer: React.FC<DrawerProps> = ({
           aria-modal={!passThrough}
           aria-labelledby={titleId}
           className={cn(
-            "flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-transform duration-200 ease-out sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800",
+            "flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-transform duration-200 ease-out sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800",
             passThrough
               ? isLeft
                 ? "pointer-events-none -translate-x-full"
@@ -109,13 +128,20 @@ const Drawer: React.FC<DrawerProps> = ({
             className
           )}
         >
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-4 sm:p-6 dark:border-slate-700">
-            <h2
-              id={titleId}
-              className="pr-4 text-lg font-semibold text-slate-900 sm:text-xl dark:text-white"
-            >
-              {title}
-            </h2>
+          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 p-4 sm:p-6 dark:border-slate-700">
+            <div className="min-w-0 pr-2">
+              <h2
+                id={titleId}
+                className="text-lg font-semibold text-slate-900 sm:text-xl dark:text-white"
+              >
+                {title}
+              </h2>
+              {description ? (
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {description}
+                </p>
+              ) : null}
+            </div>
             <button
               ref={closeBtnRef}
               type="button"
@@ -142,6 +168,12 @@ const Drawer: React.FC<DrawerProps> = ({
           <div className="min-h-0 flex-1 overflow-y-auto p-4 text-slate-900 sm:p-6 dark:text-white">
             {children}
           </div>
+
+          {footer ? (
+            <div className="shrink-0 border-t border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-700 dark:bg-slate-800">
+              {footer}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

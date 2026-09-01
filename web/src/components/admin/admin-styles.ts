@@ -4,33 +4,32 @@ export const adminCardClass = "border-border bg-card shadow-sm";
 
 export const adminCardInteractiveClass = cn(
   adminCardClass,
-  "transition-colors hover:border-violet-500/30 hover:bg-muted/40"
+  "transition-colors hover:border-border hover:bg-muted/40"
 );
 
 export const adminSurfaceClass =
-  "rounded-xl border border-border bg-card p-4 shadow-sm";
+  "rounded-lg border border-border bg-card p-4 shadow-sm";
 
 export const adminInputClass = cn(
-  "rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground",
-  "placeholder:text-muted-foreground focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+  "rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground",
+  "placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
 );
 
-export const adminListItemClass = "rounded-lg bg-muted/50 px-3 py-2 text-sm";
+export const adminListItemClass = "rounded-md bg-muted/50 px-3 py-2 text-sm";
 
 export const adminNavActiveClass =
-  "bg-violet-600/15 text-violet-700 shadow-sm shadow-violet-500/10 dark:bg-violet-600/20 dark:text-violet-200 dark:shadow-violet-900/20";
+  "bg-muted font-medium text-foreground before:absolute before:inset-y-1 before:left-0 before:w-0.5 before:rounded-full before:bg-primary";
 
 export const adminNavInactiveClass =
   "text-muted-foreground hover:bg-muted hover:text-foreground";
 
-export const adminTabActiveClass =
-  "bg-violet-600/15 text-violet-700 dark:bg-violet-600/20 dark:text-violet-200";
+export const adminTabActiveClass = "bg-muted font-medium text-foreground";
 
 export const adminTabInactiveClass =
   "text-muted-foreground hover:bg-muted hover:text-foreground";
 
 export const adminModalClass =
-  "overflow-hidden rounded-2xl border border-border bg-card shadow-2xl";
+  "overflow-hidden rounded-lg border border-border bg-card shadow-sm";
 
 export const adminModalHeaderClass =
-  "flex items-start justify-between border-b border-border px-6 py-5";
+  "flex items-start justify-between border-b border-border px-6 py-4";

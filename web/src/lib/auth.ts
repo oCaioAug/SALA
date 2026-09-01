@@ -5,6 +5,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 import { verifyPassword } from "@/lib/auth/password";
+import { getSafeCallbackPath } from "@/lib/auth/callback-path";
+import { getOrgSectorCapabilities } from "@/lib/auth/permissions";
 import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
 import { toLegacySessionRole } from "@/lib/auth/roles";
 import { syncUpcomingReservationsForUser } from "@/lib/googleCalendar";
@@ -14,11 +16,11 @@ import { credentialsLoginSchema } from "@/lib/validations/auth";
 const adapter = PrismaAdapter(prisma);
 const originalLinkAccount = adapter.linkAccount;
 if (originalLinkAccount) {
-  adapter.linkAccount = (account: Parameters<typeof originalLinkAccount>[0]) => {
-    const { refresh_token_expires_in: _rt, ...cleanAccount } = account as Record<
-      string,
-      unknown
-    >;
+  adapter.linkAccount = (
+    account: Parameters<typeof originalLinkAccount>[0]
+  ) => {
+    const { refresh_token_expires_in: _rt, ...cleanAccount } =
+      account as Record<string, unknown>;
     return originalLinkAccount(
       cleanAccount as Parameters<typeof originalLinkAccount>[0]
     );
@@ -39,13 +41,32 @@ async function enrichSessionUser(
   );
   const platformRole = dbUser?.platformRole ?? PlatformRole.NONE;
   const organizationRole = resolved?.organizationRole ?? null;
+  const organizationId = resolved?.organizationId ?? null;
+
+  let capabilities = {
+    sectorCanApprove: false,
+    sectorCanManageRooms: false,
+  };
+  if (organizationId) {
+    try {
+      capabilities = await getOrgSectorCapabilities(userId, organizationId);
+    } catch (error) {
+      console.error("Erro ao carregar capacidades de setor na sessão:", error);
+    }
+  }
+
+  const isSectorManager =
+    capabilities.sectorCanApprove || capabilities.sectorCanManageRooms;
 
   return {
     platformRole,
-    organizationId: resolved?.organizationId ?? null,
+    organizationId,
     organizationRole,
     organizationName: resolved?.organizationName ?? null,
     role: toLegacySessionRole({ platformRole, organizationRole }),
+    isSectorManager,
+    sectorCanApprove: capabilities.sectorCanApprove,
+    sectorCanManageRooms: capabilities.sectorCanManageRooms,
   };
 }
 
@@ -82,7 +103,11 @@ export const authOptions: NextAuthOptions = {
           where: { email: email.toLowerCase() },
         });
 
-        if (!user?.passwordHash) return null;
+        if (!user) return null;
+
+        if (!user.passwordHash) {
+          throw new Error("OAUTH_ONLY_ACCOUNT");
+        }
 
         const valid = await verifyPassword(password, user.passwordHash);
         if (!valid) return null;
@@ -120,6 +145,9 @@ export const authOptions: NextAuthOptions = {
         token.organizationRole = enriched.organizationRole;
         token.organizationName = enriched.organizationName;
         token.role = enriched.role;
+        token.isSectorManager = enriched.isSectorManager;
+        token.sectorCanApprove = enriched.sectorCanApprove;
+        token.sectorCanManageRooms = enriched.sectorCanManageRooms;
       }
 
       return token;
@@ -137,6 +165,9 @@ export const authOptions: NextAuthOptions = {
         session.user.organizationName =
           (token.organizationName as string | null) ?? null;
         session.user.role = token.role as typeof session.user.role;
+        session.user.isSectorManager = Boolean(token.isSectorManager);
+        session.user.sectorCanApprove = Boolean(token.sectorCanApprove);
+        session.user.sectorCanManageRooms = Boolean(token.sectorCanManageRooms);
       }
       return session;
     },
@@ -152,16 +183,22 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      if (url.includes("/api/auth/callback/google")) {
-        return `${baseUrl}/organizations`;
-      }
-
       if (url.startsWith("/")) {
-        return `${baseUrl}${url}`;
+        const path = getSafeCallbackPath(url) ?? "/organizations";
+        return `${baseUrl}${path}`;
       }
 
-      if (new URL(url).origin === baseUrl) {
-        return url;
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === baseUrl) {
+          const path =
+            getSafeCallbackPath(
+              `${parsed.pathname}${parsed.search}${parsed.hash}`
+            ) ?? "/organizations";
+          return `${baseUrl}${path}`;
+        }
+      } catch {
+        // URL inválida — fallback abaixo
       }
 
       return `${baseUrl}/organizations`;

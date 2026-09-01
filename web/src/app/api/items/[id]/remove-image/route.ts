@@ -1,57 +1,58 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { unlink } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { join } from "path";
 
-import { authOptions } from "@/lib/auth";
-import { isOrgAdmin } from "@/lib/auth/roles";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { canManageRoomItems } from "@/lib/auth/permissions";
+import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";
+import { isOrgAdminRole } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return apiErrorResponse(ApiErrorCode.UNAUTHORIZED, 401);
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
+      return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
     const { id: itemId } = await params;
 
-    // Verificar se o usuário é admin
-    if (
-      !isOrgAdmin({
-        platformRole: session.user.platformRole,
-        organizationRole: session.user.organizationRole,
-      })
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Acesso negado. Apenas administradores podem remover imagens de itens.",
+    const item = await prisma.item.findFirst({
+      where: {
+        id: itemId,
+        OR: [
+          { organizationId: ctx.organizationId },
+          { room: { organizationId: ctx.organizationId } },
+        ],
+      },
+      include: {
+        images: true,
+        room: {
+          select: { id: true, organizationId: true, sectorId: true },
         },
-        { status: 403 }
-      );
-    }
-
-    // Buscar o item e suas imagens
-    const item = await prisma.item.findUnique({
-      where: { id: itemId },
-      include: { images: true },
+      },
     });
 
     if (!item) {
       return apiErrorResponse(ApiErrorCode.ITEM_NOT_FOUND, 404);
     }
 
-    // Deletar arquivos de imagem do sistema de arquivos
+    const permissionUser = toPermissionUser(ctx.user);
+    if (item.room) {
+      const allowed = await canManageRoomItems(permissionUser, item.room);
+      if (!allowed) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    } else if (!isOrgAdminRole(ctx.user.organizationRole)) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+    }
+
     for (const image of item.images) {
       try {
         const uploadsDir = join(process.cwd(), "public");
@@ -61,16 +62,15 @@ export async function DELETE(
           image.path.replace("original_", "thumb_")
         );
 
-        // Tentar deletar os arquivos (não falhar se não existirem)
         try {
           await unlink(originalPath);
-        } catch (error) {
+        } catch {
           console.warn("Arquivo original não encontrado:", originalPath);
         }
 
         try {
           await unlink(thumbPath);
-        } catch (error) {
+        } catch {
           console.warn("Arquivo thumbnail não encontrado:", thumbPath);
         }
       } catch (error) {
@@ -78,7 +78,6 @@ export async function DELETE(
       }
     }
 
-    // Deletar registros de imagem do banco de dados
     await prisma.image.deleteMany({
       where: { itemId },
     });

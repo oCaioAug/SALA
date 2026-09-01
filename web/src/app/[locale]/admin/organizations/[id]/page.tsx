@@ -6,36 +6,61 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
+import { AdminActionError } from "@/components/admin/AdminActionError";
+import {
+  AdminPageContent,
+  AdminPageHeader,
+} from "@/components/admin/AdminLayout";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import {
   OrganizationDetail,
   OrganizationDetailView,
 } from "@/components/admin/OrganizationDetailView";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Link } from "@/navigation";
+import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
+import { Link, useRouter } from "@/navigation";
 
 export default function OrganizationDetailPage() {
   const t = useTranslations("Admin.organizations");
+  const { fromResponse } = useApiErrorMessage();
+  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
   const [org, setOrg] = useState<OrganizationDetail | null>(null);
   const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionWarning, setActionWarning] = useState<string | null>(null);
   const [memberEmail, setMemberEmail] = useState("");
+  const [memberRole, setMemberRole] = useState<OrganizationRole>(
+    OrganizationRole.MEMBER
+  );
   const [memberRoleDrafts, setMemberRoleDrafts] = useState<
     Record<string, OrganizationRole>
   >({});
   const [savingMemberRoleId, setSavingMemberRoleId] = useState<string | null>(
     null
   );
+  const [profileDraft, setProfileDraft] = useState({
+    name: "",
+    slug: "",
+    email: "",
+    phone: "",
+  });
 
   const fetchOrg = useCallback(async () => {
     try {
       const res = await fetch(`/api/admin/organizations/${id}`);
       if (!res.ok) throw new Error("Não encontrada");
-      setOrg(await res.json());
+      const data = await res.json();
+      setOrg(data);
+      setProfileDraft({
+        name: data.name ?? "",
+        slug: data.slug ?? "",
+        email: data.email ?? "",
+        phone: data.phone ?? "",
+      });
     } catch {
       setOrg(null);
     } finally {
@@ -49,7 +74,14 @@ export default function OrganizationDetailPage() {
       .then(r => (r.ok ? r.json() : []))
       .then(setPlans)
       .catch(() => setPlans([]));
-  }, [fetchOrg]);
+
+    const warningKey = `admin-org-warning-${id}`;
+    const warning = sessionStorage.getItem(warningKey);
+    if (warning) {
+      setActionWarning(warning);
+      sessionStorage.removeItem(warningKey);
+    }
+  }, [fetchOrg, id]);
 
   useEffect(() => {
     if (!org) return;
@@ -62,32 +94,56 @@ export default function OrganizationDetailPage() {
     setMemberRoleDrafts(drafts);
   }, [org]);
 
-  const updateStatus = async (status: OrganizationStatus) => {
+  const runMutation = async (fn: () => Promise<Response>) => {
     setUpdating(true);
+    setActionError(null);
     try {
-      const res = await fetch(`/api/admin/organizations/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) await fetchOrg();
+      const res = await fn();
+      if (!res.ok) {
+        setActionError(await fromResponse(res));
+        return false;
+      }
+      await fetchOrg();
+      return true;
     } finally {
       setUpdating(false);
     }
   };
 
+  const updateStatus = async (status: OrganizationStatus) => {
+    await runMutation(() =>
+      fetch(`/api/admin/organizations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+    );
+  };
+
   const updateIsSchool = async (isSchool: boolean) => {
-    setUpdating(true);
-    try {
-      const res = await fetch(`/api/admin/organizations/${id}`, {
+    await runMutation(() =>
+      fetch(`/api/admin/organizations/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isSchool }),
-      });
-      if (res.ok) await fetchOrg();
-    } finally {
-      setUpdating(false);
-    }
+      })
+    );
+  };
+
+  const saveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await runMutation(() =>
+      fetch(`/api/admin/organizations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: profileDraft.name.trim(),
+          slug: profileDraft.slug.trim(),
+          email: profileDraft.email.trim() || null,
+          phone: profileDraft.phone.trim() || null,
+        }),
+      })
+    );
   };
 
   const saveMemberRole = async (userId: string) => {
@@ -96,6 +152,7 @@ export default function OrganizationDetailPage() {
     if (!role || role === savedRole) return;
 
     setSavingMemberRoleId(userId);
+    setActionError(null);
     try {
       const res = await fetch(
         `/api/admin/organizations/${id}/members/${userId}/role`,
@@ -105,47 +162,88 @@ export default function OrganizationDetailPage() {
           body: JSON.stringify({ role }),
         }
       );
-      if (res.ok) await fetchOrg();
+      if (!res.ok) {
+        setActionError(await fromResponse(res));
+        return;
+      }
+      await fetchOrg();
     } finally {
       setSavingMemberRoleId(null);
     }
   };
 
   const updatePlan = async (planId: string) => {
-    setUpdating(true);
-    try {
-      const res = await fetch(`/api/admin/organizations/${id}/subscription`, {
+    await runMutation(() =>
+      fetch(`/api/admin/organizations/${id}/subscription`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ planId }),
-      });
-      if (res.ok) await fetchOrg();
-    } finally {
-      setUpdating(false);
-    }
+      })
+    );
   };
 
   const addMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!memberEmail.trim()) return;
+    setActionError(null);
     const res = await fetch(`/api/admin/organizations/${id}/members`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: memberEmail.trim(), role: "MEMBER" }),
+      body: JSON.stringify({
+        email: memberEmail.trim(),
+        role: memberRole,
+      }),
     });
-    if (res.ok) {
-      setMemberEmail("");
-      await fetchOrg();
+    if (!res.ok) {
+      setActionError(await fromResponse(res));
+      return;
     }
+    setMemberEmail("");
+    setMemberRole(OrganizationRole.MEMBER);
+    await fetchOrg();
   };
 
   const removeMember = async (userId: string) => {
     if (!confirm(t("removeMemberConfirm"))) return;
+    setActionError(null);
     const res = await fetch(
       `/api/admin/organizations/${id}/members?userId=${userId}`,
       { method: "DELETE" }
     );
-    if (res.ok) await fetchOrg();
+    if (!res.ok) {
+      setActionError(await fromResponse(res));
+      return;
+    }
+    await fetchOrg();
+  };
+
+  const transferOwnership = async (userId: string) => {
+    if (!confirm(t("transferOwnershipConfirm"))) return;
+    await runMutation(() =>
+      fetch(`/api/admin/organizations/${id}/transfer-ownership`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newOwnerUserId: userId }),
+      })
+    );
+  };
+
+  const deleteOrganization = async () => {
+    if (!confirm(t("deleteOrgConfirm"))) return;
+    setUpdating(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/admin/organizations/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        setActionError(await fromResponse(res));
+        return;
+      }
+      router.push("/admin/organizations");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   if (loading) {
@@ -166,7 +264,7 @@ export default function OrganizationDetailPage() {
       <>
         <AdminPageHeader title={t("notFound")} />
         <AdminPageContent>
-          <Link href="/admin/organizations" className="text-violet-400">
+          <Link href="/admin/organizations" className="text-primary">
             {t("backToList")}
           </Link>
         </AdminPageContent>
@@ -179,9 +277,7 @@ export default function OrganizationDetailPage() {
       <AdminPageHeader
         title={org.name}
         description={`Slug: ${org.slug}`}
-        actions={
-          <AdminStatusBadge status={org.status} kind="organization" />
-        }
+        actions={<AdminStatusBadge status={org.status} kind="organization" />}
       />
       <AdminPageContent>
         <Link
@@ -192,12 +288,27 @@ export default function OrganizationDetailPage() {
           {t("backToList")}
         </Link>
 
+        <AdminActionError
+          message={actionError}
+          onDismiss={() => setActionError(null)}
+        />
+        {actionWarning && (
+          <div
+            role="status"
+            className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200"
+          >
+            {actionWarning}
+          </div>
+        )}
+
         <OrganizationDetailView
           org={org}
           plans={plans}
           updating={updating}
           memberEmail={memberEmail}
           setMemberEmail={setMemberEmail}
+          memberRole={memberRole}
+          setMemberRole={setMemberRole}
           updateStatus={updateStatus}
           updateIsSchool={updateIsSchool}
           memberRoleDrafts={memberRoleDrafts}
@@ -207,6 +318,11 @@ export default function OrganizationDetailPage() {
           updatePlan={updatePlan}
           addMember={addMember}
           removeMember={removeMember}
+          profileDraft={profileDraft}
+          setProfileDraft={setProfileDraft}
+          saveProfile={saveProfile}
+          transferOwnership={transferOwnership}
+          deleteOrganization={deleteOrganization}
         />
       </AdminPageContent>
     </>

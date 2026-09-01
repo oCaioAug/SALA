@@ -10,6 +10,9 @@ declare module "next-auth" {
       organizationId: string | null;
       organizationRole: OrganizationRole | null;
       organizationName?: string | null;
+      isSectorManager?: boolean;
+      sectorCanApprove?: boolean;
+      sectorCanManageRooms?: boolean;
     } & DefaultSession["user"];
   }
 
@@ -26,5 +29,8 @@ declare module "next-auth/jwt" {
     organizationRole?: OrganizationRole | null;
     organizationName?: string | null;
     role?: Role;
+    isSectorManager?: boolean;
+    sectorCanApprove?: boolean;
+    sectorCanManageRooms?: boolean;
   }
 }

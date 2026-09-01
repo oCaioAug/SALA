@@ -16,10 +16,7 @@ export async function GET(request: NextRequest) {
     // 1. Verificar autenticação híbrida (Web + Mobile)
     const authResult = await verifyAuth(request);
     if (!authResult.success || !authResult.user) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     // 2. Buscar credencial no banco
@@ -32,7 +29,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       isConfigured: !!credential || hasEnvFallback,
       provider: "ROBOFLOW",
-      modelId: credential?.modelId || process.env.ROBOFLOW_MODEL_ID || "yolov8n",
+      modelId:
+        credential?.modelId || process.env.ROBOFLOW_MODEL_ID || "yolov8n",
       usingEnv: !credential && hasEnvFallback,
     });
   } catch (error) {
@@ -54,10 +52,7 @@ export async function POST(request: NextRequest) {
     // 1. Verificar autenticação e permissão de ADMIN
     const authResult = await verifyAuth(request);
     if (!authResult.success || !authResult.user) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     if (authResult.user.role !== "ADMIN") {
@@ -73,20 +68,25 @@ export async function POST(request: NextRequest) {
     // Caso o Admin envie um apiKey vazio, removemos a credencial do banco
     // permitindo voltar ao simulador offline/variáveis de ambiente globais
     if (!apiKey) {
-      console.log("🗑️ [CredentialsAPI] Removendo credenciais do Roboflow do banco de dados...");
+      console.log(
+        "🗑️ [CredentialsAPI] Removendo credenciais do Roboflow do banco de dados..."
+      );
       await prisma.apiCredential.deleteMany({
         where: { provider: "ROBOFLOW" },
       });
 
       return NextResponse.json({
-        message: "Configurações do Roboflow removidas com sucesso. O sistema voltará a usar o simulador/variáveis globais.",
+        message:
+          "Configurações do Roboflow removidas com sucesso. O sistema voltará a usar o simulador/variáveis globais.",
         isConfigured: !!process.env.ROBOFLOW_API_KEY,
         usingEnv: !!process.env.ROBOFLOW_API_KEY,
       });
     }
 
     // 2. Criptografar a chave em AES-256-GCM
-    console.log("🔒 [CredentialsAPI] Criptografando chave de API usando AES-256-GCM...");
+    console.log(
+      "🔒 [CredentialsAPI] Criptografando chave de API usando AES-256-GCM..."
+    );
     const { encrypted, iv, tag } = encrypt(apiKey);
 
     // 3. Upsert no banco de dados para o provedor ROBOFLOW
@@ -110,7 +110,8 @@ export async function POST(request: NextRequest) {
     console.log("✅ [CredentialsAPI] Chave de API persistida com segurança!");
 
     return NextResponse.json({
-      message: "Credenciais do Roboflow atualizadas e salvas com segurança no banco de dados!",
+      message:
+        "Credenciais do Roboflow atualizadas e salvas com segurança no banco de dados!",
       isConfigured: true,
       modelId: modelId || "yolov8n",
       usingEnv: false,

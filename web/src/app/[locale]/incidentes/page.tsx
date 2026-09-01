@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -21,6 +21,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Drawer } from "@/components/ui/Drawer";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useIncidents } from "@/hooks/useIncidents";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
@@ -87,8 +88,8 @@ export default function IncidentsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [items, setItems] = useState<any[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+  const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [editFormStatus, setEditFormStatus] = useState<string>("");
-  const itemSelectRef = useRef<HTMLSelectElement>(null);
 
   const { isOrgAdmin: isAdmin } = useOrgPermissions();
 
@@ -286,6 +287,7 @@ export default function IncidentsPage() {
         // Fechar modal e resetar estado
         setIsCreateModalOpen(false);
         setSelectedRoomId("");
+        setSelectedItemId("");
 
         console.log("Incidente criado com sucesso!");
       }
@@ -448,7 +450,7 @@ export default function IncidentsPage() {
                       {stats.overview.inProgress}
                     </p>
                   </div>
-                  <Clock className="h-8 w-8 text-purple-500" />
+                  <Clock className="h-8 w-8 text-slate-600" />
                 </div>
               </Card>
               <Card className="p-4">
@@ -577,17 +579,17 @@ export default function IncidentsPage() {
                         <h3 className="font-semibold">{incident.title}</h3>
                         <span
                           className={`
-                        px-2 py-1 text-xs rounded-full font-medium flex flex-row items-center
-                        ${
-                          incident.status === "RESOLVED"
-                            ? "bg-green-100 text-green-800"
-                            : incident.status === "IN_PROGRESS"
-                              ? "bg-purple-100 text-purple-800"
-                              : incident.status === "IN_ANALYSIS"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-orange-100 text-orange-800"
-                        }
-                      `}
+ px-2 py-1 text-xs rounded-full font-medium flex flex-row items-center
+ ${
+   incident.status === "RESOLVED"
+     ? "bg-green-100 text-green-800"
+     : incident.status === "IN_PROGRESS"
+       ? "bg-slate-100 text-slate-800"
+       : incident.status === "IN_ANALYSIS"
+         ? "bg-blue-100 text-blue-800"
+         : "bg-orange-100 text-orange-800"
+ }
+ `}
                         >
                           {getStatusIcon(incident.status)}
                           <span className="ml-1">
@@ -596,17 +598,17 @@ export default function IncidentsPage() {
                         </span>
                         <span
                           className={`
-                        px-2 py-1 text-xs rounded-full font-medium
-                        ${
-                          incident.priority === "CRITICAL"
-                            ? "bg-red-100 text-red-800"
-                            : incident.priority === "HIGH"
-                              ? "bg-orange-100 text-orange-800"
-                              : incident.priority === "MEDIUM"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
-                        }
-                      `}
+ px-2 py-1 text-xs rounded-full font-medium
+ ${
+   incident.priority === "CRITICAL"
+     ? "bg-red-100 text-red-800"
+     : incident.priority === "HIGH"
+       ? "bg-orange-100 text-orange-800"
+       : incident.priority === "MEDIUM"
+         ? "bg-yellow-100 text-yellow-800"
+         : "bg-gray-100 text-gray-800"
+ }
+ `}
                         >
                           {getPriorityLabel(incident.priority)}
                         </span>
@@ -744,17 +746,17 @@ export default function IncidentsPage() {
                     <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                       <span
                         className={`
-                        px-3 py-1 text-sm rounded-full font-medium
-                        ${
-                          selectedIncident.status === "RESOLVED"
-                            ? "bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400"
-                            : selectedIncident.status === "IN_PROGRESS"
-                              ? "bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-400"
-                              : selectedIncident.status === "IN_ANALYSIS"
-                                ? "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400"
-                                : "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-400"
-                        }
-                      `}
+ px-3 py-1 text-sm rounded-full font-medium
+ ${
+   selectedIncident.status === "RESOLVED"
+     ? "bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400"
+     : selectedIncident.status === "IN_PROGRESS"
+       ? "bg-slate-100 text-slate-800 dark:bg-slate-600/20 dark:text-slate-400"
+       : selectedIncident.status === "IN_ANALYSIS"
+         ? "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400"
+         : "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-400"
+ }
+ `}
                       >
                         {getStatusLabel(selectedIncident.status)}
                       </span>
@@ -770,17 +772,17 @@ export default function IncidentsPage() {
                     <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                       <span
                         className={`
-                        px-3 py-1 text-sm rounded-full font-medium
-                        ${
-                          selectedIncident.priority === "CRITICAL"
-                            ? "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400"
-                            : selectedIncident.priority === "HIGH"
-                              ? "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-400"
-                              : selectedIncident.priority === "MEDIUM"
-                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400"
-                                : "bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-400"
-                        }
-                      `}
+ px-3 py-1 text-sm rounded-full font-medium
+ ${
+   selectedIncident.priority === "CRITICAL"
+     ? "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400"
+     : selectedIncident.priority === "HIGH"
+       ? "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-400"
+       : selectedIncident.priority === "MEDIUM"
+         ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400"
+         : "bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-400"
+ }
+ `}
                       >
                         {getPriorityLabel(selectedIncident.priority)}
                       </span>
@@ -1099,6 +1101,7 @@ export default function IncidentsPage() {
             onClose={() => {
               setIsCreateModalOpen(false);
               setSelectedRoomId("");
+              setSelectedItemId("");
             }}
             title={t("form.title")}
             size="xl"
@@ -1139,10 +1142,7 @@ export default function IncidentsPage() {
                   title: formData.get("title") as string,
                   description: formData.get("description") as string,
                   priority: formData.get("priority") as
-                    | "LOW"
-                    | "MEDIUM"
-                    | "HIGH"
-                    | "CRITICAL",
+                    "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
                   category: formData.get("category") as string,
                   roomId: finalRoomId,
                   itemId: finalItemId,
@@ -1222,25 +1222,21 @@ export default function IncidentsPage() {
                       ({t("form.selectRoomOrItem")})
                     </span>
                   </label>
-                  <select
+                  <SearchableSelect
                     name="roomId"
                     value={selectedRoomId}
-                    onChange={e => {
-                      setSelectedRoomId(e.target.value);
-                      // Resetar seleção de item quando a sala mudar
-                      if (itemSelectRef.current) {
-                        itemSelectRef.current.value = "";
-                      }
+                    onChange={v => {
+                      setSelectedRoomId(v);
+                      setSelectedItemId("");
                     }}
-                    className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">{t("form.selectRoom")}</option>
-                    {rooms.map(room => (
-                      <option key={room.id} value={room.id}>
-                        {room.name} - {room.description}
-                      </option>
-                    ))}
-                  </select>
+                    options={rooms.map(room => ({
+                      value: room.id,
+                      label: `${room.name} - ${room.description}`,
+                    }))}
+                    placeholder={t("form.selectRoom")}
+                    allowEmpty
+                    triggerClassName="h-auto rounded-lg border-slate-300 bg-slate-100 p-3 text-slate-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
@@ -1251,23 +1247,25 @@ export default function IncidentsPage() {
                       </span>
                     )}
                   </label>
-                  <select
-                    ref={itemSelectRef}
+                  <SearchableSelect
                     name="itemId"
-                    className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">
-                      {selectedRoomId && getFilteredItems().length === 0
+                    value={selectedItemId}
+                    onChange={setSelectedItemId}
+                    options={getFilteredItems().map(item => ({
+                      value: item.id,
+                      label:
+                        !selectedRoomId && item.room
+                          ? `${item.name} (${item.room.name})`
+                          : item.name,
+                    }))}
+                    placeholder={
+                      selectedRoomId && getFilteredItems().length === 0
                         ? t("form.noItemAvailableInThisRoom")
-                        : t("form.noSpecificItem")}
-                    </option>
-                    {getFilteredItems().map(item => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}{" "}
-                        {!selectedRoomId && item.room && `(${item.room.name})`}
-                      </option>
-                    ))}
-                  </select>
+                        : t("form.noSpecificItem")
+                    }
+                    allowEmpty
+                    triggerClassName="h-auto rounded-lg border-slate-300 bg-slate-100 p-3 text-slate-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-800 dark:text-white"
+                  />
                 </div>
               </div>
 
@@ -1319,7 +1317,11 @@ export default function IncidentsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setSelectedRoomId("");
+                    setSelectedItemId("");
+                  }}
                   className="flex-1"
                   disabled={createLoading}
                 >

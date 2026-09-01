@@ -2,6 +2,7 @@ import {
   OrganizationRole,
   OrganizationStatus,
   Prisma,
+  SubscriptionStatus,
 } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
@@ -11,6 +12,7 @@ import { refreshOrganizationDailyStats } from "./stats";
 
 const DEFAULT_PLAN_ID = "plan-starter";
 const DEFAULT_TRIAL_DAYS = 30;
+const ACTIVE_PERIOD_DAYS = 365;
 
 type TxClient = Prisma.TransactionClient;
 
@@ -25,7 +27,31 @@ export type CreateOrganizationInput = {
   status?: OrganizationStatus;
   trialDays?: number;
   planId?: string;
+  isSchool?: boolean;
 };
+
+function resolveSubscriptionForStatus(
+  status: OrganizationStatus,
+  trialDays: number
+): { periodEnd: Date; subscriptionStatus: SubscriptionStatus } {
+  const now = Date.now();
+  if (status === OrganizationStatus.TRIAL) {
+    return {
+      periodEnd: new Date(now + trialDays * 24 * 60 * 60 * 1000),
+      subscriptionStatus: SubscriptionStatus.TRIALING,
+    };
+  }
+  if (status === OrganizationStatus.SUSPENDED) {
+    return {
+      periodEnd: new Date(now + ACTIVE_PERIOD_DAYS * 24 * 60 * 60 * 1000),
+      subscriptionStatus: SubscriptionStatus.CANCELLED,
+    };
+  }
+  return {
+    periodEnd: new Date(now + ACTIVE_PERIOD_DAYS * 24 * 60 * 60 * 1000),
+    subscriptionStatus: SubscriptionStatus.ACTIVE,
+  };
+}
 
 async function createOrganizationWithOwnerInTx(
   tx: TxClient,
@@ -33,7 +59,8 @@ async function createOrganizationWithOwnerInTx(
   slug: string,
   status: OrganizationStatus,
   periodEnd: Date,
-  planId: string
+  planId: string,
+  subscriptionStatus: SubscriptionStatus
 ) {
   const org = await tx.organization.create({
     data: {
@@ -46,6 +73,7 @@ async function createOrganizationWithOwnerInTx(
       status,
       ownerId: input.ownerId,
       planId,
+      ...(input.isSchool !== undefined ? { isSchool: input.isSchool } : {}),
     },
   });
 
@@ -53,16 +81,24 @@ async function createOrganizationWithOwnerInTx(
     data: {
       organizationId: org.id,
       planId,
+      status: subscriptionStatus,
       currentPeriodEnd: periodEnd,
     },
   });
 
-  await tx.organizationMember.create({
-    data: {
+  await tx.organizationMember.upsert({
+    where: {
+      organizationId_userId: {
+        organizationId: org.id,
+        userId: input.ownerId,
+      },
+    },
+    create: {
       organizationId: org.id,
       userId: input.ownerId,
       role: OrganizationRole.OWNER,
     },
+    update: { role: OrganizationRole.OWNER },
   });
 
   return org;
@@ -83,7 +119,10 @@ export async function createOrganizationWithOwner(
 
   const status = input.status ?? OrganizationStatus.TRIAL;
   const trialDays = input.trialDays ?? DEFAULT_TRIAL_DAYS;
-  const periodEnd = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
+  const { periodEnd, subscriptionStatus } = resolveSubscriptionForStatus(
+    status,
+    trialDays
+  );
 
   const planId = input.planId ?? DEFAULT_PLAN_ID;
   const plan = await db.plan.findFirst({
@@ -101,12 +140,21 @@ export async function createOrganizationWithOwner(
       slug,
       status,
       periodEnd,
-      planId
+      planId,
+      subscriptionStatus
     );
   }
 
   const organization = await prisma.$transaction(async tx =>
-    createOrganizationWithOwnerInTx(tx, input, slug, status, periodEnd, planId)
+    createOrganizationWithOwnerInTx(
+      tx,
+      input,
+      slug,
+      status,
+      periodEnd,
+      planId,
+      subscriptionStatus
+    )
   );
 
   void refreshOrganizationDailyStats(organization.id);

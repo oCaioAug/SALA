@@ -33,6 +33,7 @@ export const roomCreateBodySchema = z.object({
   outletCount: optionalIntCreate(),
   climateControlled: z.boolean().optional(),
   status: z.enum(["LIVRE", "EM_USO", "RESERVADO"]).optional(),
+  sectorId: z.string().min(1).nullable().optional(),
 });
 
 export const roomUpdateBodySchema = z.object({
@@ -43,6 +44,7 @@ export const roomUpdateBodySchema = z.object({
   outletCount: optionalIntUpdate(),
   climateControlled: z.boolean().optional(),
   status: z.enum(["LIVRE", "EM_USO", "RESERVADO"]).optional(),
+  sectorId: z.string().min(1).nullable().optional(),
 });
 
 export type RoomCreateBody = z.infer<typeof roomCreateBodySchema>;

@@ -24,6 +24,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   try {
+    // Import dinâmico por locale (HMR: dictionaries/*.json)
     const messages = (await import(`./dictionaries/${locale}.json`)).default;
     return {
       messages,

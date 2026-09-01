@@ -22,6 +22,7 @@ import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { AvatarUpload } from "@/components/forms/AvatarUpload";
+import { AccountSecurityForm } from "@/components/account/AccountSecurityForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -60,6 +61,7 @@ const ProfilePage: React.FC = () => {
   const [saveLoading, setSaveLoading] = useState(false);
 
   const { showSuccess, showError } = useApp();
+  const [hasPassword, setHasPassword] = useState(false);
 
   // Hook de navegação
   const { navigate, isNavigating } = useNavigation({
@@ -74,20 +76,26 @@ const ProfilePage: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/users/profile?email=${session.user.email}`
-        );
+        const [profileRes, meRes] = await Promise.all([
+          fetch(`/api/users/profile?email=${session.user.email}`),
+          fetch("/api/users/me"),
+        ]);
 
-        if (!response.ok) {
+        if (!profileRes.ok) {
           throw new Error(t("errors.userLoadError"));
         }
 
-        const data = await response.json();
+        const data = await profileRes.json();
         setUserData(data);
         setEditForm({
           name: data.name || "",
           email: data.email || "",
         });
+
+        if (meRes.ok) {
+          const me = await meRes.json();
+          setHasPassword(Boolean(me.hasPassword));
+        }
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         showError(t("errors.userLoadError"));
@@ -204,11 +212,8 @@ const ProfilePage: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <UserIcon className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                     {t("title")}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">
@@ -277,7 +282,7 @@ const ProfilePage: React.FC = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-sm font-medium ${
                             userData.role === "ADMIN"
-                              ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
+                              ? "bg-slate-600/20 text-slate-700 dark:text-slate-300 border border-slate-500/30"
                               : "bg-green-500/20 text-green-600 dark:text-green-300 border border-green-500/30"
                           }`}
                         >
@@ -357,8 +362,8 @@ const ProfilePage: React.FC = () => {
                       <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                         {userData.role === "ADMIN" ? (
                           <>
-                            <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                            <span className="text-purple-600 dark:text-purple-400 font-medium">
+                            <Crown className="w-5 h-5 text-slate-700 dark:text-slate-400" />
+                            <span className="text-slate-700 dark:text-slate-400 font-medium">
                               {t("roles.admin")}
                             </span>
                           </>
@@ -433,6 +438,20 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </Card>
+
+              <Card variant="elevated" className="p-6">
+                <AccountSecurityForm
+                  hasPassword={hasPassword}
+                  onSuccess={action => {
+                    setHasPassword(true);
+                    showSuccess(
+                      action === "change"
+                        ? t("security.changed")
+                        : t("security.created")
+                    );
+                  }}
+                />
               </Card>
 
               {/* Card de configurações */}

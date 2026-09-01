@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 model Plan {
@@ -53,6 +52,7 @@ model Organization {
   professores   Professor[]
   invites       OrganizationInvite[]
   rooms         Room[]
+  sectors       Sector[]
   reservations  Reservation[]
   incidents     Incident[]
   notifications Notification[]
@@ -181,8 +181,10 @@ model User {
   accounts      Account[]
   notifications Notification[]
   reservations  Reservation[]
+  decidedReservations Reservation[] @relation("ReservationDecidedBy")
   sessions      Session[]
   pushTokens    PushToken[]
+  sectorMemberships SectorMember[]
 
   ownedOrganizations Organization[]       @relation("OrganizationOwner")
   memberships        OrganizationMember[]
@@ -200,6 +202,41 @@ model User {
   @@map("users")
 }
 
+model Sector {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      SectorMember[]
+  rooms        Room[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("sectors")
+}
+
+model SectorMember {
+  id                       String           @id @default(cuid())
+  sectorId                 String
+  userId                   String
+  role                     SectorMemberRole @default(MANAGER)
+  canApproveReservations   Boolean          @default(true)
+  canManageRooms           Boolean          @default(true)
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+
+  sector Sector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sectorId, userId])
+  @@index([userId])
+  @@map("sector_members")
+}
+
 model Room {
   id                  String     @id @default(cuid())
   name                String
@@ -210,17 +247,20 @@ model Room {
   outletCount         Int?
   climateControlled   Boolean    @default(false)
   organizationId      String
+  sectorId            String?
   deletedAt           DateTime?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
 
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sector       Sector?       @relation(fields: [sectorId], references: [id], onDelete: SetNull)
   items        Item[]
   reservations Reservation[]
   incidents    Incident[]
 
   @@index([organizationId])
   @@index([organizationId, status])
+  @@index([sectorId])
   @@index([deletedAt])
   @@map("rooms")
 }
@@ -268,6 +308,9 @@ model Reservation {
   endTime               DateTime
   purpose               String?
   status                ReservationStatus @default(PENDING)
+  decidedById           String?
+  decidedAt             DateTime?
+  decisionReason        String?
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
   googleCalendarEventId String?
@@ -282,6 +325,7 @@ model Reservation {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   room         Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy    User?        @relation("ReservationDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
 
   childReservations Reservation[] @relation("RecurringReservations")
   parentReservation Reservation?  @relation("RecurringReservations", fields: [parentReservationId], references: [id], onDelete: Cascade)
@@ -290,6 +334,7 @@ model Reservation {
   @@index([organizationId, status])
   @@index([roomId, status, startTime, endTime])
   @@index([userId, startTime])
+  @@index([decidedById])
   @@index([recurringTemplateId])
   @@index([status, startTime])
   @@map("reservations")
@@ -456,6 +501,10 @@ enum OrganizationRole {
   OWNER
   ADMIN
   MEMBER
+}
+
+enum SectorMemberRole {
+  MANAGER
 }
 
 enum OrganizationStatus {

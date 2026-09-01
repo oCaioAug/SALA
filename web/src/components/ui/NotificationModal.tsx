@@ -330,7 +330,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
       green: "bg-green-500/20 text-green-400",
       red: "bg-red-500/20 text-red-400",
       orange: "bg-orange-500/20 text-orange-400",
-      purple: "bg-purple-500/20 text-purple-400",
+      purple: "bg-slate-600/20 text-slate-400",
       gray: "bg-gray-500/20 text-gray-400",
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.gray;
@@ -364,7 +364,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-20 right-6 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-2xl z-[9999999] max-h-96 overflow-hidden transition-colors duration-300">
+    <div className="fixed top-20 right-6 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-sm z-[9999999] max-h-96 overflow-hidden transition-colors duration-300">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-700/50">
         <div className="flex items-center gap-2">

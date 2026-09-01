@@ -258,8 +258,7 @@ export class MockVisionService extends VisionService {
     }
 
     // Calcula totalizadores
-    const occupancyCount = predictions.filter(p => p.class === "person")
-      .length;
+    const occupancyCount = predictions.filter(p => p.class === "person").length;
     const detectedClasses: Record<string, number> = {};
 
     predictions.forEach(p => {

@@ -75,7 +75,11 @@ export async function getProfessores() {
   });
 }
 
-export async function createProfessor(name: string, email?: string, userId?: string) {
+export async function createProfessor(
+  name: string,
+  email?: string,
+  userId?: string
+) {
   const orgId = await getOrgId();
   const professor = await prisma.professor.create({
     data: { name, email, userId, organizationId: orgId },
@@ -120,7 +124,11 @@ export async function deleteCargaHoraria(id: string) {
   revalidatePath("/[locale]/grade-horaria/cargas", "page");
 }
 
-export async function setDisponibilidade(professorId: string, diaSemana: number, slotIds: string[]) {
+export async function setDisponibilidade(
+  professorId: string,
+  diaSemana: number,
+  slotIds: string[]
+) {
   const orgId = await getOrgId();
   // Ensure the professor belongs to this org
   const prof = await prisma.professor.findUnique({
@@ -137,7 +145,7 @@ export async function setDisponibilidade(professorId: string, diaSemana: number,
   });
 
   if (slotIds.length > 0) {
-    const data = slotIds.map((slotId) => ({
+    const data = slotIds.map(slotId => ({
       professorId,
       diaSemana,
       slotId,
@@ -161,7 +169,7 @@ export async function getOrgUsers() {
     where: { organizationId: orgId },
     include: { user: true },
   });
-  return members.map((m) => m.user);
+  return members.map(m => m.user);
 }
 
 export async function runTimetablingEngine() {
@@ -186,41 +194,71 @@ export async function getGradeSettings() {
           name: "Turno Principal",
           daysPerWeek: 5,
           slots: [
-            { id: 0, label: "Aula 1 (07:30)", startTime: "07:30", endTime: "08:20" },
-            { id: 1, label: "Aula 2 (08:20)", startTime: "08:20", endTime: "09:10" },
-            { id: 2, label: "Aula 3 (09:10)", startTime: "09:10", endTime: "10:00" },
-            { id: 3, label: "Aula 4 (10:20)", startTime: "10:20", endTime: "11:10" },
-            { id: 4, label: "Aula 5 (11:10)", startTime: "11:10", endTime: "12:00" }
-          ]
-        }
-      ]
-    }
+            {
+              id: 0,
+              label: "Aula 1 (07:30)",
+              startTime: "07:30",
+              endTime: "08:20",
+            },
+            {
+              id: 1,
+              label: "Aula 2 (08:20)",
+              startTime: "08:20",
+              endTime: "09:10",
+            },
+            {
+              id: 2,
+              label: "Aula 3 (09:10)",
+              startTime: "09:10",
+              endTime: "10:00",
+            },
+            {
+              id: 3,
+              label: "Aula 4 (10:20)",
+              startTime: "10:20",
+              endTime: "11:10",
+            },
+            {
+              id: 4,
+              label: "Aula 5 (11:10)",
+              startTime: "11:10",
+              endTime: "12:00",
+            },
+          ],
+        },
+      ],
+    },
   };
 
-  if (!org?.settings || typeof org.settings !== "object" || !(org.settings as any).timetabling) {
+  if (
+    !org?.settings ||
+    typeof org.settings !== "object" ||
+    !(org.settings as any).timetabling
+  ) {
     return defaultSettings;
   }
-  
+
   return org.settings as typeof defaultSettings;
 }
 
 export async function updateGradeSettings(timetablingSettings: any) {
   const orgId = await getOrgId();
-  
+
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
-    select: { settings: true }
+    select: { settings: true },
   });
 
-  const currentSettings = org?.settings && typeof org.settings === "object" ? org.settings : {};
-  
+  const currentSettings =
+    org?.settings && typeof org.settings === "object" ? org.settings : {};
+
   await prisma.organization.update({
     where: { id: orgId },
     data: {
       settings: {
         ...currentSettings,
-        timetabling: timetablingSettings
-      }
-    }
+        timetabling: timetablingSettings,
+      },
+    },
   });
 }

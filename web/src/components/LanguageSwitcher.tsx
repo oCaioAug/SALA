@@ -31,7 +31,9 @@ export default function LanguageSwitcher({
 }: LanguageSwitcherProps) {
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
-  const [menuPlacement, setMenuPlacement] = useState<"top" | "bottom">("bottom");
+  const [menuPlacement, setMenuPlacement] = useState<"top" | "bottom">(
+    "bottom"
+  );
   const triggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -61,7 +63,8 @@ export default function LanguageSwitcher({
     }
 
     const rect = triggerRef.current.getBoundingClientRect();
-    const menuHeight = locales.length * MENU_ITEM_HEIGHT + MENU_VERTICAL_PADDING;
+    const menuHeight =
+      locales.length * MENU_ITEM_HEIGHT + MENU_VERTICAL_PADDING;
     const spaceBelow = window.innerHeight - rect.bottom - 8;
     const spaceAbove = rect.top - 8;
 

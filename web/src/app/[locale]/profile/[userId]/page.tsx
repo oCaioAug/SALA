@@ -11,7 +11,6 @@ import {
   User as UserIcon,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -20,11 +19,11 @@ import React, { useEffect, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AvatarUpload } from "@/components/forms/AvatarUpload";
-import { Header } from "@/components/layout/Header";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { ErrorPage } from "@/components/layout/ErrorPage";
+import { LoadingPage } from "@/components/layout/LoadingPage";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardTitle } from "@/components/ui/Card";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
@@ -62,7 +61,6 @@ const UserProfilePage: React.FC = () => {
 
   const { showSuccess, showError } = useApp();
 
-  // Hook de navegação
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -71,7 +69,6 @@ const UserProfilePage: React.FC = () => {
   const { isOrgAdmin: isAdmin } = useOrgPermissions();
   const isOwnProfile = session?.user?.id === userId;
 
-  // Carregar dados do usuário
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userId) return;
@@ -100,9 +97,8 @@ const UserProfilePage: React.FC = () => {
     };
 
     fetchUserData();
-  }, [userId, showError, router]);
+  }, [userId, showError, router, t]);
 
-  // Função para atualizar avatar (apenas admin ou próprio usuário)
   const handleAvatarUpdate = async (newAvatarUrl: string | null) => {
     if (userData) {
       setUserData({
@@ -114,7 +110,6 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  // Salvar alterações
   const handleSave = async () => {
     if (!userData) return;
 
@@ -150,7 +145,6 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  // Cancelar edição
   const handleCancel = () => {
     if (userData) {
       setEditForm({
@@ -161,7 +155,6 @@ const UserProfilePage: React.FC = () => {
     setIsEditing(false);
   };
 
-  // Alterar role
   const handleToggleRole = async () => {
     if (!userData || !isAdmin) return;
 
@@ -195,7 +188,6 @@ const UserProfilePage: React.FC = () => {
     }
   };
 
-  // Formatação de data
   const formatDate = (dateString: string) => {
     const intlLocale = getIntlLocale(locale);
 
@@ -208,17 +200,18 @@ const UserProfilePage: React.FC = () => {
     });
   };
 
-  // Verificar acesso
   if (!isAdmin && !isOwnProfile) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <div className="text-center">
-            <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-white mb-2">
+            <Shield className="mx-auto mb-4 h-16 w-16 text-red-500" />
+            <h2 className="mb-2 text-2xl font-semibold text-foreground">
               {t("accessDenied")}
             </h2>
-            <p className="text-gray-400 mb-6">{t("accessDeniedDescription")}</p>
+            <p className="mb-6 text-muted-foreground">
+              {t("accessDeniedDescription")}
+            </p>
             <Link href="/dashboard">
               <Button>{t("backToDashboard")}</Button>
             </Link>
@@ -228,120 +221,85 @@ const UserProfilePage: React.FC = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-          <LoadingSpinner size="lg" />
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  if (!userData) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-          <div className="text-center">
-            <UserIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-white mb-2">
-              {t("userNotFound")}
-            </h2>
-            <p className="text-gray-400 mb-6">{t("userNotFoundDescription")}</p>
-            <Link href="/users">
-              <Button>{t("backToListUsers")}</Button>
-            </Link>
-          </div>
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  // TODO: Implementar a página de configurações de perfil
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
-        <Sidebar
-          currentPage={currentPage}
-          onNavigate={navigate}
-          isNavigating={isNavigating}
-        />
-
-        <div className="flex-1 flex flex-col">
-          <Header onNotificationClick={() => {}} />
-
-          <main className="flex-1 p-6">
-            {/* Header da página */}
+      <PageLayout
+        currentPage={currentPage}
+        onNavigate={navigate}
+        isNavigating={isNavigating}
+        onNotificationClick={() => {}}
+      >
+        {loading ? (
+          <LoadingPage variant="embedded" message={t("loading")} />
+        ) : !userData ? (
+          <ErrorPage
+            variant="embedded"
+            error={t("userNotFound")}
+            onRetry={() => router.push("/users")}
+            retryLabel={t("backToListUsers")}
+          />
+        ) : (
+          <>
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-4">
                   <Link href="/users">
                     <Button variant="outline" size="sm">
-                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      <ArrowLeft className="mr-2 h-4 w-4" />
                       {t("actions.back")}
                     </Button>
                   </Link>
 
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                      <UserIcon className="w-8 h-8 text-blue-400" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold text-white mb-2">
-                        {isOwnProfile
-                          ? t("title")
-                          : t("titleUser", {
-                              name: userData.name || t("userWithoutName"),
-                            })}
-                      </h1>
-                      <p className="text-gray-400">
-                        {isOwnProfile
-                          ? t("description")
-                          : t("descriptionUser", {
-                              name: userData.name || t("userWithoutName"),
-                            })}
-                      </p>
-                    </div>
+                  <div>
+                    <h1 className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
+                      {isOwnProfile
+                        ? t("title")
+                        : t("titleUser", {
+                            name: userData.name || t("userWithoutName"),
+                          })}
+                    </h1>
+                    <p className="text-slate-600 dark:text-gray-400">
+                      {isOwnProfile
+                        ? t("description")
+                        : t("descriptionUser", {
+                            name: userData.name || t("userWithoutName"),
+                          })}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  {isAdmin && !isOwnProfile && (
-                    <Button
-                      variant="outline"
-                      onClick={handleToggleRole}
-                      disabled={actionLoading}
-                      className={
-                        userData.role === "ADMIN"
-                          ? "text-orange-400 hover:text-orange-300"
-                          : "text-purple-400 hover:text-purple-300"
-                      }
-                    >
-                      {actionLoading ? (
-                        <LoadingSpinner size="sm" />
-                      ) : userData.role === "ADMIN" ? (
-                        <>
-                          <UserIcon className="w-4 h-4 mr-2" />
-                          {t("actions.removeAdmin")}
-                        </>
-                      ) : (
-                        <>
-                          <Crown className="w-4 h-4 mr-2" />
-                          {t("actions.makeAdmin")}
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
+                {isAdmin && !isOwnProfile ? (
+                  <Button
+                    variant="outline"
+                    onClick={handleToggleRole}
+                    loading={actionLoading}
+                    className={
+                      userData.role === "ADMIN"
+                        ? "text-orange-600 hover:text-orange-500 dark:text-orange-400 dark:hover:text-orange-300"
+                        : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-300"
+                    }
+                  >
+                    {userData.role === "ADMIN" ? (
+                      <>
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        {t("actions.removeAdmin")}
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="mr-2 h-4 w-4" />
+                        {t("actions.makeAdmin")}
+                      </>
+                    )}
+                  </Button>
+                ) : null}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Card do perfil principal */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
                 <Card variant="elevated" className="p-6">
-                  <div className="flex items-start justify-between mb-6">
-                    <CardTitle className="text-2xl text-white">
+                  <div className="mb-6 flex items-start justify-between">
+                    <CardTitle className="text-2xl">
                       {t("personalInfo")}
                     </CardTitle>
                     <Button
@@ -353,12 +311,12 @@ const UserProfilePage: React.FC = () => {
                     >
                       {isEditing ? (
                         <>
-                          <X className="w-4 h-4 mr-2" />
+                          <X className="mr-2 h-4 w-4" />
                           {t("actions.cancel")}
                         </>
                       ) : (
                         <>
-                          <Edit className="w-4 h-4 mr-2" />
+                          <Edit className="mr-2 h-4 w-4" />
                           {t("actions.edit")}
                         </>
                       )}
@@ -366,8 +324,7 @@ const UserProfilePage: React.FC = () => {
                   </div>
 
                   <div className="space-y-6">
-                    {/* Foto do perfil */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                       <AvatarUpload
                         currentAvatar={userData.image}
                         userName={userData.name || t("userWithoutName")}
@@ -376,37 +333,37 @@ const UserProfilePage: React.FC = () => {
                       />
 
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-white mb-1">
+                        <h3 className="mb-1 text-xl font-semibold text-slate-900 dark:text-white">
                           {userData.name || t("userWithoutName")}
                         </h3>
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="mb-3 flex items-center gap-2">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            className={`rounded-full border px-3 py-1 text-sm font-medium ${
                               userData.role === "ADMIN"
-                                ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                                : "bg-green-500/20 text-green-300 border border-green-500/30"
+                                ? "border-slate-500/30 bg-slate-600/20 text-slate-700 dark:text-slate-300"
+                                : "border-green-500/30 bg-green-500/20 text-green-600 dark:text-green-300"
                             }`}
                           >
                             {userData.role === "ADMIN" ? (
                               <>
-                                <Crown className="w-4 h-4 inline mr-1" />
+                                <Crown className="mr-1 inline h-4 w-4" />
                                 {t("roles.admin")}
                               </>
                             ) : (
                               <>
-                                <UserIcon className="w-4 h-4 inline mr-1" />
+                                <UserIcon className="mr-1 inline h-4 w-4" />
                                 {t("roles.user")}
                               </>
                             )}
                           </span>
 
-                          {isOwnProfile && (
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full">
+                          {isOwnProfile ? (
+                            <span className="rounded-full bg-blue-500/20 px-2 py-1 text-xs text-blue-700 dark:text-blue-300">
                               {t("you")}
                             </span>
-                          )}
+                          ) : null}
                         </div>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-sm text-slate-600 dark:text-gray-400">
                           {isOwnProfile
                             ? t("ownProfilePictureDescription")
                             : t("anotherUserProfilePictureDescription")}
@@ -414,10 +371,9 @@ const UserProfilePage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Campos de edição */}
                     <div className="space-y-4">
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-gray-300">
                           {t("fullName")}
                         </label>
                         {isEditing ? (
@@ -427,13 +383,13 @@ const UserProfilePage: React.FC = () => {
                             onChange={e =>
                               setEditForm({ ...editForm, name: e.target.value })
                             }
-                            className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder-gray-400"
                             placeholder={t("fullNamePlaceholder")}
                           />
                         ) : (
-                          <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
-                            <UserIcon className="w-5 h-5 text-gray-400" />
-                            <span className="text-white">
+                          <div className="flex items-center gap-3 rounded-lg bg-slate-100 p-3 dark:bg-slate-800/50">
+                            <UserIcon className="h-5 w-5 text-slate-500 dark:text-gray-400" />
+                            <span className="text-slate-900 dark:text-white">
                               {userData.name || t("fullNameRequired")}
                             </span>
                           </div>
@@ -441,7 +397,7 @@ const UserProfilePage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-gray-300">
                           {t("email")}
                         </label>
                         {isEditing ? (
@@ -454,33 +410,35 @@ const UserProfilePage: React.FC = () => {
                                 email: e.target.value,
                               })
                             }
-                            className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-500 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder-gray-400"
                             placeholder={t("emailPlaceholder")}
                           />
                         ) : (
-                          <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
-                            <Mail className="w-5 h-5 text-gray-400" />
-                            <span className="text-white">{userData.email}</span>
+                          <div className="flex items-center gap-3 rounded-lg bg-slate-100 p-3 dark:bg-slate-800/50">
+                            <Mail className="h-5 w-5 text-slate-500 dark:text-gray-400" />
+                            <span className="text-slate-900 dark:text-white">
+                              {userData.email}
+                            </span>
                           </div>
                         )}
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-gray-300">
                           {t("role")}
                         </label>
-                        <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                        <div className="flex items-center gap-3 rounded-lg bg-slate-100 p-3 dark:bg-slate-800/50">
                           {userData.role === "ADMIN" ? (
                             <>
-                              <Crown className="w-5 h-5 text-purple-400" />
-                              <span className="text-purple-400 font-medium">
+                              <Crown className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                              <span className="font-medium text-slate-700 dark:text-slate-300">
                                 {t("roles.admin")}
                               </span>
                             </>
                           ) : (
                             <>
-                              <Shield className="w-5 h-5 text-green-400" />
-                              <span className="text-green-400 font-medium">
+                              <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+                              <span className="font-medium text-green-600 dark:text-green-400">
                                 {t("roles.user")}
                               </span>
                             </>
@@ -489,56 +447,48 @@ const UserProfilePage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Botões de ação */}
-                    {isEditing && (
-                      <div className="flex gap-3 pt-4 border-t border-slate-700">
+                    {isEditing ? (
+                      <div className="flex gap-3 border-t border-slate-200 pt-4 dark:border-slate-700">
                         <Button
                           onClick={handleSave}
-                          disabled={saveLoading}
+                          loading={saveLoading}
                           className="flex-1"
                         >
-                          {saveLoading ? (
-                            <>
-                              <LoadingSpinner size="sm" /> &nbsp;
-                              {t("save.loading")}
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-4 h-4 mr-2" />
-                              {t("save.save")}
-                            </>
-                          )}
+                          <Save className="mr-2 h-4 w-4" />
+                          {saveLoading ? t("save.loading") : t("save.save")}
                         </Button>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </Card>
               </div>
 
-              {/* Sidebar de informações */}
               <div className="space-y-6">
-                {/* Card de informações da conta */}
                 <Card variant="elevated" className="p-6">
-                  <CardTitle className="text-lg text-white mb-4">
+                  <CardTitle className="mb-4 text-lg">
                     {t("accountInfo")}
                   </CardTitle>
 
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 text-sm">
-                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <Calendar className="h-4 w-4 text-slate-500 dark:text-gray-400" />
                       <div>
-                        <p className="text-gray-400">{t("memberSince")}</p>
-                        <p className="text-white font-medium">
+                        <p className="text-slate-600 dark:text-gray-400">
+                          {t("memberSince")}
+                        </p>
+                        <p className="font-medium text-slate-900 dark:text-white">
                           {formatDate(userData.createdAt)}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 text-sm">
-                      <Edit className="w-4 h-4 text-gray-400" />
+                      <Edit className="h-4 w-4 text-slate-500 dark:text-gray-400" />
                       <div>
-                        <p className="text-gray-400">{t("lastUpdate")}</p>
-                        <p className="text-white font-medium">
+                        <p className="text-slate-600 dark:text-gray-400">
+                          {t("lastUpdate")}
+                        </p>
+                        <p className="font-medium text-slate-900 dark:text-white">
                           {formatDate(userData.updatedAt)}
                         </p>
                       </div>
@@ -546,23 +496,22 @@ const UserProfilePage: React.FC = () => {
                   </div>
                 </Card>
 
-                {/* Card de estatísticas (se disponível) */}
                 <Card variant="elevated" className="p-6">
-                  <CardTitle className="text-lg text-white mb-4">
+                  <CardTitle className="mb-4 text-lg">
                     {t("activityStats")}
                   </CardTitle>
 
-                  <div className="text-center py-4">
-                    <p className="text-gray-400 text-sm">
+                  <div className="py-4 text-center">
+                    <p className="text-sm text-slate-600 dark:text-gray-400">
                       {t("activityStatsDescription")}
                     </p>
                   </div>
                 </Card>
               </div>
             </div>
-          </main>
-        </div>
-      </div>
+          </>
+        )}
+      </PageLayout>
     </ProtectedRoute>
   );
 };

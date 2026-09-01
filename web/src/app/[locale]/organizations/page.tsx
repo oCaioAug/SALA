@@ -2,7 +2,6 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -14,10 +13,13 @@ import {
 import { OrganizationsShell } from "@/components/organization/OrganizationsShell";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
+import { organizationEntryPath } from "@/lib/organization/entry-path";
+import { navigateAfterOrgSwitch } from "@/lib/organization/navigate-after-org-switch";
 
 type MeSummary = {
   profileComplete: boolean;
   hasOrganization: boolean;
+  hasPassword?: boolean;
 };
 
 type MembershipsResponse = {
@@ -27,10 +29,8 @@ type MembershipsResponse = {
 
 export default function OrganizationsPage() {
   const t = useTranslations("OrganizationsPage");
-  const router = useRouter();
-  const { status } = useSession();
-  const { isSuperAdmin, hasOrganization, isLoading: permLoading } =
-    useOrgPermissions();
+  const { status, update } = useSession();
+  const { isSuperAdmin, isLoading: permLoading } = useOrgPermissions();
 
   const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [invitesLoading, setInvitesLoading] = useState(true);
@@ -43,16 +43,23 @@ export default function OrganizationsPage() {
   >(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasPassword, setHasPassword] = useState(false);
 
   const createOrgHref =
-    me && (!me.profileComplete || !me.hasOrganization)
+    me && (memberships.length === 0 || !me.profileComplete)
       ? "/organizations/setup"
       : "/organizations/new";
+
+  const hasOrganization = memberships.length > 0;
 
   const fetchMe = useCallback(async () => {
     try {
       const res = await fetch("/api/users/me");
-      if (res.ok) setMe(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setMe(data);
+        setHasPassword(Boolean(data.hasPassword));
+      }
     } finally {
       setMeLoading(false);
     }
@@ -88,18 +95,6 @@ export default function OrganizationsPage() {
     }
   }, [status, fetchMe, fetchMemberships, fetchInvites]);
 
-  useEffect(() => {
-    if (meLoading || invitesLoading || status !== "authenticated") return;
-    if (
-      me &&
-      !me.hasOrganization &&
-      !me.profileComplete &&
-      invites.length === 0
-    ) {
-      router.replace("/organizations/setup");
-    }
-  }, [me, meLoading, invitesLoading, invites.length, status, router]);
-
   const acceptInvite = async (token: string) => {
     setError(null);
     setActionLoading(true);
@@ -112,7 +107,8 @@ export default function OrganizationsPage() {
         setError(data.error ?? t("inviteError"));
         return;
       }
-      window.location.href = "/organizations";
+      await update({ preferOrganizationId: data.organizationId });
+      navigateAfterOrgSwitch(organizationEntryPath(data.role));
     } catch {
       setError(t("inviteError"));
     } finally {
@@ -125,7 +121,7 @@ export default function OrganizationsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-background">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -133,7 +129,7 @@ export default function OrganizationsPage() {
 
   return (
     <ProtectedRoute>
-      <OrganizationsShell>
+      <OrganizationsShell variant="hub">
         <OrganizationsHub
           memberships={memberships}
           activeOrganizationId={activeOrganizationId}
@@ -142,6 +138,8 @@ export default function OrganizationsPage() {
           createOrgHref={createOrgHref}
           profileComplete={me?.profileComplete ?? false}
           hasOrganization={hasOrganization}
+          hasPassword={hasPassword}
+          onPasswordCreated={() => setHasPassword(true)}
           invitesLoading={invitesLoading}
           actionLoading={actionLoading}
           error={error}

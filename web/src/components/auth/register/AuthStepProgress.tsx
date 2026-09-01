@@ -46,9 +46,9 @@ export function AuthStepProgress({
                 className={cn(
                   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all",
                   isActive
-                    ? "border-violet-500/60 bg-violet-500/20 text-violet-700 dark:text-violet-200"
+                    ? "border-primary/60 bg-primary/20 text-primary dark:text-primary"
                     : "border-border bg-muted text-muted-foreground",
-                  isCurrent && "ring-2 ring-violet-500/30"
+                  isCurrent && "ring-2 ring-ring/30"
                 )}
               >
                 {step}
@@ -67,7 +67,7 @@ export function AuthStepProgress({
       </div>
       <div className="relative mt-4 h-1 overflow-hidden rounded-full bg-muted">
         <div
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 transition-all duration-300"
+          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-slate-700 to-slate-600 transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
       </div>

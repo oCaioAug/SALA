@@ -30,12 +30,12 @@ type Props = {
 
 const cardEmbed = (embedded: boolean) =>
   cn(
-    "flex min-h-0 flex-col overflow-x-hidden overflow-y-auto",
-    embedded && "h-full !p-3"
+    "flex min-h-0 flex-col overflow-hidden",
+    embedded && "h-full min-h-0 flex-1 !p-3"
   );
 
 const headerEmbed = (embedded: boolean) =>
-  cn(embedded && "!pb-2 [&_.space-y-2]:space-y-1");
+  cn("shrink-0", embedded && "!pb-2 [&_.space-y-2]:space-y-1");
 
 const titleEmbed = (embedded: boolean) =>
   cn(embedded && "!text-base leading-tight");
@@ -45,10 +45,10 @@ const descEmbed = (embedded: boolean) =>
 
 const chartBox = (embedded: boolean) =>
   cn(
-    "w-full min-w-0 max-w-full",
+    "w-full min-w-0 max-w-full [&_.recharts-responsive-container]:!size-full",
     embedded
-      ? "aspect-auto h-full min-h-[96px] flex-1"
-      : "h-[200px] min-h-[180px]"
+      ? "!aspect-auto h-full min-h-0 flex-1"
+      : "aspect-video h-[200px] min-h-[180px]"
   );
 
 function TileSkeleton({ embedded }: { embedded?: boolean }) {
@@ -61,8 +61,8 @@ function TileSkeleton({ embedded }: { embedded?: boolean }) {
         <div className="h-5 w-40 max-w-full rounded bg-slate-200 dark:bg-slate-700" />
         <div className="h-3 w-52 max-w-full rounded bg-slate-100 dark:bg-slate-800" />
       </CardHeader>
-      <CardContent className="min-h-[120px] flex-1 rounded-lg bg-slate-100 p-0 dark:bg-slate-800">
-        <div className="h-full min-h-[120px] w-full rounded-lg" />
+      <CardContent className="min-h-0 flex-1 overflow-hidden p-0">
+        <div className="h-full min-h-0 w-full rounded-lg bg-slate-100 dark:bg-slate-800" />
       </CardContent>
     </Card>
   );
@@ -74,6 +74,11 @@ export function DashboardIncidentTile({
   embedded = false,
 }: Props) {
   const t = useTranslations("DashboardHome.incidentsAndRequests");
+
+  const statusLabel = (status: string) => {
+    const key = `incidentStatus.${status}` as Parameters<typeof t>[0];
+    return t.has(key) ? t(key) : status;
+  };
 
   const incidentStatusConfig = useMemo(() => {
     const rows = stats?.incidents?.byStatus ?? [];
@@ -87,7 +92,7 @@ export function DashboardIncidentTile({
     ];
     rows.forEach((row, i) => {
       cfg[row.status] = {
-        label: t(`incidentStatus.${row.status}` as Parameters<typeof t>[0]),
+        label: statusLabel(row.status),
         color: palette[i % palette.length],
       };
     });
@@ -116,8 +121,8 @@ export function DashboardIncidentTile({
     >
       <CardHeader className={headerEmbed(embedded)}>
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <div className="shrink-0 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 p-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          <div className="shrink-0 text-muted-foreground">
+            <AlertTriangle className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <CardTitle className={titleEmbed(embedded)}>
@@ -131,7 +136,7 @@ export function DashboardIncidentTile({
       </CardHeader>
       <CardContent
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto pt-0",
+          "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-0",
           embedded && "!px-0"
         )}
       >
@@ -176,9 +181,7 @@ export function DashboardIncidentTile({
                       axisLine={false}
                       width={embedded ? 76 : 104}
                       tick={{ fontSize: 11 }}
-                      tickFormatter={value =>
-                        t(`incidentStatus.${value}` as Parameters<typeof t>[0])
-                      }
+                      tickFormatter={value => statusLabel(String(value))}
                     />
                     <XAxis type="number" hide />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -191,26 +194,30 @@ export function DashboardIncidentTile({
                 </ChartContainer>
               </div>
             ) : null}
-            <Link
-              href="/incidentes"
-              className="mt-auto inline-flex shrink-0 items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400"
-            >
-              {t("openIncidentes")}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {!embedded ? (
+              <Link
+                href="/incidentes"
+                className="mt-auto inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary"
+              >
+                {t("openIncidentes")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
           </>
         ) : (
           <div className="flex flex-1 flex-col justify-between gap-4">
             <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
               {t("emptyIncidents")}
             </p>
-            <Link
-              href="/incidentes"
-              className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400"
-            >
-              {t("openIncidentes")}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {!embedded ? (
+              <Link
+                href="/incidentes"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+              >
+                {t("openIncidentes")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
           </div>
         )}
       </CardContent>
@@ -237,8 +244,8 @@ export function DashboardSolicitationsTile({
     >
       <CardHeader className={headerEmbed(embedded)}>
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <div className="shrink-0 rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 p-2">
-            <ClipboardList className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          <div className="shrink-0 text-muted-foreground">
+            <ClipboardList className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <CardTitle className={titleEmbed(embedded)}>
@@ -269,13 +276,15 @@ export function DashboardSolicitationsTile({
             </p>
           ) : null}
         </div>
-        <Link
-          href="/solicitacoes"
-          className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400"
-        >
-          {t("openSolicitacoes")}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        {!embedded ? (
+          <Link
+            href="/solicitacoes"
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary"
+          >
+            {t("openSolicitacoes")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        ) : null}
       </CardContent>
     </Card>
   );

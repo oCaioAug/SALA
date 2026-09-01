@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { isValidCpf, stripDocument } from "@/lib/validations/brazilian-documents";
+import {
+  isValidCpf,
+  stripDocument,
+} from "@/lib/validations/brazilian-documents";
 
 export const completeProfileSchema = z.object({
   cpf: z

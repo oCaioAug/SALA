@@ -6,5 +6,5 @@ interface Props {
 
 export default async function OnboardingRedirectPage({ params }: Props) {
   const { locale } = await params;
-  redirect({ href: "/organizations/setup", locale });
+  redirect({ href: "/organizations", locale });
 }

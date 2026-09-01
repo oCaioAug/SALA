@@ -22,6 +22,7 @@ import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
+import { Calendar } from "@/components/ui/Calendar";
 import {
   Card,
   CardContent,
@@ -58,6 +59,7 @@ const RoomSchedulesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [createReservationLoading, setCreateReservationLoading] =
     useState(false);
 
@@ -135,6 +137,36 @@ const RoomSchedulesPage: React.FC = () => {
   const handleReservationClick = (reservation: ReservationWithUser) => {
     setSelectedReservation(reservation);
     setIsDetailsModalOpen(true);
+  };
+
+  const getReservationsForDate = (date: Date): ReservationWithUser[] => {
+    return filteredReservations.filter(reservation => {
+      const startDate = new Date(reservation.startTime);
+      const endDate = new Date(reservation.endTime);
+      const checkDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      checkDate.setHours(0, 0, 0, 0);
+      return checkDate >= startDate && checkDate <= endDate;
+    });
+  };
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    const dayReservations = getReservationsForDate(date);
+    if (dayReservations.length > 0) {
+      setSelectedReservation(dayReservations[0]);
+      setIsDetailsModalOpen(true);
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const clicked = new Date(date);
+    clicked.setHours(0, 0, 0, 0);
+    if (clicked.getTime() < today.getTime()) return;
+
+    setIsCreateModalOpen(true);
   };
 
   const handleCreateReservation = () => {
@@ -326,46 +358,47 @@ const RoomSchedulesPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <CalendarIcon className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                    Agendamentos - {room.name}
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
+                    {t("roomTitle", { name: room.name })}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">
-                    {reservations.length} reserva(s) encontrada(s) para esta
-                    sala
+                    {t("roomReservationsFound", { count: reservations.length })}
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="flex bg-white dark:bg-gray-800 rounded-lg border border-slate-300 dark:border-gray-600">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex h-11 items-stretch overflow-hidden rounded-lg border border-slate-300 bg-white dark:border-gray-600 dark:bg-gray-800">
                   <button
+                    type="button"
                     onClick={() => setViewMode("list")}
-                    className={`p-3 rounded-l-lg transition-colors ${
+                    className={`px-4 text-sm font-medium transition-colors ${
                       viewMode === "list"
                         ? "bg-blue-600 text-white"
-                        : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
+                        : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
                     }`}
                   >
                     {t("roomContext.listView")}
                   </button>
                   <button
+                    type="button"
                     onClick={() => setViewMode("calendar")}
-                    className={`p-3 rounded-r-lg transition-colors ${
+                    className={`px-4 text-sm font-medium transition-colors ${
                       viewMode === "calendar"
                         ? "bg-blue-600 text-white"
-                        : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
+                        : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
                     }`}
                   >
                     {t("roomContext.calendarView")}
                   </button>
                 </div>
 
-                <Button onClick={handleCreateReservation} className="px-6 py-3">
-                  <Plus className="w-5 h-5 mr-2" />
+                <Button
+                  onClick={handleCreateReservation}
+                  className="inline-flex h-11 items-center px-6"
+                >
+                  <Plus className="mr-2 h-5 w-5" />
                   {t("newReservation")}
                 </Button>
               </div>
@@ -391,14 +424,25 @@ const RoomSchedulesPage: React.FC = () => {
               className="px-4 py-3 bg-white dark:bg-gray-800 border border-slate-300 dark:border-gray-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">{t("roomContext.statusAll")}</option>
-              <option value="ACTIVE">Ativas</option>
-              <option value="CANCELLED">Canceladas</option>
-              <option value="COMPLETED">Concluídas</option>
+              <option value="ACTIVE">{t("statusFilter.active")}</option>
+              <option value="CANCELLED">{t("statusFilter.cancelled")}</option>
+              <option value="COMPLETED">{t("statusFilter.completed")}</option>
             </select>
           </div>
 
           {/* Conteúdo principal */}
-          {filteredReservations.length === 0 ? (
+          {viewMode === "calendar" ? (
+            <div className="mt-6">
+              <Calendar
+                reservations={filteredReservations}
+                rooms={room ? [room] : []}
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                onDateClick={handleDateClick}
+                onReservationClick={handleReservationClick}
+              />
+            </div>
+          ) : filteredReservations.length === 0 ? (
             <EmptyState
               icon={
                 <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
@@ -406,14 +450,14 @@ const RoomSchedulesPage: React.FC = () => {
               title={t("noReservationsForTheDay")}
               description={
                 searchTerm || statusFilter !== "all"
-                  ? "Tente ajustar os filtros de busca para encontrar reservas."
-                  : "Esta sala ainda não possui agendamentos."
+                  ? t("roomContext.emptyFiltered")
+                  : t("roomContext.emptyRoom")
               }
               action={
                 searchTerm || statusFilter !== "all"
                   ? undefined
                   : {
-                      label: "Criar Primeira Reserva",
+                      label: t("roomContext.createFirst"),
                       onClick: handleCreateReservation,
                     }
               }
@@ -431,7 +475,9 @@ const RoomSchedulesPage: React.FC = () => {
                             {formatDate(new Date(dateKey))}
                           </CardTitle>
                           <CardDescription>
-                            {dayReservations.length} reserva(s) neste dia
+                            {t("roomContext.reservationsOnDay", {
+                              count: dayReservations.length,
+                            })}
                           </CardDescription>
                         </div>
                       </div>
@@ -513,7 +559,7 @@ const RoomSchedulesPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      Sala
+                      {t("room")}
                     </label>
                     <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                       <Building2 className="w-4 h-4 text-blue-400" />
@@ -525,7 +571,7 @@ const RoomSchedulesPage: React.FC = () => {
 
                   <div>
                     <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      Usuário
+                      {t("user")}
                     </label>
                     <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                       <UserIcon className="w-4 h-4 text-green-400" />
@@ -539,7 +585,7 @@ const RoomSchedulesPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      Início
+                      {t("start")}
                     </label>
                     <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                       <Clock className="w-4 h-4 text-orange-400" />
@@ -553,7 +599,7 @@ const RoomSchedulesPage: React.FC = () => {
 
                   <div>
                     <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      Fim
+                      {t("end")}
                     </label>
                     <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
                       <Clock className="w-4 h-4 text-red-400" />
@@ -567,7 +613,7 @@ const RoomSchedulesPage: React.FC = () => {
                 {selectedReservation.purpose && (
                   <div>
                     <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      Propósito
+                      {t("purpose")}
                     </label>
                     <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
                       {selectedReservation.purpose}
@@ -577,7 +623,7 @@ const RoomSchedulesPage: React.FC = () => {
 
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    Status
+                    {t("status")}
                   </label>
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedReservation.status)}`}
@@ -614,7 +660,7 @@ const RoomSchedulesPage: React.FC = () => {
           <Drawer
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
-            title="Nova Reserva"
+            title={t("modal.create")}
             size="lg"
           >
             <ReservationForm

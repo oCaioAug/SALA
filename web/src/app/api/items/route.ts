@@ -1,11 +1,10 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
-import { isNextResponse } from "@/lib/auth/platform";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { canManageRoomItems } from "@/lib/auth/permissions";
+import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";
+import { isOrgAdminRole } from "@/lib/auth/roles";
 import { requireTenantContext } from "@/lib/auth/tenant";
 import { getRoomInOrganization } from "@/lib/auth/tenant-queries";
 import { prisma } from "@/lib/prisma";
@@ -74,10 +73,20 @@ export async function POST(request: NextRequest) {
       return apiErrorResponse(ApiErrorCode.ITEM_NAME_REQUIRED, 400);
     }
 
-    if (roomId) {
+    const permissionUser = toPermissionUser(ctx.user);
+
+    if (!roomId) {
+      if (!isOrgAdminRole(ctx.user.organizationRole)) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    } else {
       const room = await getRoomInOrganization(roomId, ctx.organizationId);
       if (!room) {
         return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
+      }
+      const allowed = await canManageRoomItems(permissionUser, room);
+      if (!allowed) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
       }
     }
 

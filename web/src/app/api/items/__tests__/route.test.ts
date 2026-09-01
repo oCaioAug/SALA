@@ -4,9 +4,9 @@
 import { NextRequest } from "next/server";
 
 import {
-  TEST_ORG_ID,
   mockRequireTenantContext,
   mockTenantContextValue,
+  TEST_ORG_ID,
 } from "../../../../../prisma/auth-mocks";
 import { prismaMock } from "../../../../../prisma/mock";
 import { GET, POST } from "../route";
@@ -75,6 +75,11 @@ describe("Items API (List and Create)", () => {
     });
 
     it("should create a new item and invalidate cache", async () => {
+      const { mockAdminContextValue, mockRequireTenantContext } = await import(
+        "../../../../../prisma/auth-mocks"
+      );
+      mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
+
       const mockItem = { id: "new-item", name: "Novo Projetor" };
       prismaMock.item.create.mockResolvedValue(mockItem as any);
 
@@ -99,7 +104,48 @@ describe("Items API (List and Create)", () => {
       );
     });
 
+    it("should return 403 when member creates item without room", async () => {
+      const req = new NextRequest("http://localhost:3000/api/items", {
+        method: "POST",
+        body: JSON.stringify({ name: "Projetor" }),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(403);
+    });
+
+    it("should create item in room when org admin", async () => {
+      const { mockAdminContextValue, mockRequireTenantContext } = await import(
+        "../../../../../prisma/auth-mocks"
+      );
+      mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
+
+      const mockItem = {
+        id: "new-item",
+        name: "Projetor Sala",
+        roomId: "room-1",
+      };
+      prismaMock.item.create.mockResolvedValue(mockItem as any);
+
+      const req = new NextRequest("http://localhost:3000/api/items", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "Projetor Sala",
+          roomId: "room-1",
+          quantity: "1",
+        }),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(201);
+    });
+
     it("should return 500 on DB error", async () => {
+      const { mockAdminContextValue, mockRequireTenantContext } = await import(
+        "../../../../../prisma/auth-mocks"
+      );
+      mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
+
       prismaMock.item.create.mockRejectedValue(new Error("DB error"));
 
       const req = new NextRequest("http://localhost:3000/api/items", {

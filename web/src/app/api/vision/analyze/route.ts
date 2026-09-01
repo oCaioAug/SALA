@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth-hybrid";
 import { prisma } from "@/lib/prisma";
 import { VisionServiceFactory } from "@/lib/services/vision/index";
-import { AuditItemComparison, ProvisionItemSuggestion } from "@/lib/services/vision/types";
+import {
+  AuditItemComparison,
+  ProvisionItemSuggestion,
+} from "@/lib/services/vision/types";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +25,27 @@ const CLASS_METADATA_MAP: Record<string, { label: string; icon: string }> = {
  */
 function mapDatabaseItemToAiClass(itemName: string): string | null {
   const name = itemName.toLowerCase();
-  if (name.includes("notebook") || name.includes("laptop") || name.includes("computador") || name.includes("pc") || name.includes("desktop")) {
+  if (
+    name.includes("notebook") ||
+    name.includes("laptop") ||
+    name.includes("computador") ||
+    name.includes("pc") ||
+    name.includes("desktop")
+  ) {
     return "laptop";
   }
-  if (name.includes("projetor") || name.includes("projector") || name.includes("telão")) {
+  if (
+    name.includes("projetor") ||
+    name.includes("projector") ||
+    name.includes("telão")
+  ) {
     return "projector";
   }
-  if (name.includes("cadeira") || name.includes("chair") || name.includes("assento")) {
+  if (
+    name.includes("cadeira") ||
+    name.includes("chair") ||
+    name.includes("assento")
+  ) {
     return "chair";
   }
   if (name.includes("teclado") || name.includes("keyboard")) {
@@ -66,7 +83,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!room) {
-      return NextResponse.json({ error: "Sala não encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Sala não encontrada" },
+        { status: 404 }
+      );
     }
 
     // 3. Obter o serviço de visão ativa via fábrica resolvedora (DIP SOLID)
@@ -77,10 +97,12 @@ export async function POST(request: NextRequest) {
     const { occupancyCount, detectedClasses } = analysisResult;
 
     const logs: string[] = [];
-    logs.push(`[${new Date().toLocaleTimeString()}] Imagem analisada com sucesso via motor ${analysisResult.provider}.`);
-    logs.push(`[${new Date().toLocaleTimeString()}] Detecção concluída. Total de predições: ${analysisResult.predictions.length}.`);
-
-
+    logs.push(
+      `[${new Date().toLocaleTimeString()}] Imagem analisada com sucesso via motor ${analysisResult.provider}.`
+    );
+    logs.push(
+      `[${new Date().toLocaleTimeString()}] Detecção concluída. Total de predições: ${analysisResult.predictions.length}.`
+    );
 
     // ==========================================
     // CASO DE USO 2: AUDITORIA DE EQUIPAMENTOS E INCIDENTES (audit)
@@ -130,13 +152,17 @@ export async function POST(request: NextRequest) {
       let createdIncidentId: string | undefined;
 
       if (hasDiscrepancies) {
-        logs.push(`[${new Date().toLocaleTimeString()}] ⚠️ DISCREPÂNCIA DETECTADA! Alguns equipamentos cadastrados estão ausentes na auditoria.`);
-        
+        logs.push(
+          `[${new Date().toLocaleTimeString()}] ⚠️ DISCREPÂNCIA DETECTADA! Alguns equipamentos cadastrados estão ausentes na auditoria.`
+        );
+
         // Criar incidente automático gerado pelo bot
         const incidentTitle = `[SALA-BOT] Equipamento Ausente na Sala: ${room.name}`;
         const incidentDesc = `Auditoria automática de Inventário via Visão Computacional realizada em ${new Date().toLocaleString()} detectou que alguns equipamentos cadastrados estão faltando:\n\n${missingItemsForIncident.join("\n")}\n\nPor favor, envie um técnico para inspecionar o local.`;
 
-        console.log("🎫 [SALA-BOT] Criando chamado de incidente automático no banco...");
+        console.log(
+          "🎫 [SALA-BOT] Criando chamado de incidente automático no banco..."
+        );
         const incident = await prisma.incident.create({
           data: {
             title: incidentTitle,
@@ -155,15 +181,20 @@ export async function POST(request: NextRequest) {
           data: {
             incidentId: incident.id,
             toStatus: "REPORTED",
-            notes: "Chamado gerado de forma autônoma pelo motor S.A.L.A. Vision Bot após auditoria fotográfica da sala.",
+            notes:
+              "Chamado gerado de forma autônoma pelo motor S.A.L.A. Vision Bot após auditoria fotográfica da sala.",
             changedById: authResult.user.id,
           },
         });
 
         createdIncidentId = incident.id;
-        logs.push(`[AUTOMATION] 🚨 Incidente gerado com sucesso pelo SALA-BOT! Chamado ID: #${incident.id}.`);
+        logs.push(
+          `[AUTOMATION] 🚨 Incidente gerado com sucesso pelo SALA-BOT! Chamado ID: #${incident.id}.`
+        );
       } else {
-        logs.push(`[${new Date().toLocaleTimeString()}] ✅ Auditoria concluída com sucesso! Todos os equipamentos cadastrados estão presentes no ambiente.`);
+        logs.push(
+          `[${new Date().toLocaleTimeString()}] ✅ Auditoria concluída com sucesso! Todos os equipamentos cadastrados estão presentes no ambiente.`
+        );
       }
 
       return NextResponse.json({
@@ -184,32 +215,46 @@ export async function POST(request: NextRequest) {
       // Apenas Administradores podem obter sugestões de provisionamento
       if (authResult.user.role !== "ADMIN") {
         return NextResponse.json(
-          { error: "Acesso restrito: Apenas administradores podem provisionar salas." },
+          {
+            error:
+              "Acesso restrito: Apenas administradores podem provisionar salas.",
+          },
           { status: 403 }
         );
       }
 
-      logs.push(`[${new Date().toLocaleTimeString()}] Processando sugestões de provisionamento automático...`);
+      logs.push(
+        `[${new Date().toLocaleTimeString()}] Processando sugestões de provisionamento automático...`
+      );
       const suggestions: ProvisionItemSuggestion[] = [];
 
       // Mapeia as classes detectadas para sugestões de cadastro
       Object.entries(detectedClasses).forEach(([aiClass, count]) => {
         // Ignora pessoas ou classes desconhecidas no provisionamento de ativos fixos
         if (aiClass !== "person" && count > 0) {
-          const metadata = CLASS_METADATA_MAP[aiClass] || { label: aiClass.charAt(0).toUpperCase() + aiClass.slice(1), icon: "📦" };
+          const metadata = CLASS_METADATA_MAP[aiClass] || {
+            label: aiClass.charAt(0).toUpperCase() + aiClass.slice(1),
+            icon: "📦",
+          };
           suggestions.push({
             name: metadata.label,
             quantity: count,
             icon: metadata.icon,
           });
-          logs.push(`[IA SUGGEST] IA identificou "${metadata.label}" (Qtd: ${count}). Adicionado às sugestões de provisionamento.`);
+          logs.push(
+            `[IA SUGGEST] IA identificou "${metadata.label}" (Qtd: ${count}). Adicionado às sugestões de provisionamento.`
+          );
         }
       });
 
       if (suggestions.length === 0) {
-        logs.push(`[${new Date().toLocaleTimeString()}] Nenhum equipamento cadastrável foi identificado na foto enviada.`);
+        logs.push(
+          `[${new Date().toLocaleTimeString()}] Nenhum equipamento cadastrável foi identificado na foto enviada.`
+        );
       } else {
-        logs.push(`[${new Date().toLocaleTimeString()}] Total de ${suggestions.length} tipo(s) de equipamento(s) identificado(s) pronto(s) para revisão.`);
+        logs.push(
+          `[${new Date().toLocaleTimeString()}] Total de ${suggestions.length} tipo(s) de equipamento(s) identificado(s) pronto(s) para revisão.`
+        );
       }
 
       return NextResponse.json({
@@ -221,7 +266,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ error: "Modo de análise inválido." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Modo de análise inválido." },
+      { status: 400 }
+    );
   } catch (error) {
     console.error("❌ Erro ao processar rota de visão computacional:", error);
     return NextResponse.json(

@@ -278,7 +278,7 @@ export default function ReservationApprovalPage() {
           </button>
           <button
             onClick={testPushNotification}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
           >
             <FaBell className="h-4 w-4 shrink-0" aria-hidden />
             {t("actions.testPush")}

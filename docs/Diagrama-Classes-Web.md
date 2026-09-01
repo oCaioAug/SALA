@@ -20,6 +20,27 @@ classDiagram
         +String? description
         +RoomStatus status
         +Int? capacity
+        +String? sectorId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Sector {
+        +String id
+        +String organizationId
+        +String name
+        +String? description
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class SectorMember {
+        +String id
+        +String sectorId
+        +String userId
+        +SectorMemberRole role
+        +Boolean canApproveReservations
+        +Boolean canManageRooms
         +DateTime createdAt
         +DateTime updatedAt
     }
@@ -49,6 +70,9 @@ classDiagram
         +DateTime endTime
         +String? purpose
         +ReservationStatus status
+        +String? decidedById
+        +DateTime? decidedAt
+        +String? decisionReason
         +Boolean isRecurring
         +RecurringPattern? recurringPattern
         +Int[] recurringDaysOfWeek
@@ -208,9 +232,15 @@ classDiagram
 
     %% Relacionamentos - Entidades
     User "1" --> "*" Reservation : reservations
+    User "1" --> "*" SectorMember : sectorMemberships
     User "1" --> "*" Notification : notifications
     User "1" --> "*" Incident : incidentsReported
     User "1" --> "*" IncidentStatusHistory : statusChanges
+    Organization "1" --> "*" Sector : sectors
+    Sector "1" --> "*" SectorMember : members
+    Sector "1" --> "*" Room : rooms
+    Room "*" --> "0..1" Sector : sector
+    Reservation "*" --> "0..1" User : decidedBy
     User "1" --> "*" PushToken : pushTokens
 
     Room "1" --> "*" Reservation : reservations
@@ -294,7 +324,15 @@ Usuário do sistema (ADMIN ou USER). Cria reservas, reporta incidentes e recebe 
 
 #### Room
 
-Sala disponível para reserva. Possui status e lista de itens.
+Sala disponível para reserva. Possui status, lista de itens e opcionalmente um setor responsável (`sectorId`).
+
+#### Sector
+
+Unidade de responsabilidade da organização (ex.: Cord de TI, NIC). Agrupa salas e gestores.
+
+#### SectorMember
+
+Vínculo usuário–setor com papel `MANAGER` e duas funções: `canApproveReservations` (agendas) e `canManageRooms` (infos da sala + itens). OWNER/ADMIN da organização escolhe o que cada pessoa pode fazer.
 
 #### Item
 
@@ -306,7 +344,7 @@ Imagem associada a um item, utilizada para ilustrar equipamentos.
 
 #### Reservation
 
-Reserva de sala, simples ou recorrente. Possui status de aprovação e horários, além de metadados de recorrência (padrão, dias da semana, data de término, vínculo com reserva pai/template).
+Reserva de sala, simples ou recorrente. Possui status de aprovação, horários, metadados de recorrência e auditoria da decisão (`decidedById`, `decidedAt`, `decisionReason`).
 
 #### Notification
 

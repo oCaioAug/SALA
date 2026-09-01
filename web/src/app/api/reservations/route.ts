@@ -7,6 +7,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import {
+  canApproveRoom,
+  getSectorManagedRoomIds,
+  hasSectorCapabilityInOrg,
+} from "@/lib/auth/permissions";
 import { isNextResponse } from "@/lib/auth/platform";
 import { isOrgAdmin } from "@/lib/auth/roles";
 import { requireTenantContext } from "@/lib/auth/tenant";
@@ -49,11 +54,50 @@ export async function GET(request: NextRequest) {
       where.userId = userId;
     }
 
+    const userIsOrgAdmin = isOrgAdmin({
+      platformRole: ctx.user.platformRole,
+      organizationRole: ctx.user.organizationRole,
+    });
+
+    if (!userIsOrgAdmin) {
+      const canApprove = await hasSectorCapabilityInOrg(
+        ctx.user.id,
+        ctx.organizationId,
+        "canApproveReservations"
+      );
+      if (canApprove) {
+        const managedRoomIds = await getSectorManagedRoomIds(
+          ctx.user.id,
+          ctx.organizationId
+        );
+        if (managedRoomIds.length === 0) {
+          return NextResponse.json([]);
+        }
+        where.roomId = roomId
+          ? managedRoomIds.includes(roomId)
+            ? roomId
+            : { in: [] }
+          : { in: managedRoomIds };
+      } else if (!roomId) {
+        // Non-approvers without room scope only see their own reservations.
+        // Room calendars still pass roomId for availability visibility.
+        if (userId && userId !== ctx.user.id) {
+          return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+        }
+        where.userId = ctx.user.id;
+      }
+    }
+
     const reservations = await prisma.reservation.findMany({
       where,
       include: {
         user: true,
-        room: true,
+        decidedBy: { select: { id: true, name: true, email: true } },
+        room: {
+          include: {
+            sector: { select: { id: true, name: true } },
+          },
+        },
       },
       orderBy: {
         startTime: "desc",
@@ -184,9 +228,16 @@ export async function POST(request: NextRequest) {
     // Verificar se a sala existe
     const room = await prisma.room.findUnique({
       where: { id: roomId },
+      select: {
+        id: true,
+        organizationId: true,
+        sectorId: true,
+        name: true,
+        deletedAt: true,
+      },
     });
 
-    if (!room) {
+    if (!room || room.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
     }
 
@@ -344,10 +395,16 @@ export async function POST(request: NextRequest) {
     });
 
     const membership = currentUser?.memberships?.[0];
-    const currentUserIsAdmin = isOrgAdmin({
-      platformRole: currentUser?.platformRole,
-      organizationRole: membership?.role ?? null,
-    });
+    const canAutoApprove = currentUser
+      ? await canApproveRoom(
+          {
+            id: currentUser.id,
+            organizationId: room.organizationId,
+            organizationRole: membership?.role ?? null,
+          },
+          room
+        )
+      : false;
 
     const reservationLimit = await assertCanCreateReservation(
       room.organizationId
@@ -358,7 +415,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const status = currentUserIsAdmin ? "APPROVED" : "PENDING";
+    const status = canAutoApprove ? "APPROVED" : "PENDING";
 
     // Se for reserva recorrente, gerar todas as ocorrências
     if (isRecurring) {

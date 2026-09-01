@@ -1,11 +1,10 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
+import { canApproveReservation } from "@/lib/auth/permissions";
 import { isNextResponse } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
 import { requireTenantContext } from "@/lib/auth/tenant";
 import { getReservationInOrganization } from "@/lib/auth/tenant-queries";
 import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
@@ -32,6 +31,42 @@ async function requireReservationInTenant(id: string) {
   return { ctx, reservation };
 }
 
+async function canModifyReservation(
+  user: {
+    id: string;
+    organizationId: string | null;
+    organizationRole: Parameters<typeof isOrgAdmin>[0]["organizationRole"];
+  },
+  reservation: {
+    userId: string;
+    organizationId: string;
+    room: {
+      id: string;
+      organizationId: string;
+      sectorId: string | null;
+    };
+  }
+): Promise<boolean> {
+  if (reservation.userId === user.id) return true;
+
+  if (
+    isOrgAdmin({
+      organizationRole: user.organizationRole,
+    })
+  ) {
+    return true;
+  }
+
+  return canApproveReservation(
+    {
+      id: user.id,
+      organizationId: user.organizationId,
+      organizationRole: user.organizationRole ?? null,
+    },
+    reservation
+  );
+}
+
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -40,7 +75,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const reservation = await prisma.reservation.findUnique({
       where: { id },
-      include: { user: true, room: true },
+      include: {
+        user: true,
+        room: { include: { sector: { select: { id: true, name: true } } } },
+        decidedBy: { select: { id: true, name: true, email: true } },
+      },
     });
 
     return NextResponse.json(reservation);
@@ -56,7 +95,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const access = await requireReservationInTenant(id);
     if (access instanceof NextResponse) return access;
 
-    const { reservation: existingReservation } = access;
+    const { ctx, reservation: existingReservation } = access;
+
+    const allowed = await canModifyReservation(ctx.user, existingReservation);
+    if (!allowed) {
+      return apiErrorResponse(ApiErrorCode.FORBIDDEN, 403);
+    }
+
     const body = await request.json();
     const { startTime, endTime, purpose, status } = body;
 
@@ -100,7 +145,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ...(purpose !== undefined && { purpose }),
         ...(status && { status }),
       },
-      include: { user: true, room: true },
+      include: {
+        user: true,
+        room: true,
+        decidedBy: { select: { id: true, name: true, email: true } },
+      },
     });
 
     if (status === "CANCELLED") {
@@ -125,7 +174,12 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     const access = await requireReservationInTenant(id);
     if (access instanceof NextResponse) return access;
 
-    const { reservation: existingReservation } = access;
+    const { ctx, reservation: existingReservation } = access;
+
+    const allowed = await canModifyReservation(ctx.user, existingReservation);
+    if (!allowed) {
+      return apiErrorResponse(ApiErrorCode.FORBIDDEN, 403);
+    }
 
     const fullReservation = await prisma.reservation.findUnique({
       where: { id },

@@ -1,14 +1,13 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-import { authOptions } from "@/lib/auth";
-import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { canApproveReservation } from "@/lib/auth/permissions";
+import {
+  isNextResponse,
+  requireReservationApprover,
+} from "@/lib/auth/platform";
 import { notificationService } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { pushNotificationService } from "@/lib/push-notification-service";
@@ -32,13 +31,7 @@ const approveReservationSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return apiErrorResponse(ApiErrorCode.NOT_AUTHENTICATED, 401);
-    }
-
-    const auth = await requireOrgAdmin();
+    const auth = await requireReservationApprover();
     if (isNextResponse(auth)) return auth;
     if (!auth.organizationId) {
       return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
@@ -62,12 +55,27 @@ export async function POST(req: NextRequest) {
       return apiErrorResponse(ApiErrorCode.RESERVATION_NOT_PENDING, 400);
     }
 
-    // Atualizar status da reserva
-    const newStatus = approved ? "APPROVED" : "REJECTED";
+    const allowed = await canApproveReservation(
+      {
+        id: auth.id,
+        organizationId: auth.organizationId,
+        organizationRole: auth.organizationRole,
+      },
+      reservation
+    );
+    if (!allowed) {
+      return apiErrorResponse(ApiErrorCode.FORBIDDEN, 403);
+    }
 
-    // Se for uma reserva recorrente, atualizar todas as instâncias
+    const newStatus = approved ? "APPROVED" : "REJECTED";
+    const decisionData = {
+      status: newStatus as "APPROVED" | "REJECTED",
+      decidedById: auth.id,
+      decidedAt: new Date(),
+      decisionReason: reason ?? null,
+    };
+
     if (reservation.isRecurring && reservation.recurringTemplateId) {
-      // Buscar todas as reservas com o mesmo recurringTemplateId
       const allRecurringReservations = await prisma.reservation.findMany({
         where: {
           organizationId: auth.organizationId,
@@ -80,18 +88,28 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Atualizar todas as reservas recorrentes
+      for (const instance of allRecurringReservations) {
+        const canApproveInstance = await canApproveReservation(
+          {
+            id: auth.id,
+            organizationId: auth.organizationId,
+            organizationRole: auth.organizationRole,
+          },
+          instance
+        );
+        if (!canApproveInstance) {
+          return apiErrorResponse(ApiErrorCode.FORBIDDEN, 403);
+        }
+      }
+
       await prisma.reservation.updateMany({
         where: {
           recurringTemplateId: reservation.recurringTemplateId,
           status: "PENDING",
         },
-        data: {
-          status: newStatus,
-        },
+        data: decisionData,
       });
 
-      // Buscar a reserva atualizada para retornar
       const updatedReservation = await prisma.reservation.findUnique({
         where: { id: reservationId },
         include: {
@@ -117,7 +135,6 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Enviar notificação push (uma para todas as instâncias)
       try {
         if (approved) {
           await pushNotificationService.sendReservationApprovalNotification(
@@ -155,10 +172,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Reserva única (não recorrente)
     const updatedReservation = await prisma.reservation.update({
       where: { id: reservationId },
-      data: { status: newStatus },
+      data: decisionData,
       include: {
         room: true,
         user: true,

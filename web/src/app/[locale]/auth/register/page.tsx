@@ -1,96 +1,66 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { ZodIssue } from "zod";
 
+import {
+  authInputClass,
+  authInputErrorClass,
+} from "@/components/auth/auth-styles";
 import {
   AuthCard,
   AuthDivider,
   AuthError,
+  AuthField,
   AuthFooterLink,
   AuthGoogleButton,
   AuthPrimaryButton,
-  AuthSecondaryButton,
 } from "@/components/auth/AuthForm";
 import { AuthShell } from "@/components/auth/AuthShell";
-import { AuthStepProgress } from "@/components/auth/register/AuthStepProgress";
-import { RegisterStepConfirm } from "@/components/auth/register/RegisterStepConfirm";
-import { RegisterStepDetails } from "@/components/auth/register/RegisterStepDetails";
-import { RegisterStepPlan } from "@/components/auth/register/RegisterStepPlan";
-import { RegisterStepSummary } from "@/components/auth/register/RegisterStepSummary";
-import {
-  initialRegisterForm,
-  type PublicPlan,
-  type RegisterFormState,
-  type RegisterStep,
-} from "@/components/auth/register/types";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { getSafeCallbackPath } from "@/lib/auth/callback-path";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
-import { registerStep1Schema } from "@/lib/validations/auth";
+import { cn } from "@/lib/utils";
+import { accountRegisterSchema } from "@/lib/validations/auth";
 import { Link } from "@/navigation";
 
-export default function RegisterPage() {
+function mapZodErrors(issues: ZodIssue[]) {
+  const errors: Record<string, string> = {};
+  for (const issue of issues) {
+    const field = issue.path?.[0];
+    if (typeof field === "string" && !errors[field]) {
+      errors[field] = issue.message;
+    }
+  }
+  return errors;
+}
+
+const RegisterContent: React.FC = () => {
   const t = useTranslations("Auth.register");
   const tLogin = useTranslations("Auth.login");
   const { fromPayload } = useApiErrorMessage();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackPath =
+    getSafeCallbackPath(searchParams.get("callbackUrl")) ?? "/organizations";
 
-  const [currentStep, setCurrentStep] = useState<RegisterStep>(1);
-  const [form, setForm] = useState<RegisterFormState>(initialRegisterForm);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    acceptTerms: false,
+  });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [oauthOnly, setOauthOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [plans, setPlans] = useState<PublicPlan[]>([]);
-  const [plansLoading, setPlansLoading] = useState(false);
-  const [plansError, setPlansError] = useState<string | null>(null);
-
-  const selectedPlan = useMemo(
-    () => plans.find(plan => plan.id === form.planId) ?? null,
-    [form.planId, plans]
-  );
-
-  const stepSubtitle = {
-    1: t("subtitles.step1"),
-    2: t("subtitles.step2"),
-    3: t("subtitles.step3"),
-    4: t("subtitles.step4"),
-  }[currentStep];
-
-  useEffect(() => {
-    if (currentStep !== 2) return;
-
-    let cancelled = false;
-
-    const loadPlans = async () => {
-      setPlansLoading(true);
-      setPlansError(null);
-      try {
-        const res = await fetch("/api/plans");
-        if (!res.ok) throw new Error("failed");
-        const data = (await res.json()) as PublicPlan[];
-        if (!cancelled) setPlans(data);
-      } catch {
-        if (!cancelled) setPlansError(t("step2.error"));
-      } finally {
-        if (!cancelled) setPlansLoading(false);
-      }
-    };
-
-    void loadPlans();
-    return () => {
-      cancelled = true;
-    };
-  }, [currentStep, t]);
-
-  const handleFieldChange = (name: keyof RegisterFormState, value: string) => {
-    setForm(prev => ({ ...prev, [name]: value }));
-    setFieldErrors(prev => ({ ...prev, [name]: "" }));
-    setFormError(null);
-  };
+  const inputClass = (field?: string) =>
+    cn(authInputClass, field && fieldErrors[field] && authInputErrorClass);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -100,104 +70,48 @@ export default function RegisterPage() {
     }));
     setFieldErrors(prev => ({ ...prev, [name]: "" }));
     setFormError(null);
-  };
-
-  const mapZodErrors = (issues: ZodIssue[]) => {
-  const errors: Record<string, string> = {};
-  for (const issue of issues) {
-    const field = issue.path?.[0];
-    // Como field pode ser string, number ou symbol, garantimos que é string aqui
-    if (typeof field === "string" && !errors[field]) {
-      errors[field] = issue.message;
-    }
-  }
-  return errors;
-};
-
-  const validateStep1 = () => {
-    const result = registerStep1Schema.safeParse(form);
-    if (result.success) {
-      setFieldErrors({});
-      return true;
-    }
-    setFieldErrors(mapZodErrors(result.error.issues));
-    setFormError(t("messages.fixErrors"));
-    return false;
-  };
-
-  const handleNext = () => {
-    setFormError(null);
-
-    if (currentStep === 1) {
-      if (!validateStep1()) return;
-      setCurrentStep(2);
-      return;
-    }
-
-    if (currentStep === 2) {
-      if (!form.planId) {
-        setFormError(t("step2.selectPlan"));
-        return;
-      }
-      setCurrentStep(3);
-      return;
-    }
-
-    if (currentStep === 3) {
-      setCurrentStep(4);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => (prev - 1) as RegisterStep);
-      setFormError(null);
-    }
+    setOauthOnly(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentStep !== 4) {
-      handleNext();
-      return;
-    }
-
-    if (!form.acceptTerms) {
-      setFieldErrors({ acceptTerms: t("messages.acceptTerms") });
-      return;
-    }
-
     setIsLoading(true);
     setFormError(null);
+    setOauthOnly(false);
     setFieldErrors({});
+
+    const parsed = accountRegisterSchema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(mapZodErrors(parsed.error.issues));
+      setFormError(t("messages.fixErrors"));
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(parsed.data),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         if (data.issues?.length) {
           setFieldErrors(mapZodErrors(data.issues));
-          if (data.issues.some((i: { path?: string[] }) => i.path?.[0] === "planId")) {
-            setCurrentStep(2);
-          } else {
-            setCurrentStep(1);
-          }
+        }
+        if (data.errorCode === ApiErrorCode.OAUTH_ONLY_ACCOUNT) {
+          setOauthOnly(true);
         }
         setFormError(fromPayload(data) || t("errors.generic"));
         return;
       }
 
       const signInResult = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
+        email: parsed.data.email,
+        password: parsed.data.password,
         redirect: false,
-        callbackUrl: "/organizations",
+        callbackUrl: callbackPath,
       });
 
       if (signInResult?.error) {
@@ -205,7 +119,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/organizations");
+      router.push(callbackPath);
     } catch {
       setFormError(t("errors.generic"));
     } finally {
@@ -214,118 +128,151 @@ export default function RegisterPage() {
   };
 
   const handleGoogleSignUp = async () => {
-    await signIn("google", { callbackUrl: "/organizations", redirect: true });
+    await signIn("google", { callbackUrl: callbackPath, redirect: true });
   };
-
-  const handlePlanSelect = (plan: PublicPlan) => {
-    setForm(prev => ({ ...prev, planId: plan.id }));
-    setFormError(null);
-  };
-
-  const canProceed =
-    currentStep === 1
-      ? registerStep1Schema.safeParse(form).success
-      : currentStep === 2
-        ? Boolean(form.planId)
-        : currentStep === 3
-          ? true
-          : form.acceptTerms;
 
   return (
-    <AuthShell wide>
-      <AuthCard title={t("title")} subtitle={stepSubtitle}>
-        <AuthStepProgress currentStep={currentStep} />
-
+    <AuthShell>
+      <AuthCard title={t("title")} subtitle={t("subtitle")}>
         {formError && <AuthError>{formError}</AuthError>}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {currentStep === 1 && (
-            <RegisterStepDetails
-              form={form}
-              fieldErrors={fieldErrors}
+        <AuthGoogleButton
+          label={oauthOnly ? tLogin("loginWithGoogle") : t("googleSignUp")}
+          onClick={handleGoogleSignUp}
+          disabled={isLoading}
+        />
+        <p className="mt-3 text-center text-xs text-muted-foreground">
+          {t("googleHint")}
+        </p>
+
+        <AuthDivider label={tLogin("or")} />
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <AuthField label={t("fields.name")} required error={fieldErrors.name}>
+            <input
+              name="name"
+              value={form.name}
               onChange={handleChange}
-              onFieldChange={handleFieldChange}
+              placeholder={t("placeholders.name")}
+              autoComplete="name"
+              className={inputClass("name")}
             />
-          )}
+          </AuthField>
 
-          {currentStep === 2 && (
-            <RegisterStepPlan
-              plans={plans}
-              selectedPlanId={form.planId}
-              loading={plansLoading}
-              error={plansError}
-              onSelect={handlePlanSelect}
-            />
-          )}
-
-          {currentStep === 3 && (
-            <RegisterStepSummary form={form} plan={selectedPlan} />
-          )}
-
-          {currentStep === 4 && (
-            <RegisterStepConfirm
-              form={form}
-              plan={selectedPlan}
-              fieldErrors={fieldErrors}
+          <AuthField
+            label={t("fields.email")}
+            required
+            error={fieldErrors.email}
+          >
+            <input
+              type="email"
+              name="email"
+              value={form.email}
               onChange={handleChange}
+              placeholder={t("placeholders.email")}
+              autoComplete="email"
+              className={inputClass("email")}
             />
-          )}
+          </AuthField>
 
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {currentStep > 1 ? (
-              <AuthSecondaryButton
-                type="button"
-                onClick={handleBack}
-                disabled={isLoading}
+          <AuthField
+            label={t("fields.password")}
+            required
+            error={fieldErrors.password}
+          >
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder={t("placeholders.password")}
+              autoComplete="new-password"
+              className={inputClass("password")}
+            />
+          </AuthField>
+
+          <AuthField
+            label={t("fields.confirmPassword")}
+            required
+            error={fieldErrors.confirmPassword}
+          >
+            <input
+              type="password"
+              name="confirmPassword"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              placeholder={t("placeholders.confirmPassword")}
+              autoComplete="new-password"
+              className={inputClass("confirmPassword")}
+            />
+          </AuthField>
+
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50">
+            <input
+              type="checkbox"
+              name="acceptTerms"
+              checked={form.acceptTerms}
+              onChange={handleChange}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary focus:ring-ring/40"
+            />
+            <span className="text-sm leading-relaxed text-foreground">
+              {t("acceptTermsPrefix")}{" "}
+              <Link
+                href="/terms-of-service"
+                className="font-medium text-primary underline-offset-2 hover:text-primary hover:underline dark:text-primary dark:hover:text-primary"
               >
-                <ArrowLeft className="h-4 w-4" />
-                {t("buttons.back")}
-              </AuthSecondaryButton>
-            ) : (
-              <div className="hidden sm:block" />
-            )}
+                {tLogin("termsOfService")}
+              </Link>{" "}
+              {tLogin("legalAnd")}{" "}
+              <Link
+                href="/privacy-policy"
+                className="font-medium text-primary underline-offset-2 hover:text-primary hover:underline dark:text-primary dark:hover:text-primary"
+              >
+                {tLogin("privacyPolicy")}
+              </Link>
+              .
+            </span>
+          </label>
+          {fieldErrors.acceptTerms && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {fieldErrors.acceptTerms}
+            </p>
+          )}
 
-            <AuthPrimaryButton
-              loading={isLoading}
-              disabled={!canProceed || isLoading}
-              className="sm:min-w-[180px]"
-            >
-              {isLoading ? (
-                t("submitting")
-              ) : currentStep === 4 ? (
-                t("submit")
-              ) : (
-                <>
-                  {t("buttons.next")}
-                  <ArrowRight className="ml-1 inline h-4 w-4" />
-                </>
-              )}
-            </AuthPrimaryButton>
-          </div>
+          <AuthPrimaryButton loading={isLoading}>
+            {isLoading ? t("submitting") : t("submit")}
+          </AuthPrimaryButton>
         </form>
-
-        {currentStep === 1 && (
-          <>
-            <AuthDivider label={tLogin("or")} />
-
-            <AuthGoogleButton
-              label={t("googleSignUp")}
-              onClick={handleGoogleSignUp}
-              disabled={isLoading}
-            />
-          </>
-        )}
 
         <AuthFooterLink>
           {t("hasAccount")}{" "}
           <Link
-            href="/auth/login"
-            className="font-medium text-violet-400 transition-colors hover:text-violet-300"
+            href={
+              callbackPath === "/organizations"
+                ? "/auth/login"
+                : `/auth/login?callbackUrl=${encodeURIComponent(callbackPath)}`
+            }
+            className="font-medium text-primary transition-colors hover:text-primary"
           >
             {t("loginLink")}
           </Link>
         </AuthFooterLink>
       </AuthCard>
     </AuthShell>
+  );
+};
+
+export default function RegisterPage() {
+  const t = useTranslations("Common");
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-950">
+          <div className="text-muted-foreground">{t("loading")}</div>
+        </div>
+      }
+    >
+      <RegisterContent />
+    </Suspense>
   );
 }

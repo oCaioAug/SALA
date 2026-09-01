@@ -21,8 +21,8 @@
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU1, CDU5, CDU6, CDU8, CDU10
 - **Critérios de Aceitação**:
-  - Apenas ADMIN pode aprovar/rejeitar reservas
-  - Apenas ADMIN pode gerenciar salas e itens
+  - Apenas ADMIN/OWNER podem aprovar/rejeitar qualquer sala; membros de setor aprovam só se tiverem a função de confirmar agendas no escopo
+  - Criar/excluir salas e vincular setor: apenas ADMIN/OWNER; editar infos da sala e itens: ADMIN/OWNER ou membro de setor com a função correspondente
   - Apenas ADMIN pode gerenciar usuários
   - Apenas ADMIN pode atribuir e resolver incidentes
 
@@ -96,14 +96,29 @@
 
 #### RF09 - Aprovação/Rejeição de Reservas
 
-- **Descrição**: Administrador deve poder aprovar ou rejeitar solicitações de reserva.
+- **Descrição**: Administradores da organização e gestores de setor devem poder aprovar ou rejeitar solicitações de reserva no respectivo escopo.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU5 (Aprovar / Rejeitar Reserva)
 - **Critérios de Aceitação**:
-  - Apenas ADMIN pode aprovar/rejeitar
-  - Notificação automática ao usuário sobre decisão
-  - Atualização de status da reserva
-  - Para reservas recorrentes: aprovar/rejeitar todas as instâncias
+  - OWNER/ADMIN da organização podem aprovar/rejeitar qualquer sala
+  - Gestores de setor (SectorMember) podem aprovar/rejeitar apenas salas do(s) setor(es) em que tiverem `canApproveReservations`
+  - Salas sem setor responsável: apenas OWNER/ADMIN aprovam
+  - Fila `/solicitacoes` e notificações de criação respeitam o escopo do aprovador
+  - Decisão registra `decidedById`, `decidedAt` e `decisionReason` opcional
+  - Notificação automática ao solicitante sobre a decisão
+  - Para reservas recorrentes: aprovar/rejeitar todas as instâncias do template (todas no mesmo escopo)
+
+#### RF09A - Gestão de Setores
+
+- **Descrição**: Administrador da organização deve poder criar setores, vincular salas e designar membros com funções independentes naquele setor.
+- **Prioridade**: Alta
+- **Casos de Uso Relacionados**: CDU12 (Gerenciar Setores)
+- **Critérios de Aceitação**:
+  - Cada sala pertence a no máximo um setor (`Room.sectorId`)
+  - Setor contém membros com papel MANAGER e funções (`canApproveReservations`, `canManageRooms`)
+  - ADMIN escolhe, por pessoa, quais funções estão ativas; ao menos uma é obrigatória
+  - Remoção de setor é definitiva (hard delete), desvincula salas e registra auditoria (`sector.deleted`)
+  - Membros de setor não gerenciam criar/excluir salas, usuários ou setores — só as funções marcadas no vínculo
 
 #### RF10 - Verificação de Conflitos
 
@@ -140,28 +155,30 @@
   - Filtros por status e capacidade
   - Visualização de itens disponíveis em cada sala
 
-#### RF13 - Gestão de Salas (Admin)
+#### RF13 - Gestão de Salas
 
-- **Descrição**: Administrador deve poder criar, editar e gerenciar salas.
+- **Descrição**: Administradores da organização gerenciam o ciclo completo de salas; membros de setor com `canManageRooms` podem editar salas (infos + itens) no respectivo escopo.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
-  - Criar nova sala com nome, descrição e capacidade
-  - Editar informações da sala
-  - Alterar status da sala (LIVRE, EM_USO, RESERVADO)
-  - Excluir sala (com validação de reservas existentes)
+  - OWNER/ADMIN podem criar nova sala com nome, descrição e capacidade
+  - OWNER/ADMIN e membros de setor com `canManageRooms` podem editar informações da sala e gerenciar itens no respectivo escopo
+  - Alterar status da sala (LIVRE, EM_USO, RESERVADO) no mesmo escopo de edição
+  - Excluir sala permanece exclusivo de OWNER/ADMIN
+  - Vincular/desvincular setor (`sectorId`) permanece exclusivo de OWNER/ADMIN
+  - Salas sem setor: apenas OWNER/ADMIN editam
 
 #### RF14 - Gestão de Itens
 
-- **Descrição**: Administrador deve poder gerenciar itens/equipamentos das salas.
+- **Descrição**: Coberta por `canManageRooms` no escopo do setor (ver RF13). OWNER/ADMIN em qualquer sala.
 - **Prioridade**: Média
 - **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
-  - Adicionar itens a uma sala
-  - Editar informações do item (nome, descrição, quantidade)
-  - Remover itens
-  - Upload de imagens dos itens
-  - Visualização de imagens dos itens
+  - OWNER/ADMIN podem gerenciar itens de qualquer sala da organização
+  - Membros de setor com `canManageRooms` gerenciam itens das salas do(s) setor(es) correspondentes
+  - Salas sem setor: apenas OWNER/ADMIN
+  - Upload de imagens no mesmo escopo
+  - Criar/excluir sala permanece exclusivo de OWNER/ADMIN
 
 ### 1.5 Gestão de Incidentes
 
@@ -503,6 +520,7 @@
 | RF07 - Reservas Recorrentes        | CDU3                                   | Média      |
 | RF08 - Visualizar Reservas         | CDU4                                   | Alta       |
 | RF09 - Aprovar/Rejeitar            | CDU5                                   | Alta       |
+| RF09A - Gestão de Setores          | CDU12                                  | Alta       |
 | RF10 - Verificar Conflitos         | CDU3                                   | Alta       |
 | RF11 - Cancelar Reserva            | CDU4                                   | Média      |
 | RF12 - Visualizar Salas            | CDU6                                   | Alta       |

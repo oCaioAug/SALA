@@ -1,11 +1,12 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
-import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { canApproveReservation } from "@/lib/auth/permissions";
+import {
+  isNextResponse,
+  requireReservationApprover,
+} from "@/lib/auth/platform";
 import { getReservationInOrganization } from "@/lib/auth/tenant-queries";
 import { syncReservationToGoogleCalendar } from "@/lib/googleCalendar";
 import { notificationService } from "@/lib/notifications";
@@ -15,7 +16,7 @@ type RouteParams = { params: Promise<{ id: string }> };
 
 export async function POST(_request: NextRequest, { params }: RouteParams) {
   try {
-    const auth = await requireOrgAdmin();
+    const auth = await requireReservationApprover();
     if (isNextResponse(auth)) return auth;
     if (!auth.organizationId) {
       return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
@@ -45,9 +46,26 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    const allowed = await canApproveReservation(
+      {
+        id: auth.id,
+        organizationId: auth.organizationId,
+        organizationRole: auth.organizationRole,
+      },
+      reservation
+    );
+    if (!allowed) {
+      return apiErrorResponse(ApiErrorCode.FORBIDDEN, 403);
+    }
+
     const updatedReservation = await prisma.reservation.update({
       where: { id: reservationId },
-      data: { status: "REJECTED", updatedAt: new Date() },
+      data: {
+        status: "REJECTED",
+        decidedById: auth.id,
+        decidedAt: new Date(),
+        updatedAt: new Date(),
+      },
       include: { user: true, room: true },
     });
 

@@ -20,21 +20,30 @@ jest.mock("@/lib/notifications", () => ({
 
 const mockParams = (id: string) => ({ params: Promise.resolve({ id }) });
 
+const pendingWithRoom = (id: string, orgId: string, status = "PENDING") => ({
+  id,
+  organizationId: orgId,
+  roomId: "room-1",
+  status,
+  room: {
+    id: "room-1",
+    organizationId: orgId,
+    sectorId: null as string | null,
+    name: "Sala 1",
+  },
+  user: { id: "user-1", name: "Maria", email: "maria@example.com" },
+});
+
 describe("Reject Reservation API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetReservationInOrganization.mockImplementation((id, orgId) =>
-      Promise.resolve({
-        id,
-        organizationId: orgId,
-        roomId: "room-1",
-        status: "PENDING",
-      })
+      Promise.resolve(pendingWithRoom(id, orgId))
     );
   });
 
   it("should return 404 if reservation not found", async () => {
-    mockGetReservationInOrganization.mockResolvedValueOnce(null);
+    mockGetReservationInOrganization.mockResolvedValueOnce(null as any);
 
     const req = new NextRequest(
       "http://localhost:3000/api/reservations/bad-id/reject",
@@ -46,12 +55,9 @@ describe("Reject Reservation API", () => {
   });
 
   it("should return 400 if reservation is not PENDING", async () => {
-    mockGetReservationInOrganization.mockResolvedValueOnce({
-      id: "res-1",
-      organizationId: TEST_ORG_ID,
-      roomId: "room-1",
-      status: "REJECTED",
-    });
+    mockGetReservationInOrganization.mockResolvedValueOnce(
+      pendingWithRoom("res-1", TEST_ORG_ID, "REJECTED")
+    );
 
     const req = new NextRequest(
       "http://localhost:3000/api/reservations/res-1/reject",

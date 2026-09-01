@@ -184,20 +184,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`
-            relative w-full h-48 border-2 border-dashed rounded-lg
-            flex flex-col items-center justify-center gap-3
-            cursor-pointer transition-colors
-            ${
-              isDragging
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                : "border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500"
-            }
-            ${
-              disabled
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            }
-          `}
+ relative w-full h-48 border-2 border-dashed rounded-lg
+ flex flex-col items-center justify-center gap-3
+ cursor-pointer transition-colors
+ ${
+   isDragging
+     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+     : "border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500"
+ }
+ ${
+   disabled
+     ? "opacity-50 cursor-not-allowed"
+     : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+ }
+ `}
         >
           <div className="flex flex-col items-center gap-2">
             <div className="p-3 bg-slate-200 dark:bg-slate-700 rounded-full">

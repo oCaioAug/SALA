@@ -27,6 +27,7 @@ export async function GET() {
         cpf: true,
         phone: true,
         image: true,
+        passwordHash: true,
       },
     });
 
@@ -35,9 +36,11 @@ export async function GET() {
     }
 
     const resolved = await resolvePrimaryOrganization(auth.id);
+    const { passwordHash, ...publicUser } = user;
 
     return NextResponse.json({
-      ...user,
+      ...publicUser,
+      hasPassword: Boolean(passwordHash),
       profileComplete: isProfileComplete(user),
       hasOrganization: Boolean(resolved?.organizationId),
       organizationId: resolved?.organizationId ?? null,

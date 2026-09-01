@@ -159,10 +159,17 @@ const AgendamentosPage: React.FC = () => {
     if (dayReservations.length > 0) {
       setSelectedReservation(dayReservations[0]);
       setIsDetailsModalOpen(true);
-    } else {
-      // Se não há reservas no dia, abrir modal de criação
-      setIsCreateModalOpen(true);
+      return;
     }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const clicked = new Date(date);
+    clicked.setHours(0, 0, 0, 0);
+    // Empty past days: do not open create
+    if (clicked.getTime() < today.getTime()) return;
+
+    setIsCreateModalOpen(true);
   };
 
   const handleCreateReservation = () => {
@@ -312,11 +319,8 @@ const AgendamentosPage: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <CalendarIcon className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                     {t("title")}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">

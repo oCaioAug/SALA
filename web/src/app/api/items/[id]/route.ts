@@ -1,11 +1,10 @@
-import {
-  apiErrorResponse,
-  apiInternalError,
-} from "@/lib/api/api-error-response";
-import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
 
-import { isNextResponse } from "@/lib/auth/platform";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
+import { ApiErrorCode } from "@/lib/api/error-codes";
+import { canManageRoomItems } from "@/lib/auth/permissions";
+import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";
+import { isOrgAdminRole } from "@/lib/auth/roles";
 import { requireTenantContext } from "@/lib/auth/tenant";
 import {
   getItemInOrganization,
@@ -14,6 +13,30 @@ import {
 import { prisma } from "@/lib/prisma";
 
 type RouteParams = { params: Promise<{ id: string }> };
+
+async function loadItemRoomForPermission(
+  itemId: string,
+  organizationId: string
+) {
+  return prisma.item.findFirst({
+    where: {
+      id: itemId,
+      OR: [{ organizationId }, { room: { organizationId } }],
+    },
+    select: {
+      id: true,
+      roomId: true,
+      organizationId: true,
+      room: {
+        select: {
+          id: true,
+          organizationId: true,
+          sectorId: true,
+        },
+      },
+    },
+  });
+}
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
@@ -53,19 +76,45 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const currentItem = await getItemInOrganization(id, ctx.organizationId);
+    const currentItem = await loadItemRoomForPermission(id, ctx.organizationId);
     if (!currentItem) {
       return apiErrorResponse(ApiErrorCode.ITEM_NOT_FOUND, 404);
+    }
+
+    const permissionUser = toPermissionUser(ctx.user);
+
+    if (currentItem.room) {
+      const allowedCurrent = await canManageRoomItems(
+        permissionUser,
+        currentItem.room
+      );
+      if (!allowedCurrent) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    } else if (!isOrgAdminRole(ctx.user.organizationRole)) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
     const body = await request.json();
     const { name, description, specifications, quantity, icon, roomId } = body;
 
     if (roomId !== undefined && roomId !== null) {
-      const room = await getRoomInOrganization(roomId, ctx.organizationId);
-      if (!room) {
+      const targetRoom = await getRoomInOrganization(
+        roomId,
+        ctx.organizationId
+      );
+      if (!targetRoom) {
         return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
       }
+      const allowedTarget = await canManageRoomItems(
+        permissionUser,
+        targetRoom
+      );
+      if (!allowedTarget) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    } else if (roomId === null && !isOrgAdminRole(ctx.user.organizationRole)) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
     const item = await prisma.item.update({
@@ -112,11 +161,26 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
           { room: { organizationId: ctx.organizationId } },
         ],
       },
-      include: { images: true },
+      include: {
+        images: true,
+        room: {
+          select: { id: true, organizationId: true, sectorId: true },
+        },
+      },
     });
 
     if (!item) {
       return apiErrorResponse(ApiErrorCode.ITEM_NOT_FOUND, 404);
+    }
+
+    const permissionUser = toPermissionUser(ctx.user);
+    if (item.room) {
+      const allowed = await canManageRoomItems(permissionUser, item.room);
+      if (!allowed) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    } else if (!isOrgAdminRole(ctx.user.organizationRole)) {
+      return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
     const { deleteImageFiles } = await import("@/lib/utils/imageProcessor");
