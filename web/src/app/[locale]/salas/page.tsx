@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Grid, List, Plus, Search } from "lucide-react";
+import { ArrowRight, Building2, Grid, List, Plus, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useMemo, useState } from "react";
@@ -18,16 +18,20 @@ import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import { RoomStatusBadges } from "@/components/ui/StatusBadge";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { Room } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { safeLocalStorage } from "@/lib/utils/clientSafe";
 import { Link } from "@/navigation";
 
 const VIEW_MODE_KEY = "sala-view-mode";
+
+const FILTER_TRIGGER_CLASS =
+  "h-full border-slate-300 bg-white text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-gray-600 dark:bg-gray-800 dark:text-white";
 
 const SalasPage: React.FC = () => {
   const t = useTranslations("Dashboard");
@@ -285,139 +289,175 @@ const SalasPage: React.FC = () => {
       Array.isArray(room.reservations) && room.reservations.length > 0;
     const extraItems = Math.max(0, (room.items?.length ?? 0) - 2);
     const previewItems = room.items?.slice(0, 2) ?? [];
+    const description = room.description?.trim();
+
+    const renderItemRow = (item: any) => {
+      const itemImage =
+        item.images && item.images.length > 0
+          ? item.images[0].path.replace(
+              "/api/uploads/items/images/original_",
+              "/api/uploads/items/images/thumb_"
+            )
+          : null;
+
+      return (
+        <div className="flex h-[3.25rem] items-center gap-2.5 rounded-lg bg-muted/50 px-2.5">
+          {itemImage ? (
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background">
+              <img
+                src={itemImage}
+                alt={item.name}
+                className="h-full w-full object-contain p-0.5"
+              />
+            </div>
+          ) : (
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
+              {item.icon ? (
+                <span className="text-sm leading-none">{item.icon}</span>
+              ) : (
+                <MdInventory2 className="h-3.5 w-3.5" />
+              )}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-foreground">
+              {item.name}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("card.quantity", { count: item.quantity })}
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    const renderPreviewItems = (compact = false) => {
+      if (compact) {
+        if (previewItems.length === 0) {
+          return null;
+        }
+
+        return (
+          <div className="mt-3 space-y-2">
+            {previewItems.map((item: any) => (
+              <div key={item.id}>{renderItemRow(item)}</div>
+            ))}
+            {extraItems > 0 ? (
+              <p className="text-center text-xs font-medium text-blue-600 dark:text-blue-400">
+                {t("card.moreItems", { count: extraItems })}
+              </p>
+            ) : null}
+          </div>
+        );
+      }
+
+      const itemSlots: Array<any | null> = [
+        previewItems[0] ?? null,
+        previewItems[1] ?? null,
+      ];
+
+      return (
+        <div className="mt-auto flex min-h-[9.75rem] flex-col border-t border-border/60 pt-3">
+          <div className="flex flex-1 flex-col justify-end gap-2">
+            {itemSlots.map((item, index) => (
+              <div key={item?.id ?? `item-slot-${index}`} className="h-[3.25rem]">
+                {item ? renderItemRow(item) : null}
+              </div>
+            ))}
+          </div>
+          <p
+            className={cn(
+              "min-h-5 pt-1 text-center text-xs font-medium",
+              extraItems > 0
+                ? "text-blue-600 dark:text-blue-400"
+                : "invisible"
+            )}
+            aria-hidden={extraItems === 0}
+          >
+            {extraItems > 0
+              ? t("card.moreItems", { count: extraItems })
+              : "\u00A0"}
+          </p>
+        </div>
+      );
+    };
 
     const inner = (
       <>
         <div
           className={list ? "min-w-0 flex-1" : "flex min-h-0 flex-1 flex-col"}
         >
-          <div className="mb-4 flex min-h-7 items-center justify-between gap-3">
-            <StatusBadge status={room.status} />
-            {hasActiveReservation ? (
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                <span>{t("card.reservedTag")}</span>
-              </div>
-            ) : (
-              <span className="invisible text-xs" aria-hidden>
-                {t("card.reservedTag")}
-              </span>
-            )}
+          <div className="mb-3">
+            <RoomStatusBadges
+              status={room.status}
+              hasActiveReservation={hasActiveReservation}
+            />
           </div>
 
           <CardTitle
-            className={`mb-1.5 line-clamp-2 min-h-[3.5rem] text-slate-900 transition-colors duration-300 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400 ${
-              list ? "min-h-0 text-xl" : "text-2xl font-bold leading-tight"
-            }`}
+            className={cn(
+              "mb-1 line-clamp-2 font-bold leading-snug text-foreground",
+              list ? "text-xl" : "text-lg sm:text-xl"
+            )}
           >
             {room.name}
           </CardTitle>
 
-          <p
-            className={`mb-3 line-clamp-1 font-medium ${
-              room.sector?.name
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-slate-500 dark:text-slate-400"
-            } ${list ? "text-xs" : "text-sm"}`}
-          >
-            {room.sector?.name || ts("noSector")}
-          </p>
-
-          <CardDescription
-            className={`mb-3 text-slate-600 dark:text-slate-400 ${
-              list
-                ? "line-clamp-2 min-h-0 text-sm"
-                : "line-clamp-3 min-h-[3.75rem] text-sm leading-relaxed"
-            }`}
-          >
-            {room.description?.trim() || "\u00A0"}
-          </CardDescription>
-
-          <div className="mb-5 flex min-h-5 items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+          <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm">
+            <span
+              className={cn(
+                room.sector?.name
+                  ? "font-medium text-blue-600 dark:text-blue-400"
+                  : "text-muted-foreground"
+              )}
+            >
+              {room.sector?.name || ts("noSector")}
+            </span>
             {room.capacity ? (
               <>
-                <HiUsers className="h-4 w-4 shrink-0" aria-hidden />
-                <span>{t("card.people", { count: room.capacity })}</span>
+                <span
+                  className="hidden h-1 w-1 rounded-full bg-muted-foreground/40 sm:inline"
+                  aria-hidden
+                />
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <HiUsers className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  {t("card.people", { count: room.capacity })}
+                </span>
               </>
-            ) : (
-              <span className="invisible" aria-hidden>
-                —
-              </span>
-            )}
+            ) : null}
           </div>
 
-          {!list && (
-            <div className="mt-auto flex min-h-[7.5rem] flex-col gap-2.5">
-              {previewItems.map((item: any) => {
-                const itemImage =
-                  item.images && item.images.length > 0
-                    ? item.images[0].path.replace(
-                        "/api/uploads/items/images/original_",
-                        "/api/uploads/items/images/thumb_"
-                      )
-                    : null;
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-800/50"
-                  >
-                    {itemImage ? (
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-slate-900">
-                        <img
-                          src={itemImage}
-                          alt={item.name}
-                          className="h-full w-full object-contain p-0.5"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-                        {item.icon ? (
-                          <span className="text-base leading-none">
-                            {item.icon}
-                          </span>
-                        ) : (
-                          <MdInventory2 className="h-4 w-4" />
-                        )}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                        {item.name}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {t("card.quantity", { count: item.quantity })}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-              {previewItems.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 px-3 py-6 text-center text-xs text-slate-400 dark:border-slate-700">
-                  —
-                </div>
-              ) : null}
-              <div className="flex min-h-7 justify-center pt-1">
-                {extraItems > 0 ? (
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
-                    {t("card.moreItems", { count: extraItems })}
-                  </span>
-                ) : null}
-              </div>
-            </div>
+          {description ? (
+            <CardDescription className="mb-3 line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
+              {description}
+            </CardDescription>
+          ) : (
+            !list && (
+              <div
+                className="mb-3 min-h-[2.5rem]"
+                aria-hidden
+              />
+            )
           )}
+
+          {!list && renderPreviewItems()}
+          {list && renderPreviewItems(true)}
         </div>
 
         <div
           className={
             list
               ? "flex w-full shrink-0 flex-col gap-2 sm:w-44"
-              : "mt-5 shrink-0 border-t border-slate-200 pt-4 dark:border-slate-700/50"
+              : "mt-4 shrink-0 border-t border-border/60 pt-3"
           }
         >
           <Link href={`/salas/${room.id}`} className="w-full">
-            <Button variant="primary" className="w-full">
+            <Button
+              variant={list ? "primary" : "outline"}
+              className="w-full group/btn"
+            >
               {t("actions.viewDetails")}
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />
             </Button>
           </Link>
         </div>
@@ -429,11 +469,12 @@ const SalasPage: React.FC = () => {
         key={room.id}
         variant="elevated"
         hover
-        className={`group animate-scaleIn h-full ${
+        className={cn(
+          "group animate-scaleIn h-full",
           list
             ? "flex flex-col gap-4 p-4 sm:flex-row sm:items-stretch"
-            : "flex flex-col p-5"
-        }`}
+            : "flex flex-col p-4 sm:p-5"
+        )}
       >
         {inner}
       </Card>
@@ -489,9 +530,9 @@ const SalasPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-slate-500 dark:text-gray-400" />
+              <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-stretch">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-gray-400" />
                   <input
                     type="text"
                     placeholder={t("filters.searchPlaceholder")}
@@ -499,25 +540,28 @@ const SalasPage: React.FC = () => {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setSearchTerm(e.target.value)
                     }
-                    className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-slate-900 transition-all placeholder:text-slate-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-400"
+                    className="h-11 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-400"
                   />
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <select
+                <div className="flex flex-wrap items-stretch gap-2 sm:flex-nowrap">
+                  <SearchableSelect
                     value={statusFilter}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                      setStatusFilter(e.target.value)
-                    }
-                    className="rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                  >
-                    <option value="all">{t("filters.statusAll")}</option>
-                    <option value="LIVRE">{t("filters.statusFree")}</option>
-                    <option value="EM_USO">{t("filters.statusInUse")}</option>
-                    <option value="RESERVADO">
-                      {t("filters.statusReserved")}
-                    </option>
-                  </select>
+                    onChange={setStatusFilter}
+                    options={[
+                      { value: "all", label: t("filters.statusAll") },
+                      { value: "LIVRE", label: t("filters.statusFree") },
+                      { value: "EM_USO", label: t("filters.statusInUse") },
+                      {
+                        value: "RESERVADO",
+                        label: t("filters.statusReserved"),
+                      },
+                    ]}
+                    placeholder={t("filters.statusAll")}
+                    allowEmpty={false}
+                    className="h-11 w-full min-w-0 flex-1 sm:w-40 sm:flex-none"
+                    triggerClassName={FILTER_TRIGGER_CLASS}
+                  />
 
                   <SearchableSelect
                     value={sectorFilter}
@@ -532,32 +576,44 @@ const SalasPage: React.FC = () => {
                     ]}
                     placeholder={ts("filters.sectorAll")}
                     allowEmpty={false}
-                    className="min-w-[10rem]"
-                    triggerClassName="h-auto rounded-lg border-slate-300 bg-white px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                    className="h-11 w-full min-w-0 flex-1 sm:w-44 sm:flex-none"
+                    triggerClassName={FILTER_TRIGGER_CLASS}
                   />
 
-                  <div className="flex rounded-lg border border-slate-300 bg-white dark:border-gray-600 dark:bg-gray-800">
+                  <div
+                    role="group"
+                    aria-label={t("filters.viewMode")}
+                    className="inline-flex h-11 shrink-0 items-center rounded-lg border border-slate-300 bg-slate-100/90 p-1 dark:border-gray-600 dark:bg-gray-900/60"
+                  >
                     <button
                       type="button"
                       onClick={() => setViewMode("grid")}
-                      className={`rounded-l-lg p-3 transition-colors ${
+                      aria-pressed={viewMode === "grid"}
+                      title={t("filters.gridView")}
+                      className={cn(
+                        "inline-flex h-9 w-9 items-center justify-center rounded-md transition-all",
                         viewMode === "grid"
-                          ? "bg-blue-600 text-white"
-                          : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
-                      }`}
+                          ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700"
+                          : "text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200"
+                      )}
                     >
-                      <Grid className="h-4 w-4" />
+                      <Grid className="h-4 w-4" aria-hidden />
+                      <span className="sr-only">{t("filters.gridView")}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setViewMode("list")}
-                      className={`rounded-r-lg p-3 transition-colors ${
+                      aria-pressed={viewMode === "list"}
+                      title={t("filters.listView")}
+                      className={cn(
+                        "inline-flex h-9 w-9 items-center justify-center rounded-md transition-all",
                         viewMode === "list"
-                          ? "bg-blue-600 text-white"
-                          : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
-                      }`}
+                          ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700"
+                          : "text-slate-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-gray-200"
+                      )}
                     >
-                      <List className="h-4 w-4" />
+                      <List className="h-4 w-4" aria-hidden />
+                      <span className="sr-only">{t("filters.listView")}</span>
                     </button>
                   </div>
                 </div>
