@@ -212,7 +212,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NEXTAUTH_DEBUG === "true",
   events: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user.id) {
@@ -226,9 +226,6 @@ export const authOptions: NextAuthOptions = {
     },
     warn(code) {
       console.warn("NEXTAUTH AVISO:", code);
-    },
-    debug(code, metadata) {
-      console.log("NEXTAUTH DEBUG:", code, metadata);
     },
   },
 };
