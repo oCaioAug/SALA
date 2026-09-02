@@ -17,10 +17,13 @@
       "statusAll": "Tous les statuts",
       "statusFree": "Disponible",
       "statusInUse": "En cours d'utilisation",
-      "statusReserved": "Réservé"
+      "statusReserved": "Réservé",
+      "viewMode": "Mode d'affichage",
+      "gridView": "Grille",
+      "listView": "Liste"
     },
     "stats": {
-      "total": "Total des Salles",
+      "total": "Total des salles",
       "available": "Disponibles",
       "inUse": "En Usage",
       "reserved": "Réservées"
@@ -62,11 +65,11 @@
       "submitCreate": "Créer Salle",
       "submitUpdate": "Mettre à jour Salle",
       "cancel": "Annuler",
-      "locationLabel": "Localização",
-      "locationPlaceholder": "Ex.: Próximo à esquina, 2º andar...",
-      "outletsLabel": "Tomadas (parede)",
-      "outletsPlaceholder": "Quantidade",
-      "climateLabel": "Ambiente climatizado",
+      "locationLabel": "Emplacement",
+      "locationPlaceholder": "Ex. : Près du coin, 2e étage...",
+      "outletsLabel": "Prises (mur)",
+      "outletsPlaceholder": "Quantité",
+      "climateLabel": "Environnement climatisé",
       "sectorLabel": "Secteur responsable",
       "sectorNone": "Sans secteur",
       "sectorHelp": "Les gestionnaires de ce secteur pourront valider les réservations de cette salle.",
@@ -203,7 +206,7 @@
     "success": "Succès",
     "warning": "Avertissement",
     "info": "Information",
-    "redirectingToLogin": "Redirecionando para login...",
+    "redirectingToLogin": "Redirection vers la connexion...",
     "a11y": {
       "closePanel": "Fermer le panneau",
       "close": "Fermer",
@@ -267,28 +270,28 @@
         "description": "Changer ou choisir une organisation"
       },
       "explorar": {
-        "label": "Explorar salas",
-        "description": "Encontrar salas disponíveis"
+        "label": "Explorer les salles",
+        "description": "Trouver des salles disponibles"
       },
       "agendamentosMember": {
-        "label": "Meus agendamentos",
-        "description": "Suas reservas de salas"
+        "label": "Mes réservations",
+        "description": "Vos réservations de salles"
       },
       "incidentesMember": {
-        "label": "Reportar problema",
-        "description": "Informar problemas nas salas"
+        "label": "Signaler un problème",
+        "description": "Signaler des problèmes dans les salles"
       },
       "setores": {
         "label": "Secteurs",
         "description": "Responsables des salles et validations"
       },
       "gradeHoraria": {
-        "label": "Grade Horária",
-        "description": "Alocação e horários"
+        "label": "Emploi du temps",
+        "description": "Allocation et horaires"
       },
       "vision": {
-        "label": "Visão Computacional",
-        "description": "Automações e Auditorias com IA"
+        "label": "Vision par ordinateur",
+        "description": "Automatisations et audits avec IA"
       }
     }
   },
@@ -298,7 +301,18 @@
       "overview": "Vue d'ensemble"
     },
     "search": {
-      "placeholder": "Rechercher salles, équipements, utilisateurs..."
+      "placeholder": "Rechercher salles, équipements, utilisateurs...",
+      "ariaLabel": "Recherche universelle",
+      "minChars": "Saisissez au moins 2 caractères pour rechercher salles et équipements.",
+      "empty": "Aucun résultat trouvé.",
+      "loading": "Recherche...",
+      "groups": {
+        "pages": "Pages",
+        "rooms": "Salles",
+        "sectors": "Secteurs",
+        "users": "Utilisateurs",
+        "items": "Équipements"
+      }
     },
     "userMenu": {
       "profile": "Profil",
@@ -315,9 +329,9 @@
     "menuTitle": "Menu",
     "roles": {
       "owner": "Owner",
-      "admin": "Administrador",
-      "member": "Membro",
-      "platformSuperAdmin": "Super Admin (plataforma)"
+      "admin": "Administrateur",
+      "member": "Membre",
+      "platformSuperAdmin": "Super Admin (plateforme)"
     }
   },
   "LanguageSwitcher": {
@@ -462,7 +476,7 @@
     "fullNamePlaceholder": "Ex : Jean Dupont",
     "fullNameRequired": "Le nom complet est requis",
     "fullNameInvalid": "Le nom complet est invalide",
-    "email": "E-mail",
+    "email": "Email",
     "emailPlaceholder": "Ex : jean.dupont@exemple.com",
     "emailRequired": "L'e-mail est requis",
     "emailInvalid": "L'e-mail est invalide",
@@ -547,7 +561,7 @@
     "noPendingDesc": "Toutes les demandes de réservation ont été traitées.",
     "actions": {
       "refresh": "Actualiser la Liste",
-      "debug": "Débogage",
+      "debug": "Debug",
       "testPush": "Test Push"
     },
     "card": {
@@ -587,7 +601,7 @@
     }
   },
   "ReservationForm": {
-    "schedulingFor": "Réservation pour :",
+    "schedulingFor": "Planification pour :",
     "user": "Utilisateur",
     "selectUser": "Sélectionner un utilisateur",
     "room": "Salle",
@@ -681,13 +695,13 @@
     "purpose": "Objet",
     "status": "Statut",
     "close": "Fermer",
-    "cancelReservation": "Annuler Réservation",
+    "cancelReservation": "Annuler la réservation",
     "roomContext": {
-      "back": "Voltar",
-      "listView": "Lista",
-      "calendarView": "Calendário",
-      "searchPlaceholder": "Buscar por usuário ou propósito...",
-      "statusAll": "Todos os Status",
+      "back": "Retour",
+      "listView": "Liste",
+      "calendarView": "Calendrier",
+      "searchPlaceholder": "Rechercher par utilisateur ou objet...",
+      "statusAll": "Tous les statuts",
       "emptyFiltered": "Essayez d'ajuster les filtres de recherche pour trouver des réservations.",
       "emptyRoom": "Cette salle n'a pas encore de réservations.",
       "createFirst": "Créer la première réservation",
@@ -756,7 +770,7 @@
     "loading": "Chargement des demandes...",
     "searchPlaceholder": "Rechercher par salle, utilisateur ou objet...",
     "statusFilter": {
-      "all": "Toutes",
+      "all": "Tous",
       "pending": "En attente",
       "approved": "Approuvée",
       "rejected": "Rejetée"
@@ -853,7 +867,7 @@
       "RESERVATION_CREATED": "Réservation Créée",
       "RESERVATION_APPROVED": "Réservation Approuvée",
       "RESERVATION_REJECTED": "Réservation Rejetée",
-      "RESERVATION_CANCELLED": "Réservation Annulée",
+      "RESERVATION_CANCELLED": "Réservation annulée",
       "RESERVATION_REMINDER": "Rappel de Réservation"
     },
     "actions": {
@@ -924,7 +938,7 @@
     "prioritiesLabels": {
       "LOW": "Basse",
       "MEDIUM": "Moyenne",
-      "HIGH": "Haute",
+      "HIGH": "Élevée",
       "CRITICAL": "Critique"
     },
     "statusesLabels": {
@@ -933,7 +947,7 @@
       "IN_PROGRESS": "En Cours",
       "RESOLVED": "Résolu"
     },
-    "create": "Signaler Incident",
+    "create": "Signaler un incident",
     "update": "Mettre à jour",
     "searchPlaceholder": "Rechercher par titre, description ou catégorie...",
     "empty": {
@@ -946,10 +960,9 @@
       "description": "Description",
       "category": "Catégorie",
       "priority": "Priorité",
-      "statusLabel": "Statut",
       "status": "Statut",
       "room": "Salle",
-      "item": "Équipement",
+      "item": "Élément",
       "assignee": "Assigné à",
       "reportedBy": "Signalé par",
       "assignedTo": "Assigné à",
@@ -976,7 +989,7 @@
       "reported": "Signalé",
       "inAnalysis": "En Analyse",
       "critical": "Critique",
-      "high": "Haute",
+      "high": "Élevée",
       "medium": "Moyenne",
       "low": "Basse"
     },
@@ -992,7 +1005,7 @@
       "priorityLabel": "Priorité",
       "statusLabel": "Statut",
       "roomLabel": "Salle",
-      "itemLabel": "Équipement",
+      "itemLabel": "Élément",
       "assigneeLabel": "Assigné à",
       "selectRoom": "Sélectionner une salle",
       "selectItem": "Sélectionner un équipement",
@@ -1005,9 +1018,9 @@
       "resolutionNotesLabel": "Notes de Résolution",
       "resolutionNotesPlaceholder": "Décrivez comment le problème a été résolu...",
       "resolutionNotesRequired": "Requis pour les incidents résolus",
-      "finalizingIncident": "Finalisation de l'incident",
+      "finalizingIncident": "Clôture de l'incident",
       "finalizingIncidentDescription": "Assurez-vous de détailler la solution appliquée dans les notes de résolution.",
-      "resolveIncident": "Résoudre Incident",
+      "resolveIncident": "Résoudre l'incident",
       "saveChanges": "Enregistrer",
       "saving": "Enregistrement...",
       "save": "Enregistrer",
@@ -1037,16 +1050,12 @@
       "authError": "Vous devez être connecté pour accéder à cette page."
     },
     "room": "Salle",
-    "item": "Équipement",
+    "item": "Élément",
     "reportedBy": "Signalé par",
     "assignedTo": "Assigné à"
   },
   "ImageUpload": {
     "label": "Image de Référence",
-    "uploading": "Téléchargement...",
-    "change": "Changer",
-    "upload": "Télécharger",
-    "removing": "Suppression...",
     "errors": {
       "invalidImage": "Veuillez sélectionner une image valide.",
       "unsupportedFormat": "Format non supporté. Utilisez JPG, PNG ou WebP.",
@@ -1078,7 +1087,7 @@
     "login": {
       "title": "S.A.L.A",
       "subtitle": "Système de Gestion de Salles",
-      "email": "E-mail",
+      "email": "Email",
       "emailPlaceholder": "votre@email.com",
       "password": "Mot de passe",
       "passwordPlaceholder": "Entrez votre mot de passe",
@@ -1108,7 +1117,7 @@
     "forgotPassword": {
       "title": "Mot de passe oublié",
       "subtitle": "Saisissez votre e-mail. Si un compte avec mot de passe existe, nous enverrons un lien de réinitialisation.",
-      "email": "E-mail",
+      "email": "Email",
       "emailPlaceholder": "vous@email.com",
       "submit": "Envoyer le lien",
       "loading": "Envoi...",
@@ -1162,7 +1171,7 @@
       },
       "fields": {
         "name": "Nom complet",
-        "email": "E-mail",
+        "email": "Email",
         "cpf": "CPF",
         "phone": "Téléphone",
         "password": "Mot de passe",
@@ -1243,23 +1252,23 @@
       }
     },
     "errorPage": {
-      "title": "Erro de Autenticação",
-      "tryAgain": "Tentar Novamente",
+      "title": "Erreur d'authentification",
+      "tryAgain": "Réessayer",
       "goToHub": "Aller au centre d'accès",
-      "loading": "Carregando...",
-      "errorCodeLabel": "Código do erro:",
-      "errorDescriptionLabel": "Descrição:",
-      "troubleshootTitle": "Se o problema persistir, verifique:",
-      "troubleshootOAuth": "Configuração do Google OAuth",
-      "troubleshootRedirect": "Redirect URIs autorizados",
-      "troubleshootEnv": "Variáveis de ambiente",
+      "loading": "Chargement...",
+      "errorCodeLabel": "Code d'erreur :",
+      "errorDescriptionLabel": "Description :",
+      "troubleshootTitle": "Si le problème persiste, vérifiez :",
+      "troubleshootOAuth": "Configuration Google OAuth",
+      "troubleshootRedirect": "URI de redirection autorisées",
+      "troubleshootEnv": "Variables d'environnement",
       "errors": {
-        "Configuration": "Erro de configuração do provedor de autenticação.",
-        "AccessDenied": "Acesso negado. Você cancelou o login ou não tem permissão.",
-        "Verification": "Token de verificação inválido ou expirado.",
-        "Default": "Ocorreu um erro durante a autenticação.",
-        "Callback": "Erro no callback do Google. Verifique se o redirect URI está configurado corretamente.",
-        "unknown": "Erro desconhecido durante a autenticação."
+        "Configuration": "Erreur de configuration du fournisseur d'authentification.",
+        "AccessDenied": "Accès refusé. Vous avez annulé la connexion ou vous n'avez pas l'autorisation.",
+        "Verification": "Jeton de vérification invalide ou expiré.",
+        "Default": "Une erreur s'est produite lors de l'authentification.",
+        "Callback": "Erreur de callback Google. Vérifiez que l'URI de redirection est correctement configurée.",
+        "unknown": "Erreur d'authentification inconnue."
       }
     }
   },
@@ -1271,7 +1280,7 @@
     "capacity": "Capacité : {count} personnes",
     "capacityLabel": "Capacité",
     "viewReservations": "Voir Réservations",
-    "editRoom": "Modifier Salle",
+    "editRoom": "Modifier la salle",
     "addItem": "Ajouter Équipement",
     "description": "Description",
     "roomItems": "Équipements de la Salle",
@@ -1289,7 +1298,7 @@
       "more": "+{count} autres"
     },
     "modals": {
-      "editRoom": "Modifier Salle",
+      "editRoom": "Modifier la salle",
       "addItem": "Ajouter Équipement",
       "editItem": "Modifier Équipement"
     },
@@ -1299,7 +1308,7 @@
       "description": "Description",
       "descriptionPlaceholder": "Décrivez l'équipement...",
       "specifications": "Spécifications (séparées par virgules)",
-      "specificationsPlaceholder": "Ex : Windows 11, 16Go RAM, Core i7",
+      "specificationsPlaceholder": "Ex : Windows 11, 16 Go RAM, Core i7",
       "quantity": "Quantité",
       "icon": "Icône",
       "iconPlaceholder": "",
@@ -1320,11 +1329,11 @@
     "confirmations": {
       "deleteItem": "Êtes-vous sûr de vouloir supprimer cet équipement ?"
     },
-    "infoTitle": "Informações",
-    "location": "Localização",
-    "outlets": "Tomadas",
-    "climateYes": "Climatizado",
-    "climateNo": "Sem climatização",
+    "infoTitle": "Informations",
+    "location": "Emplacement",
+    "outlets": "Prises",
+    "climateYes": "Climatisé",
+    "climateNo": "Sans climatisation",
     "sector": "Secteur",
     "noSector": "Sans secteur"
   },
@@ -1359,14 +1368,13 @@
     },
     "user": {
       "name": "Nom",
-      "email": "E-mail",
+      "email": "Email",
       "role": "Rôle",
       "status": "Statut",
-      "actions": "Actions",
-      "permissions": "Permissões",
-      "groups": "Grupos",
-      "locations": "Localizações",
-      "devices": "Dispositivos"
+      "permissions": "Permissions",
+      "groups": "Groupes",
+      "locations": "Emplacements",
+      "devices": "Appareils"
     },
     "testSession": "Test Session",
     "users": "Utilisateurs",
@@ -1395,29 +1403,29 @@
     "makeAdmin": "Nommer Admin",
     "you": "Vous",
     "actions": {
-      "view": "Ver Detalhes",
-      "edit": "Editar",
-      "delete": "Excluir",
-      "refresh": "Atualizar",
-      "close": "Fechar",
-      "cancel": "Cancelar"
+      "view": "Voir les détails",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "refresh": "Actualiser",
+      "close": "Fermer",
+      "cancel": "Annuler"
     },
     "feedback": {
-      "createSuccess": "Usuário criado com sucesso!",
-      "updateSuccess": "Usuário atualizado com sucesso!",
-      "deleteSuccess": "Usuário excluído com sucesso!",
-      "deleteConfirm": "Tem certeza que deseja deletar este usuário?",
-      "error": "Erro ao processar usuário",
-      "authError": "Você precisa estar logado para acessar esta página."
+      "createSuccess": "Utilisateur créé avec succès !",
+      "updateSuccess": "Utilisateur mis à jour avec succès !",
+      "deleteSuccess": "Utilisateur supprimé avec succès !",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+      "error": "Erreur lors du traitement de l'utilisateur",
+      "authError": "Vous devez être connecté pour accéder à cette page."
     },
     "modals": {
-      "createUser": "Criar Usuário",
-      "editUser": "Editar Usuário",
-      "deleteUser": "Excluir Usuário"
+      "createUser": "Créer un utilisateur",
+      "editUser": "Modifier l'utilisateur",
+      "deleteUser": "Supprimer l'utilisateur"
     },
     "form": {
-      "name": "Nome",
-      "namePlaceholder": "Ex: João da Silva",
+      "name": "Nom",
+      "namePlaceholder": "Ex. : Jean Dupont",
       "email": "Email"
     }
   },
@@ -1455,14 +1463,20 @@
       "delete": "Supprimer",
       "reload": "Recharger"
     },
-    "loadError": "Erro ao carregar notificações"
+    "noneDescription": "Vous n'avez aucune notification pour le moment.",
+    "timeAgo": {
+      "justNow": "À l'instant",
+      "hoursAgo": "il y a {count}h",
+      "daysAgo": "il y a {count}j"
+    },
+    "loadError": "Erreur lors du chargement des notifications"
   },
   "NotificationService": {
     "titles": {
       "reservationCreated": "Nouvelle Demande de Réservation",
       "reservationApproved": "Réservation Approuvée",
       "reservationRejected": "Réservation Rejetée",
-      "reservationCancelled": "Réservation Annulée"
+      "reservationCancelled": "Réservation annulée"
     },
     "messages": {
       "reservationCreatedAdmin": "{userName} a réservé la salle \"{roomName}\" pour {startTime}.{purpose}",
@@ -1546,7 +1560,7 @@
     "UPLOAD_INVALID_FORMAT": "Format d'image non pris en charge. Utilisez JPG, PNG ou WebP.",
     "UPLOAD_TOO_LARGE": "Image trop volumineuse. Taille maximale : 15 Mo",
     "UNKNOWN": "Une erreur inattendue s'est produite",
-    "PROFILE_INCOMPLETE": "Complete seu perfil com CPF e telefone antes de continuar"
+    "PROFILE_INCOMPLETE": "Complétez votre profil avec CPF et téléphone avant de continuer"
   },
   "Metadata": {
     "appTitle": "SALA - Système de gestion des salles",
@@ -1687,7 +1701,7 @@
       "subtitle": "Explorez le tableau de bord, validez des réservations, suivez les incidents et parcourez l'agenda. Tout en démo, sans connexion.",
       "dashboardCta": "Adaptez la vue à ce dont vous avez le plus besoin.",
       "tabs": {
-        "dashboard": "Dashboard",
+        "dashboard": "Tableau de bord",
         "reservations": "Réservations",
         "incidents": "Incidents",
         "calendar": "Calendrier"
@@ -1758,7 +1772,7 @@
             "b3": "Atelier"
           },
           "selectedFree": "{day} · {slot}: créneau libre",
-          "selectedBusy": "{day} · {slot}: {room} · {title}"
+          "selectedBusy": "{day} · {slot} : {room} · {title}"
         }
       },
       "dragHint": "Glissez et redimensionnez les cartes. C'est ainsi que fonctionne le vrai tableau de bord.",
@@ -1822,40 +1836,40 @@
     }
   },
   "Invites": {
-    "title": "Convidar membros",
+    "title": "Inviter des membres",
     "emailPlaceholder": "email@empresa.com",
-    "sending": "Enviando...",
-    "sendInvite": "Enviar convite",
-    "copyLink": "Copiar link",
-    "pendingTitle": "Convites pendentes",
-    "expires": "{role} · expira {date}",
-    "cancelInvite": "Cancelar convite"
+    "sending": "Envoi...",
+    "sendInvite": "Envoyer l'invitation",
+    "copyLink": "Copier le lien",
+    "pendingTitle": "Invitations en attente",
+    "expires": "{role} · expire le {date}",
+    "cancelInvite": "Annuler l'invitation"
   },
   "AvatarUpload": {
-    "invalidFormat": "Formato não suportado. Use JPG, PNG ou WebP.",
-    "tooLarge": "Imagem muito grande. Máximo 15MB.",
-    "uploadError": "Erro ao fazer upload do avatar",
-    "uploading": "Enviando...",
-    "change": "Alterar",
-    "upload": "Enviar",
-    "removing": "Removendo...",
-    "remove": "Remover",
-    "hint": "JPG, PNG ou WebP · Máximo 15MB",
-    "previewAlt": "Preview do avatar"
+    "invalidFormat": "Format non pris en charge. Utilisez JPG, PNG ou WebP.",
+    "tooLarge": "Image trop volumineuse. Maximum 15 Mo.",
+    "uploadError": "Erreur lors de l'envoi de l'avatar",
+    "uploading": "Envoi...",
+    "change": "Modifier",
+    "upload": "Envoyer",
+    "removing": "Suppression...",
+    "remove": "Supprimer",
+    "hint": "JPG, PNG ou WebP · Maximum 15 Mo",
+    "previewAlt": "Aperçu de l'avatar"
   },
   "Admin": {
     "brand": "SALA Admin",
-    "subtitle": "Painel da Plataforma",
+    "subtitle": "Panneau de la plateforme",
     "nav": {
-      "dashboard": "Dashboard",
-      "organizations": "Organizações",
-      "users": "Usuários",
-      "plans": "Planos",
-      "audit": "Audit Log",
-      "incidents": "Incidentes",
-      "billing": "Billing",
-      "home": "Início",
-      "logout": "Sair",
+      "dashboard": "Tableau de bord",
+      "organizations": "Organisations",
+      "users": "Utilisateurs",
+      "plans": "Plans",
+      "audit": "Journal d'audit",
+      "incidents": "Incidents",
+      "billing": "Facturation",
+      "home": "Accueil",
+      "logout": "Déconnexion",
       "myOrganizations": "My Organizations"
     },
     "charts": {
@@ -1866,27 +1880,27 @@
       "openIncidents": "Incidents ouverts"
     },
     "dashboard": {
-      "title": "Dashboard",
-      "description": "Visão geral da plataforma",
-      "loadError": "Falha ao carregar estatísticas",
-      "unknownError": "Erro desconhecido",
-      "refreshMetrics": "Atualizar métricas diárias",
-      "refreshing": "Atualizando...",
-      "activeOrgs": "Organizações ativas",
-      "totalUsers": "Usuários",
-      "totalRooms": "Salas",
-      "reservations30d": "Reservas (30d)",
-      "openIncidents": "Incidentes abertos",
-      "weeklyOrgs": "Novas organizações por semana",
-      "weeklyUsers": "Novos usuários por semana",
-      "topOrgs": "Top organizações por reservas",
-      "orgsByPlan": "Organizações por plano",
-      "expiringTrials": "Trials expirando",
-      "inactiveOrgs": "Organizações inativas",
-      "viewAllOrgs": "Ver todas as organizações",
-      "retention": "Retenção (30d)",
-      "activeOrgs30d": "Orgs ativas (30d)",
-      "analyticsDescription": "Analytics global da plataforma SALA",
+      "title": "Tableau de bord",
+      "description": "Vue d'ensemble de la plateforme",
+      "loadError": "Échec du chargement des statistiques",
+      "unknownError": "Erreur inconnue",
+      "refreshMetrics": "Actualiser les métriques quotidiennes",
+      "refreshing": "Actualisation...",
+      "activeOrgs": "Organisations actives",
+      "totalUsers": "Utilisateurs",
+      "totalRooms": "Salles",
+      "reservations30d": "Réservations (30j)",
+      "openIncidents": "Incidents ouverts",
+      "weeklyOrgs": "Nouvelles organisations par semaine",
+      "weeklyUsers": "Nouveaux utilisateurs par semaine",
+      "topOrgs": "Top organisations par réservations",
+      "orgsByPlan": "Organisations par plan",
+      "expiringTrials": "Essais expirant",
+      "inactiveOrgs": "Organisations inactives",
+      "viewAllOrgs": "Voir toutes les organisations",
+      "retention": "Rétention (30j)",
+      "activeOrgs30d": "Orgs actives (30j)",
+      "analyticsDescription": "Analytique globale de la plateforme SALA",
       "retentionLine": "Rétention (30d) : {rate}% · Orgs actives : {active}/{total}",
       "chartCount": "Quantité",
       "noData": "Aucune donnée",
@@ -1898,45 +1912,45 @@
       "topOrgsWindow": "Top organisations par réservations (30j)",
       "noRecentReservations": "Aucune réservation récente",
       "reservationsCount": "{count} réservations",
-      "organizationsTotal": "Organizações",
-      "organizationsActiveSub": "{count} ativas",
-      "totalUsersSub": "Cadastrados na plataforma (todos os papéis)",
-      "totalRoomsSub": "Em todas as orgs",
-      "reservations30dSub": "Últimos 30 dias",
-      "openIncidentsSub": "Requerem atenção",
-      "loadDataError": "Erro ao carregar dados"
+      "organizationsTotal": "Organisations",
+      "organizationsActiveSub": "{count} actives",
+      "totalUsersSub": "Inscrits sur la plateforme (tous les rôles)",
+      "totalRoomsSub": "Dans toutes les orgs",
+      "reservations30dSub": "30 derniers jours",
+      "openIncidentsSub": "Nécessitent une attention",
+      "loadDataError": "Erreur lors du chargement des données"
     },
     "organizations": {
-      "title": "Organizações",
-      "description": "Gerencie os clientes da plataforma",
-      "emptyTitle": "Nenhuma organização encontrada",
-      "emptyDesc": "Crie a primeira organização para começar",
-      "newTitle": "Nova organização",
-      "newDesc": "Cadastre um novo cliente na plataforma",
-      "detailTitle": "Organização",
-      "notFound": "Organização não encontrada",
-      "noPlan": "Sem plano",
-      "saveRole": "Salvar",
-      "backToList": "Voltar para organizações",
-      "changeStatus": "Alterar status",
-      "createdAt": "Criada em",
-      "orgContactEmail": "Email da organização",
-      "orgContactPhone": "Telefone da organização",
-      "addMember": "Adicionar",
-      "addMemberPlaceholder": "Adicionar membro por e-mail",
-      "removeMember": "Remover",
-      "removeMemberConfirm": "Remover este membro da organização?",
-      "usageVsLimits": "Uso vs limites do plano",
-      "planSubscription": "Plano e assinatura",
-      "renewsOn": "Renova em",
-      "changePlan": "Alterar plano",
-      "noRoomsTitle": "Nenhuma sala",
-      "noRoomsDesc": "Esta organização ainda não possui salas cadastradas",
+      "title": "Organisations",
+      "description": "Gérez les clients de la plateforme",
+      "emptyTitle": "Aucune organisation trouvée",
+      "emptyDesc": "Créez la première organisation pour commencer",
+      "newTitle": "Nouvelle organisation",
+      "newDesc": "Enregistrez un nouveau client sur la plateforme",
+      "detailTitle": "Organisation",
+      "notFound": "Organisation introuvable",
+      "noPlan": "Sans plan",
+      "saveRole": "Enregistrer",
+      "backToList": "Retour aux organisations",
+      "changeStatus": "Changer le statut",
+      "createdAt": "Créée le",
+      "orgContactEmail": "Email de l'organisation",
+      "orgContactPhone": "Téléphone de l'organisation",
+      "addMember": "Ajouter",
+      "addMemberPlaceholder": "Ajouter un membre par email",
+      "removeMember": "Retirer",
+      "removeMemberConfirm": "Retirer ce membre de l'organisation ?",
+      "usageVsLimits": "Utilisation vs limites du plan",
+      "planSubscription": "Plan et abonnement",
+      "renewsOn": "Renouvelle le",
+      "changePlan": "Changer de plan",
+      "noRoomsTitle": "Aucune salle",
+      "noRoomsDesc": "Cette organisation n'a pas encore de salles enregistrées",
       "tabs": {
-        "general": "Geral",
-        "members": "Membros",
-        "rooms": "Salas",
-        "usage": "Uso e plano"
+        "general": "Général",
+        "members": "Membres",
+        "rooms": "Salles",
+        "usage": "Utilisation et plan"
       },
       "roleOwner": "Owner",
       "roleAdmin": "Admin",
@@ -1953,30 +1967,30 @@
       "no": "Non",
       "ownerLabel": "Owner",
       "seats": "{count} places",
-      "formTitle": "Dados da organização",
-      "unknownError": "Erro desconhecido",
-      "ownerWithoutPasswordWarning": "O owner foi criado sem senha. Peça que use a recuperação de senha para acessar.",
-      "statusActive": "Ativa",
+      "formTitle": "Données de l'organisation",
+      "unknownError": "Erreur inconnue",
+      "ownerWithoutPasswordWarning": "Le owner a été créé sans mot de passe. Demandez-lui d'utiliser la récupération de mot de passe pour accéder.",
+      "statusActive": "Active",
       "statusTrial": "Trial",
-      "statusSuspended": "Suspensa",
-      "cancel": "Cancelar",
-      "creating": "Criando...",
-      "create": "Criar organização",
-      "saveProfile": "Salvar dados",
-      "savingProfile": "Salvando...",
-      "deleteOrg": "Desativar organização",
-      "deleteOrgConfirm": "Desativar (soft-delete) esta organização? Ela deixará de aparecer nas listagens.",
-      "transferOwnership": "Transferir ownership",
-      "transferOwnershipConfirm": "Transferir ownership para este membro?",
+      "statusSuspended": "Suspendue",
+      "cancel": "Annuler",
+      "creating": "Création...",
+      "create": "Créer une organisation",
+      "saveProfile": "Enregistrer les données",
+      "savingProfile": "Enregistrement...",
+      "deleteOrg": "Désactiver l'organisation",
+      "deleteOrgConfirm": "Désactiver (suppression douce) cette organisation ? Elle disparaîtra des listes.",
+      "transferOwnership": "Transférer l'ownership",
+      "transferOwnershipConfirm": "Transférer l'ownership à ce membre ?",
       "fields": {
-        "name": "Nome da organização",
+        "name": "Nom de l'organisation",
         "slug": "Slug (URL)",
-        "status": "Status",
-        "plan": "Plano",
-        "ownerEmail": "E-mail do owner",
-        "ownerName": "Nome do owner (opcional)",
-        "email": "E-mail de contato",
-        "phone": "Telefone de contato"
+        "status": "Statut",
+        "plan": "Plan",
+        "ownerEmail": "Email du owner",
+        "ownerName": "Nom du owner (optionnel)",
+        "email": "Email de contact",
+        "phone": "Téléphone de contact"
       },
       "newOrg": "Nouvelle organisation",
       "searchTitle": "Rechercher une organisation",
@@ -1988,7 +2002,7 @@
       "filterTrial": "Essai",
       "filterPlan": "Plan",
       "allPlans": "Tous les plans",
-      "ownerPrefix": "Propriétaire :",
+      "ownerPrefix": "Owner :",
       "planPrefix": "Plan :",
       "membersRooms": "{members} membres · {rooms} salles",
       "loadError": "Échec du chargement",
@@ -2002,36 +2016,36 @@
       "metricSuspendedSub": "Accès bloqué"
     },
     "users": {
-      "title": "Usuários",
-      "description": "Visão cross-org de todos os usuários da plataforma",
-      "emptyTitle": "Nenhum usuário",
-      "emptyDesc": "Nenhum usuário cadastrado na plataforma",
-      "searchTitle": "Buscar usuário",
-      "searchPlaceholder": "Nome ou e-mail...",
-      "roleFilter": "Papel na plataforma",
-      "allRoles": "Todos os papéis",
-      "regularUsers": "Usuários comuns",
+      "title": "Utilisateurs",
+      "description": "Vue inter-organisations de tous les utilisateurs de la plateforme",
+      "emptyTitle": "Aucun utilisateur",
+      "emptyDesc": "Aucun utilisateur inscrit sur la plateforme",
+      "searchTitle": "Rechercher un utilisateur",
+      "searchPlaceholder": "Nom ou email...",
+      "roleFilter": "Rôle sur la plateforme",
+      "allRoles": "Tous les rôles",
+      "regularUsers": "Utilisateurs standard",
       "superAdmins": "Super admins",
-      "viewDetails": "Ver detalhes",
-      "closeModal": "Fechar",
-      "platformRole": "Papel na plataforma",
-      "memberSince": "Cadastrado em",
-      "organizations": "Organizações",
-      "noOrganizations": "Sem membership em nenhuma organização",
-      "promoteSuperAdmin": "Promover SUPER_ADMIN",
-      "removeSuperAdmin": "Remover SUPER_ADMIN",
+      "viewDetails": "Voir les détails",
+      "closeModal": "Fermer",
+      "platformRole": "Rôle sur la plateforme",
+      "memberSince": "Inscrit le",
+      "organizations": "Organisations",
+      "noOrganizations": "Aucune appartenance à une organisation",
+      "promoteSuperAdmin": "Promouvoir SUPER_ADMIN",
+      "removeSuperAdmin": "Retirer SUPER_ADMIN",
       "stats": {
         "total": "Total",
-        "totalSub": "Usuários na plataforma",
+        "totalSub": "Utilisateurs sur la plateforme",
         "superAdmins": "Super admins",
-        "superAdminsSub": "Acesso ao painel",
-        "withOrg": "Com organização",
-        "withOrgSub": "Membros ativos",
-        "withoutOrg": "Sem organização",
-        "withoutOrgSub": "Sem membership"
+        "superAdminsSub": "Accès au panneau",
+        "withOrg": "Avec organisation",
+        "withOrgSub": "Membres actifs",
+        "withoutOrg": "Sans organisation",
+        "withoutOrgSub": "Sans appartenance"
       },
-      "includeDeleted": "Incluir excluídos",
-      "deleted": "Excluído"
+      "includeDeleted": "Inclure les supprimés",
+      "deleted": "Supprimé"
     },
     "plans": {
       "title": "Plans",
@@ -2060,8 +2074,6 @@
         "maxReservations": "Reservations per month",
         "maxReservationsHint": "Optional. Leave empty for unlimited reservations.",
         "maxReservationsPlaceholder": "Unlimited",
-        "reservationsShort": "Res./mo",
-        "slugPreview": "slug: {slug} · edit",
         "isActive": "Active plan",
         "isActiveHint": "Inactive plans are not available for new sign-ups."
       },
@@ -2076,123 +2088,123 @@
         "inactive": "Inactive",
         "activate": "Activate plan",
         "deactivate": "Deactivate plan",
-        "edit": "Editar"
+        "edit": "Modifier"
       },
       "actions": {
         "cancel": "Cancel",
         "create": "Create plan",
         "saving": "Saving...",
         "editSlug": "edit",
-        "save": "Salvar alterações"
+        "save": "Enregistrer les modifications"
       },
       "errors": {
         "createFailed": "Could not create the plan. Check the data and try again.",
-        "updateFailed": "Não foi possível atualizar o plano. Verifique os dados e tente novamente."
+        "updateFailed": "Impossible de mettre à jour le plan. Vérifiez les données et réessayez."
       },
       "summaryPlanOne": "plan registered",
       "summaryPlanMany": "plans registered",
       "summaryActiveOne": "active",
       "summaryActiveMany": "active",
-      "editTitle": "Editar plano"
+      "editTitle": "Modifier le plan"
     },
     "audit": {
-      "title": "Audit Log",
-      "description": "Trilha de ações administrativas na plataforma",
-      "searchPlaceholder": "Filtrar por ação...",
-      "refresh": "Atualizar",
-      "emptyTitle": "Nenhum registro encontrado",
-      "emptyDesc": "Não há logs de auditoria com o filtro atual"
+      "title": "Journal d'audit",
+      "description": "Piste des actions administratives sur la plateforme",
+      "searchPlaceholder": "Filtrer par action...",
+      "refresh": "Actualiser",
+      "emptyTitle": "Aucun enregistrement trouvé",
+      "emptyDesc": "Aucun journal d'audit pour le filtre actuel"
     },
     "incidents": {
-      "title": "Incidentes",
-      "description": "Visão cross-org de incidentes reportados nas organizações",
-      "searchTitle": "Buscar incidente",
-      "searchPlaceholder": "Título, descrição ou organização...",
-      "organizationFilter": "Organização",
-      "allOrganizations": "Todas as organizações",
-      "statusFilter": "Status",
-      "allStatuses": "Todos os status",
-      "priorityFilter": "Prioridade",
-      "allPriorities": "Todas as prioridades",
-      "emptyTitle": "Nenhum incidente encontrado",
-      "emptyDesc": "Não há incidentes com os filtros selecionados",
-      "viewDetails": "Ver detalhes",
-      "closeModal": "Fechar",
-      "loading": "Carregando...",
-      "notFound": "Incidente não encontrado",
-      "organization": "Organização",
-      "reportedBy": "Reportado por",
-      "createdAt": "Criado em",
-      "target": "Sala / item",
+      "title": "Incidents",
+      "description": "Vue inter-organisations des incidents signalés",
+      "searchTitle": "Rechercher un incident",
+      "searchPlaceholder": "Titre, description ou organisation...",
+      "organizationFilter": "Organisation",
+      "allOrganizations": "Toutes les organisations",
+      "statusFilter": "Statut",
+      "allStatuses": "Tous les statuts",
+      "priorityFilter": "Priorité",
+      "allPriorities": "Toutes les priorités",
+      "emptyTitle": "Aucun incident trouvé",
+      "emptyDesc": "Aucun incident ne correspond aux filtres sélectionnés",
+      "viewDetails": "Voir les détails",
+      "closeModal": "Fermer",
+      "loading": "Chargement...",
+      "notFound": "Incident introuvable",
+      "organization": "Organisation",
+      "reportedBy": "Signalé par",
+      "createdAt": "Créé le",
+      "target": "Salle / élément",
       "noTarget": "—",
-      "status": "Status",
-      "priority": "Prioridade",
-      "resolutionNotes": "Notas de resolução",
+      "status": "Statut",
+      "priority": "Priorité",
+      "resolutionNotes": "Notes de résolution",
       "assignedTo": "Assigné à",
       "unassigned": "Non assigné",
-      "history": "Histórico de status",
-      "resolve": "Marcar resolvido",
-      "saveChanges": "Salvar alterações",
-      "saving": "Salvando...",
+      "history": "Historique des statuts",
+      "resolve": "Marquer comme résolu",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
       "tabs": {
-        "open": "Abertos",
-        "resolved": "Resolvidos / cancelados"
+        "open": "Ouverts",
+        "resolved": "Résolus / annulés"
       },
       "stats": {
-        "open": "Abertos",
-        "openSub": "Requerem acompanhamento",
-        "critical": "Críticos abertos",
-        "criticalSub": "Prioridade máxima",
-        "resolved": "Encerrados",
-        "resolvedSub": "Resolvidos ou cancelados",
+        "open": "Ouverts",
+        "openSub": "Nécessitent un suivi",
+        "critical": "Critiques ouverts",
+        "criticalSub": "Priorité maximale",
+        "resolved": "Clôturés",
+        "resolvedSub": "Résolus ou annulés",
         "total": "Total",
-        "totalSub": "Todos os incidentes"
+        "totalSub": "Tous les incidents"
       }
     },
     "billing": {
-      "title": "Billing",
-      "description": "Gestão centralizada de assinaturas e renovações das organizações",
-      "searchTitle": "Buscar assinatura",
-      "searchPlaceholder": "Organização, plano ou ID externo...",
-      "statusFilter": "Status",
-      "allStatuses": "Todos os status",
-      "planFilter": "Plano",
-      "allPlans": "Todos os planos",
-      "emptyTitle": "Nenhuma assinatura encontrada",
-      "emptyDesc": "Não há assinaturas com os filtros selecionados",
-      "manage": "Gerenciar",
-      "closeModal": "Fechar",
-      "loading": "Carregando...",
-      "notFound": "Assinatura não encontrada",
-      "organization": "Organização",
+      "title": "Facturation",
+      "description": "Gestion centralisée des abonnements et renouvellements des organisations",
+      "searchTitle": "Rechercher un abonnement",
+      "searchPlaceholder": "Organisation, plan ou ID externe...",
+      "statusFilter": "Statut",
+      "allStatuses": "Tous les statuts",
+      "planFilter": "Plan",
+      "allPlans": "Tous les plans",
+      "emptyTitle": "Aucun abonnement trouvé",
+      "emptyDesc": "Aucun abonnement ne correspond aux filtres sélectionnés",
+      "manage": "Gérer",
+      "closeModal": "Fermer",
+      "loading": "Chargement...",
+      "notFound": "Abonnement introuvable",
+      "organization": "Organisation",
       "owner": "Owner",
-      "currentPlan": "Plano atual",
-      "periodStart": "Início do período",
-      "periodEnd": "Fim do período / renovação",
-      "status": "Status",
-      "changePlan": "Alterar plano",
-      "externalId": "ID externo",
-      "saveChanges": "Salvar alterações",
-      "saving": "Salvando...",
-      "renewsOn": "Renova em",
-      "expiringSoon": "Expira em 7 dias",
-      "orgsWithoutSubscription": "{count} organização(ões) sem assinatura cadastrada",
-      "viewOrganizations": "Ver organizações",
+      "currentPlan": "Plan actuel",
+      "periodStart": "Début de période",
+      "periodEnd": "Fin de période / renouvellement",
+      "status": "Statut",
+      "changePlan": "Changer de plan",
+      "externalId": "ID externe",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "renewsOn": "Renouvelle le",
+      "expiringSoon": "Expire dans 7 jours",
+      "orgsWithoutSubscription": "{count} organisation(s) sans abonnement enregistré",
+      "viewOrganizations": "Voir les organisations",
       "tabs": {
-        "all": "Todas",
-        "active": "Ativas / trial",
-        "attention": "Atenção",
-        "cancelled": "Canceladas"
+        "all": "Toutes",
+        "active": "Actives / essai",
+        "attention": "Attention",
+        "cancelled": "Annulées"
       },
       "stats": {
-        "active": "Ativas",
+        "active": "Actives",
         "activeSub": "ACTIVE + TRIALING",
-        "attention": "Atenção",
-        "attentionSub": "Inadimplentes ou expirando",
-        "cancelled": "Canceladas",
-        "cancelledSub": "Assinaturas encerradas",
+        "attention": "Attention",
+        "attentionSub": "Impayées ou expirant",
+        "cancelled": "Annulées",
+        "cancelledSub": "Abonnements clôturés",
         "total": "Total",
-        "totalSub": "{count} org(s) sem assinatura"
+        "totalSub": "{count} org(s) sans abonnement"
       }
     },
     "badges": {
@@ -2221,44 +2233,44 @@
       "incidentPriority": {
         "LOW": "Basse",
         "MEDIUM": "Moyenne",
-        "HIGH": "Haute",
+        "HIGH": "Élevée",
         "CRITICAL": "Critique"
       }
     }
   },
   "InicioPage": {
-    "greeting": "Olá",
-    "title": "Para onde você quer ir?",
-    "subtitle": "Escolha o ambiente que deseja acessar nesta sessão",
-    "signOut": "Sair",
-    "enter": "Acessar",
-    "inviteError": "Erro ao aceitar convite",
-    "superAdminOrgHint": "Como administrador da plataforma, gerencie organizações pelo painel da plataforma. O painel da organização no app é para membros e admins do tenant.",
+    "greeting": "Bonjour",
+    "title": "Où souhaitez-vous aller ?",
+    "subtitle": "Choisissez l'environnement que vous souhaitez accéder dans cette session",
+    "signOut": "Déconnexion",
+    "enter": "Accéder",
+    "inviteError": "Erreur lors de l'acceptation de l'invitation",
+    "superAdminOrgHint": "En tant qu'administrateur de la plateforme, gérez les organisations depuis le panneau de la plateforme. Le panneau de l'organisation dans l'app est destiné aux membres et admins du tenant.",
     "platform": {
-      "title": "Painel da plataforma",
-      "description": "Gerenciar todas as organizações, planos, usuários e auditoria do SALA",
+      "title": "Panneau de la plateforme",
+      "description": "Gérer toutes les organisations, plans, utilisateurs et l'audit de la plateforme SALA",
       "badge": "Super Admin"
     },
     "organization": {
-      "adminTitle": "Painel da organização",
-      "adminDescription": "Salas, reservas, usuários e configurações da sua organização",
-      "memberTitle": "Explorar salas",
-      "memberDescription": "Ver salas disponíveis, agendar e reportar problemas",
+      "adminTitle": "Panneau de l'organisation",
+      "adminDescription": "Salles, réservations, utilisateurs et paramètres de votre organisation",
+      "memberTitle": "Explorer les salles",
+      "memberDescription": "Voir les salles disponibles, réserver et signaler des problèmes",
       "namedTitle": "{name}"
     },
     "createOrg": {
-      "title": "Criar organização",
-      "description": "Configure uma nova empresa ou equipe no SALA",
+      "title": "Créer une organisation",
+      "description": "Configurez une nouvelle entreprise ou équipe sur SALA",
       "action": "Créer"
     },
     "anotherOrg": {
-      "title": "Outra organização",
-      "description": "Criar nova organização ou aceitar convites"
+      "title": "Autre organisation",
+      "description": "Créer une nouvelle organisation ou accepter des invitations"
     },
     "invites": {
-      "title": "Convites pendentes",
-      "role": "Papel: {role}",
-      "accept": "Aceitar convite"
+      "title": "Invitations en attente",
+      "role": "Rôle : {role}",
+      "accept": "Accepter l'invitation"
     }
   },
   "OrganizationSetup": {
@@ -2269,80 +2281,80 @@
     "hintOrganization": "Étape 2 : enregistrez votre organisation et choisissez un plan."
   },
   "ExplorarPage": {
-    "title": "Explorar salas",
-    "subtitle": "Encontre salas livres, veja quem está usando e confira os materiais disponíveis",
-    "loading": "Carregando salas...",
-    "errorLoad": "Erro ao carregar salas",
-    "retry": "Tentar novamente",
-    "bookRoom": "Agendar sala",
-    "statsTotal": "Total de salas",
-    "recommended": "Recomendadas para você",
-    "searchPlaceholder": "Buscar por nome, descrição ou local...",
-    "equipmentPlaceholder": "Filtrar por equipamento (ex: projetor)",
-    "emptyTitle": "Nenhuma sala encontrada",
-    "emptyDesc": "Tente ajustar os filtros ou a busca",
-    "climate": "Climatizada",
-    "inUseBy": "Em uso por {name}",
-    "viewDetails": "Ver detalhes"
+    "title": "Explorer les salles",
+    "subtitle": "Trouvez des salles libres, voyez qui les utilise et consultez le matériel disponible",
+    "loading": "Chargement des salles...",
+    "errorLoad": "Erreur lors du chargement des salles",
+    "retry": "Réessayer",
+    "bookRoom": "Réserver une salle",
+    "statsTotal": "Total de salles",
+    "recommended": "Recommandées pour vous",
+    "searchPlaceholder": "Rechercher par nom, description ou emplacement...",
+    "equipmentPlaceholder": "Filtrer par équipement (ex. : vidéoprojecteur)",
+    "emptyTitle": "Aucune salle trouvée",
+    "emptyDesc": "Essayez d'ajuster les filtres ou la recherche",
+    "climate": "Climatisée",
+    "inUseBy": "Utilisée par {name}",
+    "viewDetails": "Voir les détails"
   },
   "OnboardingPage": {
-    "title": "Bem-vindo ao SALA",
-    "subtitle": "Crie sua organização ou aceite um convite para começar",
-    "createOrgTitle": "Criar organização",
-    "orgNamePlaceholder": "Nome da sua empresa ou equipe",
-    "trialHint": "Você será o owner. Plano trial de 30 dias incluído.",
-    "creating": "Criando...",
-    "createOrg": "Criar organização",
-    "pendingInvitesTitle": "Convites pendentes",
-    "noInvites": "Nenhum convite pendente para {email}",
-    "role": "Papel: {role}",
-    "invitedBy": "convidado por {name}",
-    "acceptInvite": "Aceitar convite",
+    "title": "Bienvenue sur SALA",
+    "subtitle": "Créez votre organisation ou acceptez une invitation pour commencer",
+    "createOrgTitle": "Créer une organisation",
+    "orgNamePlaceholder": "Nom de votre entreprise ou équipe",
+    "trialHint": "Vous serez le owner. Plan d'essai de 30 jours inclus.",
+    "creating": "Création...",
+    "createOrg": "Créer une organisation",
+    "pendingInvitesTitle": "Invitations en attente",
+    "noInvites": "Aucune invitation en attente pour {email}",
+    "role": "Rôle : {role}",
+    "invitedBy": "invité par {name}",
+    "acceptInvite": "Accepter l'invitation",
     "errors": {
-      "createOrg": "Erro ao criar organização",
-      "acceptInvite": "Erro ao aceitar convite"
+      "createOrg": "Erreur lors de la création de l'organisation",
+      "acceptInvite": "Erreur lors de l'acceptation de l'invitation"
     }
   },
   "InvitePage": {
-    "invalidInvite": "Convite inválido",
-    "notFound": "Convite não encontrado",
+    "invalidInvite": "Invitation invalide",
+    "notFound": "Invitation introuvable",
     "goToHub": "Aller au centre d'accès",
-    "title": "Convite para {org}",
-    "invitedAs": "Você foi convidado para participar como {role}.",
-    "inviteEmail": "Email do convite: {email}",
-    "sentBy": "Enviado por: {name}",
-    "expiresAt": "Expira em: {date}",
+    "title": "Invitation pour {org}",
+    "invitedAs": "Vous avez été invité à participer en tant que {role}.",
+    "inviteEmail": "Email de l'invitation : {email}",
+    "sentBy": "Envoyé par : {name}",
+    "expiresAt": "Expire le : {date}",
     "loginGoogle": "Se connecter avec Google",
     "loginEmail": "Se connecter avec e-mail et mot de passe",
     "createAccount": "Créer un compte",
     "wrongAccount": "Vous êtes connecté en tant que {current}, mais l'invitation a été envoyée à {expected}.",
     "switchAccount": "Changer de compte",
     "alreadyInOrg": "Vous appartenez déjà à cette organisation.",
-    "accepting": "Aceitando...",
-    "acceptInvite": "Aceitar convite",
-    "createOwnOrg": "Criar minha própria organização",
+    "accepting": "Acceptation...",
+    "acceptInvite": "Accepter l'invitation",
+    "createOwnOrg": "Créer ma propre organisation",
     "errors": {
-      "acceptInvite": "Erro ao aceitar convite"
+      "acceptInvite": "Erreur lors de l'acceptation de l'invitation"
     }
   },
   "RoomItemsPage": {
-    "title": "Itens da Sala",
-    "back": "Voltar",
-    "addItem": "Adicionar Item",
-    "noItems": "Nenhum item cadastrado",
-    "edit": "Editar",
-    "delete": "Deletar",
-    "drawerAddTitle": "Adicionar Item",
-    "drawerEditTitle": "Editar Item",
-    "namePlaceholder": "Ex: Computador",
-    "loading": "Carregando itens...",
+    "title": "Éléments de la salle",
+    "back": "Retour",
+    "addItem": "Ajouter un élément",
+    "noItems": "Aucun élément enregistré",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "drawerAddTitle": "Ajouter un élément",
+    "drawerEditTitle": "Modifier l'élément",
+    "namePlaceholder": "Ex. : Ordinateur",
+    "loading": "Chargement des éléments...",
     "errors": {
-      "roomNotFound": "Sala não encontrada",
-      "loadItems": "Erro ao carregar itens",
-      "unknown": "Erro desconhecido",
-      "addItem": "Erro ao adicionar item",
-      "updateItem": "Erro ao atualizar item",
-      "deleteItem": "Erro ao deletar item",
+      "roomNotFound": "Salle introuvable",
+      "loadItems": "Erreur lors du chargement des éléments",
+      "unknown": "Erreur inconnue",
+      "addItem": "Erreur lors de l'ajout de l'élément",
+      "updateItem": "Erreur lors de la mise à jour de l'élément",
+      "deleteItem": "Erreur lors de la suppression de l'élément",
       "saveItem": "Échec de l'enregistrement de l'élément"
     },
     "emptyDescription": "Commencez par ajouter des éléments pour cette salle",
@@ -2396,7 +2408,7 @@
     "nameLabel": "Nom",
     "namePlaceholder": "Ex. : Coordination TI",
     "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Facultatif",
+    "descriptionPlaceholder": "Optionnel",
     "noRooms": "Aucune salle disponible",
     "selectMember": "Sélectionner un gestionnaire...",
     "removeMember": "Retirer le gestionnaire",
@@ -2433,7 +2445,7 @@
     "sectionMembersHelp": "Cochez les fonctions de chaque personne : confirmer les réservations et/ou gérer les salles (infos + équipements)",
     "roomsSelected": "{count} sélectionnée(s)",
     "noMembersYet": "Aucun gestionnaire dans la liste. Ajoutez ci-dessous, puis enregistrez.",
-    "addMemberLabel": "Ajouter un gestionnaire",
+    "addMemberLabel": "Inclure un gestionnaire",
     "addMember": "Ajouter",
     "addMemberHint": "La liste et les fonctions ne sont enregistrées qu'à la sauvegarde. Les personnes ailleurs doivent actualiser la page.",
     "noMemberCandidates": "Aucun autre membre. Ajoutez-en dans Utilisateurs.",
@@ -2568,8 +2580,8 @@
       "formTitle": "Nouvelle Matière",
       "nameLabel": "Nom de la Matière",
       "namePlaceholder": "Ex: Mathématiques",
-      "codeLabel": "Code (Facultatif)",
-      "codePlaceholder": "Ex: MAT01",
+      "codeLabel": "Code (optionnel)",
+      "codePlaceholder": "Ex. : MAT01",
       "codeDisplay": "Code : {code}",
       "empty": "Aucune matière enregistrée.",
       "confirmDelete": "Voulez-vous vraiment supprimer cette matière ?",
@@ -2590,7 +2602,7 @@
       "teacherLabel": "Enseignant",
       "teacherPlaceholder": "Sélectionnez l'enseignant...",
       "lessonsPerWeek": "Cours par Semaine",
-      "linkButton": "Lier la Charge",
+      "linkButton": "Lier une charge",
       "empty": "Aucune charge horaire liée.",
       "teacherPrefix": "Enseignant : {name}",
       "lessonsCount": "{count, plural, one {# cours} other {# cours}}",
@@ -2624,7 +2636,7 @@
       "processing": "Traitement de l'Algorithme...",
       "perfectTitle": "Affectation Parfaite !",
       "partialTitle": "Affectation Partielle",
-      "fitnessScore": "Score Fitness : {score}%",
+      "fitnessScore": "Fitness Score : {score}%",
       "unallocatedTitle": "Charges non affectées :",
       "unallocatedItem": "{className} - {subjectName} ({teacherName}) : Il manque {count} cours",
       "errorsTitle": "Erreurs de Contrainte :",
@@ -2636,95 +2648,95 @@
     }
   },
   "ProfileSetup": {
-    "title": "Complete seu perfil",
-    "subtitle": "Informe CPF e telefone para continuar. Esses dados identificam o responsável pela conta.",
+    "title": "Complétez votre profil",
+    "subtitle": "Indiquez CPF et téléphone pour continuer. Ces données identifient le responsable du compte.",
     "sections": {
-      "account": "Conta",
-      "personal": "Dados pessoais"
+      "account": "Compte",
+      "personal": "Données personnelles"
     },
     "fields": {
-      "name": "Nome",
+      "name": "Nom",
       "email": "Email",
       "cpf": "CPF",
-      "phone": "Telefone"
+      "phone": "Téléphone"
     },
     "placeholders": {
       "cpf": "000.000.000-00",
       "phone": "(00) 00000-0000"
     },
-    "submit": "Continuar",
+    "submit": "Continuer",
     "messages": {
-      "fixErrors": "Corrija os campos destacados"
+      "fixErrors": "Corrigez les champs surlignés"
     },
     "errors": {
-      "generic": "Erro ao salvar perfil. Tente novamente."
+      "generic": "Erreur lors de l'enregistrement du profil. Veuillez réessayer."
     }
   },
   "CreateOrganizationPage": {
-    "title": "Nova organização",
-    "subtitle": "Cadastre uma empresa ou equipe e escolha o plano",
-    "backToInicio": "Voltar ao início",
-    "backToHub": "Voltar às organizações",
+    "title": "Nouvelle organisation",
+    "subtitle": "Enregistrez une entreprise ou une équipe et choisissez un plan",
+    "backToInicio": "Retour à l'accueil",
+    "backToHub": "Retour aux organisations",
     "sections": {
-      "organization": "Dados da organização",
-      "plan": "Plano selecionado"
+      "organization": "Données de l'organisation",
+      "plan": "Plan sélectionné"
     },
     "fields": {
-      "name": "Nome fantasia",
-      "legalName": "Razão social",
+      "name": "Nom commercial",
+      "legalName": "Raison sociale",
       "cnpj": "CNPJ",
-      "email": "Email da organização",
-      "phone": "Telefone da organização",
-      "planName": "Plano",
+      "email": "Email de l'organisation",
+      "phone": "Téléphone de l'organisation",
+      "planName": "Plan",
       "planLimits": "Limites",
-      "trial": "Período trial",
+      "trial": "Période d'essai",
       "isSchool": "Établissement scolaire"
     },
     "placeholders": {
-      "name": "Nome da organização",
-      "legalName": "Razão social completa",
+      "name": "Nom de l'organisation",
+      "legalName": "Raison sociale complète",
       "cnpj": "00.000.000/0000-00",
       "email": "contato@empresa.com",
       "phone": "(00) 00000-0000"
     },
     "steps": {
-      "step1": "Organização",
-      "step2": "Plano",
-      "step3": "Confirmar"
+      "step1": "Organisation",
+      "step2": "Plan",
+      "step3": "Confirmer"
     },
     "buttons": {
-      "next": "Continuar",
-      "back": "Voltar",
-      "cancel": "Cancelar"
+      "next": "Continuer",
+      "back": "Retour",
+      "cancel": "Annuler"
     },
     "messages": {
-      "fixErrors": "Corrija os campos destacados para continuar"
+      "fixErrors": "Corrigez les champs surlignés pour continuer"
     },
     "step2": {
-      "title": "Escolha o plano",
-      "subtitle": "Todos os planos incluem 30 dias de trial gratuito",
-      "loading": "Carregando planos...",
-      "error": "Não foi possível carregar os planos. Tente novamente.",
-      "empty": "Nenhum plano disponível no momento.",
-      "selectPlan": "Selecione um plano para continuar",
-      "select": "Selecionar",
-      "selected": "Selecionado",
-      "rooms": "Até {count} salas",
-      "users": "Até {count} usuários",
-      "reservations": "Até {count} reservas/mês",
-      "unlimitedReservations": "Reservas ilimitadas",
-      "trialDays": "30 dias de trial incluídos"
+      "title": "Choisissez le plan",
+      "subtitle": "Tous les plans incluent 30 jours d'essai gratuit",
+      "loading": "Chargement des plans...",
+      "error": "Impossible de charger les plans. Veuillez réessayer.",
+      "empty": "Aucun plan disponible pour le moment.",
+      "selectPlan": "Sélectionnez un plan pour continuer",
+      "select": "Sélectionner",
+      "selected": "Sélectionné",
+      "rooms": "Jusqu'à {count} salles",
+      "users": "Jusqu'à {count} utilisateurs",
+      "reservations": "Jusqu'à {count} réservations/mois",
+      "unlimitedReservations": "Réservations illimitées",
+      "trialDays": "30 jours d'essai inclus"
     },
     "step3": {
-      "title": "Revise os dados",
-      "subtitle": "Confira as informações antes de criar a organização",
-      "planLimitsValue": "{rooms} salas · {users} usuários",
-      "trialValue": "30 dias"
+      "title": "Vérifiez les données",
+      "subtitle": "Vérifiez les informations avant de créer l'organisation",
+      "planLimitsValue": "{rooms} salles · {users} utilisateurs",
+      "trialValue": "30 jours"
     },
-    "submit": "Criar organização",
-    "submitting": "Criando...",
+    "submit": "Créer l'organisation",
+    "submitting": "Création...",
     "errors": {
-      "generic": "Erro ao criar organização. Verifique os dados e tente novamente."
+      "generic": "Erreur lors de la création de l'organisation. Vérifiez les données et réessayez."
     },
     "isSchoolHint": "Activer le module d'emploi du temps pour écoles/universités",
     "yes": "Oui",
@@ -2732,101 +2744,101 @@
     "emptyValue": "—"
   },
   "Vision": {
-    "title": "Visão Computacional e Automação",
-    "description": "Automatize a gestão de salas, realize auditorias em tempo real e faça provisionamento de itens com Inteligência Artificial.",
+    "title": "Vision par ordinateur et automatisation",
+    "description": "Automatisez la gestion des salles, effectuez des audits en temps réel et provisionnez des éléments avec l'intelligence artificielle.",
     "tabs": {
-      "occupancy": "Ocupação de Sala",
-      "audit": "Auditoria de Itens",
-      "provision": "Provisionamento de Itens"
+      "occupancy": "Occupation de la salle",
+      "audit": "Audit des éléments",
+      "provision": "Provisionnement des éléments"
     },
     "workflow": {
-      "stepRoom": "Sala",
-      "stepImage": "Imagem",
-      "stepAnalyze": "Análise",
-      "imageStatus": "Status da imagem",
-      "imageReady": "Pronta para análise",
-      "imageMissing": "Aguardando upload ou captura",
-      "webcamActive": "Webcam ativa",
-      "needRoom": "Selecione uma sala para continuar.",
-      "needImage": "Envie ou capture uma imagem antes de analisar."
+      "stepRoom": "Salle",
+      "stepImage": "Image",
+      "stepAnalyze": "Analyse",
+      "imageStatus": "Statut de l'image",
+      "imageReady": "Prête pour l'analyse",
+      "imageMissing": "En attente de téléversement ou capture",
+      "webcamActive": "Webcam active",
+      "needRoom": "Sélectionnez une salle pour continuer.",
+      "needImage": "Envoyez ou capturez une image avant d'analyser."
     },
     "provider": {
-      "title": "Motor de Inteligência Artificial",
-      "mock": "Simulador Offline (Alta Fidelidade)",
-      "real": "Roboflow API (Nuvem Real)",
-      "usingEnv": "Usando Chaves Globais (.env)",
-      "notConfigured": "Não Configurado (Simulador Ativo)"
+      "title": "Moteur d'intelligence artificielle",
+      "mock": "Simulateur hors ligne (haute fidélité)",
+      "real": "API Roboflow (cloud réel)",
+      "usingEnv": "Utilisation des clés globales (.env)",
+      "notConfigured": "Non configuré (simulateur actif)"
     },
     "credentials": {
-      "title": "Configurações Administrativas do Roboflow",
-      "apiKey": "Chave de API do Roboflow",
-      "apiKeyPlaceholder": "Insira sua Chave Privada do Roboflow...",
-      "modelId": "ID do Modelo (Model ID)",
-      "modelIdPlaceholder": "Ex: yolov8n, s-a-l-a-detector/1",
-      "save": "Criptografar e Salvar no Banco",
-      "clear": "Remover do Banco (Reverter)",
-      "clearShort": "Limpar",
-      "show": "Mostrar",
-      "hide": "Ocultar",
-      "saved": "Credenciais criptografadas e salvas com sucesso!",
-      "cleared": "Credenciais removidas do banco de dados.",
-      "onlyAdmins": "Apenas administradores podem gerenciar chaves de API.",
-      "securedLabel": "Armazenamento Criptografado AES-256-GCM ativo no Servidor"
+      "title": "Configurations administratives Roboflow",
+      "apiKey": "Clé API Roboflow",
+      "apiKeyPlaceholder": "Saisissez votre clé privée Roboflow...",
+      "modelId": "ID du modèle (Model ID)",
+      "modelIdPlaceholder": "Ex. : yolov8n, s-a-l-a-detector/1",
+      "save": "Chiffrer et enregistrer en base",
+      "clear": "Supprimer de la base (annuler)",
+      "clearShort": "Effacer",
+      "show": "Afficher",
+      "hide": "Masquer",
+      "saved": "Identifiants chiffrés et enregistrés avec succès !",
+      "cleared": "Identifiants supprimés de la base de données.",
+      "onlyAdmins": "Seuls les administrateurs peuvent gérer les clés API.",
+      "securedLabel": "Stockage chiffré AES-256-GCM actif sur le serveur"
     },
     "console": {
-      "title": "Terminal de Automação de Negócio",
-      "subtitle": "Logs de Eventos em Tempo Real",
-      "waiting": "Aguardando envio de imagem para processamento...",
+      "title": "Terminal d'automatisation métier",
+      "subtitle": "Journaux d'événements en temps réel",
+      "waiting": "En attente d'envoi d'image pour traitement...",
       "empty": "Aucun journal..."
     },
     "controls": {
-      "selectRoom": "Selecione uma Sala",
-      "selectRoomPlaceholder": "Selecione...",
-      "captureArea": "Área de captura",
-      "useWebcam": "Usar Webcam",
-      "stopCamera": "Desativar Câmera",
-      "selectFile": "Selecionar Arquivo",
-      "clearImage": "Remover imagem",
-      "uploadTitle": "Enviar Foto para Análise",
-      "uploadSubtitle": "Arraste uma foto ou clique para fazer upload",
-      "analyzeBtn": "Executar Análise com IA",
-      "analyzing": "Analisando...",
-      "camera": "Webcam do Laboratório",
-      "capture": "Capturar Foto",
-      "presets": "Cenários de teste",
-      "presetsSubtitle": "Carregue uma imagem pré-configurada para validar o fluxo rapidamente.",
-      "presetEmpty": "Laboratório Vazio",
-      "presetFull": "Laboratório em Uso",
-      "presetAudit": "Falta de Equipamentos",
-      "presetProvision": "Nova Sala para Provisionar",
+      "selectRoom": "Sélectionnez une salle",
+      "selectRoomPlaceholder": "Sélectionnez...",
+      "captureArea": "Zone de capture",
+      "useWebcam": "Utiliser la webcam",
+      "stopCamera": "Désactiver la caméra",
+      "selectFile": "Sélectionner un fichier",
+      "clearImage": "Supprimer l'image",
+      "uploadTitle": "Envoyer une photo pour analyse",
+      "uploadSubtitle": "Glissez une photo ou cliquez pour téléverser",
+      "analyzeBtn": "Exécuter l'analyse avec IA",
+      "analyzing": "Analyse...",
+      "camera": "Webcam du laboratoire",
+      "capture": "Capturer une photo",
+      "presets": "Scénarios de test",
+      "presetsSubtitle": "Chargez une image préconfigurée pour valider le flux rapidement.",
+      "presetEmpty": "Laboratoire vide",
+      "presetFull": "Laboratoire en cours d'utilisation",
+      "presetAudit": "Équipements manquants",
+      "presetProvision": "Nouvelle salle à provisionner",
       "previewAlt": "Aperçu du laboratoire"
     },
     "auditTable": {
-      "item": "Equipamento",
-      "expected": "Registrado no Banco",
-      "detected": "Detectado pela IA",
-      "status": "Status da Auditoria",
+      "item": "Équipement",
+      "expected": "Enregistré en base",
+      "detected": "Détecté par l'IA",
+      "status": "Statut de l'audit",
       "statusOk": "OK",
-      "statusMissing": "Faltando!",
-      "statusExcess": "Excesso",
-      "auditSummary": "Resumo da Auditoria",
-      "summaryHint": "Reconciliação entre itens registrados e objetos identificados visualmente.",
-      "noDiscrepancy": "Nenhuma discrepância encontrada. Todos os equipamentos estão em ordem!",
-      "discrepancyFound": "Discrepâncias detectadas! {count} equipamento(s) cadastrado(s) não foram identificados.",
-      "incidentGenerated": "Incidente automático gerado com sucesso pelo SALA-BOT!",
-      "viewIncident": "Ver Chamado Gerado"
+      "statusMissing": "Manquant !",
+      "statusExcess": "Excédent",
+      "auditSummary": "Résumé de l'audit",
+      "summaryHint": "Rapprochement entre les éléments enregistrés et les objets identifiés visuellement.",
+      "noDiscrepancy": "Aucun écart trouvé. Tous les équipements sont en ordre !",
+      "discrepancyFound": "Écarts détectés ! {count} équipement(s) enregistré(s) n'ont pas été identifié(s).",
+      "incidentGenerated": "Incident automatique généré avec succès par SALA-BOT !",
+      "viewIncident": "Voir le ticket généré"
     },
     "provisionPanel": {
-      "title": "Revisão de Provisionamento",
-      "description": "Edite e confirme as quantidades sugeridas pela Visão Computacional para esta sala antes de salvar.",
-      "nameCol": "Nome do Ativo",
-      "qtyCol": "Quantidade Sugerida",
-      "iconCol": "Ícone",
-      "saveBtn": "Confirmar e Cadastrar no Banco",
-      "processing": "Processando...",
-      "success": "Sala provisionada com sucesso! {count} itens foram criados.",
-      "successBanner": "Sala provisionada com sucesso. Os equipamentos foram salvos e estão ativos.",
-      "empty": "Nenhum item detectado para provisionamento. Tente carregar outra foto.",
+      "title": "Révision du provisionnement",
+      "description": "Modifiez et confirmez les quantités suggérées par la vision par ordinateur pour cette salle avant d'enregistrer.",
+      "nameCol": "Nom de l'actif",
+      "qtyCol": "Quantité suggérée",
+      "iconCol": "Icône",
+      "saveBtn": "Confirmer et enregistrer en base",
+      "processing": "Traitement...",
+      "success": "Salle provisionnée avec succès ! {count} éléments ont été créés.",
+      "successBanner": "Salle provisionnée avec succès. Les équipements ont été enregistrés et sont actifs.",
+      "empty": "Aucun élément détecté pour le provisionnement. Essayez de charger une autre photo.",
       "removeSuggestion": "Supprimer la suggestion",
       "aiClassSuggested": "Classe IA : Suggérée"
     },

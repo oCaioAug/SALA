@@ -17,7 +17,10 @@
       "statusAll": "All Statuses",
       "statusFree": "Available",
       "statusInUse": "In Use",
-      "statusReserved": "Reserved"
+      "statusReserved": "Reserved",
+      "viewMode": "View mode",
+      "gridView": "Grid",
+      "listView": "List"
     },
     "stats": {
       "total": "Total Rooms",
@@ -203,7 +206,7 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Information",
-    "redirectingToLogin": "Redirecionando para login...",
+    "redirectingToLogin": "Redirecting to sign in...",
     "a11y": {
       "closePanel": "Close panel",
       "close": "Close",
@@ -287,8 +290,8 @@
         "description": "Room responsibility and approvals"
       },
       "gradeHoraria": {
-        "label": "Grade Horária",
-        "description": "Alocação e horários"
+        "label": "Timetable",
+        "description": "Allocation and schedules"
       }
     }
   },
@@ -476,7 +479,18 @@
       "overview": "Overview"
     },
     "search": {
-      "placeholder": "Search rooms, items, users..."
+      "placeholder": "Search rooms, items, users...",
+      "ariaLabel": "Universal search",
+      "minChars": "Type at least 2 characters to search rooms and items.",
+      "empty": "No results found.",
+      "loading": "Searching...",
+      "groups": {
+        "pages": "Pages",
+        "rooms": "Rooms",
+        "sectors": "Sectors",
+        "users": "Users",
+        "items": "Items"
+      }
     },
     "userMenu": {
       "profile": "Profile",
@@ -771,11 +785,11 @@
     "close": "Close",
     "cancelReservation": "Cancel Reservation",
     "roomContext": {
-      "back": "Voltar",
-      "listView": "Lista",
-      "calendarView": "Calendário",
-      "searchPlaceholder": "Buscar por usuário ou propósito...",
-      "statusAll": "Todos os Status",
+      "back": "Back",
+      "listView": "List",
+      "calendarView": "Calendar",
+      "searchPlaceholder": "Search by user or purpose...",
+      "statusAll": "All statuses",
       "emptyFiltered": "Try adjusting the search filters to find reservations.",
       "emptyRoom": "This room has no schedules yet.",
       "createFirst": "Create First Reservation",
@@ -1034,7 +1048,6 @@
       "description": "Description",
       "category": "Category",
       "priority": "Priority",
-      "statusLabel": "Status",
       "status": "Status",
       "room": "Room",
       "item": "Item",
@@ -1131,10 +1144,6 @@
   },
   "ImageUpload": {
     "label": "Reference Image",
-    "uploading": "Uploading...",
-    "change": "Change",
-    "upload": "Upload",
-    "removing": "Removing...",
     "errors": {
       "invalidImage": "Please select a valid image.",
       "unsupportedFormat": "Unsupported format. Use JPG, PNG or WebP.",
@@ -1331,23 +1340,23 @@
       }
     },
     "errorPage": {
-      "title": "Erro de Autenticação",
-      "tryAgain": "Tentar Novamente",
+      "title": "Authentication Error",
+      "tryAgain": "Try Again",
       "goToHub": "Go to access hub",
-      "loading": "Carregando...",
-      "errorCodeLabel": "Código do erro:",
-      "errorDescriptionLabel": "Descrição:",
-      "troubleshootTitle": "Se o problema persistir, verifique:",
-      "troubleshootOAuth": "Configuração do Google OAuth",
-      "troubleshootRedirect": "Redirect URIs autorizados",
-      "troubleshootEnv": "Variáveis de ambiente",
+      "loading": "Loading...",
+      "errorCodeLabel": "Error code:",
+      "errorDescriptionLabel": "Description:",
+      "troubleshootTitle": "If the problem persists, check:",
+      "troubleshootOAuth": "Google OAuth configuration",
+      "troubleshootRedirect": "Authorized redirect URIs",
+      "troubleshootEnv": "Environment variables",
       "errors": {
-        "Configuration": "Erro de configuração do provedor de autenticação.",
-        "AccessDenied": "Acesso negado. Você cancelou o login ou não tem permissão.",
-        "Verification": "Token de verificação inválido ou expirado.",
-        "Default": "Ocorreu um erro durante a autenticação.",
-        "Callback": "Erro no callback do Google. Verifique se o redirect URI está configurado corretamente.",
-        "unknown": "Erro desconhecido durante a autenticação."
+        "Configuration": "Authentication provider configuration error.",
+        "AccessDenied": "Access denied. You cancelled sign-in or do not have permission.",
+        "Verification": "Invalid or expired verification token.",
+        "Default": "An error occurred during authentication.",
+        "Callback": "Google callback error. Check that the redirect URI is configured correctly.",
+        "unknown": "Unknown authentication error."
       }
     }
   },
@@ -1450,11 +1459,10 @@
       "email": "Email",
       "role": "Role",
       "status": "Status",
-      "actions": "Actions",
-      "permissions": "Permissões",
-      "groups": "Grupos",
-      "locations": "Localizações",
-      "devices": "Dispositivos"
+      "permissions": "Permissions",
+      "groups": "Groups",
+      "locations": "Locations",
+      "devices": "Devices"
     },
     "testSession": "Test Session",
     "users": "Users",
@@ -1483,29 +1491,29 @@
     "makeAdmin": "Make Admin",
     "you": "You",
     "actions": {
-      "view": "Ver Detalhes",
-      "edit": "Editar",
-      "delete": "Excluir",
-      "refresh": "Atualizar",
-      "close": "Fechar",
-      "cancel": "Cancelar"
+      "view": "View Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "refresh": "Refresh",
+      "close": "Close",
+      "cancel": "Cancel"
     },
     "feedback": {
-      "createSuccess": "Usuário criado com sucesso!",
-      "updateSuccess": "Usuário atualizado com sucesso!",
-      "deleteSuccess": "Usuário excluído com sucesso!",
-      "deleteConfirm": "Tem certeza que deseja deletar este usuário?",
-      "error": "Erro ao processar usuário",
-      "authError": "Você precisa estar logado para acessar esta página."
+      "createSuccess": "User created successfully!",
+      "updateSuccess": "User updated successfully!",
+      "deleteSuccess": "User deleted successfully!",
+      "deleteConfirm": "Are you sure you want to delete this user?",
+      "error": "Failed to process user",
+      "authError": "You must be signed in to access this page."
     },
     "modals": {
-      "createUser": "Criar Usuário",
-      "editUser": "Editar Usuário",
-      "deleteUser": "Excluir Usuário"
+      "createUser": "Create User",
+      "editUser": "Edit User",
+      "deleteUser": "Delete User"
     },
     "form": {
-      "name": "Nome",
-      "namePlaceholder": "Ex: João da Silva",
+      "name": "Name",
+      "namePlaceholder": "E.g. John Smith",
       "email": "Email"
     }
   },
@@ -1543,7 +1551,13 @@
       "delete": "Delete",
       "reload": "Reload"
     },
-    "loadError": "Erro ao carregar notificações"
+    "noneDescription": "You have no notifications at the moment.",
+    "timeAgo": {
+      "justNow": "Just now",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
+    },
+    "loadError": "Failed to load notifications"
   },
   "NotificationService": {
     "titles": {
@@ -1910,41 +1924,41 @@
     }
   },
   "Invites": {
-    "title": "Convidar membros",
+    "title": "Invite members",
     "emailPlaceholder": "email@empresa.com",
-    "sending": "Enviando...",
-    "sendInvite": "Enviar convite",
-    "copyLink": "Copiar link",
-    "pendingTitle": "Convites pendentes",
-    "expires": "{role} · expira {date}",
-    "cancelInvite": "Cancelar convite"
+    "sending": "Sending...",
+    "sendInvite": "Send invite",
+    "copyLink": "Copy link",
+    "pendingTitle": "Pending invites",
+    "expires": "{role} · expires {date}",
+    "cancelInvite": "Cancel invite"
   },
   "AvatarUpload": {
-    "invalidFormat": "Formato não suportado. Use JPG, PNG ou WebP.",
-    "tooLarge": "Imagem muito grande. Máximo 15MB.",
-    "uploadError": "Erro ao fazer upload do avatar",
-    "uploading": "Enviando...",
-    "change": "Alterar",
-    "upload": "Enviar",
-    "removing": "Removendo...",
-    "remove": "Remover",
-    "hint": "JPG, PNG ou WebP · Máximo 15MB",
-    "previewAlt": "Preview do avatar"
+    "invalidFormat": "Unsupported format. Use JPG, PNG or WebP.",
+    "tooLarge": "Image too large. Maximum 15MB.",
+    "uploadError": "Failed to upload avatar",
+    "uploading": "Uploading...",
+    "change": "Change",
+    "upload": "Upload",
+    "removing": "Removing...",
+    "remove": "Remove",
+    "hint": "JPG, PNG or WebP · Max 15MB",
+    "previewAlt": "Avatar preview"
   },
   "Admin": {
     "brand": "SALA Admin",
-    "subtitle": "Painel da Plataforma",
+    "subtitle": "Platform Panel",
     "nav": {
       "dashboard": "Dashboard",
-      "organizations": "Organizações",
-      "users": "Usuários",
-      "plans": "Planos",
+      "organizations": "Organizations",
+      "users": "Users",
+      "plans": "Plans",
       "audit": "Audit Log",
       "incidents": "Incidents",
       "billing": "Billing",
-      "home": "Início",
+      "home": "Home",
       "myOrganizations": "My Organizations",
-      "logout": "Sair"
+      "logout": "Sign out"
     },
     "charts": {
       "usageTitle": "Usage over time (30d)",
@@ -2384,63 +2398,63 @@
     "emptyValue": "—"
   },
   "OnboardingPage": {
-    "title": "Bem-vindo ao SALA",
-    "subtitle": "Crie sua organização ou aceite um convite para começar",
-    "createOrgTitle": "Criar organização",
-    "orgNamePlaceholder": "Nome da sua empresa ou equipe",
-    "trialHint": "Você será o owner. Plano trial de 30 dias incluído.",
-    "creating": "Criando...",
-    "createOrg": "Criar organização",
-    "pendingInvitesTitle": "Convites pendentes",
-    "noInvites": "Nenhum convite pendente para {email}",
-    "role": "Papel: {role}",
-    "invitedBy": "convidado por {name}",
-    "acceptInvite": "Aceitar convite",
+    "title": "Welcome to SALA",
+    "subtitle": "Create your organization or accept an invite to get started",
+    "createOrgTitle": "Create organization",
+    "orgNamePlaceholder": "Your company or team name",
+    "trialHint": "You will be the owner. 30-day trial plan included.",
+    "creating": "Creating...",
+    "createOrg": "Create organization",
+    "pendingInvitesTitle": "Pending invites",
+    "noInvites": "No pending invites for {email}",
+    "role": "Role: {role}",
+    "invitedBy": "invited by {name}",
+    "acceptInvite": "Accept invite",
     "errors": {
-      "createOrg": "Erro ao criar organização",
-      "acceptInvite": "Erro ao aceitar convite"
+      "createOrg": "Failed to create organization",
+      "acceptInvite": "Failed to accept invite"
     }
   },
   "InvitePage": {
-    "invalidInvite": "Convite inválido",
-    "notFound": "Convite não encontrado",
+    "invalidInvite": "Invalid invite",
+    "notFound": "Invite not found",
     "goToHub": "Go to access hub",
-    "title": "Convite para {org}",
-    "invitedAs": "Você foi convidado para participar como {role}.",
-    "inviteEmail": "Email do convite: {email}",
-    "sentBy": "Enviado por: {name}",
-    "expiresAt": "Expira em: {date}",
+    "title": "Invite to {org}",
+    "invitedAs": "You were invited to join as {role}.",
+    "inviteEmail": "Invite email: {email}",
+    "sentBy": "Sent by: {name}",
+    "expiresAt": "Expires on: {date}",
     "loginGoogle": "Sign in with Google",
     "loginEmail": "Sign in with email and password",
     "createAccount": "Create account",
     "wrongAccount": "You are signed in as {current}, but the invite was sent to {expected}.",
     "switchAccount": "Switch account",
     "alreadyInOrg": "You already belong to this organization.",
-    "accepting": "Aceitando...",
-    "acceptInvite": "Aceitar convite",
-    "createOwnOrg": "Criar minha própria organização",
+    "accepting": "Accepting...",
+    "acceptInvite": "Accept invite",
+    "createOwnOrg": "Create my own organization",
     "errors": {
-      "acceptInvite": "Erro ao aceitar convite"
+      "acceptInvite": "Failed to accept invite"
     }
   },
   "RoomItemsPage": {
-    "title": "Itens da Sala",
-    "back": "Voltar",
-    "addItem": "Adicionar Item",
-    "noItems": "Nenhum item cadastrado",
-    "edit": "Editar",
-    "delete": "Deletar",
-    "drawerAddTitle": "Adicionar Item",
-    "drawerEditTitle": "Editar Item",
-    "namePlaceholder": "Ex: Computador",
-    "loading": "Carregando itens...",
+    "title": "Room Items",
+    "back": "Back",
+    "addItem": "Add Item",
+    "noItems": "No items registered",
+    "edit": "Edit",
+    "delete": "Delete",
+    "drawerAddTitle": "Add Item",
+    "drawerEditTitle": "Edit Item",
+    "namePlaceholder": "E.g. Computer",
+    "loading": "Loading items...",
     "errors": {
-      "roomNotFound": "Sala não encontrada",
-      "loadItems": "Erro ao carregar itens",
-      "unknown": "Erro desconhecido",
-      "addItem": "Erro ao adicionar item",
-      "updateItem": "Erro ao atualizar item",
-      "deleteItem": "Erro ao deletar item",
+      "roomNotFound": "Room not found",
+      "loadItems": "Failed to load items",
+      "unknown": "Unknown error",
+      "addItem": "Failed to add item",
+      "updateItem": "Failed to update item",
+      "deleteItem": "Failed to delete item",
       "saveItem": "Failed to save item"
     },
     "emptyDescription": "Start by adding items for this room",
