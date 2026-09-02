@@ -12,6 +12,7 @@ import {
   Clock,
   Megaphone,
   Trash2,
+  X,
   XCircle,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -26,7 +27,7 @@ import {
   NotificationTypeType,
 } from "@/lib/types";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
-import { getIntlLocale } from "@/lib/utils";
+import { cn, getIntlLocale } from "@/lib/utils";
 
 interface NotificationModalProps {
   isOpen: boolean;
@@ -134,8 +135,6 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   const markAllAsRead = async () => {
     try {
-      console.log("Marcando todas como lidas para userId:", userId);
-
       const response = await fetch("/api/notifications/mark-all-read", {
         method: "PUT",
         headers: {
@@ -144,27 +143,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         body: JSON.stringify({ userId }),
       });
 
-      console.log("Resposta da API:", response.status, response.ok);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Erro da API:", errorData);
         throw new Error(t("errors.markAllAsRead"));
       }
 
-      const result = await response.json();
-      console.log("Resultado da API:", result);
-
-      // Atualizar estado local
       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
 
-      console.log("Chamando onNotificationChange...");
-      // Notificar mudança
       if (onNotificationChange) {
         onNotificationChange();
-        console.log("onNotificationChange chamado");
-      } else {
-        console.log("onNotificationChange não definido");
       }
     } catch (err) {
       console.error("Erro ao marcar todas como lidas:", err);
@@ -326,12 +312,15 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   const getNotificationColorClasses = (color: string) => {
     const colorMap = {
-      blue: "bg-blue-500/20 text-blue-400",
-      green: "bg-green-500/20 text-green-400",
-      red: "bg-red-500/20 text-red-400",
-      orange: "bg-orange-500/20 text-orange-400",
-      purple: "bg-slate-600/20 text-slate-400",
-      gray: "bg-gray-500/20 text-gray-400",
+      blue: "bg-blue-500/15 text-blue-700 ring-blue-500/25 dark:text-blue-300",
+      green:
+        "bg-emerald-500/15 text-emerald-800 ring-emerald-500/25 dark:text-emerald-300",
+      red: "bg-rose-500/15 text-rose-800 ring-rose-500/25 dark:text-rose-300",
+      orange:
+        "bg-amber-500/15 text-amber-900 ring-amber-500/25 dark:text-amber-200",
+      purple:
+        "bg-violet-500/15 text-violet-800 ring-violet-500/25 dark:text-violet-300",
+      gray: "bg-slate-500/15 text-slate-700 ring-slate-500/20 dark:text-slate-300",
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.gray;
   };
@@ -339,18 +328,21 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   const formatDate = (date: string | Date) => {
     const d = new Date(date);
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - d.getTime()) / (1000 * 60 * 60)
+    const diffInMinutes = Math.floor(
+      (now.getTime() - d.getTime()) / (1000 * 60)
     );
 
-    if (diffInHours < 1) {
-      return "Agora mesmo";
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h atrás`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d atrás`;
+    if (diffInMinutes < 1) {
+      return t("timeAgo.justNow");
     }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return t("timeAgo.hoursAgo", { count: diffInHours });
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    return t("timeAgo.daysAgo", { count: diffInDays });
   };
 
   useEffect(() => {
@@ -363,93 +355,84 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   if (!isOpen) return null;
 
+  const summaryText =
+    notifications.length === 0
+      ? null
+      : unreadCount > 0
+        ? t("notifications.unreadCount", {
+            unread: unreadCount,
+            total: notifications.length,
+            plural: unreadCount > 1 ? "s" : "",
+          })
+        : t("notifications.allRead", { total: notifications.length });
+
   return (
-    <div className="fixed top-20 right-6 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600/50 rounded-xl shadow-sm z-[9999999] max-h-96 overflow-hidden transition-colors duration-300">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-700/50">
-        <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-            {t("title")}
-          </h3>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600/50"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div className="fixed top-[4.5rem] right-3 z-[9999] flex w-[min(calc(100vw-1.5rem),22rem)] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:right-6 sm:w-96">
+      <div className="border-b border-border bg-muted/30 px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-border">
+              <Bell className="h-4 w-4" aria-hidden />
+            </span>
+            <h3 className="truncate text-base font-semibold text-foreground">
+              {t("title")}
+            </h3>
+            {unreadCount > 0 ? (
+              <span className="inline-flex min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={tCommon("a11y.close")}
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {summaryText ? (
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">{summaryText}</p>
+            {unreadCount > 0 ? (
+              <button
+                type="button"
+                onClick={markAllAsRead}
+                className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-foreground transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+              >
+                <CheckCheck className="h-3.5 w-3.5" aria-hidden />
+                {t("actions.markAllAsRead")}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
-      {/* Content */}
-      <div className="max-h-80 overflow-y-auto">
-        {/* Header com ações */}
-        <div className="flex items-center justify-between p-4 pb-3 border-b border-slate-200 dark:border-slate-600/50">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              {t("notifications.plural", {
-                count: notifications.length,
-              })}
-              {unreadCount > 0 && (
-                <span className="ml-2 text-blue-600 dark:text-blue-400">
-                  (
-                  {t("notifications.unread", {
-                    count: unreadCount,
-                  })}{" "}
-                  {t("notifications.plural", { count: "" })})
-                </span>
-              )}
-            </span>
-          </div>
-
-          {unreadCount > 0 && (
-            <Button
-              onClick={markAllAsRead}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <CheckCheck className="w-4 h-4 mr-1" />
-              {t("actions.markAllAsRead")}
-            </Button>
-          )}
-        </div>
-
-        {/* Lista de notificações */}
+      <div className="max-h-[min(24rem,60vh)] overflow-y-auto">
         {loading ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-10">
             <LoadingSpinner />
           </div>
         ) : error ? (
-          <EmptyState
-            icon={
-              <Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />
-            }
-            title={t("errors.load")}
-            description={error}
-          />
+          <div className="p-4">
+            <EmptyState
+              icon={<Bell className="h-8 w-8 text-muted-foreground" />}
+              title={t("errors.load")}
+              description={error}
+            />
+          </div>
         ) : notifications.length === 0 ? (
-          <EmptyState
-            icon={
-              <Bell className="w-8 h-8 text-slate-400 dark:text-gray-400" />
-            }
-            title={t("notifications.none")}
-            description={t("notifications.noneDescription")}
-          />
+          <div className="p-4">
+            <EmptyState
+              icon={<Bell className="h-8 w-8 text-muted-foreground" />}
+              title={t("notifications.none")}
+              description={t("noneDescription")}
+            />
+          </div>
         ) : (
-          <div className="p-2 space-y-3">
+          <ul className="divide-y divide-border p-2" role="list">
             {notifications.map(notification => {
               const IconComponent = getNotificationIcon(
                 notification.type as NotificationTypeType
@@ -460,86 +443,107 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               const colorClasses = getNotificationColorClasses(color);
 
               return (
-                <div
-                  key={notification.id}
-                  className={`p-3 rounded-lg transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer ${
-                    notification.isRead
-                      ? "bg-slate-50/50 dark:bg-slate-800/30"
-                      : "bg-blue-50 dark:bg-blue-500/10 border-l-2 border-blue-500"
-                  }`}
-                  onClick={() => onNotificationClick?.(notification)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`p-2 rounded-lg ${colorClasses.split(" ")[0]}`}
-                    >
-                      <IconComponent
-                        className={`w-4 h-4 ${colorClasses.split(" ")[1]}`}
+                <li key={notification.id}>
+                  <article
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onNotificationClick?.(notification)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onNotificationClick?.(notification);
+                      }
+                    }}
+                    className={cn(
+                      "group relative rounded-lg p-3 transition-colors",
+                      notification.isRead
+                        ? "hover:bg-muted/40"
+                        : "bg-blue-500/5 hover:bg-blue-500/10"
+                    )}
+                  >
+                    {!notification.isRead ? (
+                      <span
+                        className="absolute left-1 top-5 h-1.5 w-1.5 rounded-full bg-blue-500"
+                        aria-hidden
                       />
-                    </div>
+                    ) : null}
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <h4
-                            className={`font-medium text-sm ${
-                              notification.isRead
-                                ? "text-slate-700 dark:text-slate-300"
-                                : "text-slate-900 dark:text-white"
-                            }`}
-                          >
-                            {getNotificationTitle(notification)}
-                          </h4>
-                          <p
-                            className={`text-xs mt-1 ${
-                              notification.isRead
-                                ? "text-slate-600 dark:text-slate-400"
-                                : "text-slate-700 dark:text-slate-300"
-                            }`}
-                          >
-                            {getNotificationMessage(notification)}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Clock className="w-3 h-3 text-slate-500 dark:text-slate-500" />
-                            <span className="text-xs text-slate-500 dark:text-slate-500">
-                              {formatDate(notification.createdAt)}
-                            </span>
+                    <div className="flex items-start gap-3 pl-1.5">
+                      <span
+                        className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
+                          colorClasses
+                        )}
+                      >
+                        <IconComponent className="h-4 w-4" aria-hidden />
+                      </span>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h4
+                              className={cn(
+                                "text-sm font-semibold leading-snug",
+                                notification.isRead
+                                  ? "text-foreground/80"
+                                  : "text-foreground"
+                              )}
+                            >
+                              {getNotificationTitle(notification)}
+                            </h4>
+                            <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+                              {getNotificationMessage(notification)}
+                            </p>
+                            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                              <Clock className="h-3 w-3 shrink-0" aria-hidden />
+                              <time dateTime={new Date(notification.createdAt).toISOString()}>
+                                {formatDate(notification.createdAt)}
+                              </time>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-1">
-                          {!notification.isRead && (
+                          <div className="flex shrink-0 items-center gap-0.5 opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                            {!notification.isRead ? (
+                              <Button
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  void markAsRead(notification.id);
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                disabled={markingAsRead === notification.id}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-emerald-600"
+                                aria-label={t("actions.markAsRead")}
+                              >
+                                {markingAsRead === notification.id ? (
+                                  <LoadingSpinner size="sm" />
+                                ) : (
+                                  <Check className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            ) : null}
+
                             <Button
-                              onClick={() => markAsRead(notification.id)}
+                              onClick={e => {
+                                e.stopPropagation();
+                                void deleteNotification(notification.id);
+                              }}
                               variant="ghost"
                               size="sm"
-                              disabled={markingAsRead === notification.id}
-                              className="text-slate-500 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 p-1"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600"
+                              aria-label={t("actions.delete")}
                             >
-                              {markingAsRead === notification.id ? (
-                                <LoadingSpinner size="sm" />
-                              ) : (
-                                <Check className="w-3 h-3" />
-                              )}
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
-                          )}
-
-                          <Button
-                            onClick={() => deleteNotification(notification.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </article>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
       </div>
     </div>
