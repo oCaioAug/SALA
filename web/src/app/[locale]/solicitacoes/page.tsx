@@ -636,9 +636,9 @@ const SolicitacoesPage: React.FC = () => {
                       id={`solicitacao-${solicitacao.id}`}
                     >
                       <CardContent className="p-0">
-                        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-4 p-4 sm:p-5">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
                               <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
                                 {roomName}
                               </h3>
@@ -650,132 +650,141 @@ const SolicitacoesPage: React.FC = () => {
                               >
                                 {getStatusText(solicitacao.status)}
                               </span>
-                            </div>
-
-                            <div className="mt-3 space-y-3 rounded-lg border border-border bg-muted/20 p-3.5">
-                              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                {sectorName ? (
-                                  <div className="min-w-0">
-                                    <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                      {t("card.sector")}
-                                    </dt>
-                                    <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
-                                      <Network
-                                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                        aria-hidden
-                                      />
-                                      <span className="truncate">
-                                        {sectorName}
-                                      </span>
-                                    </dd>
-                                  </div>
-                                ) : null}
-                                <div className="min-w-0">
-                                  <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                    {t("modal.user")}
-                                  </dt>
-                                  <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
-                                    <UserIcon
-                                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                      aria-hidden
-                                    />
-                                    <span className="truncate">
-                                      {solicitacao.user.name}
-                                    </span>
-                                  </dd>
-                                </div>
-                              </dl>
-
-                              <div className="flex items-start gap-2 border-t border-border/70 pt-3">
-                                <Calendar
-                                  className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-                                  aria-hidden
-                                />
-                                <div className="min-w-0">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                    {t("modal.start")} / {t("modal.end")}
-                                  </p>
-                                  <p className="mt-0.5 text-sm font-medium tabular-nums text-foreground">
-                                    {scheduleLabel}
-                                  </p>
-                                </div>
-                              </div>
-
                               {solicitacao.isRecurring &&
                               solicitacao.recurringTemplateId ? (
-                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                                   {t("recurringInfo")}
-                                </p>
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleSolicitacaoClick(solicitacao)
+                                }
+                                className="gap-1.5"
+                              >
+                                <Eye className="h-4 w-4" aria-hidden />
+                                <span className="hidden sm:inline">
+                                  {t("card.viewDetails")}
+                                </span>
+                              </Button>
+
+                              {isPending && !ownRequest ? (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleApprove(solicitacao)}
+                                    disabled={isLoading}
+                                    className="gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                                  >
+                                    {isLoading ? (
+                                      <LoadingSpinner size="sm" />
+                                    ) : (
+                                      <CheckCircle
+                                        className="h-4 w-4"
+                                        aria-hidden
+                                      />
+                                    )}
+                                    <span className="hidden sm:inline">
+                                      {t("card.approve")}
+                                    </span>
+                                  </Button>
+
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openRejectDrawer(solicitacao)}
+                                    disabled={isLoading}
+                                    className="gap-1.5 border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                                  >
+                                    {isLoading ? (
+                                      <LoadingSpinner size="sm" />
+                                    ) : (
+                                      <XCircle
+                                        className="h-4 w-4"
+                                        aria-hidden
+                                      />
+                                    )}
+                                    <span className="hidden sm:inline">
+                                      {t("card.reject")}
+                                    </span>
+                                  </Button>
+                                </>
                               ) : null}
 
-                              {solicitacao.purpose ? (
-                                <div className="border-t border-border/70 pt-3">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                    {t("modal.purpose")}
-                                  </p>
-                                  <p className="mt-1 text-sm leading-relaxed text-foreground/90">
-                                    {solicitacao.purpose}
-                                  </p>
-                                </div>
+                              {isPending && ownRequest ? (
+                                <p className="text-xs leading-relaxed text-muted-foreground sm:max-w-[14rem] sm:text-right">
+                                  {t("card.selfApproveBlocked")}
+                                </p>
                               ) : null}
                             </div>
                           </div>
 
-                          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-border pt-3 sm:border-t-0 sm:pt-0">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleSolicitacaoClick(solicitacao)}
-                              className="gap-1.5"
-                            >
-                              <Eye className="h-4 w-4" aria-hidden />
-                              <span className="hidden sm:inline">
-                                {t("card.viewDetails")}
-                              </span>
-                            </Button>
-
-                            {isPending && !ownRequest ? (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApprove(solicitacao)}
-                                  disabled={isLoading}
-                                  className="gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
-                                >
-                                  {isLoading ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <CheckCircle className="h-4 w-4" aria-hidden />
-                                  )}
-                                  <span className="hidden sm:inline">
-                                    {t("card.approve")}
+                          <div className="rounded-lg border border-border bg-muted/20 p-3.5 sm:p-4">
+                            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+                              {sectorName ? (
+                                <div className="min-w-0">
+                                  <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t("card.sector")}
+                                  </dt>
+                                  <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                    <Network
+                                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                      aria-hidden
+                                    />
+                                    <span className="truncate">{sectorName}</span>
+                                  </dd>
+                                </div>
+                              ) : null}
+                              <div className="min-w-0">
+                                <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t("modal.user")}
+                                </dt>
+                                <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                  <UserIcon
+                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                    aria-hidden
+                                  />
+                                  <span className="truncate">
+                                    {solicitacao.user.name}
                                   </span>
-                                </Button>
+                                </dd>
+                              </div>
+                              <div
+                                className={cn(
+                                  "min-w-0",
+                                  sectorName
+                                    ? "sm:col-span-2 lg:col-span-1"
+                                    : "sm:col-span-1"
+                                )}
+                              >
+                                <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t("modal.start")} / {t("modal.end")}
+                                </dt>
+                                <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium tabular-nums text-foreground">
+                                  <Calendar
+                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                    aria-hidden
+                                  />
+                                  <span className="truncate">{scheduleLabel}</span>
+                                </dd>
+                              </div>
+                            </dl>
 
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openRejectDrawer(solicitacao)}
-                                  disabled={isLoading}
-                                  className="gap-1.5 border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10"
-                                >
-                                  {isLoading ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <XCircle className="h-4 w-4" aria-hidden />
-                                  )}
-                                  <span className="hidden sm:inline">
-                                    {t("card.reject")}
-                                  </span>
-                                </Button>
-                              </>
-                            ) : null}
-
-                            {isPending && ownRequest ? (
-                              <p className="max-w-[12rem] text-right text-xs leading-relaxed text-muted-foreground">
-                                {t("card.selfApproveBlocked")}
-                              </p>
+                            {solicitacao.purpose ? (
+                              <div className="mt-3 border-t border-border/70 pt-3">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t("modal.purpose")}
+                                </p>
+                                <p className="mt-1 text-sm leading-relaxed text-foreground/90">
+                                  {solicitacao.purpose}
+                                </p>
+                              </div>
                             ) : null}
                           </div>
                         </div>
