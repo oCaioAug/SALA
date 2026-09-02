@@ -173,22 +173,6 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  // Função de teste da API
-  const testSession = async () => {
-    try {
-      const response = await fetch("/api/test-session");
-      const data = await response.json();
-      console.log("Teste da sessão:", data);
-      if (response.ok) {
-        showSuccess(t("sessionValid"));
-      } else {
-        showError(t("sessionError", { error: data.error }));
-      }
-    } catch (_error) {
-      showError(t("sessionTestError"));
-    }
-  };
-
   if (!isAdmin) {
     return (
       <ProtectedRoute>
