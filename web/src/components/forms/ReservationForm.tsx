@@ -12,6 +12,7 @@ import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { Switch } from "@/components/ui/Switch";
 import { Room, User } from "@/lib/types";
 import { getIntlLocale } from "@/lib/utils";
 
@@ -416,9 +417,14 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
 
       {/* Recorrência */}
       <div className="rounded-lg border border-slate-200 bg-slate-100/80 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-        <div className="flex items-center gap-3 mb-4">
-          <input
-            type="checkbox"
+        <div className="flex items-center justify-between gap-4">
+          <label
+            htmlFor="isRecurring"
+            className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
+            {t("recurring") || "Reserva Recorrente"}
+          </label>
+          <Switch
             id="isRecurring"
             checked={formData.isRecurring}
             onChange={e => {
@@ -430,14 +436,8 @@ const ReservationForm: React.FC<ReservationFormProps> = ({
                   : [],
               }));
             }}
-            className="h-4 w-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-700"
+            aria-label={t("recurring") || "Reserva Recorrente"}
           />
-          <label
-            htmlFor="isRecurring"
-            className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
-            {t("recurring") || "Reserva Recorrente"}
-          </label>
         </div>
 
         {formData.isRecurring && (
