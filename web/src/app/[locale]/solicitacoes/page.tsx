@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Clock,
   Eye,
+  Network,
   Search,
   User as UserIcon,
   XCircle,
@@ -31,7 +32,8 @@ import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { ReservationWithDetails, Room, User } from "@/lib/types";
-import { getIntlLocale } from "@/lib/utils";
+import { getReservationStatusStyle } from "@/lib/reservations/status";
+import { cn, getIntlLocale } from "@/lib/utils";
 
 type ReservationWithSector = ReservationWithDetails & {
   room: Room & { sector?: { id: string; name: string } | null };
@@ -466,7 +468,6 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   const formatDateTime = (date: Date): string => {
-    // Converter locale do next-intl para formato do Intl
     const intlLocale = getIntlLocale(locale);
 
     return date.toLocaleString(intlLocale, {
@@ -478,17 +479,28 @@ const SolicitacoesPage: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "PENDING":
-        return "text-yellow-400 bg-yellow-500/10";
-      case "APPROVED":
-        return "text-green-400 bg-green-500/10";
-      case "REJECTED":
-        return "text-red-400 bg-red-500/10";
-      default:
-        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
+  const formatScheduleLabel = (start: Date, end: Date): string => {
+    const intlLocale = getIntlLocale(locale);
+    const sameDay = start.toDateString() === end.toDateString();
+
+    if (sameDay) {
+      const datePart = start.toLocaleString(intlLocale, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      const startTime = start.toLocaleString(intlLocale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const endTime = end.toLocaleString(intlLocale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return `${datePart} · ${startTime} – ${endTime}`;
     }
+
+    return `${formatDateTime(start)} – ${formatDateTime(end)}`;
   };
 
   const getStatusText = (status: string): string => {
@@ -597,132 +609,180 @@ const SolicitacoesPage: React.FC = () => {
                 description={t("empty.description")}
               />
             ) : (
-              <div className="space-y-4">
-                {paginatedSolicitacoes.map(solicitacao => (
-                  <Card
-                    key={solicitacao.id}
-                    variant="elevated"
-                    hover
-                    className={`group ${
-                      focusedReservationId === solicitacao.id
-                        ? "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/50"
-                        : ""
-                    }`}
-                    id={`solicitacao-${solicitacao.id}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-amber-500/20 rounded-xl">
-                            <Calendar className="w-6 h-6 text-amber-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-                              {solicitacao.room?.name ||
-                                rooms.find(r => r.id === solicitacao.roomId)
-                                  ?.name ||
-                                t("unknownRoom")}
-                            </h3>
-                            {solicitacao.room?.sector?.name ? (
-                              <p className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-                                {t("card.sector")}:{" "}
-                                {solicitacao.room.sector.name}
-                              </p>
-                            ) : null}
-                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <UserIcon className="w-4 h-4" />
-                                {solicitacao.user.name}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {formatDateTime(
-                                  new Date(solicitacao.startTime)
-                                )}{" "}
-                                -{" "}
-                                {formatDateTime(new Date(solicitacao.endTime))}
-                              </div>
+              <div className="space-y-3">
+                {paginatedSolicitacoes.map(solicitacao => {
+                  const roomName =
+                    solicitacao.room?.name ||
+                    rooms.find(r => r.id === solicitacao.roomId)?.name ||
+                    t("unknownRoom");
+                  const sectorName = solicitacao.room?.sector?.name;
+                  const start = new Date(solicitacao.startTime);
+                  const end = new Date(solicitacao.endTime);
+                  const scheduleLabel = formatScheduleLabel(start, end);
+                  const isFocused = focusedReservationId === solicitacao.id;
+                  const isPending = solicitacao.status === "PENDING";
+                  const ownRequest = isOwnRequest(solicitacao);
+                  const isLoading = actionLoading === solicitacao.id;
+
+                  return (
+                    <Card
+                      key={solicitacao.id}
+                      variant="elevated"
+                      className={cn(
+                        "overflow-hidden transition-all",
+                        isFocused &&
+                          "border-blue-500/40 ring-2 ring-blue-500/30 dark:border-blue-500/50"
+                      )}
+                      id={`solicitacao-${solicitacao.id}`}
+                    >
+                      <CardContent className="p-0">
+                        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-3">
+                              <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
+                                {roomName}
+                              </h3>
+                              <span
+                                className={cn(
+                                  "inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide ring-1 ring-inset",
+                                  getReservationStatusStyle(solicitacao.status)
+                                )}
+                              >
+                                {getStatusText(solicitacao.status)}
+                              </span>
                             </div>
-                            {solicitacao.isRecurring &&
-                              solicitacao.recurringTemplateId && (
-                                <p className="text-xs text-blue-400 mt-1">
+
+                            <div className="mt-3 space-y-3 rounded-lg border border-border bg-muted/20 p-3.5">
+                              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                {sectorName ? (
+                                  <div className="min-w-0">
+                                    <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                      {t("card.sector")}
+                                    </dt>
+                                    <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                      <Network
+                                        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                        aria-hidden
+                                      />
+                                      <span className="truncate">
+                                        {sectorName}
+                                      </span>
+                                    </dd>
+                                  </div>
+                                ) : null}
+                                <div className="min-w-0">
+                                  <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t("modal.user")}
+                                  </dt>
+                                  <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                    <UserIcon
+                                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                      aria-hidden
+                                    />
+                                    <span className="truncate">
+                                      {solicitacao.user.name}
+                                    </span>
+                                  </dd>
+                                </div>
+                              </dl>
+
+                              <div className="flex items-start gap-2 border-t border-border/70 pt-3">
+                                <Calendar
+                                  className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                                  aria-hidden
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t("modal.start")} / {t("modal.end")}
+                                  </p>
+                                  <p className="mt-0.5 text-sm font-medium tabular-nums text-foreground">
+                                    {scheduleLabel}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {solicitacao.isRecurring &&
+                              solicitacao.recurringTemplateId ? (
+                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
                                   {t("recurringInfo")}
                                 </p>
-                              )}
-                            {solicitacao.purpose && (
-                              <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
-                                {solicitacao.purpose}
-                              </p>
-                            )}
+                              ) : null}
+
+                              {solicitacao.purpose ? (
+                                <div className="border-t border-border/70 pt-3">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t("modal.purpose")}
+                                  </p>
+                                  <p className="mt-1 text-sm leading-relaxed text-foreground/90">
+                                    {solicitacao.purpose}
+                                  </p>
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              solicitacao.status
-                            )}`}
-                          >
-                            {getStatusText(solicitacao.status)}
-                          </span>
-
-                          <div className="flex gap-2">
+                          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-border pt-3 sm:border-t-0 sm:pt-0">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                handleSolicitacaoClick(solicitacao)
-                              }
+                              onClick={() => handleSolicitacaoClick(solicitacao)}
+                              className="gap-1.5"
                             >
-                              <Eye className="w-4 h-4" />
+                              <Eye className="h-4 w-4" aria-hidden />
+                              <span className="hidden sm:inline">
+                                {t("card.viewDetails")}
+                              </span>
                             </Button>
 
-                            {solicitacao.status === "PENDING" &&
-                              !isOwnRequest(solicitacao) && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleApprove(solicitacao)}
-                                    disabled={actionLoading === solicitacao.id}
-                                    className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                                  >
-                                    {actionLoading === solicitacao.id ? (
-                                      <LoadingSpinner size="sm" />
-                                    ) : (
-                                      <CheckCircle className="w-4 h-4" />
-                                    )}
-                                  </Button>
+                            {isPending && !ownRequest ? (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApprove(solicitacao)}
+                                  disabled={isLoading}
+                                  className="gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                                >
+                                  {isLoading ? (
+                                    <LoadingSpinner size="sm" />
+                                  ) : (
+                                    <CheckCircle className="h-4 w-4" aria-hidden />
+                                  )}
+                                  <span className="hidden sm:inline">
+                                    {t("card.approve")}
+                                  </span>
+                                </Button>
 
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      openRejectDrawer(solicitacao)
-                                    }
-                                    disabled={actionLoading === solicitacao.id}
-                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                  >
-                                    {actionLoading === solicitacao.id ? (
-                                      <LoadingSpinner size="sm" />
-                                    ) : (
-                                      <XCircle className="w-4 h-4" />
-                                    )}
-                                  </Button>
-                                </>
-                              )}
-                            {solicitacao.status === "PENDING" &&
-                              isOwnRequest(solicitacao) && (
-                                <p className="max-w-[10rem] text-right text-xs text-slate-500 dark:text-slate-400">
-                                  {t("card.selfApproveBlocked")}
-                                </p>
-                              )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openRejectDrawer(solicitacao)}
+                                  disabled={isLoading}
+                                  className="gap-1.5 border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                                >
+                                  {isLoading ? (
+                                    <LoadingSpinner size="sm" />
+                                  ) : (
+                                    <XCircle className="h-4 w-4" aria-hidden />
+                                  )}
+                                  <span className="hidden sm:inline">
+                                    {t("card.reject")}
+                                  </span>
+                                </Button>
+                              </>
+                            ) : null}
+
+                            {isPending && ownRequest ? (
+                              <p className="max-w-[12rem] text-right text-xs leading-relaxed text-muted-foreground">
+                                {t("card.selfApproveBlocked")}
+                              </p>
+                            ) : null}
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
                 <Pagination
                   page={safeSolPage}
                   pageSize={listPageSize}
@@ -858,9 +918,10 @@ const SolicitacoesPage: React.FC = () => {
                       {t("modal.status")}
                     </label>
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        selectedSolicitacao.status
-                      )}`}
+                      className={cn(
+                        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1 ring-inset",
+                        getReservationStatusStyle(selectedSolicitacao.status)
+                      )}
                     >
                       {getStatusText(selectedSolicitacao.status)}
                     </span>
