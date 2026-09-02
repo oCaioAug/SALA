@@ -8,6 +8,7 @@ import React, { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
+import { cn } from "@/lib/utils";
 import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 
 interface AvatarUploadProps {
@@ -15,6 +16,8 @@ interface AvatarUploadProps {
   userName: string;
   onAvatarUpdate: (newAvatarUrl: string | null) => void;
   disabled?: boolean;
+  layout?: "default" | "profile";
+  className?: string;
 }
 
 export const AvatarUpload: React.FC<AvatarUploadProps> = ({
@@ -22,6 +25,8 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
   userName,
   onAvatarUpdate,
   disabled = false,
+  layout = "default",
+  className,
 }) => {
   const t = useTranslations("AvatarUpload");
   const { fromPayload } = useApiErrorMessage();
@@ -137,54 +142,84 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     return getUserGradient(name);
   };
 
+  const isProfile = layout === "profile";
+  const avatarClass = cn(
+    "object-cover transition-opacity",
+    isProfile
+      ? "size-28 rounded-full ring-2 ring-border ring-offset-2 ring-offset-card sm:size-32"
+      : "size-[120px] rounded-lg"
+  );
+
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div
+      className={cn(
+        "flex flex-col gap-3",
+        isProfile ? "items-start" : "items-center gap-4",
+        className
+      )}
+    >
       {/* Avatar Display */}
       <div className="relative group">
         {previewUrl ? (
-          // Preview durante upload
           <div className="relative">
             <Image
               src={previewUrl}
               alt={t("previewAlt")}
-              width={120}
-              height={120}
-              className="w-30 h-30 rounded-lg object-cover"
+              width={128}
+              height={128}
+              className={avatarClass}
             />
-            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+            <div
+              className={cn(
+                "absolute inset-0 flex items-center justify-center bg-black/50",
+                isProfile ? "rounded-full" : "rounded-lg"
+              )}
+            >
               <LoadingSpinner size="md" />
             </div>
           </div>
         ) : currentAvatar ? (
-          // Avatar atual
           <Image
             src={currentAvatar}
             alt={`Avatar de ${userName}`}
-            width={120}
-            height={120}
-            className="w-30 h-30 rounded-lg object-cover group-hover:opacity-80 transition-opacity"
+            width={128}
+            height={128}
+            className={cn(avatarClass, "group-hover:opacity-90")}
           />
         ) : (
-          // Placeholder com iniciais
           <div
-            className={`w-30 h-30 ${getGradient(userName)} rounded-lg flex items-center justify-center group-hover:opacity-80 transition-opacity`}
+            className={cn(
+              getGradient(userName),
+              "flex items-center justify-center group-hover:opacity-90",
+              isProfile
+                ? "size-28 rounded-full ring-2 ring-border ring-offset-2 ring-offset-card sm:size-32"
+                : "size-[120px] rounded-lg"
+            )}
           >
-            <span className="text-white font-bold text-3xl">
+            <span
+              className={cn(
+                "font-bold text-white",
+                isProfile ? "text-2xl sm:text-3xl" : "text-3xl"
+              )}
+            >
               {getInitials(userName)}
             </span>
           </div>
         )}
 
-        {/* Overlay de hover */}
         {!isUploading && !disabled && (
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
-            <Camera className="w-8 h-8 text-white" />
+          <div
+            className={cn(
+              "absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/40 group-hover:opacity-100",
+              isProfile ? "rounded-full" : "rounded-lg"
+            )}
+          >
+            <Camera className="h-7 w-7 text-white" />
           </div>
         )}
       </div>
 
-      {/* Botões de ação */}
-      <div className="flex gap-3">
+      <div className={cn("flex gap-2", isProfile && "flex-wrap")}>
         <Button
           variant="outline"
           size="sm"
@@ -238,16 +273,14 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         disabled={disabled || isUploading}
       />
 
-      {/* Erro */}
       {error && (
-        <div className="text-red-600 dark:text-red-400 text-sm text-center max-w-xs">
+        <div className="max-w-xs text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
 
-      {/* Dica de formato */}
-      {!error && (
-        <p className="text-xs text-slate-500 dark:text-gray-400 text-center max-w-xs">
+      {!error && !isProfile && (
+        <p className="max-w-xs text-center text-xs text-slate-500 dark:text-gray-400">
           {t("hint")}
         </p>
       )}
