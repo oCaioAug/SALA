@@ -1,8 +1,11 @@
 "use client";
 
-import { AlertTriangle, CalendarCheck, Play } from "lucide-react";
+import { AlertTriangle, CalendarCheck, Play, Download, FileText, FileSpreadsheet, FileIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -113,6 +116,86 @@ const GerarGradePage: React.FC = () => {
   const sortedTurmaIds = Object.keys(grouped).sort((a, b) =>
     (turmasMap[a] || "").localeCompare(turmasMap[b] || "")
   );
+
+  const buildExportData = () => {
+    const data: any[] = [];
+    sortedTurmaIds.forEach(tId => {
+      const shiftId = turmaShiftsMap[tId] || "default";
+      const shiftInfo = shifts.find(s => s.id === shiftId);
+      const slots = shiftInfo?.slots || [];
+      const days = shiftInfo?.daysPerWeek || 5;
+
+      for (let day = 1; day <= days; day++) {
+        for (const slot of slots) {
+          const slotId = `${day}_${slot.id}`;
+          const c = grouped[tId][slotId];
+          if (c) {
+            data.push({
+              Turma: turmasMap[c.turmaId] || "",
+              Dia: `Dia ${day}`,
+              Horário: `${slot.startTime} - ${slot.endTime}`,
+              Disciplina: discMap[c.disciplinaId] || "",
+              Professor: profMap[c.professorId] || "",
+            });
+          }
+        }
+      }
+    });
+    return data;
+  };
+
+  const handleExportCSV = () => {
+    const data = buildExportData();
+    if (data.length === 0) return;
+
+    const headers = Object.keys(data[0]).join(",");
+    const rows = data.map(d => Object.values(d).map(v => `"${v}"`).join(","));
+    const csvContent =
+      "data:text/csv;charset=utf-8,\uFEFF" + [headers, ...rows].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "grade_horaria.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handleExportXLSX = () => {
+    const data = buildExportData();
+    if (data.length === 0) return;
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Grade Horária");
+    XLSX.writeFile(wb, "grade_horaria.xlsx");
+  };
+
+  const handleExportPDF = () => {
+    const data = buildExportData();
+    if (data.length === 0) return;
+
+    const doc = new jsPDF();
+    doc.text("Grade Horária", 14, 15);
+
+    const tableColumn = ["Turma", "Dia", "Horário", "Disciplina", "Professor"];
+    const tableRows = data.map(d => [
+      d.Turma,
+      d.Dia,
+      d.Horário,
+      d.Disciplina,
+      d.Professor,
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    doc.save("grade_horaria.pdf");
+  };
 
   return (
     <OrgAdminGuard>
@@ -300,6 +383,19 @@ const GerarGradePage: React.FC = () => {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+
+                    {/* Botões de Exportação */}
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <Button variant="outline" onClick={handleExportPDF} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                        <FileText className="w-4 h-4 mr-2 text-red-500" /> Exportar PDF
+                      </Button>
+                      <Button variant="outline" onClick={handleExportXLSX} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                        <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" /> Exportar XLSX
+                      </Button>
+                      <Button variant="outline" onClick={handleExportCSV} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                        <FileIcon className="w-4 h-4 mr-2 text-blue-500" /> Exportar CSV
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

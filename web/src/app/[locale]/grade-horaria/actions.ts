@@ -15,21 +15,31 @@ export async function getOrgId(): Promise<string> {
   return ctx.organizationId;
 }
 
-export async function getTurmas() {
+export async function getSectors() {
   const orgId = await getOrgId();
-  return prisma.turma.findMany({
+  return prisma.sector.findMany({
     where: { organizationId: orgId },
     orderBy: { name: "asc" },
   });
 }
 
-export async function createTurma(name: string, shiftId: string) {
+export async function getTurmas() {
+  const orgId = await getOrgId();
+  return prisma.turma.findMany({
+    where: { organizationId: orgId },
+    include: { sector: true },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function createTurma(name: string, shiftId: string, sectorId?: string) {
   const orgId = await getOrgId();
   const turma = await prisma.turma.create({
     data: {
       name,
       organizationId: orgId,
       shiftId,
+      sectorId: sectorId || null,
     },
   });
   revalidatePath("/[locale]/grade-horaria/turmas", "page");
@@ -46,15 +56,24 @@ export async function getDisciplinas() {
   const orgId = await getOrgId();
   return prisma.disciplina.findMany({
     where: { organizationId: orgId },
+    include: { professores: true },
     orderBy: { name: "asc" },
   });
 }
 
-export async function createDisciplina(name: string, code?: string, isOffGrid: boolean = false) {
+export async function createDisciplina(name: string, code?: string, isOffGrid: boolean = false, professorIds: string[] = []) {
   const orgId = await getOrgId();
   const disciplina = await prisma.disciplina.create({
     // @ts-ignore
-    data: { name, code, isOffGrid, organizationId: orgId },
+    data: { 
+      name, 
+      code, 
+      isOffGrid, 
+      organizationId: orgId,
+      professores: {
+        connect: professorIds.map(id => ({ id }))
+      }
+    },
   });
   revalidatePath("/[locale]/grade-horaria/disciplinas", "page");
   return disciplina;
@@ -70,7 +89,7 @@ export async function getProfessores() {
   const orgId = await getOrgId();
   return prisma.professor.findMany({
     where: { organizationId: orgId },
-    include: { user: true },
+    include: { user: true, disciplinas: true },
     orderBy: { name: "asc" },
   });
 }
@@ -78,11 +97,20 @@ export async function getProfessores() {
 export async function createProfessor(
   name: string,
   email?: string,
-  userId?: string
+  userId?: string,
+  disciplinaIds: string[] = []
 ) {
   const orgId = await getOrgId();
   const professor = await prisma.professor.create({
-    data: { name, email, userId, organizationId: orgId },
+    data: { 
+      name, 
+      email, 
+      userId, 
+      organizationId: orgId,
+      disciplinas: {
+        connect: disciplinaIds.map(id => ({ id }))
+      }
+    },
   });
   revalidatePath("/[locale]/grade-horaria/professores", "page");
   return professor;
@@ -108,11 +136,44 @@ export async function createCargaHoraria(
   return carga;
 }
 
+export async function createCargaSinergia(
+  sinergiaName: string,
+  disciplinaId: string,
+  quantidadeAulas: number,
+  turmaProfessores: { turmaId: string; professorId: string }[]
+) {
+  const orgId = await getOrgId();
+  
+  // 1. Create the Sinergia
+  const sinergia = await prisma.sinergia.create({
+    data: { name: sinergiaName, organizationId: orgId },
+  });
+
+  // 2. Create Cargas Horarias linked to this Sinergia
+  const cargas = await prisma.$transaction(
+    turmaProfessores.map(tp => 
+      prisma.cargaHoraria.create({
+        data: {
+          turmaId: tp.turmaId,
+          disciplinaId,
+          professorId: tp.professorId,
+          quantidadeAulas,
+          sinergiaId: sinergia.id
+        }
+      })
+    )
+  );
+
+  revalidatePath("/[locale]/grade-horaria/cargas", "page");
+  revalidatePath("/[locale]/grade-horaria/sinergias", "page");
+  return { sinergia, cargas };
+}
+
 export async function getCargasHorarias() {
   const orgId = await getOrgId();
   return prisma.cargaHoraria.findMany({
     where: { turma: { organizationId: orgId } },
-    include: { turma: true, disciplina: true, professor: true },
+    include: { turma: true, disciplina: true, professor: true, sinergia: true },
   });
 }
 
@@ -261,4 +322,101 @@ export async function updateGradeSettings(timetablingSettings: any) {
       },
     },
   });
+}
+
+export async function updateTurma(id: string, name: string, shiftId: string, sectorId?: string) {
+  const orgId = await getOrgId();
+  const turma = await prisma.turma.update({
+    where: { id, organizationId: orgId },
+    data: { name, shiftId, sectorId: sectorId || null },
+  });
+  revalidatePath("/[locale]/grade-horaria/turmas", "page");
+  return turma;
+}
+
+export async function updateDisciplina(id: string, name: string, code?: string, isOffGrid: boolean = false, professorIds: string[] = []) {
+  const orgId = await getOrgId();
+  const disciplina = await prisma.disciplina.update({
+    where: { id, organizationId: orgId },
+    // @ts-ignore
+    data: { 
+      name, 
+      code, 
+      isOffGrid,
+      professores: {
+        set: professorIds.map(id => ({ id }))
+      }
+    },
+  });
+  revalidatePath("/[locale]/grade-horaria/disciplinas", "page");
+  return disciplina;
+}
+
+export async function updateProfessor(id: string, name: string, email?: string, userId?: string, disciplinaIds: string[] = []) {
+  const orgId = await getOrgId();
+  const professor = await prisma.professor.update({
+    where: { id, organizationId: orgId },
+    data: { 
+      name, 
+      email, 
+      userId,
+      disciplinas: {
+        set: disciplinaIds.map(id => ({ id }))
+      }
+    },
+  });
+  revalidatePath("/[locale]/grade-horaria/professores", "page");
+  return professor;
+}
+
+export async function updateCargaHoraria(id: string, quantidadeAulas: number, sinergiaId?: string) {
+  const orgId = await getOrgId();
+  const carga = await prisma.cargaHoraria.update({
+    where: { id, turma: { organizationId: orgId } },
+    data: { 
+      quantidadeAulas,
+      sinergiaId: sinergiaId || null
+    },
+  });
+  revalidatePath("/[locale]/grade-horaria/cargas", "page");
+  return carga;
+}
+
+// SINERGIAS
+export async function getSinergias() {
+  const orgId = await getOrgId();
+  return prisma.sinergia.findMany({
+    where: { organizationId: orgId },
+    include: { cargasHorarias: true },
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function createSinergia(name: string) {
+  const orgId = await getOrgId();
+  const sinergia = await prisma.sinergia.create({
+    data: { name, organizationId: orgId },
+  });
+  revalidatePath("/[locale]/grade-horaria/sinergias", "page");
+  return sinergia;
+}
+
+export async function updateSinergia(id: string, name: string) {
+  const orgId = await getOrgId();
+  const sinergia = await prisma.sinergia.update({
+    where: { id, organizationId: orgId },
+    data: { name },
+  });
+  revalidatePath("/[locale]/grade-horaria/sinergias", "page");
+  return sinergia;
+}
+
+export async function deleteSinergia(id: string) {
+  const orgId = await getOrgId();
+  await prisma.sinergia.delete({
+    where: { id, organizationId: orgId }
+  });
+  // Also clear sinergiaId from associated cargasHorarias automatically by DB (SetNull)
+  revalidatePath("/[locale]/grade-horaria/sinergias", "page");
+  revalidatePath("/[locale]/grade-horaria/cargas", "page");
 }
