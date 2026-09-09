@@ -50,6 +50,7 @@ model Organization {
   turmas        Turma[]
   disciplinas   Disciplina[]
   professores   Professor[]
+  sinergias     Sinergia[]
   invites       OrganizationInvite[]
   rooms         Room[]
   sectors       Sector[]
@@ -213,6 +214,7 @@ model Sector {
   organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      SectorMember[]
   rooms        Room[]
+  turmas       Turma[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -589,14 +591,17 @@ model Turma {
   name           String // Ex: "1º Ano A", "Engenharia 5º Semestre"
   organizationId String
   shiftId        String? // Identificador do Turno (ex: "manha")
-
+  sectorId       String? // Vínculo com Setor (Curso)
+  
   organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sector         Sector?        @relation(fields: [sectorId], references: [id], onDelete: SetNull)
   cargasHorarias CargaHoraria[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([organizationId])
+  @@index([sectorId])
   @@map("turmas")
 }
 
@@ -609,6 +614,7 @@ model Disciplina {
 
   organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   cargasHorarias CargaHoraria[]
+  professores    Professor[]    // Relação N:N implícita (Professores que podem lecionar essa disciplina)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -617,16 +623,33 @@ model Disciplina {
   @@map("disciplinas")
 }
 
+model Sinergia {
+  id             String @id @default(cuid())
+  name           String // Ex: "Cálculo I - Engenharias"
+  organizationId String
+  
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  cargasHorarias CargaHoraria[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("sinergias")
+}
+
 model CargaHoraria {
   id              String @id @default(cuid())
   turmaId         String
   disciplinaId    String
   professorId     String
+  sinergiaId      String?
   quantidadeAulas Int // Número de aulas dessa disciplina para essa turma com esse professor (Ex: 4)
 
   turma      Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
   professor  Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  sinergia   Sinergia?  @relation(fields: [sinergiaId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -634,6 +657,7 @@ model CargaHoraria {
   @@index([turmaId])
   @@index([disciplinaId])
   @@index([professorId])
+  @@index([sinergiaId])
   @@map("cargas_horarias")
 }
 
@@ -664,6 +688,7 @@ model Professor {
   user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   cargasHorarias  CargaHoraria[]
   disponibilidades Disponibilidade[]
+  disciplinas      Disciplina[]      // Relação N:N implícita (Disciplinas que este professor leciona)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
