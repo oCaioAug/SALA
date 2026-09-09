@@ -223,9 +223,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       )}
 
       {error && (
-        <p className="text-sm text-red-500 dark:text-red-400">
-          {t("errors.error")}
-        </p>
+        <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
       )}
     </div>
   );

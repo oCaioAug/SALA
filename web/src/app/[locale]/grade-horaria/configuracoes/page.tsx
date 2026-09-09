@@ -154,24 +154,6 @@ export default function ConfiguracoesGradePage() {
             >
               {tCommon("back")}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={async () => {
-                try {
-                  setIsSubmitting(true);
-                  const { injectMockData } = await import("../seed");
-                  await injectMockData();
-                  showSuccess(t("toastMocksSuccess"));
-                } catch (e: any) {
-                  showError(e.message || t("toastMocksError"));
-                } finally {
-                  setIsSubmitting(false);
-                }
-              }}
-              disabled={loading || isSubmitting}
-            >
-              {t("injectMocks")}
-            </Button>
             <Button onClick={handleSave} disabled={loading || isSubmitting}>
               <Save className="w-4 h-4 mr-2" /> {t("saveChanges")}
             </Button>

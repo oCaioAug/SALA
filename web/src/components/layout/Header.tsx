@@ -5,7 +5,6 @@ import {
   ChevronDown,
   LogOut,
   Menu,
-  Search,
   Settings,
   User as UserIcon,
 } from "lucide-react";
@@ -16,7 +15,9 @@ import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
+import { GlobalSearch } from "@/components/layout/GlobalSearch";
 import { NotificationModal } from "@/components/ui/NotificationModal";
+import { cn } from "@/lib/utils";
 import { getUserGradient, getUserInitials } from "@/lib/utils/userUtils";
 import { Link } from "@/navigation";
 
@@ -37,6 +38,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const t = useTranslations("Header");
   const tCommon = useTranslations("Common");
+  const tProfile = useTranslations("ProfilePage");
   const { data: session } = useSession();
 
   const tenantRoleLabel = (() => {
@@ -123,47 +125,45 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="relative z-50 border-b border-border bg-card px-3 py-2.5 sm:px-5">
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+    <header className="relative z-50 border-b border-border bg-card px-3 py-2 sm:px-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 md:grid-cols-[minmax(0,1fr)_minmax(0,240px)_auto] lg:grid-cols-[minmax(0,1fr)_minmax(0,280px)_auto] xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)_auto]">
+        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2">
           {showMobileNavTrigger && onMobileNavOpen && (
             <button
               type="button"
               onClick={onMobileNavOpen}
-              className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+              className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
               aria-label={t("openMenu")}
             >
               <Menu className="h-5 w-5" />
             </button>
           )}
-          <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+          <nav
+            aria-label={t("breadcrumb.dashboard")}
+            className="flex min-w-0 items-center gap-1.5 text-muted-foreground"
+          >
             <span className="truncate text-xs sm:text-sm">
               {t("breadcrumb.dashboard")}
             </span>
-            <span className="text-xs text-muted-foreground/60">/</span>
+            <span className="shrink-0 text-xs text-muted-foreground/60">/</span>
             <span className="truncate text-xs font-medium text-foreground sm:text-sm">
               {t("breadcrumb.overview")}
             </span>
-          </div>
+          </nav>
         </div>
 
-        <div className="w-full min-w-0 sm:max-w-xs md:max-w-sm">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder={t("search.placeholder")}
-              className="h-8 w-full rounded-md border border-input bg-background py-1.5 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-            />
-          </div>
+        <div className="col-span-2 row-start-2 min-w-0 md:col-span-1 md:col-start-2 md:row-start-1">
+          <GlobalSearch />
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+        <div className="col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-0.5 sm:gap-1 md:col-start-3">
           {session?.user && (
             <div className="relative notification-dropdown">
               <button
+                type="button"
                 onClick={handleNotificationClick}
                 className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label={tProfile("settings.notifications")}
               >
                 <Bell className="h-4 w-4" />
                 {notificationCount > 0 && (
@@ -188,15 +188,18 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          <AppPreferencesControls variant="tenant" showLabels />
+          <AppPreferencesControls variant="tenant" />
 
           {session?.user ? (
             <div className="relative">
               <button
+                type="button"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 rounded-md p-1.5 hover:bg-muted"
+                className="flex max-w-[min(100%,12rem)] items-center gap-1.5 rounded-md p-1.5 hover:bg-muted sm:max-w-[14rem] lg:max-w-none lg:gap-2"
+                aria-expanded={showUserMenu}
+                aria-haspopup="menu"
               >
-                <div className="relative">
+                <div className="relative shrink-0">
                   {session.user.image ? (
                     <Image
                       src={session.user.image}
@@ -216,16 +219,17 @@ const Header: React.FC<HeaderProps> = ({
                   )}
                 </div>
 
-                <div className="hidden text-left sm:block">
-                  <p className="text-sm font-medium text-foreground">
+                <div className="hidden min-w-0 text-left md:block">
+                  <p className="truncate text-sm font-medium text-foreground">
                     {session.user.name || tCommon("user")}
                   </p>
                 </div>
 
                 <ChevronDown
-                  className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
-                    showUserMenu ? "rotate-180" : ""
-                  }`}
+                  className={cn(
+                    "hidden h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform md:block",
+                    showUserMenu && "rotate-180"
+                  )}
                 />
               </button>
 
@@ -301,7 +305,7 @@ const Header: React.FC<HeaderProps> = ({
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-dashed border-border bg-muted">
                 <UserIcon className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="hidden min-w-0 text-left sm:block">
+              <div className="hidden min-w-0 text-left md:block">
                 <p className="text-sm font-medium text-foreground">
                   {t("guest.greeting")}
                 </p>

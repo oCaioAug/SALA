@@ -14,11 +14,6 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  MdOutlineBugReport,
-  MdOutlineScience,
-  MdRefresh,
-} from "react-icons/md";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -28,7 +23,6 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { getIntlLocale } from "@/lib/utils";
 
@@ -55,7 +49,6 @@ const NotificationPage: React.FC = () => {
   const locale = useLocale();
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
-  const { isOrgAdmin } = useOrgPermissions();
   const [currentPage, setCurrentPage] = useState("notificacoes");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -450,118 +443,12 @@ const NotificationPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => {
-                    console.log("[notificacoes] Recarregando notificações...");
-                    fetchNotifications();
-                  }}
-                >
-                  <MdRefresh className="h-4 w-4 shrink-0" aria-hidden />
-                  {t("actions.reload")}
+              {unreadCount > 0 && (
+                <Button onClick={markAllAsRead}>
+                  <CheckCheck className="w-4 h-4 mr-2" />
+                  {t("actions.markAllRead")}
                 </Button>
-                {isOrgAdmin && (
-                  <>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={async () => {
-                        try {
-                          console.log(
-                            "[notificacoes] Verificando todas as notificações no banco..."
-                          );
-                          const response = await fetch(
-                            "/api/notifications/debug"
-                          );
-
-                          if (response.ok) {
-                            const result = await response.json();
-                            console.log(
-                              "[notificacoes] Debug das notificações:",
-                              result
-                            );
-                            showSuccess(
-                              t("feedback.debugSuccess", {
-                                count: result.total,
-                              })
-                            );
-                          } else {
-                            showError("Erro ao buscar debug");
-                          }
-                        } catch (error) {
-                          console.error("[notificacoes] Erro no debug:", error);
-                          showError("Erro ao buscar debug");
-                        }
-                      }}
-                    >
-                      <MdOutlineBugReport
-                        className="h-4 w-4 shrink-0"
-                        aria-hidden
-                      />
-                      {t("actions.debug")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(
-                            "/api/notifications/test-reservation",
-                            {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                            }
-                          );
-
-                          if (response.ok) {
-                            const result = await response.json();
-                            showSuccess(
-                              t("feedback.testSuccess", {
-                                message: result.message,
-                              })
-                            );
-                            console.log(
-                              "[notificacoes] Resultado do teste:",
-                              result
-                            );
-                            // Recarregar notificações
-                            setTimeout(() => fetchNotifications(), 1000);
-                          } else {
-                            const errorData = await response
-                              .json()
-                              .catch(() => ({}));
-                            console.error(
-                              "[notificacoes] Erro na resposta:",
-                              errorData
-                            );
-                            showError(t("feedback.testError"));
-                          }
-                        } catch (error) {
-                          console.error(
-                            "[notificacoes] Erro na requisição:",
-                            error
-                          );
-                          showError(t("feedback.testError"));
-                        }
-                      }}
-                    >
-                      <MdOutlineScience
-                        className="h-4 w-4 shrink-0"
-                        aria-hidden
-                      />
-                      {t("actions.test")}
-                    </Button>
-                  </>
-                )}
-                {unreadCount > 0 && (
-                  <Button onClick={markAllAsRead}>
-                    <CheckCheck className="w-4 h-4 mr-2" />
-                    {t("actions.markAllRead")}
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Estatísticas rápidas */}

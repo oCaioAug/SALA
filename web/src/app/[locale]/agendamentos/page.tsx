@@ -1,14 +1,9 @@
 "use client";
 
 import {
-  Building2,
   Calendar as CalendarIcon,
-  Clock,
-  Eye,
   Plus,
   Search,
-  Trash2,
-  User as UserIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
@@ -17,9 +12,11 @@ import { ReservationForm } from "@/components/forms/ReservationForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { ReservationDetailsDrawer } from "@/components/reservations/ReservationDetailsDrawer";
+import { ReservationListItem } from "@/components/reservations/ReservationListItem";
 import { Button } from "@/components/ui/Button";
 import { Calendar } from "@/components/ui/Calendar";
-import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/Card";
 import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
@@ -263,23 +260,6 @@ const AgendamentosPage: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "PENDING":
-        return "text-yellow-400 bg-yellow-500/10";
-      case "APPROVED":
-        return "text-green-400 bg-green-500/10";
-      case "ACTIVE":
-        return "text-blue-400 bg-blue-500/10";
-      case "CANCELLED":
-        return "text-red-400 bg-red-500/10";
-      case "COMPLETED":
-        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
-      default:
-        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
-    }
-  };
-
   const getStatusText = (status: string): string => {
     switch (status) {
       case "PENDING":
@@ -376,223 +356,90 @@ const AgendamentosPage: React.FC = () => {
           </div>
 
           {/* Lista de reservas do dia selecionado */}
-          <Card variant="elevated">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-blue-400" />
-                <div>
-                  <CardTitle className="text-xl">
-                    {t("reservationsOfTheDay")}{" "}
-                    {selectedDate.toLocaleDateString(getIntlLocale(locale), {
-                      weekday: "long",
-                      day: "2-digit",
-                      month: "long",
-                    })}
-                  </CardTitle>
-                  <p className="text-slate-600 dark:text-gray-400 text-sm">
-                    {totalDayReservations} {t("reservationsFound")}
-                  </p>
-                </div>
+          <Card variant="elevated" className="overflow-hidden p-0">
+            <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
+              <div className="min-w-0">
+                <CardTitle className="text-lg capitalize">
+                  {t("reservationsOfTheDay")}{" "}
+                  {selectedDate.toLocaleDateString(getIntlLocale(locale), {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "long",
+                  })}
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  {totalDayReservations} {t("reservationsFound")}
+                </CardDescription>
               </div>
+              <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground">
+                {totalDayReservations}
+              </span>
             </div>
 
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {totalDayReservations === 0 ? (
                 <EmptyState
                   icon={
-                    <CalendarIcon className="w-8 h-8 text-slate-500 dark:text-gray-400" />
+                    <CalendarIcon className="h-8 w-8 text-slate-500 dark:text-gray-400" />
                   }
                   title={t("noReservationsForTheDay")}
                   description={t("noReservationsForTheDayDescription")}
                 />
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {paginatedDayReservations.map(reservation => (
-                    <div
+                    <ReservationListItem
                       key={reservation.id}
-                      className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
+                      title={
+                        rooms.find(r => r.id === reservation.roomId)?.name ||
+                        t("unknownRoom")
+                      }
+                      userName={reservation.user.name}
+                      startTime={new Date(reservation.startTime)}
+                      endTime={new Date(reservation.endTime)}
+                      purpose={reservation.purpose}
+                      status={reservation.status}
+                      statusLabel={getStatusText(reservation.status)}
                       onClick={() => handleReservationClick(reservation)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-blue-500/20 rounded-lg">
-                            <Building2 className="w-5 h-5 text-blue-400" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-900 dark:text-white">
-                              {rooms.find(r => r.id === reservation.roomId)
-                                ?.name || t("unknownRoom")}
-                            </h3>
-                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <UserIcon className="w-4 h-4" />
-                                {reservation.user.name}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {formatDateTime(
-                                  new Date(reservation.startTime)
-                                )}{" "}
-                                -{" "}
-                                {formatDateTime(new Date(reservation.endTime))}
-                              </div>
-                            </div>
-                            {reservation.purpose && (
-                              <p className="text-sm text-slate-700 dark:text-gray-300 mt-1">
-                                {reservation.purpose}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              reservation.status
-                            )}`}
-                          >
-                            {getStatusText(reservation.status)}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleReservationClick(reservation);
-                            }}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                      formatDateTime={formatDateTime}
+                    />
                   ))}
-                  <Pagination
-                    page={safeDayPage}
-                    pageSize={dayPageSize}
-                    total={totalDayReservations}
-                    onPageChange={setDayPage}
-                    onPageSizeChange={size => {
-                      setDayPageSize(size);
-                      setDayPage(1);
-                    }}
-                  />
+                  <div className="border-t border-border pt-4">
+                    <Pagination
+                      page={safeDayPage}
+                      pageSize={dayPageSize}
+                      total={totalDayReservations}
+                      onPageChange={setDayPage}
+                      onPageSizeChange={size => {
+                        setDayPageSize(size);
+                        setDayPage(1);
+                      }}
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Drawer
+          <ReservationDetailsDrawer
             isOpen={isDetailsModalOpen}
             onClose={() => setIsDetailsModalOpen(false)}
-            title={t("modal.details")}
-          >
-            {selectedReservation && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      {t("room")}
-                    </label>
-                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                      <Building2 className="w-4 h-4 text-blue-400" />
-                      <span className="text-slate-900 dark:text-white">
-                        {rooms.find(r => r.id === selectedReservation.roomId)
-                          ?.name || t("unknownRoom")}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      {t("user")}
-                    </label>
-                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                      <UserIcon className="w-4 h-4 text-green-400" />
-                      <span className="text-slate-900 dark:text-white">
-                        {selectedReservation.user.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      {t("start")}
-                    </label>
-                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                      <Clock className="w-4 h-4 text-orange-400" />
-                      <span className="text-slate-900 dark:text-white">
-                        {formatDateTime(
-                          new Date(selectedReservation.startTime)
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      {t("end")}
-                    </label>
-                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                      <Clock className="w-4 h-4 text-red-400" />
-                      <span className="text-slate-900 dark:text-white">
-                        {formatDateTime(new Date(selectedReservation.endTime))}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {selectedReservation.purpose && (
-                  <div>
-                    <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                      {t("purpose")}
-                    </label>
-                    <p className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-900 dark:text-white">
-                      {selectedReservation.purpose}
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                    {t("status")}
-                  </label>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                      selectedReservation.status
-                    )}`}
-                  >
-                    {getStatusText(selectedReservation.status)}
-                  </span>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDetailsModalOpen(false)}
-                    className="flex-1"
-                  >
-                    {t("close")}
-                  </Button>
-                  {(selectedReservation.status === "ACTIVE" ||
-                    selectedReservation.status === "APPROVED") && (
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        handleDeleteReservation(selectedReservation.id)
-                      }
-                      className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      {t("cancelReservation")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-          </Drawer>
+            reservation={selectedReservation}
+            roomName={
+              rooms.find(r => r.id === selectedReservation?.roomId)?.name ||
+              t("unknownRoom")
+            }
+            canCancel={
+              selectedReservation?.status === "ACTIVE" ||
+              selectedReservation?.status === "APPROVED"
+            }
+            onCancel={() => {
+              if (selectedReservation) {
+                handleDeleteReservation(selectedReservation.id);
+              }
+            }}
+            formatDateTime={formatDateTime}
+          />
 
           <Drawer
             isOpen={isCreateModalOpen}

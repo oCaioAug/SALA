@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
-import { FaBell, FaCheck, FaTimes } from "react-icons/fa";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import {
   HiClipboardDocumentList,
   HiExclamationTriangle,
@@ -189,41 +189,6 @@ export default function ReservationApprovalPage() {
     }
   };
 
-  const testPushNotification = async () => {
-    try {
-      const userId = prompt(t("feedback.testPushPrompt"));
-      if (!userId) return;
-
-      console.log("Testando push notification para usuário:", userId);
-
-      const response = await fetch("/api/test-push", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          userId: userId,
-          title: t("feedback.testPushTitle"),
-          body: t("feedback.testPushBody"),
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Resultado do teste:", data);
-        alert(data.message);
-      } else {
-        const errorData = await response.json();
-        console.error("Erro no teste:", errorData);
-        alert(`Erro: ${errorData.error}`);
-      }
-    } catch (error) {
-      console.error("Erro ao testar push:", error);
-      alert(t("feedback.errorTestPush"));
-    }
-  };
-
   const formatDateTime = (dateString: string) => {
     // Converter locale do next-intl para formato do Intl
     const intlLocale = getIntlLocale(locale);
@@ -251,39 +216,10 @@ export default function ReservationApprovalPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           {t("title")} ({pendingReservations.length})
         </h1>
-        <div className="flex space-x-3">
-          <button
-            onClick={() => {
-              console.log("Estado atual das reservas:", pendingReservations);
-              fetchPendingReservations();
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            {t("actions.refresh")}
-          </button>
-          <button
-            onClick={() => {
-              console.log(
-                "Debug - Reservas pendentes:",
-                JSON.stringify(pendingReservations, null, 2)
-              );
-            }}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            {t("actions.debug")}
-          </button>
-          <button
-            onClick={testPushNotification}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            <FaBell className="h-4 w-4 shrink-0" aria-hidden />
-            {t("actions.testPush")}
-          </button>
-        </div>
       </div>
 
       {pendingReservations.length === 0 ? (

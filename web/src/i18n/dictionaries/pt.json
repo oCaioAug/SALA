@@ -17,7 +17,10 @@
       "statusAll": "Todos os Status",
       "statusFree": "Livre",
       "statusInUse": "Em Uso",
-      "statusReserved": "Reservado"
+      "statusReserved": "Reservado",
+      "viewMode": "Modo de exibição",
+      "gridView": "Grade",
+      "listView": "Lista"
     },
     "stats": {
       "total": "Total de Salas",
@@ -961,7 +964,18 @@
       "overview": "Visão Geral"
     },
     "search": {
-      "placeholder": "Buscar salas, itens, usuários..."
+      "placeholder": "Buscar salas, itens, usuários...",
+      "ariaLabel": "Busca universal",
+      "minChars": "Digite ao menos 2 caracteres para buscar salas e itens.",
+      "empty": "Nenhum resultado encontrado.",
+      "loading": "Buscando...",
+      "groups": {
+        "pages": "Páginas",
+        "rooms": "Salas",
+        "sectors": "Setores",
+        "users": "Usuários",
+        "items": "Itens"
+      }
     },
     "userMenu": {
       "profile": "Perfil",
@@ -2134,6 +2148,7 @@
     "userRoleLabel": "usuário comum",
     "accessDenied": "Acesso Negado",
     "accessDeniedDescription": "Você precisa ser administrador para acessar esta página.",
+    "backToDashboard": "Voltar ao Dashboard",
     "createdAt": "Criado em {date}",
     "onlyAdminsCanChangePermissions": "Apenas administradores podem alterar permissões",
     "removeAdmin": "Remover Admin",
@@ -2174,6 +2189,12 @@
       "markAsRead": "Marcar como lida",
       "delete": "Excluir",
       "reload": "Recarregar"
+    },
+    "noneDescription": "Você não tem notificações no momento.",
+    "timeAgo": {
+      "justNow": "Agora mesmo",
+      "hoursAgo": "{count}h atrás",
+      "daysAgo": "{count}d atrás"
     }
   },
   "NotificationService": {
