@@ -13,7 +13,7 @@ export class GenerateScheduleService {
    * Fetches data from the database, converts to domain types,
    * and runs the TimetablingEngine.
    */
-  public async execute(organizationId: string): Promise<TimetablingOutputDTO> {
+  public async execute(organizationId: string, sectorId?: string): Promise<TimetablingOutputDTO> {
     // 1. Fetch organization to verify it's a school
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
@@ -31,11 +31,17 @@ export class GenerateScheduleService {
 
     // 2. Fetch Cargas Horárias (Requirements)
     // Ignorar disciplinas que são EaD ou Estágio (isOffGrid = true)
+    const whereClause: any = {
+      turma: { organizationId },
+      disciplina: { isOffGrid: false },
+    };
+
+    if (sectorId) {
+      whereClause.turma.sectorId = sectorId;
+    }
+
     const cargas = await prisma.cargaHoraria.findMany({
-      where: {
-        turma: { organizationId },
-        disciplina: { isOffGrid: false },
-      },
+      where: whereClause,
       include: {
         turma: true,
         disciplina: true,
@@ -76,6 +82,7 @@ export class GenerateScheduleService {
         turmaId: c.turmaId,
         disciplinaId: c.disciplinaId,
         professorId: c.professorId,
+        sinergiaId: c.sinergiaId || undefined,
         requiredSlots: c.quantidadeAulas,
         validSlots,
       };

@@ -15,6 +15,7 @@ export interface ClassRequirement {
   turmaId: string;
   disciplinaId: string;
   professorId: string;
+  sinergiaId?: string;
   requiredSlots: number; // Quantas vezes esse slot precisa acontecer (ex: 4 aulas na semana)
   validSlots: TimeSlot[]; // Array de slots válidos onde esta aula pode ocorrer (ex: ["1_M1", "1_M2"])
 }
