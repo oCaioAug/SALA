@@ -16,7 +16,7 @@ async function main() {
   const service = new GenerateScheduleService();
   const res = await service.execute(org.id);
   
-  console.log(`Fitness: ${res.fitness.toFixed(2)}%`);
+  console.log(`Fitness: ${res.fitness !== undefined ? res.fitness.toFixed(2) : "N/A"}%`);
   if (res.unallocatedRequirements) {
     console.log("Unallocated:", res.unallocatedRequirements.length);
     res.unallocatedRequirements.forEach((u: any) => {

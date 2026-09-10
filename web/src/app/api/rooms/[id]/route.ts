@@ -106,7 +106,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         where: {
           id: data.sectorId,
           organizationId: ctx.organizationId,
-          deletedAt: null,
         },
         select: { id: true },
       });

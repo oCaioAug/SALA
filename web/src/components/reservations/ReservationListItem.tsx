@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export interface ReservationListItemProps {
   title: string;
-  userName?: string;
+  userName?: string | null;
   startTime: Date;
   endTime: Date;
   purpose?: string | null;

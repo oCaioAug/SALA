@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
           type: "items" as const,
           title: item.name,
           subtitle: item.room?.name ?? undefined,
-          href: `/salas/${item.room.id}`,
+          href: item.room ? `/salas/${item.room.id}` : "/salas",
         })),
       });
     }
