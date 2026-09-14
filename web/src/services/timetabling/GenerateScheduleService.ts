@@ -24,9 +24,10 @@ export class GenerateScheduleService {
     }
 
     if (!org.isSchool) {
-      throw new Error(
-        `A organização ${org.name} não está configurada como instituição de ensino (isSchool = false).`
-      );
+      await prisma.organization.update({
+        where: { id: organizationId },
+        data: { isSchool: true },
+      });
     }
 
     // 2. Fetch Cargas Horárias (Requirements)

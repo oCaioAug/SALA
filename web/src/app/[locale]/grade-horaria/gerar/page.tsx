@@ -309,98 +309,114 @@ const GerarGradePage: React.FC = () => {
             <h3 className="text-2xl font-bold mt-8 mb-4">
               {t("schedulesByClass")}
             </h3>
-            {sortedTurmaIds.map(turmaId => {
-              const shiftId = turmaShiftsMap[turmaId];
-              const shift = shifts.find(s => s.id === shiftId) || shifts[0];
-              const shiftSlots = shift?.slots || [];
-              const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
+            {sortedTurmaIds.length === 0 ? (
+              <Card className="p-8 text-center border-dashed">
+                <CardContent className="space-y-4 pt-6">
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Nenhuma turma ou carga horária foi cadastrada na sua organização.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/grade-horaria/configuracoes")}
+                  >
+                    Ir para Configurações (Inserir Dados de Teste)
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              sortedTurmaIds.map(turmaId => {
+                const shiftId = turmaShiftsMap[turmaId];
+                const shift = shifts.find(s => s.id === shiftId) || shifts[0];
+                const shiftSlots = shift?.slots || [];
+                const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
 
-              return (
-                <Card key={turmaId} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 border-b dark:border-slate-800 flex items-center gap-2">
-                      <CardTitle className="text-lg">
-                        {turmasMap[turmaId]}
-                      </CardTitle>
-                      {shift && (
-                        <span className="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-300">
-                          {shift.name}
-                        </span>
-                      )}
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-center">
-                        <thead className="bg-white dark:bg-slate-950 border-b dark:border-slate-800">
-                          <tr>
-                            <th className="py-3 px-4 font-semibold text-slate-500">
-                              {t("timeColumn")}
-                            </th>
-                            {days.map(diaId => (
-                              <th
-                                key={diaId}
-                                className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800"
-                              >
-                                {tCommon(`days.${diaId}`)}
+                return (
+                  <Card key={turmaId} className="overflow-hidden mb-6">
+                    <CardContent className="p-0">
+                      <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 border-b dark:border-slate-800 flex items-center gap-2">
+                        <CardTitle className="text-lg">
+                          {turmasMap[turmaId]}
+                        </CardTitle>
+                        {shift && (
+                          <span className="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-300">
+                            {shift.name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-center">
+                          <thead className="bg-white dark:bg-slate-950 border-b dark:border-slate-800">
+                            <tr>
+                              <th className="py-3 px-4 font-semibold text-slate-500">
+                                {t("timeColumn")}
                               </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y dark:divide-slate-800">
-                          {shiftSlots.map((slot: any) => (
-                            <tr
-                              key={slot.id}
-                              className="bg-white dark:bg-slate-900"
-                            >
-                              <td className="py-4 px-4 text-slate-500 font-medium whitespace-nowrap">
-                                {slot.label}
-                              </td>
-                              {days.map(diaId => {
-                                const timeSlotStr = `${diaId}_${slot.id}`;
-                                const classInfo = grouped[turmaId][timeSlotStr];
-                                return (
-                                  <td
-                                    key={diaId}
-                                    className="p-2 border-l dark:border-slate-800"
-                                  >
-                                    {classInfo ? (
-                                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded p-2 shadow-sm min-h-[4rem] flex flex-col items-center justify-center">
-                                        <span className="font-semibold text-blue-900 dark:text-blue-100">
-                                          {discMap[classInfo.disciplinaId]}
-                                        </span>
-                                        <span className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                          {profMap[classInfo.professorId]}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <div className="text-slate-300 dark:text-slate-700 italic">
-                                        -
-                                      </div>
-                                    )}
-                                  </td>
-                                );
-                              })}
+                              {days.map(diaId => (
+                                <th
+                                  key={diaId}
+                                  className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800"
+                                >
+                                  {tCommon(`days.${diaId}`)}
+                                </th>
+                              ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y dark:divide-slate-800">
+                            {shiftSlots.map((slot: any) => (
+                              <tr
+                                key={slot.id}
+                                className="bg-white dark:bg-slate-900"
+                              >
+                                <td className="py-4 px-4 text-slate-500 font-medium whitespace-nowrap">
+                                  {slot.label}
+                                </td>
+                                {days.map(diaId => {
+                                  const timeSlotStr = `${diaId}_${slot.id}`;
+                                  const classInfo = grouped[turmaId][timeSlotStr];
+                                  return (
+                                    <td
+                                      key={diaId}
+                                      className="p-2 border-l dark:border-slate-800"
+                                    >
+                                      {classInfo ? (
+                                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded p-2 shadow-sm min-h-[4rem] flex flex-col items-center justify-center">
+                                          <span className="font-semibold text-blue-900 dark:text-blue-100">
+                                            {discMap[classInfo.disciplinaId]}
+                                          </span>
+                                          <span className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                            {profMap[classInfo.professorId]}
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <div className="text-slate-300 dark:text-slate-700 italic">
+                                          -
+                                        </div>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
 
-                    {/* Botões de Exportação */}
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <Button variant="outline" onClick={handleExportPDF} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                        <FileText className="w-4 h-4 mr-2 text-red-500" /> Exportar PDF
-                      </Button>
-                      <Button variant="outline" onClick={handleExportXLSX} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                        <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" /> Exportar XLSX
-                      </Button>
-                      <Button variant="outline" onClick={handleExportCSV} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                        <FileIcon className="w-4 h-4 mr-2 text-blue-500" /> Exportar CSV
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                      {/* Botões de Exportação */}
+                      <div className="p-4 flex flex-wrap gap-3 border-t dark:border-slate-800">
+                        <Button variant="outline" onClick={handleExportPDF} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                          <FileText className="w-4 h-4 mr-2 text-red-500" /> Exportar PDF
+                        </Button>
+                        <Button variant="outline" onClick={handleExportXLSX} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                          <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" /> Exportar XLSX
+                        </Button>
+                        <Button variant="outline" onClick={handleExportCSV} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
+                          <FileIcon className="w-4 h-4 mr-2 text-blue-500" /> Exportar CSV
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         )}
       </PageLayout>
