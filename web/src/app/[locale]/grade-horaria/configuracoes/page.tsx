@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings as SettingsIcon, Plus, Trash2, Save } from "lucide-react";
+import { Settings as SettingsIcon, Plus, Trash2, Save, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
@@ -14,6 +14,7 @@ import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import { getGradeSettings, updateGradeSettings } from "../actions";
+import { injectMockData } from "../seed";
 
 export default function ConfiguracoesGradePage() {
   const t = useTranslations("GradeHoraria.settings");
@@ -27,7 +28,29 @@ export default function ConfiguracoesGradePage() {
 
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInjecting, setIsInjecting] = useState(false);
   const [shifts, setShifts] = useState<any[]>([]);
+
+  const handleInjectMockData = async () => {
+    if (
+      !confirm(
+        "Atenção: Isso irá cadastrar dados completos de teste (Turmas, Disciplinas, Professores, Cargas Horárias e Turno da Manhã) na sua organização. Deseja continuar?"
+      )
+    ) {
+      return;
+    }
+    try {
+      setIsInjecting(true);
+      await injectMockData();
+      showSuccess("Dados de teste da grade horária inseridos com sucesso!");
+      const settings = await getGradeSettings();
+      setShifts(settings.timetabling.shifts || []);
+    } catch (err: any) {
+      showError(err.message || "Erro ao inserir dados de teste");
+    } finally {
+      setIsInjecting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -149,8 +172,17 @@ export default function ConfiguracoesGradePage() {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleInjectMockData}
+              disabled={loading || isSubmitting || isInjecting}
+              className="border-amber-500/50 text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30"
+            >
+              <Sparkles className="w-4 h-4 mr-2 text-amber-500" />
+              {isInjecting ? "Inserindo..." : "Inserir Dados de Teste"}
+            </Button>
             <BackButton />
-            <Button onClick={handleSave} disabled={loading || isSubmitting}>
+            <Button onClick={handleSave} disabled={loading || isSubmitting || isInjecting}>
               <Save className="w-4 h-4 mr-2" /> {t("saveChanges")}
             </Button>
           </div>

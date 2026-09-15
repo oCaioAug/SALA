@@ -1775,6 +1775,7 @@ export async function injectMockData(overrideOrgId?: string) {
   await prisma.organization.update({
     where: { id: orgId },
     data: {
+      isSchool: true,
       settings: {
         ...currentSettings,
         timetabling: mockSettings.timetabling
