@@ -1,8 +1,8 @@
 "use client";
 
 import { IncidentPriority, IncidentStatus } from "@prisma/client";
-import { Building2, Calendar, User, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Building2, Calendar, ScanSearch, User, X } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { AdminActionError } from "@/components/admin/AdminActionError";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
+import { parseIncidentDescription } from "@/lib/incidents/parse-audit-description";
+import { getIntlLocale } from "@/lib/utils";
 import { Link } from "@/navigation";
 
 export interface AdminIncidentListItem {
@@ -54,6 +56,10 @@ export function AdminIncidentDetailModal({
   onUpdated,
 }: AdminIncidentDetailModalProps) {
   const t = useTranslations("Admin.incidents");
+  const tStatus = useTranslations("Admin.badges.incident");
+  const tPriority = useTranslations("Admin.badges.incidentPriority");
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const { fromResponse } = useApiErrorMessage();
   const [incident, setIncident] = useState<AdminIncidentDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -155,7 +161,7 @@ export function AdminIncidentDetailModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: IncidentStatus.RESOLVED,
-          resolutionNotes: notesDraft.trim() || "Resolvido pelo super admin",
+          resolutionNotes: notesDraft.trim() || t("resolvedBySuperAdmin"),
           assignedToId: assignedToDraft || null,
         }),
       });
@@ -222,9 +228,7 @@ export function AdminIncidentDetailModal({
                 message={actionError}
                 onDismiss={() => setActionError(null)}
               />
-              <p className="text-sm text-muted-foreground">
-                {incident.description}
-              </p>
+              <IncidentDescription description={incident.description} />
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <MetaField
@@ -248,7 +252,9 @@ export function AdminIncidentDetailModal({
                 <MetaField
                   icon={Calendar}
                   label={t("createdAt")}
-                  value={new Date(incident.createdAt).toLocaleString("pt-BR")}
+                  value={new Date(incident.createdAt).toLocaleString(
+                    intlLocale
+                  )}
                 />
                 <MetaField
                   icon={Building2}
@@ -273,7 +279,7 @@ export function AdminIncidentDetailModal({
                   >
                     {Object.values(IncidentStatus).map(value => (
                       <option key={value} value={value}>
-                        {value}
+                        {tStatus(value)}
                       </option>
                     ))}
                   </select>
@@ -291,7 +297,7 @@ export function AdminIncidentDetailModal({
                   >
                     {Object.values(IncidentPriority).map(value => (
                       <option key={value} value={value}>
-                        {value}
+                        {tPriority(value)}
                       </option>
                     ))}
                   </select>
@@ -339,12 +345,15 @@ export function AdminIncidentDetailModal({
                         className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground"
                       >
                         <span className="text-foreground">
-                          {entry.fromStatus ?? "—"} → {entry.toStatus}
+                          {entry.fromStatus
+                            ? tStatus(entry.fromStatus)
+                            : "—"}{" "}
+                          → {tStatus(entry.toStatus)}
                         </span>
                         {" · "}
                         {entry.changedBy.name ?? entry.changedBy.email}
                         {" · "}
-                        {new Date(entry.createdAt).toLocaleString("pt-BR")}
+                        {new Date(entry.createdAt).toLocaleString(intlLocale)}
                         {entry.notes && (
                           <p className="mt-1 text-muted-foreground">
                             {entry.notes}
@@ -411,6 +420,83 @@ function MetaField({
         {label}
       </p>
       <div className="text-sm text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function IncidentDescription({ description }: { description: string }) {
+  const t = useTranslations("Admin.incidents");
+  const parsed = parseIncidentDescription(description);
+
+  return (
+    <div>
+      <p className="mb-2 text-sm font-medium text-muted-foreground">
+        {t("descriptionLabel")}
+      </p>
+      {parsed ? (
+        <div className="overflow-hidden rounded-lg border border-amber-500/30 bg-amber-500/5">
+          <div className="flex flex-wrap items-center gap-2 border-b border-amber-500/20 px-4 py-2.5">
+            <ScanSearch className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />
+            <span className="text-sm font-medium text-foreground">
+              {t("auditTitle")}
+            </span>
+            {parsed.auditedAt && (
+              <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                {parsed.auditedAt}
+              </span>
+            )}
+            <span className="ml-auto text-xs text-amber-800 dark:text-amber-300">
+              {t("auditDiscrepancies", { count: parsed.items.length })}
+            </span>
+          </div>
+          <ul className="divide-y divide-amber-500/15">
+            {parsed.items.map(item => {
+              const missing = Math.max(0, item.expected - item.detected);
+              return (
+                <li
+                  key={`${item.name}-${item.expected}-${item.detected}`}
+                  className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="text-sm font-medium text-foreground">
+                    {item.name}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="rounded-md bg-muted px-2 py-1 text-muted-foreground">
+                      {t("expectedQty")}{" "}
+                      <span className="font-medium text-foreground">
+                        {item.expected}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground" aria-hidden>
+                      →
+                    </span>
+                    <span className="rounded-md bg-muted px-2 py-1 text-muted-foreground">
+                      {t("detectedQty")}{" "}
+                      <span className="font-medium text-foreground">
+                        {item.detected}
+                      </span>
+                    </span>
+                    <span className="rounded-md bg-amber-500/15 px-2 py-1 font-medium text-amber-900 dark:text-amber-200">
+                      {t("missingQty", { count: missing })}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {parsed.outro && (
+            <p className="border-t border-amber-500/20 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+              {parsed.outro}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border bg-muted/40 p-4">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            {description}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
