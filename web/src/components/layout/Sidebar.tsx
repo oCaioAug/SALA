@@ -3,21 +3,25 @@
 import {
   AlertTriangle,
   Bell,
+  BookOpen,
   Building2,
   Calendar,
+  ChevronDown,
   ClipboardList,
   Clock,
   Compass,
   DoorOpen,
   Eye,
+  GraduationCap,
   LayoutDashboard,
   Network,
+  Play,
   Settings,
   User,
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { cn } from "@/lib/utils";
@@ -30,6 +34,21 @@ interface SidebarProps {
   variant?: "desktop" | "mobile";
 }
 
+type SidebarSubMenuItem = {
+  id: string;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  active: boolean;
+};
+
+type SidebarMenuItem = {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  active: boolean;
+  children?: SidebarSubMenuItem[];
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
   onNavigate,
@@ -41,28 +60,88 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { isOrgAdmin, canAccessSolicitacoes, canAccessSalas } =
     useOrgPermissions();
 
-  const myOrganizationsItem = {
+  const isGradeHorariaActive = currentPage.startsWith("grade-horaria");
+  const [gradeHorariaOpen, setGradeHorariaOpen] = useState(isGradeHorariaActive);
+
+  useEffect(() => {
+    if (isGradeHorariaActive) {
+      setGradeHorariaOpen(true);
+    }
+  }, [isGradeHorariaActive]);
+
+  const myOrganizationsItem: SidebarMenuItem = {
     id: "inicio",
     label: t("menuItems.inicio.label"),
     icon: Building2,
     active: currentPage === "inicio",
   };
 
-  const solicitacoesMenuItem = {
+  const solicitacoesMenuItem: SidebarMenuItem = {
     id: "solicitacoes",
     label: t("menuItems.solicitacoes.label"),
     icon: ClipboardList,
     active: currentPage === "solicitacoes",
   };
 
-  const salasMenuItem = {
+  const salasMenuItem: SidebarMenuItem = {
     id: "salas",
     label: t("menuItems.salas.label"),
     icon: DoorOpen,
     active: currentPage === "salas",
   };
 
-  const adminMenuItems = [
+  const gradeHorariaSubItems: SidebarSubMenuItem[] = [
+    {
+      id: "grade-horaria",
+      label: "Visão Geral",
+      icon: Clock,
+      active: currentPage === "grade-horaria",
+    },
+    {
+      id: "grade-horaria-turmas",
+      label: "Turmas",
+      icon: Users,
+      active: currentPage === "grade-horaria-turmas",
+    },
+    {
+      id: "grade-horaria-disciplinas",
+      label: "Disciplinas",
+      icon: BookOpen,
+      active: currentPage === "grade-horaria-disciplinas",
+    },
+    {
+      id: "grade-horaria-professores",
+      label: "Professores",
+      icon: GraduationCap,
+      active: currentPage === "grade-horaria-professores",
+    },
+    {
+      id: "grade-horaria-cargas",
+      label: "Cargas Horárias",
+      icon: Clock,
+      active: currentPage === "grade-horaria-cargas",
+    },
+    {
+      id: "grade-horaria-disponibilidades",
+      label: "Disponibilidades",
+      icon: Calendar,
+      active: currentPage === "grade-horaria-disponibilidades",
+    },
+    {
+      id: "grade-horaria-gerar",
+      label: "Gerar Grade",
+      icon: Play,
+      active: currentPage === "grade-horaria-gerar",
+    },
+    {
+      id: "grade-horaria-configuracoes",
+      label: "Configurações",
+      icon: Settings,
+      active: currentPage === "grade-horaria-configuracoes",
+    },
+  ];
+
+  const adminMenuItems: SidebarMenuItem[] = [
     {
       id: "dashboard",
       label: t("menuItems.dashboard.label"),
@@ -93,7 +172,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       id: "grade-horaria",
       label: t("menuItems.gradeHoraria.label"),
       icon: Clock,
-      active: currentPage.startsWith("grade-horaria"),
+      active: isGradeHorariaActive,
+      children: gradeHorariaSubItems,
     },
     {
       id: "vision",
@@ -127,7 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
-  const memberMenuItems = [
+  const memberMenuItems: SidebarMenuItem[] = [
     {
       id: "explorar",
       label: t("menuItems.explorar.label"),
@@ -204,11 +284,21 @@ const Sidebar: React.FC<SidebarProps> = ({
           <ul className="space-y-0.5">
             {menuItems.map(item => (
               <li key={item.id}>
-                <SidebarNavButton
-                  item={item}
-                  isNavigating={isNavigating}
-                  onNavigate={onNavigate}
-                />
+                {item.children ? (
+                  <SidebarNavParentGroup
+                    item={item}
+                    isOpen={gradeHorariaOpen}
+                    onToggle={() => setGradeHorariaOpen(prev => !prev)}
+                    isNavigating={isNavigating}
+                    onNavigate={onNavigate}
+                  />
+                ) : (
+                  <SidebarNavButton
+                    item={item}
+                    isNavigating={isNavigating}
+                    onNavigate={onNavigate}
+                  />
+                )}
               </li>
             ))}
           </ul>
@@ -229,12 +319,117 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-type SidebarMenuItem = {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  active: boolean;
-};
+function SidebarNavParentGroup({
+  item,
+  isOpen,
+  onToggle,
+  isNavigating,
+  onNavigate,
+}: {
+  item: SidebarMenuItem;
+  isOpen: boolean;
+  onToggle: () => void;
+  isNavigating: boolean;
+  onNavigate: (page: string) => void;
+}) {
+  const IconComponent = item.icon;
+
+  const handleClick = () => {
+    if (!isOpen) {
+      onToggle();
+      onNavigate(item.id);
+    } else {
+      onToggle();
+    }
+  };
+
+  return (
+    <div className="space-y-0.5">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isNavigating}
+        className={cn(
+          "relative flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors",
+          item.active
+            ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:inset-y-1 before:left-0 before:w-0.5 before:rounded-full before:bg-primary"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          isNavigating && !item.active && "cursor-not-allowed opacity-50",
+          isNavigating && item.active && "opacity-80"
+        )}
+      >
+        <IconComponent
+          className={cn(
+            "h-4 w-4 shrink-0",
+            item.active ? "text-primary" : "text-muted-foreground"
+          )}
+        />
+        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+            isOpen && "rotate-180 text-foreground"
+          )}
+        />
+      </button>
+
+      {isOpen && item.children && (
+        <ul className="my-1 ml-4 space-y-0.5 border-l border-border/60 pl-3">
+          {item.children.map(child => (
+            <li key={child.id}>
+              <SidebarSubNavButton
+                item={child}
+                isNavigating={isNavigating}
+                onNavigate={onNavigate}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function SidebarSubNavButton({
+  item,
+  isNavigating,
+  onNavigate,
+}: {
+  item: SidebarSubMenuItem;
+  isNavigating: boolean;
+  onNavigate: (page: string) => void;
+}) {
+  const IconComponent = item.icon;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate(item.id)}
+      disabled={isNavigating}
+      className={cn(
+        "relative flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
+        item.active
+          ? "bg-sidebar-accent/80 font-medium text-primary before:absolute before:inset-y-1 before:-left-3 before:w-0.5 before:rounded-full before:bg-primary"
+          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+        isNavigating && !item.active && "cursor-not-allowed opacity-50",
+        isNavigating && item.active && "opacity-80"
+      )}
+    >
+      {IconComponent && (
+        <IconComponent
+          className={cn(
+            "h-3.5 w-3.5 shrink-0",
+            item.active ? "text-primary" : "text-muted-foreground"
+          )}
+        />
+      )}
+      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      {isNavigating && item.active && (
+        <div className="ml-auto h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground border-t-primary" />
+      )}
+    </button>
+  );
+}
 
 function SidebarNavButton({
   item,
@@ -276,3 +471,4 @@ function SidebarNavButton({
 }
 
 export { Sidebar };
+

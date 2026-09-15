@@ -55,16 +55,21 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
 
+  const safeOptions = useMemo(
+    () => (Array.isArray(options) ? options : []),
+    [options]
+  );
+
   const selected = useMemo(
-    () => options.find(o => o.value === value) ?? null,
-    [options, value]
+    () => safeOptions.find(o => o.value === value) ?? null,
+    [safeOptions, value]
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options;
-    return options.filter(o => o.label.toLowerCase().includes(q));
-  }, [options, query]);
+    if (!q) return safeOptions;
+    return safeOptions.filter(o => (o.label || "").toLowerCase().includes(q));
+  }, [safeOptions, query]);
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +88,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
 
-  const pick = (next: string) => {
+  const pick = (next: string, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     onChange(next);
     setOpen(false);
   };
@@ -119,6 +126,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
     }
   };
 
+  const hasEmptyOption = safeOptions.some(o => o.value === "");
+
   return (
     <div ref={rootRef} className={cn("relative", className)} onKeyDown={onKeyDown}>
       {name ? <input type="hidden" name={name} value={value} /> : null}
@@ -129,7 +138,10 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
-        onClick={() => !disabled && setOpen(o => !o)}
+        onClick={(e) => {
+          e.preventDefault();
+          if (!disabled) setOpen(o => !o);
+        }}
         className={cn(
           "flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-card px-3 py-2 text-left text-sm text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
           error
@@ -177,7 +189,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             role="listbox"
             className="max-h-56 overflow-y-auto py-1"
           >
-            {allowEmpty ? (
+            {allowEmpty && !hasEmptyOption ? (
               <li role="option" aria-selected={value === ""}>
                 <button
                   type="button"
@@ -185,7 +197,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     "flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted",
                     value === "" && "bg-muted"
                   )}
-                  onClick={() => pick("")}
+                  onClick={(e) => pick("", e)}
                 >
                   {resolvedPlaceholder}
                 </button>
@@ -201,7 +213,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 const isActive = i === highlight;
                 return (
                   <li
-                    key={opt.value}
+                    key={`${opt.value}-${i}`}
                     role="option"
                     aria-selected={isSelected}
                   >
@@ -213,7 +225,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         isSelected && "font-medium text-foreground"
                       )}
                       onMouseEnter={() => setHighlight(i)}
-                      onClick={() => pick(opt.value)}
+                      onClick={(e) => pick(opt.value, e)}
                     >
                       <Check
                         className={cn(
