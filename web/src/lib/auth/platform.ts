@@ -33,7 +33,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
     where: { email: session.user.email },
   });
 
-  if (!user) return null;
+  if (!user || user.deletedAt) return null;
 
   const resolved = await resolvePrimaryOrganization(user.id);
 

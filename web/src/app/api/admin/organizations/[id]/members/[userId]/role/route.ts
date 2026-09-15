@@ -1,9 +1,8 @@
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { OrganizationRole } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireSuperAdmin } from "@/lib/auth/platform";
@@ -21,21 +20,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json();
     const data = updateMemberRoleSchema.parse(body);
 
+    if (data.role === OrganizationRole.OWNER) {
+      return apiErrorResponse(ApiErrorCode.OWNER_TRANSFER_REQUIRED, 400);
+    }
+
     const organization = await prisma.organization.findUnique({
       where: { id },
     });
-    if (!organization) {
+    if (!organization || organization.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
-    if (
-      userId === organization.ownerId &&
-      data.role !== OrganizationRole.OWNER
-    ) {
-      return NextResponse.json(
-        { error: "Não é possível alterar o papel do owner desta forma" },
-        { status: 400 }
-      );
+    if (userId === organization.ownerId) {
+      return apiErrorResponse(ApiErrorCode.CANNOT_CHANGE_OWNER_ROLE, 400);
     }
 
     const member = await prisma.organizationMember.findUnique({
@@ -48,10 +45,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!member) {
-      return NextResponse.json(
-        { error: "Membro não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.MEMBER_NOT_FOUND, 404);
     }
 
     const updated = await prisma.organizationMember.update({
@@ -89,6 +83,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(updated);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
+    }
     console.error("Erro ao atualizar papel do membro:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }

@@ -20,6 +20,13 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
+    const organization = await prisma.organization.findUnique({
+      where: { id },
+    });
+    if (!organization || organization.deletedAt) {
+      return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
+    }
+
     const members = await prisma.organizationMember.findMany({
       where: { organizationId: id },
       include: {
@@ -55,7 +62,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
     });
-    if (!organization) {
+    if (!organization || organization.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
@@ -89,10 +96,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
     });
     if (existing) {
-      return NextResponse.json(
-        { error: "Usuário já é membro desta organização" },
-        { status: 409 }
-      );
+      return apiErrorResponse(ApiErrorCode.MEMBER_ALREADY_EXISTS, 409);
     }
 
     const member = await prisma.organizationMember.create({
@@ -134,24 +138,18 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const userId = searchParams.get("userId");
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "userId é obrigatório" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.USER_ID_REQUIRED, 400);
     }
 
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
     });
-    if (!organization) {
+    if (!organization || organization.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
     if (userId === organization.ownerId) {
-      return NextResponse.json(
-        { error: "Não é possível remover o owner da organização" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.CANNOT_REMOVE_OWNER, 400);
     }
 
     const member = await prisma.organizationMember.findUnique({
@@ -162,10 +160,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!member) {
-      return NextResponse.json(
-        { error: "Membro não encontrado" },
-        { status: 404 }
-      );
+      return apiErrorResponse(ApiErrorCode.MEMBER_NOT_FOUND, 404);
     }
 
     await prisma.organizationMember.delete({

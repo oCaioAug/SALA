@@ -88,10 +88,7 @@ export async function PATCH(
         },
       });
       if (!assignee) {
-        return NextResponse.json(
-          { error: "Usuário não pertence à organização do incidente" },
-          { status: 400 }
-        );
+        return apiErrorResponse(ApiErrorCode.ASSIGNEE_NOT_IN_ORGANIZATION, 400);
       }
     }
 
@@ -175,7 +172,7 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
     }
     console.error("Erro ao atualizar incidente admin:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);

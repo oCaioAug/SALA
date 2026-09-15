@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       include: { subscription: true },
     });
 
-    if (!organization) {
+    if (!organization || organization.deletedAt) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
@@ -64,10 +64,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         include: { plan: true },
       });
     } else {
-      return NextResponse.json(
-        { error: "Organização sem assinatura. Informe planId." },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.SUBSCRIPTION_NO_PLAN, 400);
     }
 
     if (data.planId) {
