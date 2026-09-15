@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -24,7 +25,7 @@ import {
 const TurmasPage: React.FC = () => {
   const t = useTranslations("GradeHoraria.classes");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-turmas");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -162,9 +163,7 @@ const TurmasPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            {tCommon("back")}
-          </Button>
+          <BackButton />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

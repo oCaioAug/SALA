@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CalendarCheck, Play, Download, FileText, FileSpreadsheet, FileIcon } from "lucide-react";
+import { AlertTriangle, CalendarCheck, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
@@ -8,15 +8,19 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
+import { ExportScheduleDropdown } from "@/components/grade-horaria/ExportScheduleDropdown";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
   getDisciplinas,
   getGradeSettings,
+  getLatestGradeHoraria,
   getProfessores,
   getTurmas,
   runTimetablingEngine,
@@ -27,7 +31,7 @@ const DAY_IDS = [1, 2, 3, 4, 5] as const;
 const GerarGradePage: React.FC = () => {
   const t = useTranslations("GradeHoraria.generate");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-gerar");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -36,6 +40,7 @@ const GerarGradePage: React.FC = () => {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [savedAt, setSavedAt] = useState<Date | string | null>(null);
   const [turmasMap, setTurmasMap] = useState<Record<string, string>>({});
   const [turmaShiftsMap, setTurmaShiftsMap] = useState<Record<string, string>>(
     {}
@@ -47,11 +52,12 @@ const GerarGradePage: React.FC = () => {
   useEffect(() => {
     const fetchDictionaries = async () => {
       try {
-        const [turmas, disc, profs, settings] = await Promise.all([
+        const [turmas, disc, profs, settings, latestGrade] = await Promise.all([
           getTurmas(),
           getDisciplinas(),
           getProfessores(),
           getGradeSettings(),
+          getLatestGradeHoraria(),
         ]);
 
         const tMap: Record<string, string> = {};
@@ -72,8 +78,13 @@ const GerarGradePage: React.FC = () => {
         setProfMap(pMap);
 
         setShifts(settings.timetabling?.shifts || []);
+
+        if (latestGrade) {
+          setResult(latestGrade);
+          setSavedAt(latestGrade.createdAt);
+        }
       } catch (err) {
-        console.error("Erro ao carregar dicionários", err);
+        console.error("Erro ao carregar dados da grade", err);
       }
     };
     fetchDictionaries();
@@ -86,6 +97,7 @@ const GerarGradePage: React.FC = () => {
 
       const res = await runTimetablingEngine();
       setResult(res);
+      setSavedAt(new Date());
 
       if (res.success) {
         showSuccess(t("toastSuccess"));
@@ -128,14 +140,14 @@ const GerarGradePage: React.FC = () => {
       for (let day = 1; day <= days; day++) {
         for (const slot of slots) {
           const slotId = `${day}_${slot.id}`;
-          const c = grouped[tId][slotId];
+          const c = grouped[tId]?.[slotId];
           if (c) {
             data.push({
               Turma: turmasMap[c.turmaId] || "",
               Dia: `Dia ${day}`,
               Horário: `${slot.startTime} - ${slot.endTime}`,
               Disciplina: discMap[c.disciplinaId] || "",
-              Professor: profMap[c.professorId] || "",
+              Professor: c.professorId ? (profMap[c.professorId] || "") : "Sem professor",
             });
           }
         }
@@ -216,28 +228,40 @@ const GerarGradePage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            {tCommon("back")}
-          </Button>
+          <BackButton />
         </div>
 
         <Card className="mb-8 text-center bg-card border-2">
           <CardContent className="p-12">
-            <div className="max-w-xl mx-auto space-y-6">
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full inline-block">
-                <Play className="w-12 h-12" />
+            {isGenerating ? (
+              <div className="max-w-md mx-auto py-6 flex flex-col items-center justify-center space-y-4">
+                <LoadingSpinner size="lg" />
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    {t("processing")}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
+                    Analisando disponibilidades, calculando combinações e otimizando restrições...
+                  </p>
+                </div>
               </div>
-              <h2 className="text-2xl font-semibold">{t("readyTitle")}</h2>
-              <p className="text-slate-500">{t("readyDescription")}</p>
-              <Button
-                size="lg"
-                className="w-full text-lg h-14"
-                onClick={handleGenerate}
-                disabled={isGenerating}
-              >
-                {isGenerating ? t("processing") : t("runButton")}
-              </Button>
-            </div>
+            ) : (
+              <div className="max-w-xl mx-auto space-y-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full inline-block">
+                  <Play className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-semibold">{t("readyTitle")}</h2>
+                <p className="text-slate-500">{t("readyDescription")}</p>
+                <Button
+                  size="lg"
+                  className="w-full text-lg h-14"
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                >
+                  {t("runButton")}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -264,7 +288,7 @@ const GerarGradePage: React.FC = () => {
                     </h3>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">
                       {t("fitnessScore", {
-                        score: result.fitness.toFixed(1),
+                        score: (result.fitness ?? 0).toFixed(1),
                       })}
                     </p>
                     {result.unallocatedRequirements && (
@@ -279,7 +303,7 @@ const GerarGradePage: React.FC = () => {
                                 {t("unallocatedItem", {
                                   className: turmasMap[req.turmaId],
                                   subjectName: discMap[req.disciplinaId],
-                                  teacherName: profMap[req.professorId],
+                                  teacherName: req.professorId ? (profMap[req.professorId] || "") : "Sem professor",
                                   count: req.requiredSlots,
                                 })}
                               </li>
@@ -305,10 +329,33 @@ const GerarGradePage: React.FC = () => {
               </CardContent>
             </Card>
 
+            {/* Cabeçalho da Visualização da Grade com Dropdown de Exportação */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 mb-4">
+              <div>
+                <h3 className="text-2xl font-bold">
+                  {t("schedulesByClass")}
+                </h3>
+                {savedAt && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Grade salva no banco de dados em{" "}
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {new Date(savedAt).toLocaleString("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  </p>
+                )}
+              </div>
+              <ExportScheduleDropdown
+                onExportPDF={handleExportPDF}
+                onExportXLSX={handleExportXLSX}
+                onExportCSV={handleExportCSV}
+                disabled={!result?.schedule || result.schedule.length === 0}
+              />
+            </div>
+
             {/* Visualização da Grade por Turma */}
-            <h3 className="text-2xl font-bold mt-8 mb-4">
-              {t("schedulesByClass")}
-            </h3>
             {sortedTurmaIds.map(turmaId => {
               const shiftId = turmaShiftsMap[turmaId];
               const shift = shifts.find(s => s.id === shiftId) || shifts[0];
@@ -356,7 +403,7 @@ const GerarGradePage: React.FC = () => {
                               </td>
                               {days.map(diaId => {
                                 const timeSlotStr = `${diaId}_${slot.id}`;
-                                const classInfo = grouped[turmaId][timeSlotStr];
+                                const classInfo = grouped[turmaId]?.[timeSlotStr];
                                 return (
                                   <td
                                     key={diaId}
@@ -368,7 +415,9 @@ const GerarGradePage: React.FC = () => {
                                           {discMap[classInfo.disciplinaId]}
                                         </span>
                                         <span className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                          {profMap[classInfo.professorId]}
+                                          {classInfo.professorId
+                                            ? profMap[classInfo.professorId] || ""
+                                            : "Sem professor"}
                                         </span>
                                       </div>
                                     ) : (
@@ -383,19 +432,6 @@ const GerarGradePage: React.FC = () => {
                           ))}
                         </tbody>
                       </table>
-                    </div>
-
-                    {/* Botões de Exportação */}
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <Button variant="outline" onClick={handleExportPDF} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                        <FileText className="w-4 h-4 mr-2 text-red-500" /> Exportar PDF
-                      </Button>
-                      <Button variant="outline" onClick={handleExportXLSX} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                        <FileSpreadsheet className="w-4 h-4 mr-2 text-green-600" /> Exportar XLSX
-                      </Button>
-                      <Button variant="outline" onClick={handleExportCSV} className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800">
-                        <FileIcon className="w-4 h-4 mr-2 text-blue-500" /> Exportar CSV
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

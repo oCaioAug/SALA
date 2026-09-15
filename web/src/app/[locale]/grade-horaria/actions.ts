@@ -9,10 +9,28 @@ import { GenerateScheduleService } from "@/services/timetabling/GenerateSchedule
 
 export async function getOrgId(): Promise<string> {
   const ctx = await requireTenantContext();
-  if (isNextResponse(ctx) || ctx.isSuperAdmin) {
+  if (isNextResponse(ctx)) {
     throw new Error("Unauthorized or invalid context");
   }
-  return ctx.organizationId;
+  if (ctx.organizationId) {
+    return ctx.organizationId;
+  }
+  if (ctx.isSuperAdmin) {
+    const membership = await prisma.organizationMember.findFirst({
+      where: { userId: ctx.user.id },
+      select: { organizationId: true },
+    });
+    if (membership?.organizationId) {
+      return membership.organizationId;
+    }
+    const defaultOrg = await prisma.organization.findFirst({
+      select: { id: true },
+    });
+    if (defaultOrg?.id) {
+      return defaultOrg.id;
+    }
+  }
+  throw new Error("Unauthorized or invalid context");
 }
 
 export async function getSectors() {
@@ -125,15 +143,73 @@ export async function deleteProfessor(id: string) {
 export async function createCargaHoraria(
   turmaId: string,
   disciplinaId: string,
-  professorId: string,
+  professorId: string | null | undefined,
   quantidadeAulas: number
 ) {
   const orgId = await getOrgId();
   const carga = await prisma.cargaHoraria.create({
-    data: { turmaId, disciplinaId, professorId, quantidadeAulas },
+    data: {
+      turmaId,
+      disciplinaId,
+      professorId: professorId ? professorId : null,
+      quantidadeAulas,
+    },
   });
   revalidatePath("/[locale]/grade-horaria/cargas", "page");
   return carga;
+}
+
+export async function updateCargaHoraria(
+  id: string,
+  quantidadeAulas: number,
+  professorId?: string | null,
+  sinergiaId?: string | null
+) {
+  const orgId = await getOrgId();
+  const dataToUpdate: any = { quantidadeAulas };
+  if (professorId !== undefined) {
+    dataToUpdate.professorId = professorId ? professorId : null;
+  }
+  if (sinergiaId !== undefined) {
+    dataToUpdate.sinergiaId = sinergiaId ? sinergiaId : null;
+  }
+  const carga = await prisma.cargaHoraria.update({
+    where: { id, turma: { organizationId: orgId } },
+    data: dataToUpdate,
+  });
+  revalidatePath("/[locale]/grade-horaria/cargas", "page");
+  return carga;
+}
+
+export async function createBatchCargasHorarias(
+  turmaId: string,
+  items: {
+    disciplinaId: string;
+    professorId?: string | null;
+    quantidadeAulas: number;
+  }[]
+) {
+  const orgId = await getOrgId();
+  const turma = await prisma.turma.findUnique({
+    where: { id: turmaId, organizationId: orgId },
+  });
+  if (!turma) throw new Error("Turma não encontrada.");
+
+  const cargas = await prisma.$transaction(
+    items.map(item =>
+      prisma.cargaHoraria.create({
+        data: {
+          turmaId,
+          disciplinaId: item.disciplinaId,
+          professorId: item.professorId ? item.professorId : null,
+          quantidadeAulas: item.quantidadeAulas,
+        },
+      })
+    )
+  );
+
+  revalidatePath("/[locale]/grade-horaria/cargas", "page");
+  return cargas;
 }
 
 export async function createCargaSinergia(
@@ -233,10 +309,48 @@ export async function getOrgUsers() {
   return members.map(m => m.user);
 }
 
+export async function getLatestGradeHoraria() {
+  const orgId = await getOrgId();
+  const latest = await prisma.gradeHorariaGerada.findFirst({
+    where: { organizationId: orgId },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!latest) return null;
+  return {
+    id: latest.id,
+    success: latest.success,
+    fitness: latest.fitness,
+    createdAt: latest.createdAt,
+    schedule: (latest.scheduleData as any)?.schedule || [],
+    unallocatedRequirements:
+      (latest.scheduleData as any)?.unallocatedRequirements || undefined,
+    errors: (latest.scheduleData as any)?.errors || undefined,
+  };
+}
+
+export async function saveGradeHoraria(data: any) {
+  const orgId = await getOrgId();
+  const saved = await prisma.gradeHorariaGerada.create({
+    data: {
+      organizationId: orgId,
+      success: data.success,
+      fitness: data.fitness,
+      scheduleData: {
+        schedule: data.schedule,
+        unallocatedRequirements: data.unallocatedRequirements,
+        errors: data.errors,
+      },
+    },
+  });
+  revalidatePath("/[locale]/grade-horaria/gerar", "page");
+  return saved;
+}
+
 export async function runTimetablingEngine() {
   const orgId = await getOrgId();
   const service = new GenerateScheduleService();
   const result = await service.execute(orgId);
+  await saveGradeHoraria(result);
   return result;
 }
 
@@ -369,18 +483,6 @@ export async function updateProfessor(id: string, name: string, email?: string, 
   return professor;
 }
 
-export async function updateCargaHoraria(id: string, quantidadeAulas: number, sinergiaId?: string) {
-  const orgId = await getOrgId();
-  const carga = await prisma.cargaHoraria.update({
-    where: { id, turma: { organizationId: orgId } },
-    data: { 
-      quantidadeAulas,
-      sinergiaId: sinergiaId || null
-    },
-  });
-  revalidatePath("/[locale]/grade-horaria/cargas", "page");
-  return carga;
-}
 
 // SINERGIAS
 export async function getSinergias() {

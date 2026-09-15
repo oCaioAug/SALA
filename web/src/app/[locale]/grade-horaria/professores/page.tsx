@@ -2,13 +2,16 @@
 
 import { GraduationCap, Plus, Trash2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Pagination } from "@/components/ui/Pagination";
+import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
@@ -25,7 +28,7 @@ import {
 const ProfessoresPage: React.FC = () => {
   const t = useTranslations("GradeHoraria.teachers");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-professores");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -49,6 +52,34 @@ const ProfessoresPage: React.FC = () => {
   const [editDisciplinaIds, setEditDisciplinaIds] = useState<string[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDisciplinaFilter, setSelectedDisciplinaFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedDisciplinaFilter]);
+
+  const filteredProfessores = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    return professores.filter(p => {
+      const matchesText =
+        !q ||
+        p.name?.toLowerCase().includes(q) ||
+        p.email?.toLowerCase().includes(q);
+
+      const matchesDisciplina =
+        !selectedDisciplinaFilter ||
+        p.disciplinas?.some((d: any) => d.id === selectedDisciplinaFilter);
+
+      return matchesText && matchesDisciplina;
+    });
+  }, [professores, searchTerm, selectedDisciplinaFilter]);
+
+  const paginatedProfessores = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredProfessores.slice(start, start + pageSize);
+  }, [filteredProfessores, page, pageSize]);
 
   const fetchProfessores = async () => {
     try {
@@ -170,9 +201,7 @@ const ProfessoresPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            {tCommon("back")}
-          </Button>
+          <BackButton />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -197,7 +226,7 @@ const ProfessoresPage: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {t("linkUserLabel")}
                   </label>
@@ -211,37 +240,24 @@ const ProfessoresPage: React.FC = () => {
                     placeholder={t("linkUserNone")}
                     allowEmpty
                     disabled={isSubmitting}
-                    triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   />
                   <p className="text-xs text-slate-500">{t("linkUserHint")}</p>
                 </div>
 
-                <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Disciplinas Lecionadas
                   </label>
-                  {disciplinas.length === 0 ? (
-                    <p className="text-xs text-slate-500">Nenhuma disciplina cadastrada.</p>
-                  ) : (
-                    disciplinas.map(d => (
-                      <div key={d.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id={`new-disc-${d.id}`}
-                          checked={newDisciplinaIds.includes(d.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setNewDisciplinaIds(prev => [...prev, d.id]);
-                            } else {
-                              setNewDisciplinaIds(prev => prev.filter(id => id !== d.id));
-                            }
-                          }}
-                          className="w-4 h-4 text-blue-600 rounded"
-                        />
-                        <label htmlFor={`new-disc-${d.id}`} className="text-sm">{d.name}</label>
-                      </div>
-                    ))
-                  )}
+                  <SearchableMultiSelect
+                    options={disciplinas.map(d => ({
+                      value: d.id,
+                      label: d.name,
+                    }))}
+                    value={newDisciplinaIds}
+                    onChange={setNewDisciplinaIds}
+                    placeholder="Selecione as disciplinas..."
+                    disabled={isSubmitting}
+                  />
                 </div>
 
                 <Button
@@ -257,77 +273,117 @@ const ProfessoresPage: React.FC = () => {
 
           {/* List */}
           <Card className="md:col-span-2">
-            <CardContent className="p-0">
+            <CardContent className="p-0 flex flex-col">
+              {/* Filters Bar - ALWAYS VISIBLE */}
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar professores..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="w-full sm:w-64">
+                  <SearchableSelect
+                    options={disciplinas.map(d => ({
+                      value: d.id,
+                      label: d.name,
+                    }))}
+                    value={selectedDisciplinaFilter}
+                    onChange={setSelectedDisciplinaFilter}
+                    placeholder="Todas as disciplinas"
+                    allowEmpty
+                  />
+                </div>
+              </div>
+
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
                   {tCommon("loading")}
                 </div>
-              ) : professores.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">
-                  {t("empty")}
+              ) : filteredProfessores.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">
+                    {professores.length === 0
+                      ? t("empty")
+                      : "Nenhum professor encontrado para os filtros selecionados."}
+                  </p>
+                  {(searchTerm || selectedDisciplinaFilter) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setSelectedDisciplinaFilter("");
+                      }}
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Pesquisar professores..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {professores
-                      .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.email?.toLowerCase().includes(searchTerm.toLowerCase()))
-                      .map(p => (
-                    <div
-                      key={p.id}
-                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <div>
-                        <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                          {p.name}
-                          {p.user && (
-                            <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
-                              {t("linkedBadge")}
-                            </span>
+                    {paginatedProfessores.map(p => (
+                      <div
+                        key={p.id}
+                        className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                            {p.name}
+                            {p.user && (
+                              <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
+                                {t("linkedBadge")}
+                              </span>
+                            )}
+                          </div>
+                          {p.email && (
+                            <div className="text-sm text-slate-500">
+                              {p.email}
+                            </div>
+                          )}
+                          {p.disciplinas && p.disciplinas.length > 0 && (
+                            <div className="text-xs text-slate-400 mt-1 line-clamp-1">
+                              {p.disciplinas.map((d: any) => d.name).join(", ")}
+                            </div>
                           )}
                         </div>
-                        {p.email && (
-                          <div className="text-sm text-slate-500">
-                            {p.email}
-                          </div>
-                        )}
-                        {p.disciplinas && p.disciplinas.length > 0 && (
-                          <div className="text-xs text-slate-400 mt-1 line-clamp-1">
-                            {p.disciplinas.map((d: any) => d.name).join(", ")}
-                          </div>
-                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                            onClick={() => startEdit(p)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                            onClick={() => handleDelete(p.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                          onClick={() => startEdit(p)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                          onClick={() => handleDelete(p.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={filteredProfessores.length}
+                      onPageChange={setPage}
+                      onPageSizeChange={setPageSize}
+                      pageSizeOptions={[10, 20, 50]}
+                    />
                   </div>
                 </div>
               )}
@@ -358,7 +414,7 @@ const ProfessoresPage: React.FC = () => {
                     disabled={isSubmitting}
                   />
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {t("linkUserLabel")}
                     </label>
@@ -372,37 +428,24 @@ const ProfessoresPage: React.FC = () => {
                       placeholder={t("linkUserNone")}
                       allowEmpty
                       disabled={isSubmitting}
-                      triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                     />
                     <p className="text-xs text-slate-500">{t("linkUserHint")}</p>
                   </div>
 
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       Disciplinas Lecionadas
                     </label>
-                    {disciplinas.length === 0 ? (
-                      <p className="text-xs text-slate-500">Nenhuma disciplina cadastrada.</p>
-                    ) : (
-                      disciplinas.map(d => (
-                        <div key={d.id} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id={`edit-disc-${d.id}`}
-                            checked={editDisciplinaIds.includes(d.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setEditDisciplinaIds(prev => [...prev, d.id]);
-                              } else {
-                                setEditDisciplinaIds(prev => prev.filter(id => id !== d.id));
-                              }
-                            }}
-                            className="w-4 h-4 text-blue-600 rounded"
-                          />
-                          <label htmlFor={`edit-disc-${d.id}`} className="text-sm">{d.name}</label>
-                        </div>
-                      ))
-                    )}
+                    <SearchableMultiSelect
+                      options={disciplinas.map(d => ({
+                        value: d.id,
+                        label: d.name,
+                      }))}
+                      value={editDisciplinaIds}
+                      onChange={setEditDisciplinaIds}
+                      placeholder="Selecione as disciplinas..."
+                      disabled={isSubmitting}
+                    />
                   </div>
 
                   <div className="flex gap-2 justify-end mt-6">

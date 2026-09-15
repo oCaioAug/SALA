@@ -1,14 +1,17 @@
 "use client";
 
-import { Clock, Plus, Trash2, Search } from "lucide-react";
+import { Clock, Layers, Plus, Trash2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Pagination } from "@/components/ui/Pagination";
+import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
@@ -16,6 +19,7 @@ import { useNavigation } from "@/lib/hooks/useNavigation";
 import {
   getCargasHorarias,
   createCargaHoraria,
+  createBatchCargasHorarias,
   updateCargaHoraria,
   deleteCargaHoraria,
   getTurmas,
@@ -27,7 +31,7 @@ import {
 const CargasHorariasPage: React.FC = () => {
   const t = useTranslations("GradeHoraria.loads");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-cargas");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -40,11 +44,14 @@ const CargasHorariasPage: React.FC = () => {
   const [professores, setProfessores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form state
-  const [turmaId, setTurmaId] = useState("");
+  // Bulk Form state
+  const [selectedTurmaId, setSelectedTurmaId] = useState("");
+  const [selectedDisciplinaIds, setSelectedDisciplinaIds] = useState<string[]>([]);
+  const [disciplinaConfigs, setDisciplinaConfigs] = useState<
+    Record<string, { professorId: string; quantidadeAulas: number }>
+  >({});
+  const [defaultAulas, setDefaultAulas] = useState(2);
   const [disciplinaId, setDisciplinaId] = useState("");
-  const [professorId, setProfessorId] = useState("");
-  const [quantidadeAulas, setQuantidadeAulas] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sinergia State
@@ -61,7 +68,92 @@ const CargasHorariasPage: React.FC = () => {
   const [editProfessorId, setEditProfessorId] = useState("");
   const [editQuantidadeAulas, setEditQuantidadeAulas] = useState(1);
 
+  // Filter and pagination states
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterTurmaId, setFilterTurmaId] = useState("");
+  const [filterDisciplinaId, setFilterDisciplinaId] = useState("");
+  const [filterProfessorId, setFilterProfessorId] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const handleSelectDisciplinas = (newIds: string[]) => {
+    const safeIds = Array.isArray(newIds) ? newIds : [];
+    setSelectedDisciplinaIds(safeIds);
+    setDisciplinaConfigs(prev => {
+      const next = { ...prev };
+      safeIds.forEach(id => {
+        if (!next[id]) {
+          next[id] = { professorId: "", quantidadeAulas: defaultAulas };
+        }
+      });
+      return next;
+    });
+  };
+
+  const updateDisciplinaConfig = (
+    dId: string,
+    field: "professorId" | "quantidadeAulas",
+    val: any
+  ) => {
+    setDisciplinaConfigs(prev => ({
+      ...prev,
+      [dId]: {
+        ...(prev[dId] || { professorId: "", quantidadeAulas: defaultAulas }),
+        [field]: val,
+      },
+    }));
+  };
+
+  const applyDefaultAulasToAll = (aulas: number) => {
+    setDefaultAulas(aulas);
+    setDisciplinaConfigs(prev => {
+      const next = { ...prev };
+      selectedDisciplinaIds.forEach(id => {
+        next[id] = {
+          ...(next[id] || { professorId: "" }),
+          quantidadeAulas: aulas,
+        };
+      });
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterTurmaId, filterDisciplinaId, filterProfessorId]);
+
+  const filteredCargas = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    return (cargas || []).filter(c => {
+      if (!c) return false;
+      const turmaName = c.turma?.name?.toLowerCase() || "";
+      const discName = c.disciplina?.name?.toLowerCase() || "";
+      const profName = c.professor?.name?.toLowerCase() || "";
+
+      const matchesText =
+        !q ||
+        turmaName.includes(q) ||
+        discName.includes(q) ||
+        profName.includes(q) ||
+        (!c.professor && "a definir".includes(q));
+
+      const matchesTurma = !filterTurmaId || c.turmaId === filterTurmaId;
+      const matchesDisciplina =
+        !filterDisciplinaId || c.disciplinaId === filterDisciplinaId;
+      const matchesProf =
+        !filterProfessorId ||
+        (filterProfessorId === "none"
+          ? !c.professorId
+          : c.professorId === filterProfessorId);
+
+      return matchesText && matchesTurma && matchesDisciplina && matchesProf;
+    });
+  }, [cargas, searchTerm, filterTurmaId, filterDisciplinaId, filterProfessorId]);
+
+  const paginatedCargas = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredCargas.slice(start, start + pageSize);
+  }, [filteredCargas, page, pageSize]);
 
   const fetchData = async () => {
     try {
@@ -93,7 +185,7 @@ const CargasHorariasPage: React.FC = () => {
     e.preventDefault();
 
     if (isSinergia) {
-      if (!sinergiaName.trim() || !disciplinaId || turmaIds.length === 0 || quantidadeAulas <= 0) return;
+      if (!sinergiaName.trim() || !disciplinaId || turmaIds.length === 0) return;
       if (sameProfessor && !sinergiaProfessorId) return;
       if (!sameProfessor && turmaIds.some(tId => !turmaProfessores[tId])) return;
 
@@ -101,13 +193,16 @@ const CargasHorariasPage: React.FC = () => {
         setIsSubmitting(true);
         const tpArray = turmaIds.map(tId => ({
           turmaId: tId,
-          professorId: sameProfessor ? sinergiaProfessorId : turmaProfessores[tId]
+          professorId: sameProfessor ? sinergiaProfessorId : turmaProfessores[tId],
         }));
-        await createCargaSinergia(sinergiaName, disciplinaId, Number(quantidadeAulas), tpArray);
+        await createCargaSinergia(
+          sinergiaName,
+          disciplinaId,
+          Number(defaultAulas),
+          tpArray
+        );
         showSuccess(t("toastCreateSuccess"));
-        
-        // Reset form partially
-        setQuantidadeAulas(1);
+
         setSinergiaName("");
         fetchData();
       } catch (err: any) {
@@ -116,19 +211,31 @@ const CargasHorariasPage: React.FC = () => {
         setIsSubmitting(false);
       }
     } else {
-      if (!turmaId || !disciplinaId || !professorId || quantidadeAulas <= 0) return;
+      if (!selectedTurmaId) {
+        showError("Selecione uma turma.");
+        return;
+      }
+      if (selectedDisciplinaIds.length === 0) {
+        showError("Selecione pelo menos uma disciplina.");
+        return;
+      }
+
+      const payload = selectedDisciplinaIds.map(dId => ({
+        disciplinaId: dId,
+        professorId: disciplinaConfigs[dId]?.professorId || null,
+        quantidadeAulas: Math.max(
+          1,
+          Number(disciplinaConfigs[dId]?.quantidadeAulas) || defaultAulas
+        ),
+      }));
 
       try {
         setIsSubmitting(true);
-        const newCarga = await createCargaHoraria(
-          turmaId,
-          disciplinaId,
-          professorId,
-          Number(quantidadeAulas)
-        );
-        showSuccess(t("toastCreateSuccess"));
+        await createBatchCargasHorarias(selectedTurmaId, payload);
+        showSuccess(`${payload.length} carga(s) horária(s) vinculada(s) à turma com sucesso!`);
 
-        setQuantidadeAulas(1);
+        setSelectedDisciplinaIds([]);
+        setDisciplinaConfigs({});
         fetchData();
       } catch (err: any) {
         showError(err.message || t("toastCreateError"));
@@ -144,19 +251,14 @@ const CargasHorariasPage: React.FC = () => {
 
     try {
       setIsSubmitting(true);
-      const updatedCarga = await updateCargaHoraria(
+      await updateCargaHoraria(
         editingCarga.id,
-        Number(editQuantidadeAulas)
+        Number(editQuantidadeAulas),
+        editProfessorId || null
       );
       showSuccess("Carga horária atualizada com sucesso");
-      
-      setCargas(prev =>
-        prev.map(c => 
-          c.id === updatedCarga.id 
-            ? { ...c, quantidadeAulas: updatedCarga.quantidadeAulas } 
-            : c
-        )
-      );
+
+      fetchData();
       cancelEdit();
     } catch (err: any) {
       showError(err.message || "Erro ao atualizar carga horária");
@@ -169,7 +271,7 @@ const CargasHorariasPage: React.FC = () => {
     setEditingCarga(carga);
     setEditTurmaId(carga.turmaId);
     setEditDisciplinaId(carga.disciplinaId);
-    setEditProfessorId(carga.professorId);
+    setEditProfessorId(carga.professorId || "");
     setEditQuantidadeAulas(carga.quantidadeAulas);
   };
 
@@ -211,97 +313,66 @@ const CargasHorariasPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            {tCommon("back")}
-          </Button>
+          <BackButton />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Form */}
-          <Card className="md:col-span-1">
+          <Card className="lg:col-span-5">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">{t("formTitle")}</h2>
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {t("formTitle")} por Turma
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Vincule múltiplas disciplinas e professores a uma turma de uma só vez.
+                </p>
+              </div>
+
               <form onSubmit={handleCreate} className="space-y-4">
-                <div className="flex items-center gap-2 mb-4 bg-indigo-50 dark:bg-indigo-950/30 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                <div className="flex items-center gap-2 mb-2 bg-indigo-50 dark:bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
                   <input
                     type="checkbox"
                     id="isSinergia"
                     checked={isSinergia}
-                    onChange={(e) => setIsSinergia(e.target.checked)}
+                    onChange={e => setIsSinergia(e.target.checked)}
                     className="w-4 h-4 text-indigo-600 rounded"
                   />
-                  <label htmlFor="isSinergia" className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
+                  <label
+                    htmlFor="isSinergia"
+                    className="text-xs font-semibold text-indigo-900 dark:text-indigo-200 cursor-pointer"
+                  >
                     Agrupar como Sinergia (Múltiplas turmas no mesmo horário)
                   </label>
                 </div>
 
-                {isSinergia && (
-                  <Input
-                    label="Nome da Sinergia"
-                    placeholder="Ex: Cálculo 1 - Engenharias"
-                    value={sinergiaName}
-                    onChange={e => setSinergiaName(e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                )}
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {t("subjectLabel")}
-                  </label>
-                  <SearchableSelect
-                    value={disciplinaId}
-                    onChange={setDisciplinaId}
-                    options={disciplinas.map(item => ({
-                      value: item.id,
-                      label: item.name,
-                    }))}
-                    placeholder={t("subjectPlaceholder")}
-                    allowEmpty
-                    disabled={isSubmitting}
-                    triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                  />
-                </div>
-
-                {!isSinergia ? (
+                {isSinergia ? (
                   <>
+                    <Input
+                      label="Nome da Sinergia"
+                      placeholder="Ex: Cálculo 1 - Engenharias"
+                      value={sinergiaName}
+                      onChange={e => setSinergiaName(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {t("classLabel")}
+                        {t("subjectLabel")}
                       </label>
                       <SearchableSelect
-                        value={turmaId}
-                        onChange={setTurmaId}
-                        options={turmas.map(item => ({
+                        value={disciplinaId}
+                        onChange={setDisciplinaId}
+                        options={disciplinas.map(item => ({
                           value: item.id,
                           label: item.name,
                         }))}
-                        placeholder={t("classPlaceholder")}
+                        placeholder={t("subjectPlaceholder")}
                         allowEmpty
                         disabled={isSubmitting}
-                        triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {t("teacherLabel")}
-                      </label>
-                      <SearchableSelect
-                        value={professorId}
-                        onChange={setProfessorId}
-                        options={professores.map(item => ({
-                          value: item.id,
-                          label: item.name,
-                        }))}
-                        placeholder={t("teacherPlaceholder")}
-                        allowEmpty
-                        disabled={isSubmitting}
-                        triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
+
                     <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md">
                       <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
                         Selecione as Turmas
@@ -312,7 +383,7 @@ const CargasHorariasPage: React.FC = () => {
                             type="checkbox"
                             id={`sinergia-turma-${tItem.id}`}
                             checked={turmaIds.includes(tItem.id)}
-                            onChange={(e) => {
+                            onChange={e => {
                               if (e.target.checked) {
                                 setTurmaIds(prev => [...prev, tItem.id]);
                               } else {
@@ -321,7 +392,9 @@ const CargasHorariasPage: React.FC = () => {
                             }}
                             className="w-4 h-4 text-indigo-600 rounded"
                           />
-                          <label htmlFor={`sinergia-turma-${tItem.id}`} className="text-sm">{tItem.name}</label>
+                          <label htmlFor={`sinergia-turma-${tItem.id}`} className="text-sm">
+                            {tItem.name}
+                          </label>
                         </div>
                       ))}
                     </div>
@@ -331,7 +404,7 @@ const CargasHorariasPage: React.FC = () => {
                         type="checkbox"
                         id="sameProf"
                         checked={sameProfessor}
-                        onChange={(e) => setSameProfessor(e.target.checked)}
+                        onChange={e => setSameProfessor(e.target.checked)}
                         className="w-4 h-4 text-indigo-600 rounded"
                       />
                       <label htmlFor="sameProf" className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -354,7 +427,6 @@ const CargasHorariasPage: React.FC = () => {
                           placeholder="Selecione o professor"
                           allowEmpty
                           disabled={isSubmitting}
-                          triggerClassName="h-10 rounded-lg border-slate-300 bg-white text-slate-900 focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                         />
                       </div>
                     ) : (
@@ -369,7 +441,7 @@ const CargasHorariasPage: React.FC = () => {
                               <p className="text-xs font-semibold mb-1">{turma?.name}</p>
                               <SearchableSelect
                                 value={turmaProfessores[tId] || ""}
-                                onChange={(val) => setTurmaProfessores(prev => ({ ...prev, [tId]: val }))}
+                                onChange={val => setTurmaProfessores(prev => ({ ...prev, [tId]: val }))}
                                 options={professores.map(item => ({
                                   value: item.id,
                                   label: item.name,
@@ -377,107 +449,349 @@ const CargasHorariasPage: React.FC = () => {
                                 placeholder="Professor para esta turma"
                                 allowEmpty
                                 disabled={isSubmitting}
-                                triggerClassName="h-8 text-xs rounded border-slate-300 bg-white text-slate-900 focus:border-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                                triggerClassName="h-8 text-xs"
                               />
                             </div>
                           );
                         })}
                       </div>
                     )}
+
+                    <Input
+                      label={t("lessonsPerWeek")}
+                      type="number"
+                      min="1"
+                      max="40"
+                      value={defaultAulas}
+                      onChange={e => setDefaultAulas(Number(e.target.value))}
+                      disabled={isSubmitting}
+                    />
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                      disabled={isSubmitting}
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Adicionar Sinergia
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    {/* Select Turma */}
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t("classLabel")}
+                      </label>
+                      <SearchableSelect
+                        value={selectedTurmaId}
+                        onChange={setSelectedTurmaId}
+                        options={turmas.map(item => ({
+                          value: item.id,
+                          label: item.name,
+                        }))}
+                        placeholder={t("classPlaceholder")}
+                        allowEmpty
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* MultiSelect Disciplinas */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Disciplinas da Turma
+                        </label>
+                        <div className="flex items-center gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => handleSelectDisciplinas(disciplinas.map(d => d.id))}
+                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                            disabled={isSubmitting}
+                          >
+                            Todas
+                          </button>
+                          {selectedDisciplinaIds.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectDisciplinas([])}
+                              className="text-red-500 hover:underline"
+                              disabled={isSubmitting}
+                            >
+                              Limpar
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <SearchableMultiSelect
+                        options={disciplinas.map(d => ({
+                          value: d.id,
+                          label: d.name + (d.code ? ` (${d.code})` : ""),
+                        }))}
+                        value={selectedDisciplinaIds}
+                        onChange={handleSelectDisciplinas}
+                        placeholder="Selecione uma ou mais disciplinas..."
+                        searchPlaceholder="Buscar disciplina..."
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* Selected Disciplines Config List */}
+                    {selectedDisciplinaIds.length > 0 && (
+                      <div className="space-y-2.5 pt-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            Configuração por Disciplina ({selectedDisciplinaIds.length})
+                          </label>
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                            <span>Aulas padrão:</span>
+                            <input
+                              type="number"
+                              min="1"
+                              max="40"
+                              value={defaultAulas}
+                              onChange={e => {
+                                const val = Number(e.target.value);
+                                applyDefaultAulasToAll(val);
+                              }}
+                              className="w-12 h-6 text-center text-xs border rounded bg-background"
+                              disabled={isSubmitting}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="max-h-72 overflow-y-auto space-y-2 pr-1 border border-border/60 rounded-lg p-2 bg-slate-50/50 dark:bg-slate-900/30">
+                          {selectedDisciplinaIds.map(dId => {
+                            const disc = disciplinas.find(d => d.id === dId);
+                            const config = disciplinaConfigs[dId] || {
+                              professorId: "",
+                              quantidadeAulas: defaultAulas,
+                            };
+
+                            return (
+                              <div
+                                key={dId}
+                                className="p-2.5 bg-background border border-border rounded-md shadow-xs space-y-2"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium text-sm text-foreground truncate">
+                                    {disc?.name || "Disciplina"}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleSelectDisciplinas(
+                                        selectedDisciplinaIds.filter(id => id !== dId)
+                                      )
+                                    }
+                                    className="text-slate-400 hover:text-red-500 p-0.5 rounded transition-colors"
+                                    title="Remover disciplina"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                  <div className="sm:col-span-2">
+                                    <SearchableSelect
+                                      options={(professores || []).map(p => ({
+                                        value: p.id,
+                                        label: p.name || "Sem nome",
+                                      }))}
+                                      value={config.professorId || ""}
+                                      onChange={val =>
+                                        updateDisciplinaConfig(dId, "professorId", val)
+                                      }
+                                      placeholder="Sem professor (a definir)"
+                                      allowEmpty
+                                      disabled={isSubmitting}
+                                      triggerClassName="h-8 text-xs"
+                                    />
+                                  </div>
+                                  <div>
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max="40"
+                                      value={config.quantidadeAulas ?? defaultAulas}
+                                      onChange={e =>
+                                        updateDisciplinaConfig(
+                                          dId,
+                                          "quantidadeAulas",
+                                          Math.max(1, Number(e.target.value) || 1)
+                                        )
+                                      }
+                                      placeholder="Aulas"
+                                      className="w-full h-8 text-xs border border-input bg-background rounded px-2 text-center"
+                                      disabled={isSubmitting}
+                                      title="Aulas por semana"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                      disabled={
+                        isSubmitting ||
+                        !selectedTurmaId ||
+                        selectedDisciplinaIds.length === 0
+                      }
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      {selectedDisciplinaIds.length > 0
+                        ? `Vincular ${selectedDisciplinaIds.length} Disciplina${
+                            selectedDisciplinaIds.length > 1 ? "s" : ""
+                          } à Turma`
+                        : "Selecione a turma e as disciplinas"}
+                    </Button>
                   </>
                 )}
-
-                <Input
-                  label={t("lessonsPerWeek")}
-                  type="number"
-                  min="1"
-                  max="40"
-                  value={quantidadeAulas}
-                  onChange={e => setQuantidadeAulas(Number(e.target.value))}
-                  disabled={isSubmitting}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                  disabled={isSubmitting}
-                >
-                  <Plus className="w-4 h-4 mr-2" /> {isSinergia ? "Adicionar Sinergia" : t("linkButton")}
-                </Button>
               </form>
             </CardContent>
           </Card>
 
           {/* List */}
-          <Card className="md:col-span-2">
-            <CardContent className="p-0">
+          <Card className="lg:col-span-7">
+            <CardContent className="p-0 flex flex-col">
+              {/* Filters Bar - ALWAYS VISIBLE */}
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar por turma, disciplina ou professor..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <SearchableSelect
+                    options={turmas.map(t => ({ value: t.id, label: t.name }))}
+                    value={filterTurmaId}
+                    onChange={setFilterTurmaId}
+                    placeholder="Todas as turmas"
+                    allowEmpty
+                  />
+                  <SearchableSelect
+                    options={disciplinas.map(d => ({
+                      value: d.id,
+                      label: d.name,
+                    }))}
+                    value={filterDisciplinaId}
+                    onChange={setFilterDisciplinaId}
+                    placeholder="Todas as disciplinas"
+                    allowEmpty
+                  />
+                  <SearchableSelect
+                    options={[
+                      { value: "none", label: "Sem professor (A definir)" },
+                      ...professores.map(p => ({
+                        value: p.id,
+                        label: p.name || "Sem nome",
+                      })),
+                    ]}
+                    value={filterProfessorId}
+                    onChange={setFilterProfessorId}
+                    placeholder="Todos os professores"
+                    allowEmpty
+                  />
+                </div>
+              </div>
+
+              {/* List Content */}
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
                   {tCommon("loading")}
                 </div>
-              ) : cargas.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">
-                  {t("empty")}
+              ) : filteredCargas.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">
+                    {cargas.length === 0
+                      ? t("empty")
+                      : "Nenhuma carga horária encontrada para os filtros selecionados."}
+                  </p>
+                  {(searchTerm || filterTurmaId || filterDisciplinaId || filterProfessorId) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setFilterTurmaId("");
+                        setFilterDisciplinaId("");
+                        setFilterProfessorId("");
+                      }}
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Pesquisar por turma, disciplina ou professor..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {cargas
-                      .filter(c => 
-                        c.turma.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        c.disciplina.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        c.professor.name.toLowerCase().includes(searchTerm.toLowerCase())
-                      )
-                      .map(c => (
-                    <div
-                      key={c.id}
-                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <div>
-                        <div className="font-medium text-slate-900 dark:text-white">
-                          {c.turma.name} - {c.disciplina.name}
+                    {paginatedCargas.map(c => (
+                      <div
+                        key={c.id}
+                        className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-white">
+                            {c.turma?.name} - {c.disciplina?.name}
+                          </div>
+                          <div className="text-sm text-slate-500 flex flex-wrap gap-4 mt-1">
+                            <span>
+                              {c.professor?.name ? (
+                                t("teacherPrefix", { name: c.professor.name })
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                                  Sem professor definido
+                                </span>
+                              )}
+                            </span>
+                            <span>
+                              {t("lessonsCount", { count: c.quantidadeAulas || 1 })}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-sm text-slate-500 flex gap-4 mt-1">
-                          <span>
-                            {t("teacherPrefix", { name: c.professor.name })}
-                          </span>
-                          <span>
-                            {t("lessonsCount", { count: c.quantidadeAulas })}
-                          </span>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                            onClick={() => startEdit(c)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                            onClick={() => handleDelete(c.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                          onClick={() => startEdit(c)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                          onClick={() => handleDelete(c.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={filteredCargas.length}
+                      onPageChange={setPage}
+                      onPageSizeChange={setPageSize}
+                      pageSizeOptions={[10, 20, 50]}
+                    />
                   </div>
                 </div>
               )}
@@ -498,9 +812,25 @@ const CargasHorariasPage: React.FC = () => {
                     </label>
                     <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-sm border border-slate-200 dark:border-slate-700">
                       <strong>Turma:</strong> {turmas.find(t => t.id === editTurmaId)?.name} <br/>
-                      <strong>Disciplina:</strong> {disciplinas.find(d => d.id === editDisciplinaId)?.name} <br/>
-                      <strong>Professor:</strong> {professores.find(p => p.id === editProfessorId)?.name}
+                      <strong>Disciplina:</strong> {disciplinas.find(d => d.id === editDisciplinaId)?.name}
                     </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Professor (Opcional)
+                    </label>
+                    <SearchableSelect
+                      options={professores.map(p => ({
+                        value: p.id,
+                        label: p.name,
+                      }))}
+                      value={editProfessorId}
+                      onChange={setEditProfessorId}
+                      placeholder="Sem professor (a definir)"
+                      allowEmpty
+                      disabled={isSubmitting}
+                    />
                   </div>
 
                   <Input

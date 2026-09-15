@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -24,7 +25,7 @@ const DAY_IDS = [1, 2, 3, 4, 5] as const;
 const DisponibilidadesPage: React.FC = () => {
   const t = useTranslations("GradeHoraria.availability");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-disponibilidades");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -144,9 +145,7 @@ const DisponibilidadesPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            {tCommon("back")}
-          </Button>
+          <BackButton />
         </div>
 
         <div className="space-y-6">

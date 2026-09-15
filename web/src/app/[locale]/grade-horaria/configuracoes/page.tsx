@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -17,7 +18,7 @@ import { getGradeSettings, updateGradeSettings } from "../actions";
 export default function ConfiguracoesGradePage() {
   const t = useTranslations("GradeHoraria.settings");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-configuracoes");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -148,12 +149,7 @@ export default function ConfiguracoesGradePage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => navigate("/grade-horaria")}
-            >
-              {tCommon("back")}
-            </Button>
+            <BackButton />
             <Button onClick={handleSave} disabled={loading || isSubmitting}>
               <Save className="w-4 h-4 mr-2" /> {t("saveChanges")}
             </Button>

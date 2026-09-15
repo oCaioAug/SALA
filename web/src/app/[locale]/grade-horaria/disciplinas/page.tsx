@@ -2,13 +2,17 @@
 
 import { BookOpen, Plus, Trash2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/Input";
+import { Pagination } from "@/components/ui/Pagination";
+import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
@@ -17,7 +21,7 @@ import { createDisciplina, updateDisciplina, deleteDisciplina, getDisciplinas, g
 const DisciplinasPage: React.FC = () => {
   const t = useTranslations("GradeHoraria.subjects");
   const tCommon = useTranslations("GradeHoraria.common");
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-disciplinas");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -40,6 +44,27 @@ const DisciplinasPage: React.FC = () => {
   const [editProfessorIds, setEditProfessorIds] = useState<string[]>([]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const filteredDisciplinas = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return disciplinas;
+    return disciplinas.filter(
+      d =>
+        d.name?.toLowerCase().includes(q) ||
+        d.code?.toLowerCase().includes(q)
+    );
+  }, [disciplinas, searchTerm]);
+
+  const paginatedDisciplinas = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredDisciplinas.slice(start, start + pageSize);
+  }, [filteredDisciplinas, page, pageSize]);
 
   const fetchDisciplinas = async () => {
     try {
@@ -154,9 +179,7 @@ const DisciplinasPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            {tCommon("back")}
-          </Button>
+          <BackButton />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -179,46 +202,35 @@ const DisciplinasPage: React.FC = () => {
                   onChange={e => setNewCodigo(e.target.value)}
                   disabled={isSubmitting}
                 />
-                <div className="flex items-center gap-2 mb-4">
-                  <input
-                    type="checkbox"
+                <div className="flex items-center gap-2.5">
+                  <Checkbox
                     id="isOffGrid"
                     checked={isOffGrid}
-                    onChange={(e) => setIsOffGrid(e.target.checked)}
+                    onCheckedChange={checked => setIsOffGrid(!!checked)}
                     disabled={isSubmitting}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label htmlFor="isOffGrid" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label
+                    htmlFor="isOffGrid"
+                    className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
                     Disciplina EaD / Extra (Ignorar na grade)
                   </label>
                 </div>
-                
-                <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Professores Associados
                   </label>
-                  {professores.length === 0 ? (
-                    <p className="text-xs text-slate-500">Nenhum professor cadastrado.</p>
-                  ) : (
-                    professores.map(p => (
-                      <div key={p.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          id={`new-prof-${p.id}`}
-                          checked={newProfessorIds.includes(p.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setNewProfessorIds(prev => [...prev, p.id]);
-                            } else {
-                              setNewProfessorIds(prev => prev.filter(id => id !== p.id));
-                            }
-                          }}
-                          className="w-4 h-4 text-blue-600 rounded"
-                        />
-                        <label htmlFor={`new-prof-${p.id}`} className="text-sm">{p.name}</label>
-                      </div>
-                    ))
-                  )}
+                  <SearchableMultiSelect
+                    options={professores.map(p => ({
+                      value: p.id,
+                      label: p.name,
+                    }))}
+                    value={newProfessorIds}
+                    onChange={setNewProfessorIds}
+                    placeholder="Selecione os professores..."
+                    disabled={isSubmitting}
+                  />
                 </div>
 
                 <Button
@@ -234,77 +246,102 @@ const DisciplinasPage: React.FC = () => {
 
           {/* List */}
           <Card className="md:col-span-2">
-            <CardContent className="p-0">
+            <CardContent className="p-0 flex flex-col">
+              {/* Search Bar - ALWAYS VISIBLE */}
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar disciplinas..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
                   {tCommon("loading")}
                 </div>
-              ) : disciplinas.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">
-                  {t("empty")}
+              ) : filteredDisciplinas.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">
+                    {disciplinas.length === 0
+                      ? t("empty")
+                      : "Nenhuma disciplina encontrada para os filtros selecionados."}
+                  </p>
+                  {searchTerm && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      Limpar busca
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Pesquisar disciplinas..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {disciplinas
-                      .filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()) || d.code?.toLowerCase().includes(searchTerm.toLowerCase()))
-                      .map(d => (
-                    <div
-                      key={d.id}
-                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <div>
-                        <div className="font-medium text-slate-900 dark:text-white">
-                          {d.name}
+                    {paginatedDisciplinas.map(d => (
+                      <div
+                        key={d.id}
+                        className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-white">
+                            {d.name}
+                          </div>
+                          {d.code && (
+                            <div className="text-sm text-slate-500">
+                              {t("codeDisplay", { code: d.code })}
+                            </div>
+                          )}
+                          {d.isOffGrid && (
+                            <div className="text-xs font-semibold text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 px-2 py-0.5 mt-1 rounded inline-block">
+                              EaD / Extra
+                            </div>
+                          )}
+                          {d.professores && d.professores.length > 0 && (
+                            <div className="text-xs text-slate-400 mt-1 line-clamp-1">
+                              {d.professores.map((p: any) => p.name).join(", ")}
+                            </div>
+                          )}
                         </div>
-                        {d.code && (
-                          <div className="text-sm text-slate-500">
-                            {t("codeDisplay", { code: d.code })}
-                          </div>
-                        )}
-                        {d.isOffGrid && (
-                          <div className="text-xs font-semibold text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 px-2 py-0.5 mt-1 rounded inline-block">
-                            EaD / Extra
-                          </div>
-                        )}
-                        {d.professores && d.professores.length > 0 && (
-                          <div className="text-xs text-slate-400 mt-1 line-clamp-1">
-                            {d.professores.map((p: any) => p.name).join(", ")}
-                          </div>
-                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                            onClick={() => startEdit(d)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                            onClick={() => handleDelete(d.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                          onClick={() => startEdit(d)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                          onClick={() => handleDelete(d.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={filteredDisciplinas.length}
+                      onPageChange={setPage}
+                      onPageSizeChange={setPageSize}
+                      pageSizeOptions={[10, 20, 50]}
+                    />
                   </div>
                 </div>
               )}
@@ -333,46 +370,35 @@ const DisciplinasPage: React.FC = () => {
                     onChange={e => setEditCodigo(e.target.value)}
                     disabled={isSubmitting}
                   />
-                  <div className="flex items-center gap-2 mb-4">
-                    <input
-                      type="checkbox"
+                  <div className="flex items-center gap-2.5">
+                    <Checkbox
                       id="editIsOffGrid"
                       checked={editIsOffGrid}
-                      onChange={(e) => setEditIsOffGrid(e.target.checked)}
+                      onCheckedChange={checked => setEditIsOffGrid(!!checked)}
                       disabled={isSubmitting}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="editIsOffGrid" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <label
+                      htmlFor="editIsOffGrid"
+                      className="cursor-pointer text-sm font-medium text-slate-700 dark:text-slate-300"
+                    >
                       Disciplina EaD / Extra (Ignorar na grade)
                     </label>
                   </div>
-                  
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       Professores Associados
                     </label>
-                    {professores.length === 0 ? (
-                      <p className="text-xs text-slate-500">Nenhum professor cadastrado.</p>
-                    ) : (
-                      professores.map(p => (
-                        <div key={p.id} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id={`edit-prof-${p.id}`}
-                            checked={editProfessorIds.includes(p.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setEditProfessorIds(prev => [...prev, p.id]);
-                              } else {
-                                setEditProfessorIds(prev => prev.filter(id => id !== p.id));
-                              }
-                            }}
-                            className="w-4 h-4 text-blue-600 rounded"
-                          />
-                          <label htmlFor={`edit-prof-${p.id}`} className="text-sm">{p.name}</label>
-                        </div>
-                      ))
-                    )}
+                    <SearchableMultiSelect
+                      options={professores.map(p => ({
+                        value: p.id,
+                        label: p.name,
+                      }))}
+                      value={editProfessorIds}
+                      onChange={setEditProfessorIds}
+                      placeholder="Selecione os professores..."
+                      disabled={isSubmitting}
+                    />
                   </div>
 
                   <div className="flex gap-2 justify-end mt-6">
