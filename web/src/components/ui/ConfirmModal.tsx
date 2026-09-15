@@ -17,6 +17,10 @@ type ConfirmModalProps = {
   /** Destructive styling for remove/delete actions */
   variant?: "default" | "destructive";
   loading?: boolean;
+  /** Extra content between description and actions (e.g. confirm input) */
+  children?: React.ReactNode;
+  /** Disable confirm until prerequisites are met */
+  confirmDisabled?: boolean;
 };
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -29,6 +33,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onCancel,
   variant = "default",
   loading = false,
+  children,
+  confirmDisabled = false,
 }) => {
   const titleId = useId();
   const descriptionId = useId();
@@ -103,6 +109,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             </div>
           </div>
 
+          {children ? <div className="mt-4 space-y-3">{children}</div> : null}
+
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button
               ref={cancelRef}
@@ -119,6 +127,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
               variant={variant === "destructive" ? "destructive" : "primary"}
               onClick={onConfirm}
               loading={loading}
+              disabled={confirmDisabled || loading}
               className="sm:min-w-[6.5rem]"
             >
               {confirmLabel}
