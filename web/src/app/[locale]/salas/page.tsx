@@ -3,7 +3,7 @@
 import { ArrowRight, Building2, Grid, List, Plus, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
 import { MdInventory2 } from "react-icons/md";
 
@@ -120,6 +120,11 @@ const SalasPage: React.FC = () => {
     }
   }, [session]);
 
+  const roomsCacheRef = useRef(roomsCache);
+  roomsCacheRef.current = roomsCache;
+  const lastFetchTimeRef = useRef(lastFetchTime);
+  lastFetchTimeRef.current = lastFetchTime;
+
   useEffect(() => {
     const fetchRooms = async () => {
       if (!session?.user?.email) return;
@@ -131,8 +136,12 @@ const SalasPage: React.FC = () => {
         const now = Date.now();
         const cacheExpiry = 5 * 60 * 1000;
 
-        if (lastFetchTime > 0 && now - lastFetchTime < cacheExpiry) {
-          setRooms(roomsCache);
+        if (
+          lastFetchTimeRef.current > 0 &&
+          now - lastFetchTimeRef.current < cacheExpiry &&
+          roomsCacheRef.current.length > 0
+        ) {
+          setRooms(roomsCacheRef.current);
           if (sectors.length === 0) {
             const sectorsResponse = await fetch("/api/sectors");
             if (sectorsResponse.ok) {
@@ -181,7 +190,7 @@ const SalasPage: React.FC = () => {
     };
 
     fetchRooms();
-  }, [session?.user?.email, roomsCache, lastFetchTime, showError, t]);
+  }, [session?.user?.email]);
 
   const sectorOptions = useMemo(() => {
     const byId = new Map<string, string>();

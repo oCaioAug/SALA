@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import React from "react";
 
 interface ErrorBoundaryState {
@@ -28,31 +27,44 @@ export class ErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Atualiza o state para que a próxima renderização mostre a UI de erro
+    const msg = error?.message || "";
+    const nonCriticalErrors = [
+      'can\'t access property "postMessage"',
+      "ResizeObserver loop limit exceeded",
+      "ResizeObserver loop completed with undelivered notifications",
+      "Non-Error promise rejection captured",
+    ];
+
+    const isNonCritical = nonCriticalErrors.some(needle =>
+      msg.includes(needle)
+    );
+
+    if (isNonCritical) {
+      return { hasError: false };
+    }
+
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log do erro para monitoramento
-    console.error("ErrorBoundary capturou um erro:", error, errorInfo);
-
-    // Filtrar erros conhecidos que não são críticos
+    const msg = error?.message || "";
     const nonCriticalErrors = [
       'can\'t access property "postMessage"',
       "ResizeObserver loop limit exceeded",
+      "ResizeObserver loop completed with undelivered notifications",
       "Non-Error promise rejection captured",
     ];
 
-    const isNonCritical = nonCriticalErrors.some(msg =>
-      error.message.includes(msg)
+    const isNonCritical = nonCriticalErrors.some(needle =>
+      msg.includes(needle)
     );
 
     if (isNonCritical) {
-      // Para erros não críticos, apenas log e continue
-      console.warn("Erro não crítico ignorado:", error.message);
-      this.setState({ hasError: false });
+      console.warn("Erro não crítico ignorado pelo ErrorBoundary:", msg);
       return;
     }
+
+    console.error("ErrorBoundary capturou um erro:", error, errorInfo);
   }
 
   resetError = () => {
@@ -104,24 +116,5 @@ export class ErrorBoundary extends React.Component<
   }
 }
 
-// Wrapper funcional para usar useTranslations
-const ErrorBoundaryWithTranslations: React.FC<{
-  children: React.ReactNode;
-  fallback?: React.ComponentType<{ error?: Error; resetError?: () => void }>;
-}> = ({ children, fallback }) => {
-  const t = useTranslations("ErrorBoundary");
-
-  const translations = {
-    title: t("title"),
-    description: t("description"),
-    retry: t("retry"),
-  };
-
-  return (
-    <ErrorBoundary fallback={fallback} translations={translations}>
-      {children}
-    </ErrorBoundary>
-  );
-};
-
-export default ErrorBoundaryWithTranslations;
+export const ErrorBoundaryWithTranslations = ErrorBoundary;
+export default ErrorBoundary;

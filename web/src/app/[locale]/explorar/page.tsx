@@ -2,7 +2,7 @@
 
 import { Building2, MapPin, Plug, Search, Snowflake } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -74,12 +74,16 @@ export default function ExplorarPage() {
   });
   const { handleNotificationClick } = useNotificationHandler();
 
+  const redirectedRef = useRef(false);
   useEffect(() => {
-    if (!permLoading && isSuperAdmin && !hasOrganization) {
+    if (redirectedRef.current || permLoading) return;
+    if (isSuperAdmin && !hasOrganization) {
+      redirectedRef.current = true;
       router.replace("/organizations");
       return;
     }
-    if (!permLoading && isOrgAdmin) {
+    if (isOrgAdmin) {
+      redirectedRef.current = true;
       router.replace("/dashboard");
     }
   }, [isOrgAdmin, isSuperAdmin, hasOrganization, permLoading, router]);

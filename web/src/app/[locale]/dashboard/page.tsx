@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import type { DashboardChartStats } from "@/components/dashboard/dashboardChartStats";
@@ -15,6 +14,8 @@ import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
+import { useRouter } from "@/navigation";
+
 const DashboardPage: React.FC = () => {
   const t = useTranslations("Dashboard");
   const th = useTranslations("DashboardHome");
@@ -39,6 +40,11 @@ const DashboardPage: React.FC = () => {
     showError,
   } = useApp();
 
+  const roomsCacheRef = useRef(roomsCache);
+  roomsCacheRef.current = roomsCache;
+  const lastFetchTimeRef = useRef(lastFetchTime);
+  lastFetchTimeRef.current = lastFetchTime;
+
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -47,8 +53,10 @@ const DashboardPage: React.FC = () => {
   const { handleNotificationClick: globalNotificationHandler } =
     useNotificationHandler();
 
+  const redirectedRef = useRef(false);
   useEffect(() => {
-    if (!permLoading && isOrgMember) {
+    if (!permLoading && isOrgMember && !redirectedRef.current) {
+      redirectedRef.current = true;
       router.replace("/explorar");
     }
   }, [isOrgMember, permLoading, router]);
@@ -70,8 +78,12 @@ const DashboardPage: React.FC = () => {
         const now = Date.now();
         const cacheExpiry = 5 * 60 * 1000;
 
-        if (lastFetchTime > 0 && now - lastFetchTime < cacheExpiry) {
-          setRooms(roomsCache);
+        if (
+          lastFetchTimeRef.current > 0 &&
+          now - lastFetchTimeRef.current < cacheExpiry &&
+          roomsCacheRef.current.length > 0
+        ) {
+          setRooms(roomsCacheRef.current);
           setLoading(false);
           return;
         }
@@ -100,7 +112,7 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchRooms();
-  }, [session?.user?.email, roomsCache, lastFetchTime, showError, t]);
+  }, [session?.user?.email]);
 
   useEffect(() => {
     if (!session?.user?.email) {

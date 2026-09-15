@@ -6,6 +6,7 @@ import {
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -54,6 +55,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const tCommon = useTranslations("Common");
+  const tCommonRef = useRef(tCommon);
+  tCommonRef.current = tCommon;
+
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
@@ -67,54 +71,69 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const showSuccess = useCallback(
-    (message: string, title = tCommon("success")) => {
-      addToast({ type: "success", title, message });
+    (message: string, title?: string) => {
+      addToast({ type: "success", title: title || tCommonRef.current("success"), message });
     },
-    [addToast, tCommon]
+    [addToast]
   );
 
   const showError = useCallback(
-    (message: string, title = tCommon("error")) => {
-      addToast({ type: "error", title, message });
+    (message: string, title?: string) => {
+      addToast({ type: "error", title: title || tCommonRef.current("error"), message });
     },
-    [addToast, tCommon]
+    [addToast]
   );
 
   const showWarning = useCallback(
-    (message: string, title = tCommon("warning")) => {
-      addToast({ type: "warning", title, message });
+    (message: string, title?: string) => {
+      addToast({ type: "warning", title: title || tCommonRef.current("warning"), message });
     },
-    [addToast, tCommon]
+    [addToast]
   );
 
   const showInfo = useCallback(
-    (message: string, title = tCommon("info")) => {
-      addToast({ type: "info", title, message });
+    (message: string, title?: string) => {
+      addToast({ type: "info", title: title || tCommonRef.current("info"), message });
     },
-    [addToast, tCommon]
+    [addToast]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      isLoading,
+      setLoading,
+      searchTerm,
+      setSearchTerm,
+      isCreateRoomModalOpen,
+      setCreateRoomModalOpen: setIsCreateRoomModalOpen,
+      roomsCache,
+      setRoomsCache,
+      itemsCache,
+      setItemsCache,
+      lastFetchTime,
+      setLastFetchTime,
+      showSuccess,
+      showError,
+      showWarning,
+      showInfo,
+    }),
+    [
+      isLoading,
+      setLoading,
+      searchTerm,
+      isCreateRoomModalOpen,
+      roomsCache,
+      itemsCache,
+      lastFetchTime,
+      showSuccess,
+      showError,
+      showWarning,
+      showInfo,
+    ]
   );
 
   return (
-    <AppContext.Provider
-      value={{
-        isLoading,
-        setLoading,
-        searchTerm,
-        setSearchTerm,
-        isCreateRoomModalOpen,
-        setCreateRoomModalOpen: setIsCreateRoomModalOpen,
-        roomsCache,
-        setRoomsCache,
-        itemsCache,
-        setItemsCache,
-        lastFetchTime,
-        setLastFetchTime,
-        showSuccess,
-        showError,
-        showWarning,
-        showInfo,
-      }}
-    >
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

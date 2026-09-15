@@ -116,36 +116,34 @@ export default function OrganizationsPage() {
     }
   };
 
-  const loading =
-    status === "loading" || permLoading || meLoading || membershipsLoading;
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-background">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+  const dataLoading =
+    status === "authenticated" && (meLoading || membershipsLoading || permLoading);
 
   return (
     <ProtectedRoute>
-      <OrganizationsShell variant="hub">
-        <OrganizationsHub
-          memberships={memberships}
-          activeOrganizationId={activeOrganizationId}
-          invites={invites}
-          isSuperAdmin={isSuperAdmin}
-          createOrgHref={createOrgHref}
-          profileComplete={me?.profileComplete ?? false}
-          hasOrganization={hasOrganization}
-          hasPassword={hasPassword}
-          onPasswordCreated={() => setHasPassword(true)}
-          invitesLoading={invitesLoading}
-          actionLoading={actionLoading}
-          error={error}
-          onAcceptInvite={acceptInvite}
-        />
-      </OrganizationsShell>
+      {dataLoading ? (
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-background">
+          <LoadingSpinner size="lg" />
+        </div>
+      ) : (
+        <OrganizationsShell variant="hub">
+          <OrganizationsHub
+            memberships={memberships}
+            activeOrganizationId={activeOrganizationId}
+            invites={invites}
+            isSuperAdmin={isSuperAdmin}
+            createOrgHref={createOrgHref}
+            profileComplete={me?.profileComplete ?? false}
+            hasOrganization={hasOrganization}
+            hasPassword={hasPassword}
+            onPasswordCreated={() => setHasPassword(true)}
+            invitesLoading={invitesLoading}
+            actionLoading={actionLoading}
+            error={error}
+            onAcceptInvite={acceptInvite}
+          />
+        </OrganizationsShell>
+      )}
     </ProtectedRoute>
   );
 }

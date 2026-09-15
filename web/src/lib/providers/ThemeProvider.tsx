@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { safeLocalStorage } from "@/lib/utils/clientSafe";
 
@@ -33,26 +33,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyThemeClass(initial);
   }, []);
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     safeLocalStorage.setItem("theme", newTheme);
     applyThemeClass(newTheme);
-  };
+  }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setThemeState(prev => {
       const next = prev === "dark" ? "light" : "dark";
       safeLocalStorage.setItem("theme", next);
       applyThemeClass(next);
       return next;
     });
-  };
+  }, []);
 
-  const contextValue = {
-    theme: mounted ? theme : "dark",
-    toggleTheme,
-    setTheme,
-  };
+  const contextValue = useMemo(
+    () => ({
+      theme: mounted ? theme : "dark",
+      toggleTheme,
+      setTheme,
+    }),
+    [mounted, theme, toggleTheme, setTheme]
+  );
 
   return (
     <ThemeContext.Provider value={contextValue}>

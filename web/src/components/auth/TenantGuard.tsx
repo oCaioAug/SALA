@@ -1,11 +1,11 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { usePathname, useRouter } from "@/navigation";
 
 interface TenantGuardProps {
   children: React.ReactNode;
@@ -28,6 +28,7 @@ export function TenantGuard({ children }: TenantGuardProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const redirectedRef = useRef(false);
 
   const isExempt = useMemo(
     () => EXEMPT_PATH_SEGMENTS.some(segment => pathname.includes(segment)),
@@ -41,7 +42,8 @@ export function TenantGuard({ children }: TenantGuardProps) {
     !session.user.organizationId;
 
   useEffect(() => {
-    if (!needsRedirect) return;
+    if (!needsRedirect || redirectedRef.current) return;
+    redirectedRef.current = true;
     router.replace("/organizations");
   }, [needsRedirect, router]);
 

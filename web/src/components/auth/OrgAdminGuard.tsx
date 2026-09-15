@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
+import { useRouter } from "@/navigation";
 
 interface OrgAdminGuardProps {
   children: React.ReactNode;
@@ -12,20 +12,34 @@ interface OrgAdminGuardProps {
 
 export function OrgAdminGuard({ children }: OrgAdminGuardProps) {
   const router = useRouter();
-  const { isOrgAdmin, hasOrganization, isLoading } = useOrgPermissions();
+  const redirectedRef = useRef(false);
+  const { isOrgAdmin, isSuperAdmin, hasOrganization, isLoading, status } =
+    useOrgPermissions();
+
+  const canAccess = isOrgAdmin || isSuperAdmin;
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!hasOrganization) {
+    if (isLoading || status === "loading" || redirectedRef.current) return;
+
+    if (status === "unauthenticated") {
+      redirectedRef.current = true;
+      router.replace("/auth/login");
+      return;
+    }
+
+    if (!hasOrganization && !isSuperAdmin) {
+      redirectedRef.current = true;
       router.replace("/organizations");
       return;
     }
-    if (!isOrgAdmin) {
+
+    if (!canAccess) {
+      redirectedRef.current = true;
       router.replace("/explorar");
     }
-  }, [isOrgAdmin, hasOrganization, isLoading, router]);
+  }, [canAccess, isSuperAdmin, hasOrganization, isLoading, status, router]);
 
-  if (isLoading) {
+  if (isLoading || status === "loading") {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -33,7 +47,7 @@ export function OrgAdminGuard({ children }: OrgAdminGuardProps) {
     );
   }
 
-  if (!isOrgAdmin) return null;
+  if (status === "unauthenticated" || !canAccess) return null;
 
   return <>{children}</>;
 }
