@@ -21,7 +21,9 @@ async function main() {
     const turmaMap = new Map<string, number>();
 
     for (const c of cargas) {
-        profMap.set(c.professor.name, (profMap.get(c.professor.name) || 0) + c.quantidadeAulas);
+        if (c.professor) {
+            profMap.set(c.professor.name, (profMap.get(c.professor.name) || 0) + c.quantidadeAulas);
+        }
         turmaMap.set(c.turma.name, (turmaMap.get(c.turma.name) || 0) + c.quantidadeAulas);
     }
 

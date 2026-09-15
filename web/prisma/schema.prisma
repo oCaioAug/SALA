@@ -51,6 +51,7 @@ model Organization {
   disciplinas   Disciplina[]
   professores   Professor[]
   sinergias     Sinergia[]
+  gradesHorarias GradeHorariaGerada[]
   invites       OrganizationInvite[]
   rooms         Room[]
   sectors       Sector[]
@@ -642,13 +643,13 @@ model CargaHoraria {
   id              String @id @default(cuid())
   turmaId         String
   disciplinaId    String
-  professorId     String
+  professorId     String?
   sinergiaId      String?
   quantidadeAulas Int // Número de aulas dessa disciplina para essa turma com esse professor (Ex: 4)
 
   turma      Turma      @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   disciplina Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
-  professor  Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  professor  Professor? @relation(fields: [professorId], references: [id], onDelete: SetNull)
   sinergia   Sinergia?  @relation(fields: [sinergiaId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
@@ -697,3 +698,19 @@ model Professor {
   @@index([userId])
   @@map("professores")
 }
+
+model GradeHorariaGerada {
+  id             String   @id @default(cuid())
+  organizationId String
+  success        Boolean  @default(true)
+  fitness        Float    @default(0)
+  scheduleData   Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("grades_horarias_geradas")
+}
+

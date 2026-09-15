@@ -123,19 +123,23 @@ export class TimetablingEngine {
 
       for (const req of groupReqs) {
         turmaIds.add(req.turmaId);
-        profIds.add(req.professorId);
+        if (req.professorId) {
+          profIds.add(req.professorId);
+        }
         requiredSlots = Math.max(requiredSlots, req.requiredSlots); // Assume they are the same or take max
 
-        const profAvail = availabilityMap.get(req.professorId);
-        if (!profAvail) {
-          errors.push(
-            `Professor ${req.professorId} sem disponibilidade definida.`
-          );
-          intersectedDomain = [];
-          continue;
+        let validForThisReq = req.validSlots;
+        if (req.professorId) {
+          const profAvail = availabilityMap.get(req.professorId);
+          if (!profAvail) {
+            errors.push(
+              `Professor ${req.professorId} sem disponibilidade definida.`
+            );
+            intersectedDomain = [];
+            continue;
+          }
+          validForThisReq = req.validSlots.filter(s => profAvail.has(s));
         }
-
-        const validForThisReq = req.validSlots.filter(s => profAvail.has(s));
 
         if (intersectedDomain === null) {
           intersectedDomain = validForThisReq;

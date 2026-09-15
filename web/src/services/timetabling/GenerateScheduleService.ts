@@ -81,7 +81,7 @@ export class GenerateScheduleService {
         id: c.id,
         turmaId: c.turmaId,
         disciplinaId: c.disciplinaId,
-        professorId: c.professorId,
+        professorId: c.professorId || null,
         sinergiaId: c.sinergiaId || undefined,
         requiredSlots: c.quantidadeAulas,
         validSlots,
@@ -90,7 +90,7 @@ export class GenerateScheduleService {
 
     // 3. Fetch Professor Availabilities for the professors in this organization's requirements
     const professorIds = Array.from(
-      new Set(requirements.map(r => r.professorId))
+      new Set(requirements.map(r => r.professorId).filter((id): id is string => Boolean(id)))
     );
 
     const disponibilidades = await prisma.disponibilidade.findMany({
