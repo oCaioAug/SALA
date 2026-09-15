@@ -1,12 +1,13 @@
 "use client";
 
 import { PlatformRole } from "@prisma/client";
-import { Calendar, Mail, Shield, User, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Calendar, Mail, RotateCcw, Shield, Trash2, User, X } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/Button";
+import { getIntlLocale } from "@/lib/utils";
 import { Link } from "@/navigation";
 
 export interface AdminUserDetail {
@@ -27,6 +28,8 @@ interface AdminUserDetailModalProps {
   open: boolean;
   onClose: () => void;
   onToggleSuperAdmin: (user: AdminUserDetail) => void;
+  onDeleteUser?: (user: AdminUserDetail) => void;
+  onRestoreUser?: (user: AdminUserDetail) => void;
   updating?: boolean;
 }
 
@@ -35,9 +38,14 @@ export function AdminUserDetailModal({
   open,
   onClose,
   onToggleSuperAdmin,
+  onDeleteUser,
+  onRestoreUser,
   updating = false,
 }: AdminUserDetailModalProps) {
   const t = useTranslations("Admin.users");
+  const tRoles = useTranslations("Admin.badges.organizationRole");
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
 
   useEffect(() => {
     if (!open) return;
@@ -53,6 +61,16 @@ export function AdminUserDetailModal({
   }, [open, onClose]);
 
   if (!open || !user) return null;
+
+  const isDeleted = Boolean(user.deletedAt);
+
+  const roleLabel = (role: string) => {
+    try {
+      return tRoles(role as "OWNER" | "ADMIN" | "MEMBER");
+    } catch {
+      return role;
+    }
+  };
 
   return (
     <div
@@ -79,6 +97,15 @@ export function AdminUserDetailModal({
             <p className="mt-1 truncate text-sm text-muted-foreground">
               {user.email}
             </p>
+            {isDeleted && (
+              <div className="mt-2">
+                <AdminStatusBadge
+                  status="deleted"
+                  kind="danger"
+                  label={t("deleted")}
+                />
+              </div>
+            )}
           </div>
           <button
             type="button"
@@ -104,7 +131,7 @@ export function AdminUserDetailModal({
             <DetailField
               icon={Calendar}
               label={t("memberSince")}
-              value={new Date(user.createdAt).toLocaleDateString("pt-BR")}
+              value={new Date(user.createdAt).toLocaleDateString(intlLocale)}
             />
           </div>
 
@@ -137,7 +164,7 @@ export function AdminUserDetailModal({
                       </p>
                     </div>
                     <span className="shrink-0 text-xs font-medium text-primary dark:text-primary">
-                      {membership.role}
+                      {roleLabel(membership.role)}
                     </span>
                   </li>
                 ))}
@@ -145,7 +172,7 @@ export function AdminUserDetailModal({
             )}
           </div>
 
-          <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row">
+          <div className="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:flex-wrap">
             <Button
               type="button"
               variant="outline"
@@ -154,17 +181,46 @@ export function AdminUserDetailModal({
             >
               {t("closeModal")}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              disabled={updating}
-              onClick={() => onToggleSuperAdmin(user)}
-            >
-              {user.platformRole === PlatformRole.SUPER_ADMIN
-                ? t("removeSuperAdmin")
-                : t("promoteSuperAdmin")}
-            </Button>
+            {isDeleted ? (
+              onRestoreUser && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  disabled={updating}
+                  onClick={() => onRestoreUser(user)}
+                >
+                  <RotateCcw className="mr-1.5 h-4 w-4" />
+                  {t("restoreUser")}
+                </Button>
+              )
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  disabled={updating}
+                  onClick={() => onToggleSuperAdmin(user)}
+                >
+                  {user.platformRole === PlatformRole.SUPER_ADMIN
+                    ? t("removeSuperAdmin")
+                    : t("promoteSuperAdmin")}
+                </Button>
+                {onDeleteUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    disabled={updating}
+                    onClick={() => onDeleteUser(user)}
+                  >
+                    <Trash2 className="mr-1.5 h-4 w-4" />
+                    {t("deleteUser")}
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

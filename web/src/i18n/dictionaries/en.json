@@ -1639,6 +1639,13 @@
     "LOGIN_INVALID": "Incorrect email or password",
     "ADMIN_USER_NOT_FOUND": "Admin user not found. Run the seed first.",
     "CANNOT_REMOVE_OWN_SUPER_ADMIN": "You cannot remove your own super admin access",
+    "CANNOT_DELETE_SELF": "You cannot delete your own account",
+    "USER_ALREADY_DELETED": "User is already deleted",
+    "USER_NOT_DELETED": "User is not deleted",
+    "CANNOT_MODIFY_DELETED_USER": "Cannot modify a deleted user",
+    "ORGANIZATION_ALREADY_DELETED": "Organization is already deleted",
+    "ORGANIZATION_NOT_DELETED": "Organization is not deleted",
+    "ASSIGNEE_NOT_IN_ORGANIZATION": "User does not belong to the incident's organization",
     "SUBSCRIPTION_NO_PLAN": "Organization has no subscription. Provide planId.",
     "SUBSCRIPTION_NOT_FOUND": "Subscription not found.",
     "USER_ID_REQUIRED": "userId is required",
@@ -2047,6 +2054,16 @@
       "savingProfile": "Saving...",
       "deleteOrg": "Deactivate organization",
       "deleteOrgConfirm": "Soft-delete this organization? It will disappear from listings.",
+      "deleteOrgModal": {
+        "title": "Deactivate organization",
+        "risk": "This is a high-impact action. The organization will be deactivated and removed from active listings.",
+        "riskHide": "The organization will no longer appear in admin listings.",
+        "riskAccess": "Members may lose operational access to rooms and reservations.",
+        "riskData": "Historical data remains, but the organization will be out of operation.",
+        "typeNameLabel": "Type the organization name \"{name}\" to confirm",
+        "finalConfirm": "Do you really confirm deleting this organization?",
+        "confirm": "Confirm deactivation"
+      },
       "transferOwnership": "Transfer ownership",
       "transferOwnershipConfirm": "Transfer ownership to this member?",
       "fields": {
@@ -2057,13 +2074,25 @@
         "ownerEmail": "Owner email",
         "ownerName": "Owner name (optional)",
         "email": "Contact email",
-        "phone": "Contact phone"
+        "phone": "Contact phone",
+        "legalName": "Legal name",
+        "cnpj": "CNPJ"
       },
       "tabs": {
         "general": "General",
         "members": "Members",
         "rooms": "Rooms",
         "usage": "Usage and plan"
+      },
+      "sections": {
+        "profileTitle": "Organization details",
+        "profileHelp": "Name, slug and contact info used across the platform.",
+        "statusTitle": "Status and classification",
+        "statusHelp": "Control the organization lifecycle and type.",
+        "ownershipTitle": "Ownership",
+        "ownershipHelp": "Who owns the organization and when it was created.",
+        "dangerTitle": "Danger zone",
+        "dangerHelp": "Irreversible or high-impact actions."
       },
       "roleOwner": "Owner",
       "roleAdmin": "Admin",
@@ -2101,7 +2130,16 @@
       "metricTrial": "Trial",
       "metricTrialSub": "Trial period",
       "metricSuspended": "Suspended",
-      "metricSuspendedSub": "Access blocked"
+      "metricSuspendedSub": "Access blocked",
+      "includeDeleted": "Include deleted",
+      "deleted": "Deleted",
+      "restoreOrg": "Restore organization",
+      "confirmRestoreOrg": "Restore this organization?",
+      "confirmAction": "Confirm",
+      "cancelAction": "Cancel",
+      "slugLabel": "Slug: {slug}",
+      "removeMemberTitle": "Remove member",
+      "transferOwnershipTitle": "Transfer ownership"
     },
     "users": {
       "title": "Users",
@@ -2124,6 +2162,13 @@
       "removeSuperAdmin": "Remove SUPER_ADMIN",
       "includeDeleted": "Include deleted",
       "deleted": "Deleted",
+      "deleteUser": "Delete user",
+      "restoreUser": "Restore user",
+      "confirmAction": "Confirm",
+      "cancelAction": "Cancel",
+      "confirmPromoteDesc": "Confirm role change for {email}?",
+      "confirmDeleteDesc": "Soft-delete user {email}? They will no longer be able to access the platform.",
+      "confirmRestoreDesc": "Restore access for {email}?",
       "stats": {
         "total": "Total",
         "totalSub": "Users on the platform",
@@ -2168,7 +2213,9 @@
         "maxReservationsHint": "Optional. Leave empty for unlimited reservations.",
         "maxReservationsPlaceholder": "Unlimited",
         "isActive": "Active plan",
-        "isActiveHint": "Inactive plans are not available for new sign-ups."
+        "isActiveHint": "Inactive plans are not available for new sign-ups.",
+        "features": "Features (JSON)",
+        "featuresHint": "JSON object or array with plan feature flags. Leave empty for none."
       },
       "card": {
         "spaces": "Spaces",
@@ -2192,7 +2239,8 @@
       },
       "errors": {
         "createFailed": "Could not create the plan. Check the data and try again.",
-        "updateFailed": "Could not update the plan. Check the data and try again."
+        "updateFailed": "Could not update the plan. Check the data and try again.",
+        "invalidFeatures": "Invalid features JSON"
       }
     },
     "audit": {
@@ -2201,7 +2249,19 @@
       "searchPlaceholder": "Filter by action...",
       "refresh": "Refresh",
       "emptyTitle": "No records found",
-      "emptyDesc": "There are no audit logs for the current filter"
+      "emptyDesc": "There are no audit logs for the current filter",
+      "organizationFilter": "Organization",
+      "allOrganizations": "All organizations",
+      "viewDetails": "View details",
+      "closeModal": "Close",
+      "detailTitle": "Log detail",
+      "actor": "Actor",
+      "organization": "Organization",
+      "entityType": "Entity type",
+      "entityId": "Entity ID",
+      "createdAt": "Created at",
+      "metadata": "Metadata",
+      "loadError": "Failed to load audit logs"
     },
     "incidents": {
       "title": "Incidents",
@@ -2227,6 +2287,12 @@
       "noTarget": "—",
       "status": "Status",
       "priority": "Priority",
+      "descriptionLabel": "Description",
+      "auditTitle": "Inventory audit",
+      "auditDiscrepancies": "{count} discrepancy(ies)",
+      "expectedQty": "Expected",
+      "detectedQty": "Detected",
+      "missingQty": "{count} missing",
       "resolutionNotes": "Resolution notes",
       "assignedTo": "Assigned to",
       "unassigned": "Unassigned",
@@ -2247,6 +2313,17 @@
         "resolvedSub": "Resolved or cancelled",
         "total": "Total",
         "totalSub": "All incidents"
+      },
+      "resolvedBySuperAdmin": "Resolved by super admin",
+      "categories": {
+        "EQUIPMENT_FAILURE": "Equipment Failure",
+        "INFRASTRUCTURE": "Infrastructure",
+        "SOFTWARE": "Software",
+        "SAFETY": "Safety",
+        "MAINTENANCE": "Maintenance",
+        "ELECTRICAL": "Electrical",
+        "NETWORK": "Network",
+        "OTHER": "Other"
       }
     },
     "billing": {
@@ -2260,6 +2337,7 @@
       "allPlans": "All plans",
       "emptyTitle": "No subscriptions found",
       "emptyDesc": "No subscriptions match the selected filters",
+      "loadError": "Failed to load subscriptions",
       "manage": "Manage",
       "closeModal": "Close",
       "loading": "Loading...",
@@ -2304,6 +2382,11 @@
       "platformRole": {
         "SUPER_ADMIN": "Super Admin",
         "NONE": "User"
+      },
+      "organizationRole": {
+        "OWNER": "Owner",
+        "ADMIN": "Admin",
+        "MEMBER": "Member"
       },
       "subscription": {
         "ACTIVE": "Active",

@@ -5,6 +5,7 @@ import { Building2, CheckCircle2, Clock, Plus, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { AdminActionError } from "@/components/admin/AdminActionError";
 import { AdminFilterBar } from "@/components/admin/AdminFilterBar";
 import {
   AdminPageContent,
@@ -17,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Pagination } from "@/components/ui/Pagination";
+import { Switch } from "@/components/ui/Switch";
 import { Link } from "@/navigation";
 
 interface OrganizationListItem {
@@ -25,6 +27,7 @@ interface OrganizationListItem {
   slug: string;
   status: OrganizationStatus;
   createdAt: string;
+  deletedAt?: string | null;
   owner: { id: string; name: string | null; email: string };
   plan: { id: string; name: string; slug: string } | null;
   _count: { members: number; rooms: number };
@@ -55,8 +58,9 @@ export default function OrganizationsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [planFilter, setPlanFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/stats")
@@ -75,6 +79,7 @@ export default function OrganizationsPage() {
   useEffect(() => {
     const fetchOrgs = async () => {
       setLoading(true);
+      setListError(null);
       try {
         const params = new URLSearchParams({
           page: String(page),
@@ -83,15 +88,16 @@ export default function OrganizationsPage() {
         if (search) params.set("search", search);
         if (statusFilter) params.set("status", statusFilter);
         if (planFilter) params.set("planId", planFilter);
+        if (includeDeleted) params.set("includeDeleted", "true");
 
         const res = await fetch(`/api/admin/organizations?${params}`);
         if (!res.ok) throw new Error(t("loadError"));
         const json = await res.json();
         setOrganizations(json.data);
-        setTotalPages(json.pagination.totalPages);
         setTotal(json.pagination.total);
       } catch {
         setOrganizations([]);
+        setListError(t("loadError"));
       } finally {
         setLoading(false);
       }
@@ -99,7 +105,7 @@ export default function OrganizationsPage() {
 
     const debounce = setTimeout(fetchOrgs, 300);
     return () => clearTimeout(debounce);
-  }, [search, statusFilter, planFilter, page, t]);
+  }, [search, statusFilter, planFilter, page, includeDeleted, t]);
 
   const metricCards = [
     {
@@ -151,6 +157,10 @@ export default function OrganizationsPage() {
         }
       />
       <AdminPageContent>
+        <AdminActionError
+          message={listError}
+          onDismiss={() => setListError(null)}
+        />
         <AdminMetricCards
           className="mb-6"
           metrics={metricCards}
@@ -204,6 +214,19 @@ export default function OrganizationsPage() {
               })),
             },
           ]}
+          actions={
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+              <Switch
+                checked={includeDeleted}
+                onChange={e => {
+                  setIncludeDeleted(e.target.checked);
+                  setPage(1);
+                }}
+                aria-label={t("includeDeleted")}
+              />
+              {t("includeDeleted")}
+            </label>
+          }
         />
 
         {loading ? (
@@ -221,7 +244,11 @@ export default function OrganizationsPage() {
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {organizations.map(org => (
                 <Link key={org.id} href={`/admin/organizations/${org.id}`}>
-                  <Card className="border-border bg-card transition-colors hover:border-primary/30 hover:bg-muted">
+                  <Card
+                    className={`border-border bg-card p-0 transition-colors hover:border-primary/30 hover:bg-muted ${
+                      org.deletedAt ? "opacity-75" : ""
+                    }`}
+                  >
                     <CardContent className="p-5">
                       <div className="mb-3 flex items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -232,10 +259,19 @@ export default function OrganizationsPage() {
                             {org.slug}
                           </p>
                         </div>
-                        <AdminStatusBadge
-                          status={org.status}
-                          kind="organization"
-                        />
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <AdminStatusBadge
+                            status={org.status}
+                            kind="organization"
+                          />
+                          {org.deletedAt && (
+                            <AdminStatusBadge
+                              status="deleted"
+                              kind="danger"
+                              label={t("deleted")}
+                            />
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-1 text-sm text-muted-foreground">
                         <p>
@@ -262,16 +298,14 @@ export default function OrganizationsPage() {
                 </Link>
               ))}
             </div>
-            {totalPages > 1 && (
-              <div className="mt-8">
-                <Pagination
-                  page={page}
-                  pageSize={12}
-                  total={total}
-                  onPageChange={setPage}
-                />
-              </div>
-            )}
+            <div className="mt-8">
+              <Pagination
+                page={page}
+                pageSize={12}
+                total={total}
+                onPageChange={setPage}
+              />
+            </div>
           </>
         )}
       </AdminPageContent>
