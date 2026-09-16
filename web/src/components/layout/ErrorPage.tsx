@@ -33,15 +33,11 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
       )}
     >
       <div className="text-center">
-        <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-8 h-8 text-red-400" />
-        </div>
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+        <AlertCircle className="mx-auto mb-4 h-8 w-8 text-red-500" />
+        <h3 className="mb-2 text-lg font-semibold text-foreground">
           {t("feedback.errorTitle")}
         </h3>
-        <p className="text-slate-600 dark:text-gray-400 text-sm mb-6">
-          {error}
-        </p>
+        <p className="mb-6 text-sm text-muted-foreground">{error}</p>
         {onRetry && <Button onClick={onRetry}>{defaultRetryLabel}</Button>}
       </div>
     </div>

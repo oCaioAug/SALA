@@ -127,7 +127,7 @@ export const notificationService = {
             where: {
               sectorId,
               role: "MANAGER",
-              sector: { deletedAt: null },
+              canApproveReservations: true,
             },
             include: {
               user: { select: { id: true, email: true, name: true } },

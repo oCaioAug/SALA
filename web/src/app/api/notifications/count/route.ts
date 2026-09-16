@@ -1,6 +1,5 @@
 import {
   apiErrorResponse,
-  apiInternalError,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,9 +10,6 @@ import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-
-const cache = new Map<string, { count: number; timestamp: number }>();
-const CACHE_DURATION = 10000;
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,14 +51,6 @@ export async function GET(request: NextRequest) {
       return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }
 
-    const cacheKey = `count_${actualUserId}_${ctx.organizationId}`;
-    const cached = cache.get(cacheKey);
-    const now = Date.now();
-
-    if (cached && now - cached.timestamp < CACHE_DURATION) {
-      return NextResponse.json({ count: cached.count });
-    }
-
     const count = await prisma.notification.count({
       where: {
         userId: actualUserId,
@@ -70,8 +58,6 @@ export async function GET(request: NextRequest) {
         OR: [{ organizationId: ctx.organizationId }, { organizationId: null }],
       },
     });
-
-    cache.set(cacheKey, { count, timestamp: now });
 
     return NextResponse.json({ count });
   } catch (error) {

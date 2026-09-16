@@ -14,11 +14,6 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  MdOutlineBugReport,
-  MdOutlineScience,
-  MdRefresh,
-} from "react-icons/md";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
@@ -28,7 +23,6 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
-import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { getIntlLocale } from "@/lib/utils";
 
@@ -55,7 +49,6 @@ const NotificationPage: React.FC = () => {
   const locale = useLocale();
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
-  const { isOrgAdmin } = useOrgPermissions();
   const [currentPage, setCurrentPage] = useState("notificacoes");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,7 +176,7 @@ const NotificationPage: React.FC = () => {
       case "SYSTEM_ANNOUNCEMENT":
         return <Info className="w-5 h-5 text-blue-500" />;
       case "RESERVATION_CREATED":
-        return <Bell className="w-5 h-5 text-purple-500" />;
+        return <Bell className="w-5 h-5 text-slate-600" />;
       case "RESERVATION_APPROVED":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
       case "RESERVATION_REJECTED":
@@ -391,7 +384,7 @@ const NotificationPage: React.FC = () => {
       case "SYSTEM_ANNOUNCEMENT":
         return "border-blue-200 dark:border-blue-500/50";
       case "RESERVATION_CREATED":
-        return "border-purple-200 dark:border-purple-500/50";
+        return "border-slate-200 dark:border-slate-500/50";
       case "RESERVATION_APPROVED":
         return "border-green-200 dark:border-green-500/50";
       case "RESERVATION_REJECTED":
@@ -430,11 +423,8 @@ const NotificationPage: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <Bell className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                     {t("title")}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">
@@ -453,118 +443,12 @@ const NotificationPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => {
-                    console.log("[notificacoes] Recarregando notificações...");
-                    fetchNotifications();
-                  }}
-                >
-                  <MdRefresh className="h-4 w-4 shrink-0" aria-hidden />
-                  {t("actions.reload")}
+              {unreadCount > 0 && (
+                <Button onClick={markAllAsRead}>
+                  <CheckCheck className="w-4 h-4 mr-2" />
+                  {t("actions.markAllRead")}
                 </Button>
-                {isOrgAdmin && (
-                  <>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={async () => {
-                        try {
-                          console.log(
-                            "[notificacoes] Verificando todas as notificações no banco..."
-                          );
-                          const response = await fetch(
-                            "/api/notifications/debug"
-                          );
-
-                          if (response.ok) {
-                            const result = await response.json();
-                            console.log(
-                              "[notificacoes] Debug das notificações:",
-                              result
-                            );
-                            showSuccess(
-                              t("feedback.debugSuccess", {
-                                count: result.total,
-                              })
-                            );
-                          } else {
-                            showError("Erro ao buscar debug");
-                          }
-                        } catch (error) {
-                          console.error("[notificacoes] Erro no debug:", error);
-                          showError("Erro ao buscar debug");
-                        }
-                      }}
-                    >
-                      <MdOutlineBugReport
-                        className="h-4 w-4 shrink-0"
-                        aria-hidden
-                      />
-                      {t("actions.debug")}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(
-                            "/api/notifications/test-reservation",
-                            {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                            }
-                          );
-
-                          if (response.ok) {
-                            const result = await response.json();
-                            showSuccess(
-                              t("feedback.testSuccess", {
-                                message: result.message,
-                              })
-                            );
-                            console.log(
-                              "[notificacoes] Resultado do teste:",
-                              result
-                            );
-                            // Recarregar notificações
-                            setTimeout(() => fetchNotifications(), 1000);
-                          } else {
-                            const errorData = await response
-                              .json()
-                              .catch(() => ({}));
-                            console.error(
-                              "[notificacoes] Erro na resposta:",
-                              errorData
-                            );
-                            showError(t("feedback.testError"));
-                          }
-                        } catch (error) {
-                          console.error(
-                            "[notificacoes] Erro na requisição:",
-                            error
-                          );
-                          showError(t("feedback.testError"));
-                        }
-                      }}
-                    >
-                      <MdOutlineScience
-                        className="h-4 w-4 shrink-0"
-                        aria-hidden
-                      />
-                      {t("actions.test")}
-                    </Button>
-                  </>
-                )}
-                {unreadCount > 0 && (
-                  <Button onClick={markAllAsRead}>
-                    <CheckCheck className="w-4 h-4 mr-2" />
-                    {t("actions.markAllRead")}
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
 
             {/* Estatísticas rápidas */}
@@ -622,8 +506,8 @@ const NotificationPage: React.FC = () => {
 
                 <Card variant="elevated" className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
-                      <Bell className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 bg-slate-100 dark:bg-slate-600/20 rounded-lg">
+                      <Bell className="w-5 h-5 text-slate-700 dark:text-slate-400" />
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -737,7 +621,7 @@ const NotificationPage: React.FC = () => {
                                 notification.type === "SYSTEM_ANNOUNCEMENT"
                                   ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
                                   : notification.type === "RESERVATION_CREATED"
-                                    ? "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300"
+                                    ? "bg-slate-100 text-slate-700 dark:bg-slate-600/20 dark:text-slate-300"
                                     : notification.type ===
                                         "RESERVATION_APPROVED"
                                       ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"

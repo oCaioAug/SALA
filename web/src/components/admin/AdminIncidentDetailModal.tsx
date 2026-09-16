@@ -1,16 +1,16 @@
 "use client";
 
-import {
-  IncidentPriority,
-  IncidentStatus,
-} from "@prisma/client";
+import { IncidentPriority, IncidentStatus } from "@prisma/client";
 import { Building2, Calendar, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { AdminActionError } from "@/components/admin/AdminActionError";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 import { Link } from "@/navigation";
 
 export interface AdminIncidentListItem {
@@ -54,9 +54,11 @@ export function AdminIncidentDetailModal({
   onUpdated,
 }: AdminIncidentDetailModalProps) {
   const t = useTranslations("Admin.incidents");
+  const { fromResponse } = useApiErrorMessage();
   const [incident, setIncident] = useState<AdminIncidentDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [statusDraft, setStatusDraft] = useState<IncidentStatus>(
     IncidentStatus.REPORTED
   );
@@ -64,6 +66,10 @@ export function AdminIncidentDetailModal({
     IncidentPriority.MEDIUM
   );
   const [notesDraft, setNotesDraft] = useState("");
+  const [assignedToDraft, setAssignedToDraft] = useState<string>("");
+  const [assignableUsers, setAssignableUsers] = useState<
+    { id: string; name: string | null; email: string }[]
+  >([]);
 
   const fetchIncident = useCallback(async () => {
     if (!incidentId) return;
@@ -76,6 +82,19 @@ export function AdminIncidentDetailModal({
       setStatusDraft(data.status);
       setPriorityDraft(data.priority);
       setNotesDraft(data.resolutionNotes ?? "");
+      setAssignedToDraft(data.assignedTo?.id ?? "");
+
+      const membersRes = await fetch(
+        `/api/admin/organizations/${data.organization.id}/members`
+      );
+      if (membersRes.ok) {
+        const members: {
+          user: { id: string; name: string | null; email: string };
+        }[] = await membersRes.json();
+        setAssignableUsers(members.map(m => m.user));
+      } else {
+        setAssignableUsers([]);
+      }
     } catch {
       setIncident(null);
     } finally {
@@ -103,6 +122,7 @@ export function AdminIncidentDetailModal({
   const saveChanges = async () => {
     if (!incident) return;
     setSaving(true);
+    setActionError(null);
     try {
       const res = await fetch(`/api/admin/incidents/${incident.id}`, {
         method: "PATCH",
@@ -111,12 +131,15 @@ export function AdminIncidentDetailModal({
           status: statusDraft,
           priority: priorityDraft,
           resolutionNotes: notesDraft.trim() || null,
+          assignedToId: assignedToDraft || null,
         }),
       });
-      if (res.ok) {
-        await fetchIncident();
-        onUpdated();
+      if (!res.ok) {
+        setActionError(await fromResponse(res));
+        return;
       }
+      await fetchIncident();
+      onUpdated();
     } finally {
       setSaving(false);
     }
@@ -125,6 +148,7 @@ export function AdminIncidentDetailModal({
   const resolveIncident = async () => {
     if (!incident) return;
     setSaving(true);
+    setActionError(null);
     try {
       const res = await fetch(`/api/admin/incidents/${incident.id}`, {
         method: "PATCH",
@@ -132,12 +156,15 @@ export function AdminIncidentDetailModal({
         body: JSON.stringify({
           status: IncidentStatus.RESOLVED,
           resolutionNotes: notesDraft.trim() || "Resolvido pelo super admin",
+          assignedToId: assignedToDraft || null,
         }),
       });
-      if (res.ok) {
-        await fetchIncident();
-        onUpdated();
+      if (!res.ok) {
+        setActionError(await fromResponse(res));
+        return;
       }
+      await fetchIncident();
+      onUpdated();
     } finally {
       setSaving(false);
     }
@@ -157,7 +184,7 @@ export function AdminIncidentDetailModal({
         aria-label={t("closeModal")}
         onClick={onClose}
       />
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className="flex items-start justify-between border-b border-border px-6 py-5">
           <div className="min-w-0 pr-4">
             <p className="text-lg font-bold text-foreground">
@@ -165,10 +192,7 @@ export function AdminIncidentDetailModal({
             </p>
             {incident && (
               <div className="mt-2 flex flex-wrap gap-2">
-                <AdminStatusBadge
-                  status={incident.status}
-                  kind="incident"
-                />
+                <AdminStatusBadge status={incident.status} kind="incident" />
                 <AdminStatusBadge
                   status={incident.priority}
                   kind="incidentPriority"
@@ -194,7 +218,13 @@ export function AdminIncidentDetailModal({
             <p className="text-sm text-muted-foreground">{t("notFound")}</p>
           ) : (
             <div className="space-y-6">
-              <p className="text-sm text-muted-foreground">{incident.description}</p>
+              <AdminActionError
+                message={actionError}
+                onDismiss={() => setActionError(null)}
+              />
+              <p className="text-sm text-muted-foreground">
+                {incident.description}
+              </p>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <MetaField
@@ -203,7 +233,7 @@ export function AdminIncidentDetailModal({
                   value={
                     <Link
                       href={`/admin/organizations/${incident.organization.id}`}
-                      className="text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
+                      className="text-primary hover:text-primary dark:text-primary dark:text-primary dark:hover:text-primary"
                       onClick={onClose}
                     >
                       {incident.organization.name}
@@ -224,9 +254,7 @@ export function AdminIncidentDetailModal({
                   icon={Building2}
                   label={t("target")}
                   value={
-                    incident.room?.name ??
-                    incident.item?.name ??
-                    t("noTarget")
+                    incident.room?.name ?? incident.item?.name ?? t("noTarget")
                   }
                 />
               </div>
@@ -272,6 +300,23 @@ export function AdminIncidentDetailModal({
 
               <div>
                 <label className="mb-1 block text-sm text-muted-foreground">
+                  {t("assignedTo")}
+                </label>
+                <SearchableSelect
+                  value={assignedToDraft}
+                  onChange={setAssignedToDraft}
+                  options={assignableUsers.map(user => ({
+                    value: user.id,
+                    label: user.name ?? user.email,
+                  }))}
+                  placeholder={t("unassigned")}
+                  allowEmpty
+                  triggerClassName="rounded-lg border-border bg-background px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm text-muted-foreground">
                   {t("resolutionNotes")}
                 </label>
                 <textarea
@@ -301,7 +346,9 @@ export function AdminIncidentDetailModal({
                         {" · "}
                         {new Date(entry.createdAt).toLocaleString("pt-BR")}
                         {entry.notes && (
-                          <p className="mt-1 text-muted-foreground">{entry.notes}</p>
+                          <p className="mt-1 text-muted-foreground">
+                            {entry.notes}
+                          </p>
                         )}
                       </li>
                     ))}
@@ -335,7 +382,7 @@ export function AdminIncidentDetailModal({
               )}
             <Button
               type="button"
-              className="flex-1 bg-violet-600 hover:bg-violet-500"
+              className="flex-1 bg-primary hover:bg-primary"
               disabled={saving}
               onClick={saveChanges}
             >

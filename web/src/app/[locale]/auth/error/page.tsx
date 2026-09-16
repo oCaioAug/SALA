@@ -31,54 +31,54 @@ const AuthErrorContent: React.FC = () => {
         <AppPreferencesControls variant="marketing" />
       </div>
       <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-md border-border bg-card">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-red-400 mb-2">
-            {t("title")}
-          </CardTitle>
-        </CardHeader>
+        <Card className="w-full max-w-md border-border bg-card">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-red-400 mb-2">
+              {t("title")}
+            </CardTitle>
+          </CardHeader>
 
-        <CardContent className="text-center space-y-4">
-          <div className="text-gray-300">
-            <p className="mb-2">{getErrorMessage(error)}</p>
+          <CardContent className="text-center space-y-4">
+            <div className="text-gray-300">
+              <p className="mb-2">{getErrorMessage(error)}</p>
 
-            {error && (
-              <div className="bg-gray-800 p-3 rounded text-sm text-left">
-                <p>
-                  <strong>{t("errorCodeLabel")}</strong> {error}
-                </p>
-                {errorDescription && (
+              {error && (
+                <div className="bg-gray-800 p-3 rounded text-sm text-left">
                   <p>
-                    <strong>{t("errorDescriptionLabel")}</strong>{" "}
-                    {errorDescription}
+                    <strong>{t("errorCodeLabel")}</strong> {error}
                   </p>
-                )}
-              </div>
-            )}
-          </div>
+                  {errorDescription && (
+                    <p>
+                      <strong>{t("errorDescriptionLabel")}</strong>{" "}
+                      {errorDescription}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
-          <div className="space-y-2">
-            <Link href="/auth/login">
-              <Button className="w-full">{t("tryAgain")}</Button>
-            </Link>
+            <div className="space-y-2">
+              <Link href="/auth/login">
+                <Button className="w-full">{t("tryAgain")}</Button>
+              </Link>
 
-            <Link href="/dashboard">
-              <Button variant="outline" className="w-full">
-                {t("goDashboard")}
-              </Button>
-            </Link>
-          </div>
+              <Link href="/organizations">
+                <Button variant="outline" className="w-full">
+                  {t("goToHub")}
+                </Button>
+              </Link>
+            </div>
 
-          <div className="text-xs text-gray-500">
-            <p>{t("troubleshootTitle")}</p>
-            <ul className="text-left mt-2 space-y-1">
-              <li>• {t("troubleshootOAuth")}</li>
-              <li>• {t("troubleshootRedirect")}</li>
-              <li>• {t("troubleshootEnv")}</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-xs text-gray-500">
+              <p>{t("troubleshootTitle")}</p>
+              <ul className="text-left mt-2 space-y-1">
+                <li>• {t("troubleshootOAuth")}</li>
+                <li>• {t("troubleshootRedirect")}</li>
+                <li>• {t("troubleshootEnv")}</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -1,34 +1,43 @@
 "use client";
 
-import { CalendarCheck, Info, Play } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { AlertTriangle, CalendarCheck, Play } from "lucide-react";
+import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
+import { ExportScheduleDropdown } from "@/components/grade-horaria/ExportScheduleDropdown";
+import { PreFlightDiagnostics } from "@/components/grade-horaria/PreFlightDiagnostics";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  GradeHorariaDiagnosticsResult,
+  GradeHorariaDiagnosticsService,
+} from "@/domain/timetabling/GradeHorariaDiagnosticsService";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
+  getCargasHorarias,
   getDisciplinas,
   getGradeSettings,
+  getLatestGradeHoraria,
   getProfessores,
   getTurmas,
   runTimetablingEngine,
 } from "../actions";
 
-const DIAS_SEMANA = [
-  { id: 1, nome: "Segunda" },
-  { id: 2, nome: "Terça" },
-  { id: 3, nome: "Quarta" },
-  { id: 4, nome: "Quinta" },
-  { id: 5, nome: "Sexta" },
-  { id: 6, nome: "Sábado" },
-];
+const DAY_IDS = [1, 2, 3, 4, 5] as const;
 
 const GerarGradePage: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const t = useTranslations("GradeHoraria.generate");
+  const tCommon = useTranslations("GradeHoraria.common");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-gerar");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -37,6 +46,7 @@ const GerarGradePage: React.FC = () => {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [savedAt, setSavedAt] = useState<Date | string | null>(null);
   const [turmasMap, setTurmasMap] = useState<Record<string, string>>({});
   const [turmaShiftsMap, setTurmaShiftsMap] = useState<Record<string, string>>(
     {}
@@ -44,22 +54,29 @@ const GerarGradePage: React.FC = () => {
   const [discMap, setDiscMap] = useState<Record<string, string>>({});
   const [profMap, setProfMap] = useState<Record<string, string>>({});
   const [shifts, setShifts] = useState<any[]>([]);
+  const [diagnostics, setDiagnostics] =
+    useState<GradeHorariaDiagnosticsResult | null>(null);
+  const [loadingDiag, setLoadingDiag] = useState(true);
 
   useEffect(() => {
     const fetchDictionaries = async () => {
       try {
-        const [turmas, disc, profs, settings] = await Promise.all([
-          getTurmas(),
-          getDisciplinas(),
-          getProfessores(),
-          getGradeSettings(),
-        ]);
+        setLoadingDiag(true);
+        const [turmas, disc, profs, settings, latestGrade, cargas] =
+          await Promise.all([
+            getTurmas(),
+            getDisciplinas(),
+            getProfessores(),
+            getGradeSettings(),
+            getLatestGradeHoraria(),
+            getCargasHorarias(),
+          ]);
 
         const tMap: Record<string, string> = {};
         const tsMap: Record<string, string> = {};
-        turmas.forEach(t => {
-          tMap[t.id] = t.name;
-          if (t.shiftId) tsMap[t.id] = t.shiftId;
+        turmas.forEach(turma => {
+          tMap[turma.id] = turma.name;
+          if (turma.shiftId) tsMap[turma.id] = turma.shiftId;
         });
         setTurmasMap(tMap);
         setTurmaShiftsMap(tsMap);
@@ -73,8 +90,26 @@ const GerarGradePage: React.FC = () => {
         setProfMap(pMap);
 
         setShifts(settings.timetabling?.shifts || []);
+
+        // Executar diagnóstico preventivo pré-grade
+        const diagService = new GradeHorariaDiagnosticsService();
+        const diagResult = diagService.runDiagnostics({
+          turmas,
+          disciplinas: disc,
+          professores: profs,
+          cargas,
+          shiftsConfig: settings.timetabling?.shifts || [],
+        });
+        setDiagnostics(diagResult);
+
+        if (latestGrade) {
+          setResult(latestGrade);
+          setSavedAt(latestGrade.createdAt);
+        }
       } catch (err) {
-        console.error("Erro ao carregar dicionários", err);
+        console.error("Erro ao carregar dados da grade", err);
+      } finally {
+        setLoadingDiag(false);
       }
     };
     fetchDictionaries();
@@ -87,15 +122,15 @@ const GerarGradePage: React.FC = () => {
 
       const res = await runTimetablingEngine();
       setResult(res);
+      setSavedAt(new Date());
 
       if (res.success) {
-        showSuccess("Grade gerada com sucesso!");
+        showSuccess(t("toastSuccess"));
       } else {
-        // Usa showSuccess também para não parecer um erro fatal do sistema
-        showSuccess("Grade gerada! Verifique os detalhes na tela.");
+        showError(t("toastPartial"));
       }
     } catch (err: any) {
-      showError(err.message || "Erro ao gerar grade");
+      showError(err.message || t("toastError"));
     } finally {
       setIsGenerating(false);
     }
@@ -119,6 +154,92 @@ const GerarGradePage: React.FC = () => {
     (turmasMap[a] || "").localeCompare(turmasMap[b] || "")
   );
 
+  const buildExportData = () => {
+    const data: any[] = [];
+    sortedTurmaIds.forEach(tId => {
+      const shiftId = turmaShiftsMap[tId] || "default";
+      const shiftInfo = shifts.find(s => s.id === shiftId);
+      const slots = shiftInfo?.slots || [];
+      const days = shiftInfo?.daysPerWeek || 5;
+
+      for (let day = 1; day <= days; day++) {
+        for (const slot of slots) {
+          const slotId = `${day}_${slot.id}`;
+          const c = grouped[tId]?.[slotId];
+          if (c) {
+            data.push({
+              Turma: turmasMap[c.turmaId] || "",
+              Dia: `Dia ${day}`,
+              Horário: `${slot.startTime} - ${slot.endTime}`,
+              Disciplina: discMap[c.disciplinaId] || "",
+              Professor: c.professorId
+                ? profMap[c.professorId] || ""
+                : "Sem professor",
+            });
+          }
+        }
+      }
+    });
+    return data;
+  };
+
+  const handleExportCSV = () => {
+    const data = buildExportData();
+    if (data.length === 0) return;
+
+    const headers = Object.keys(data[0]).join(",");
+    const rows = data.map(d =>
+      Object.values(d)
+        .map(v => `"${v}"`)
+        .join(",")
+    );
+    const csvContent =
+      "data:text/csv;charset=utf-8,\uFEFF" + [headers, ...rows].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "grade_horaria.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handleExportXLSX = () => {
+    const data = buildExportData();
+    if (data.length === 0) return;
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Grade Horária");
+    XLSX.writeFile(wb, "grade_horaria.xlsx");
+  };
+
+  const handleExportPDF = () => {
+    const data = buildExportData();
+    if (data.length === 0) return;
+
+    const doc = new jsPDF();
+    doc.text("Grade Horária", 14, 15);
+
+    const tableColumn = ["Turma", "Dia", "Horário", "Disciplina", "Professor"];
+    const tableRows = data.map(d => [
+      d.Turma,
+      d.Dia,
+      d.Horário,
+      d.Disciplina,
+      d.Professor,
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    doc.save("grade_horaria.pdf");
+  };
+
   return (
     <OrgAdminGuard>
       <PageLayout
@@ -130,42 +251,55 @@ const GerarGradePage: React.FC = () => {
           <div className="flex items-center gap-3">
             <CalendarCheck className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Gerar Grade Horária
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Execute o motor de alocação para distribuir as aulas baseadas
-                nas disponibilidades.
+                {t("description")}
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            Voltar
-          </Button>
+          <BackButton />
         </div>
 
-        <Card className="mb-8 text-center bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-2">
+        <PreFlightDiagnostics
+          diagnostics={diagnostics}
+          loading={loadingDiag}
+          onNavigate={navigate}
+        />
+
+        <Card className="mb-8 text-center bg-card border-2">
           <CardContent className="p-12">
-            <div className="max-w-xl mx-auto space-y-6">
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full inline-block">
-                <Play className="w-12 h-12" />
+            {isGenerating ? (
+              <div className="max-w-md mx-auto py-6 flex flex-col items-center justify-center space-y-4">
+                <LoadingSpinner size="lg" />
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    {t("processing")}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
+                    Analisando disponibilidades, calculando combinações e
+                    otimizando restrições...
+                  </p>
+                </div>
               </div>
-              <h2 className="text-2xl font-semibold">Pronto para gerar?</h2>
-              <p className="text-slate-500">
-                O motor irá analisar todas as cargas horárias e disponibilidades
-                para criar a melhor grade possível sem conflitos.
-              </p>
-              <Button
-                size="lg"
-                className="w-full text-lg h-14"
-                onClick={handleGenerate}
-                disabled={isGenerating}
-              >
-                {isGenerating
-                  ? "Processando Algoritmo..."
-                  : "Executar Motor de Alocação"}
-              </Button>
-            </div>
+            ) : (
+              <div className="max-w-xl mx-auto space-y-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full inline-block">
+                  <Play className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-semibold">{t("readyTitle")}</h2>
+                <p className="text-slate-500">{t("readyDescription")}</p>
+                <Button
+                  size="lg"
+                  className="w-full text-lg h-14"
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                >
+                  {t("runButton")}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -176,7 +310,7 @@ const GerarGradePage: React.FC = () => {
               className={
                 result.success
                   ? "border-green-200 bg-green-50 dark:bg-green-900/10"
-                  : "border-blue-200 bg-blue-50 dark:bg-blue-900/10"
+                  : "border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10"
               }
             >
               <CardContent className="p-6">
@@ -188,45 +322,42 @@ const GerarGradePage: React.FC = () => {
                   )}
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {result.success
-                        ? "Grade Gerada com Perfeição!"
-                        : "Grade Gerada (Alocação Parcial)"}
+                      {result.success ? t("perfectTitle") : t("partialTitle")}
                     </h3>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">
-                      Fitness Score:{" "}
-                      <strong>{result.fitness.toFixed(1)}%</strong>
+                      {t("fitnessScore", {
+                        score: (result.fitness ?? 0).toFixed(1),
+                      })}
                     </p>
-                    {result.unallocatedRequirements &&
-                      result.unallocatedRequirements.length > 0 && (
-                        <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-blue-200 shadow-sm">
-                          <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
-                            Aulas pendentes (não alocadas por falta de
-                            horário/espaço):
-                          </p>
-                          <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300 space-y-1">
-                            {result.unallocatedRequirements.map(
-                              (req: any, i: number) => (
-                                <li key={i}>
-                                  <span className="font-medium">
-                                    {turmasMap[req.turmaId]}
-                                  </span>{" "}
-                                  - {discMap[req.disciplinaId]} (
-                                  {profMap[req.professorId]}):{" "}
-                                  <span className="font-semibold text-blue-600 dark:text-blue-300">
-                                    Faltam {req.requiredSlots} aulas
-                                  </span>
-                                </li>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                    {result.errors && result.errors.length > 0 && (
-                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-orange-200 shadow-sm">
-                        <p className="font-semibold text-orange-700 dark:text-orange-500 mb-2">
-                          Notas do Motor / Conflitos Restantes:
+                    {result.unallocatedRequirements && (
+                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-yellow-200">
+                        <p className="font-semibold text-yellow-700 dark:text-yellow-500 mb-2">
+                          {t("unallocatedTitle")}
                         </p>
-                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300 space-y-1">
+                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
+                          {result.unallocatedRequirements.map(
+                            (req: any, i: number) => (
+                              <li key={i}>
+                                {t("unallocatedItem", {
+                                  className: turmasMap[req.turmaId],
+                                  subjectName: discMap[req.disciplinaId],
+                                  teacherName: req.professorId
+                                    ? profMap[req.professorId] || ""
+                                    : "Sem professor",
+                                  count: req.requiredSlots,
+                                })}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    {result.errors && (
+                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-red-200">
+                        <p className="font-semibold text-red-700 dark:text-red-500 mb-2">
+                          {t("errorsTitle")}
+                        </p>
+                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
                           {result.errors.map((err: string, i: number) => (
                             <li key={i}>{err}</li>
                           ))}
@@ -238,87 +369,132 @@ const GerarGradePage: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Visualização da Grade por Turma */}
-            <h3 className="text-2xl font-bold mt-8 mb-4">Grades por Turma</h3>
-            {sortedTurmaIds.map(turmaId => {
-              const shiftId = turmaShiftsMap[turmaId];
-              const shift = shifts.find(s => s.id === shiftId) || shifts[0];
-              const shiftSlots = shift?.slots || [];
-              const days = DIAS_SEMANA.slice(0, shift?.daysPerWeek || 5);
+            {/* Cabeçalho da Visualização da Grade com Dropdown de Exportação */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 mb-4">
+              <div>
+                <h3 className="text-2xl font-bold">{t("schedulesByClass")}</h3>
+                {savedAt && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Grade salva no banco de dados em{" "}
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {new Date(savedAt).toLocaleString("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  </p>
+                )}
+              </div>
+              <ExportScheduleDropdown
+                onExportPDF={handleExportPDF}
+                onExportXLSX={handleExportXLSX}
+                onExportCSV={handleExportCSV}
+                disabled={!result?.schedule || result.schedule.length === 0}
+              />
+            </div>
 
-              return (
-                <Card key={turmaId} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 border-b dark:border-slate-800 flex items-center gap-2">
-                      <CardTitle className="text-lg">
-                        {turmasMap[turmaId]}
-                      </CardTitle>
-                      {shift && (
-                        <span className="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-300">
-                          {shift.name}
-                        </span>
-                      )}
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-center">
-                        <thead className="bg-white dark:bg-slate-950 border-b dark:border-slate-800">
-                          <tr>
-                            <th className="py-3 px-4 font-semibold text-slate-500">
-                              Horário
-                            </th>
-                            {days.map(dia => (
-                              <th
-                                key={dia.id}
-                                className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800"
-                              >
-                                {dia.nome}
+            {/* Visualização da Grade por Turma */}
+            {sortedTurmaIds.length === 0 ? (
+              <Card className="p-8 text-center border-dashed">
+                <CardContent className="space-y-4 pt-6">
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Nenhuma turma ou carga horária foi cadastrada na sua
+                    organização.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/grade-horaria/configuracoes")}
+                  >
+                    Ir para Configurações (Inserir Dados de Teste)
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              sortedTurmaIds.map(turmaId => {
+                const shiftId = turmaShiftsMap[turmaId];
+                const shift = shifts.find(s => s.id === shiftId) || shifts[0];
+                const shiftSlots = shift?.slots || [];
+                const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
+
+                return (
+                  <Card key={turmaId} className="overflow-hidden mb-6">
+                    <CardContent className="p-0">
+                      <div className="bg-slate-50 dark:bg-slate-900 px-6 py-4 border-b dark:border-slate-800 flex items-center gap-2">
+                        <CardTitle className="text-lg">
+                          {turmasMap[turmaId]}
+                        </CardTitle>
+                        {shift && (
+                          <span className="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-300">
+                            {shift.name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-center">
+                          <thead className="bg-white dark:bg-slate-950 border-b dark:border-slate-800">
+                            <tr>
+                              <th className="py-3 px-4 font-semibold text-slate-500">
+                                {t("timeColumn")}
                               </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y dark:divide-slate-800">
-                          {shiftSlots.map((slot: any) => (
-                            <tr
-                              key={slot.id}
-                              className="bg-white dark:bg-slate-900"
-                            >
-                              <td className="py-4 px-4 text-slate-500 font-medium whitespace-nowrap">
-                                {slot.label}
-                              </td>
-                              {days.map(dia => {
-                                const timeSlotStr = `${dia.id}_${slot.id}`;
-                                const classInfo = grouped[turmaId][timeSlotStr];
-                                return (
-                                  <td
-                                    key={dia.id}
-                                    className="p-2 border-l dark:border-slate-800"
-                                  >
-                                    {classInfo ? (
-                                      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded p-2 shadow-sm min-h-[4rem] flex flex-col items-center justify-center">
-                                        <span className="font-semibold text-blue-900 dark:text-blue-100">
-                                          {discMap[classInfo.disciplinaId]}
-                                        </span>
-                                        <span className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                                          {profMap[classInfo.professorId]}
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <div className="text-slate-300 dark:text-slate-700 italic">
-                                        -
-                                      </div>
-                                    )}
-                                  </td>
-                                );
-                              })}
+                              {days.map(diaId => (
+                                <th
+                                  key={diaId}
+                                  className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300 border-l dark:border-slate-800"
+                                >
+                                  {tCommon(`days.${diaId}`)}
+                                </th>
+                              ))}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                          </thead>
+                          <tbody className="divide-y dark:divide-slate-800">
+                            {shiftSlots.map((slot: any) => (
+                              <tr
+                                key={slot.id}
+                                className="bg-white dark:bg-slate-900"
+                              >
+                                <td className="py-4 px-4 text-slate-500 font-medium whitespace-nowrap">
+                                  {slot.label}
+                                </td>
+                                {days.map(diaId => {
+                                  const timeSlotStr = `${diaId}_${slot.id}`;
+                                  const classInfo =
+                                    grouped[turmaId]?.[timeSlotStr];
+                                  return (
+                                    <td
+                                      key={diaId}
+                                      className="p-2 border-l dark:border-slate-800"
+                                    >
+                                      {classInfo ? (
+                                        <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded p-2 shadow-sm min-h-[4rem] flex flex-col items-center justify-center">
+                                          <span className="font-semibold text-blue-900 dark:text-blue-100">
+                                            {discMap[classInfo.disciplinaId]}
+                                          </span>
+                                          <span className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                            {classInfo.professorId
+                                              ? profMap[
+                                                  classInfo.professorId
+                                                ] || ""
+                                              : "Sem professor"}
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <div className="text-slate-300 dark:text-slate-700 italic">
+                                          -
+                                        </div>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         )}
       </PageLayout>

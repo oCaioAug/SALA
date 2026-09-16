@@ -1,144 +1,62 @@
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
-import { Prisma, SectorMemberRole } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { writeAuditLog } from "@/lib/audit";
+import { isManagerOfSector } from "@/lib/auth/permissions";
 import { isNextResponse, requireOrgAdmin } from "@/lib/auth/platform";
+import { isOrgAdmin } from "@/lib/auth/roles";
+import { requireTenantContext } from "@/lib/auth/tenant";
 import { prisma } from "@/lib/prisma";
-import { sectorUpdateBodySchema } from "@/lib/validation/sector";
+import { syncSectorMembers } from "@/lib/sectors/members";
+import {
+  assertMembersInOrganization,
+  assertRoomsInOrganization,
+  sectorDetailInclude,
+  syncSectorRooms,
+} from "@/lib/sectors/sync";
+import {
+  resolveSectorMembersInput,
+  sectorUpdateBodySchema,
+} from "@/lib/validation/sector";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-const sectorDetailInclude = {
-  members: {
-    include: {
-      user: { select: { id: true, name: true, email: true, image: true } },
-    },
-  },
-  rooms: {
-    where: { deletedAt: null },
-    select: { id: true, name: true, status: true },
-    orderBy: { name: "asc" as const },
-  },
-  _count: {
-    select: { members: true, rooms: true },
-  },
-} satisfies Prisma.SectorInclude;
-
-async function assertRoomsInOrganization(
-  roomIds: string[],
-  organizationId: string
-): Promise<string | null> {
-  if (roomIds.length === 0) return null;
-  const rooms = await prisma.room.findMany({
-    where: {
-      id: { in: roomIds },
-      organizationId,
-      deletedAt: null,
-    },
-    select: { id: true },
-  });
-  if (rooms.length !== roomIds.length) {
-    return "Uma ou mais salas são inválidas ou não pertencem à organização";
-  }
-  return null;
-}
-
-async function syncSectorRooms(
-  sectorId: string,
-  organizationId: string,
-  roomIds: string[]
-) {
-  await prisma.$transaction([
-    prisma.room.updateMany({
-      where: {
-        organizationId,
-        sectorId,
-        id: { notIn: roomIds },
-        deletedAt: null,
-      },
-      data: { sectorId: null },
-    }),
-    prisma.room.updateMany({
-      where: {
-        organizationId,
-        id: { in: roomIds },
-        deletedAt: null,
-      },
-      data: { sectorId },
-    }),
-  ]);
-}
-
-async function assertMembersInOrganization(
-  userIds: string[],
-  organizationId: string
-): Promise<string | null> {
-  if (userIds.length === 0) return null;
-  const members = await prisma.organizationMember.findMany({
-    where: {
-      organizationId,
-      userId: { in: userIds },
-    },
-    select: { userId: true },
-  });
-  if (members.length !== userIds.length) {
-    return "Um ou mais usuários não são membros da organização";
-  }
-  return null;
-}
-
-async function syncSectorMembers(sectorId: string, userIds: string[]) {
-  const uniqueIds = [...new Set(userIds)];
-  if (uniqueIds.length === 0) {
-    await prisma.sectorMember.deleteMany({ where: { sectorId } });
-    return;
-  }
-  await prisma.$transaction([
-    prisma.sectorMember.deleteMany({
-      where: {
-        sectorId,
-        userId: { notIn: uniqueIds },
-      },
-    }),
-    ...uniqueIds.map(userId =>
-      prisma.sectorMember.upsert({
-        where: {
-          sectorId_userId: { sectorId, userId },
-        },
-        create: {
-          sectorId,
-          userId,
-          role: SectorMemberRole.MANAGER,
-        },
-        update: {},
-      })
-    ),
-  ]);
-}
-
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const auth = await requireOrgAdmin();
-    if (isNextResponse(auth)) return auth;
-    if (!auth.organizationId) {
+    const ctx = await requireTenantContext();
+    if (isNextResponse(ctx)) return ctx;
+    if (ctx.isSuperAdmin || !ctx.organizationId) {
       return apiErrorResponse(ApiErrorCode.NO_ORGANIZATION, 403);
     }
 
     const { id } = await params;
+    const userIsOrgAdmin = isOrgAdmin({
+      platformRole: ctx.user.platformRole,
+      organizationRole: ctx.user.organizationRole,
+    });
+
+    if (!userIsOrgAdmin) {
+      const isManager = await isManagerOfSector(ctx.user.id, id);
+      if (!isManager) {
+        return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+      }
+    }
+
     const sector = await prisma.sector.findFirst({
       where: {
         id,
-        organizationId: auth.organizationId,
-        deletedAt: null,
+        organizationId: ctx.organizationId,
       },
       include: sectorDetailInclude,
     });
 
     if (!sector) {
-      return NextResponse.json({ error: "Setor não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Setor não encontrado" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(sector);
@@ -161,11 +79,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: auth.organizationId,
-        deletedAt: null,
       },
     });
     if (!existing) {
-      return NextResponse.json({ error: "Setor não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Setor não encontrado" },
+        { status: 404 }
+      );
     }
 
     const json = await request.json();
@@ -177,7 +97,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { name, description, roomIds, memberUserIds } = parsed.data;
+    const { name, description, roomIds } = parsed.data;
+    const members = resolveSectorMembersInput(parsed.data);
 
     if (roomIds !== undefined) {
       const roomsError = await assertRoomsInOrganization(
@@ -189,9 +110,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    if (memberUserIds !== undefined) {
+    if (members !== undefined) {
       const membersError = await assertMembersInOrganization(
-        memberUserIds,
+        members.map(m => m.userId),
         auth.organizationId
       );
       if (membersError) {
@@ -212,8 +133,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         await syncSectorRooms(id, auth.organizationId, roomIds);
       }
 
-      if (memberUserIds !== undefined) {
-        await syncSectorMembers(id, memberUserIds);
+      if (members !== undefined) {
+        await syncSectorMembers(id, members);
       }
 
       const updated = await prisma.sector.findUnique({
@@ -253,27 +174,37 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       where: {
         id,
         organizationId: auth.organizationId,
-        deletedAt: null,
+      },
+      include: {
+        _count: { select: { members: true, rooms: true } },
       },
     });
     if (!existing) {
-      return NextResponse.json({ error: "Setor não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Setor não encontrado" },
+        { status: 404 }
+      );
     }
 
-    await prisma.$transaction([
-      prisma.room.updateMany({
-        where: { sectorId: id, organizationId: auth.organizationId },
-        data: { sectorId: null },
-      }),
-      prisma.sector.update({
-        where: { id },
-        data: { deletedAt: new Date() },
-      }),
-    ]);
+    // Room.sectorId is onDelete: SetNull; SectorMember cascades.
+    await prisma.sector.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Setor arquivado com sucesso" });
+    await writeAuditLog({
+      actorUserId: auth.id,
+      action: "sector.deleted",
+      entityType: "Sector",
+      entityId: id,
+      organizationId: auth.organizationId,
+      metadata: {
+        name: existing.name,
+        membersCount: existing._count.members,
+        roomsCount: existing._count.rooms,
+      },
+    });
+
+    return NextResponse.json({ message: "Setor removido com sucesso" });
   } catch (error) {
-    console.error("Erro ao arquivar setor:", error);
+    console.error("Erro ao remover setor:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }
 }

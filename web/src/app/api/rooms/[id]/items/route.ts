@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import {
-  apiErrorResponse,
-} from "@/lib/api/api-error-response";
+import { apiErrorResponse } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { canManageRoomItems } from "@/lib/auth/permissions";
 import { isNextResponse, toPermissionUser } from "@/lib/auth/platform";
@@ -59,10 +57,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return apiErrorResponse(ApiErrorCode.ROOM_NOT_FOUND, 404);
     }
 
-    const allowed = await canManageRoomItems(
-      toPermissionUser(ctx.user),
-      room
-    );
+    const allowed = await canManageRoomItems(toPermissionUser(ctx.user), room);
     if (!allowed) {
       return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
     }

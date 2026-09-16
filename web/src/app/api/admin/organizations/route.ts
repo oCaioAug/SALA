@@ -1,19 +1,16 @@
 import {
   apiErrorResponse,
-  apiInternalError,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
-import { OrganizationRole, OrganizationStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireSuperAdmin } from "@/lib/auth/platform";
-import { refreshOrganizationDailyStats } from "@/lib/organization/stats";
+import { createOrganizationWithOwner } from "@/lib/organization/create-organization";
 import { prisma } from "@/lib/prisma";
 import {
   createOrganizationSchema,
   organizationListQuerySchema,
-  slugifyOrganizationName,
 } from "@/lib/validations/admin";
 
 export async function GET(request: NextRequest) {
@@ -100,19 +97,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const data = createOrganizationSchema.parse(body);
 
-    let slug = data.slug ?? slugifyOrganizationName(data.name);
-    if (!slug) slug = `org-${Date.now()}`;
-
-    const slugExists = await prisma.organization.findUnique({
-      where: { slug },
-    });
-    if (slugExists) {
-      slug = `${slug}-${Date.now().toString(36)}`;
-    }
-
     let owner = await prisma.user.findUnique({
       where: { email: data.ownerEmail },
+      select: { id: true, passwordHash: true },
     });
+
+    let ownerCreatedWithoutPassword = false;
 
     if (!owner) {
       owner = await prisma.user.create({
@@ -120,45 +110,29 @@ export async function POST(request: NextRequest) {
           email: data.ownerEmail,
           name: data.ownerName ?? data.ownerEmail.split("@")[0],
         },
+        select: { id: true, passwordHash: true },
       });
+      ownerCreatedWithoutPassword = true;
+    } else if (!owner.passwordHash) {
+      ownerCreatedWithoutPassword = true;
     }
 
-    const organization = await prisma.$transaction(async tx => {
-      const org = await tx.organization.create({
-        data: {
-          name: data.name,
-          slug,
-          status: data.status ?? OrganizationStatus.ACTIVE,
-          ownerId: owner!.id,
-          planId: "plan-starter",
-        },
+    let organization;
+    try {
+      organization = await createOrganizationWithOwner({
+        name: data.name,
+        slug: data.slug,
+        ownerId: owner.id,
+        status: data.status,
+        planId: data.planId,
+        isSchool: data.isSchool,
       });
-
-      await tx.subscription.create({
-        data: {
-          organizationId: org.id,
-          planId: "plan-starter",
-          currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        },
-      });
-
-      await tx.organizationMember.upsert({
-        where: {
-          organizationId_userId: {
-            organizationId: org.id,
-            userId: owner!.id,
-          },
-        },
-        create: {
-          organizationId: org.id,
-          userId: owner!.id,
-          role: OrganizationRole.OWNER,
-        },
-        update: { role: OrganizationRole.OWNER },
-      });
-
-      return org;
-    });
+    } catch (err) {
+      if (err instanceof Error && err.message === "INVALID_PLAN") {
+        return apiErrorResponse(ApiErrorCode.PLAN_NOT_FOUND, 404);
+      }
+      throw err;
+    }
 
     await writeAuditLog({
       actorUserId: auth.id,
@@ -168,8 +142,6 @@ export async function POST(request: NextRequest) {
       organizationId: organization.id,
       metadata: { name: organization.name, slug: organization.slug },
     });
-
-    void refreshOrganizationDailyStats(organization.id);
 
     const result = await prisma.organization.findUnique({
       where: { id: organization.id },
@@ -181,7 +153,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(result, { status: 201 });
+    return NextResponse.json(
+      { ...result, ownerCreatedWithoutPassword },
+      { status: 201 }
+    );
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       return NextResponse.json(

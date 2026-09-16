@@ -46,6 +46,7 @@ describe("Reservations API", () => {
       prismaMock.reservation.findMany.mockResolvedValue(
         mockReservations as any
       );
+      prismaMock.sectorMember.findFirst.mockResolvedValue(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations?roomId=room-1&status=APPROVED"
@@ -56,19 +57,37 @@ describe("Reservations API", () => {
 
       expect(response.status).toBe(200);
       expect(data).toEqual(mockReservations);
-      expect(prismaMock.reservation.findMany).toHaveBeenCalledWith({
-        where: {
-          organizationId: "org-test",
-          roomId: "room-1",
-          status: "APPROVED",
-        },
-        include: { user: true, room: true },
-        orderBy: { startTime: "desc" },
-      });
+      expect(prismaMock.reservation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            organizationId: "org-test",
+            roomId: "room-1",
+            status: "APPROVED",
+          },
+        })
+      );
     });
 
-    it("should apply userId filter", async () => {
+    it("should force own userId for non-approver without roomId", async () => {
       prismaMock.reservation.findMany.mockResolvedValue([]);
+      prismaMock.sectorMember.findFirst.mockResolvedValue(null);
+
+      const req = new NextRequest("http://localhost:3000/api/reservations");
+      await GET(req);
+
+      expect(prismaMock.reservation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            organizationId: "org-test",
+            userId: "user-1",
+          }),
+        })
+      );
+    });
+
+    it("should allow filtering by own userId for non-approver", async () => {
+      prismaMock.reservation.findMany.mockResolvedValue([]);
+      prismaMock.sectorMember.findFirst.mockResolvedValue(null);
 
       const req = new NextRequest(
         "http://localhost:3000/api/reservations?userId=user-1"
@@ -82,8 +101,23 @@ describe("Reservations API", () => {
       );
     });
 
+    it("should deny non-approver filtering another userId", async () => {
+      prismaMock.sectorMember.findFirst.mockResolvedValue(null);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/reservations?userId=other-user"
+      );
+      const response = await GET(req);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.errorCode).toBe("ACCESS_DENIED");
+      expect(prismaMock.reservation.findMany).not.toHaveBeenCalled();
+    });
+
     it("should return 500 on DB error", async () => {
       prismaMock.reservation.findMany.mockRejectedValue(new Error("DB error"));
+      prismaMock.sectorMember.findFirst.mockResolvedValue(null);
 
       const req = new NextRequest("http://localhost:3000/api/reservations");
       const response = await GET(req);

@@ -15,6 +15,7 @@ export interface AdminUserDetail {
   email: string;
   platformRole: PlatformRole;
   createdAt: string;
+  deletedAt?: string | null;
   memberships: {
     organization: { id: string; name: string; slug: string };
     role: string;
@@ -66,8 +67,8 @@ export function AdminUserDetailModal({
         aria-label={t("closeModal")}
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-        <div className="flex items-start justify-between border-b border-border bg-gradient-to-r from-violet-500/10 to-card px-6 py-5">
+      <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className="flex items-start justify-between border-b border-border bg-muted/40 px-6 py-5">
           <div className="min-w-0">
             <p
               id="admin-user-detail-title"
@@ -75,7 +76,9 @@ export function AdminUserDetailModal({
             >
               {user.name ?? user.email}
             </p>
-            <p className="mt-1 truncate text-sm text-muted-foreground">{user.email}</p>
+            <p className="mt-1 truncate text-sm text-muted-foreground">
+              {user.email}
+            </p>
           </div>
           <button
             type="button"
@@ -107,7 +110,7 @@ export function AdminUserDetailModal({
 
           <div>
             <p className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <User className="h-4 w-4 text-violet-400" />
+              <User className="h-4 w-4 text-primary" />
               {t("organizations")}
             </p>
             {user.memberships.length === 0 ? (
@@ -133,7 +136,7 @@ export function AdminUserDetailModal({
                         {membership.organization.slug}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs font-medium text-violet-700 dark:text-violet-300">
+                    <span className="shrink-0 text-xs font-medium text-primary dark:text-primary">
                       {membership.role}
                     </span>
                   </li>

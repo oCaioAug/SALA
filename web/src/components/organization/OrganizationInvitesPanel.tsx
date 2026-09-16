@@ -97,14 +97,14 @@ export function OrganizationInvitesPanel() {
         </form>
 
         {lastInviteUrl && (
-          <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm dark:border-violet-500/20 dark:bg-violet-500/10">
-            <span className="flex-1 truncate text-violet-800 dark:text-violet-200">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm dark:border-primary/20 dark:bg-primary/10">
+            <span className="flex-1 truncate text-primary dark:text-primary">
               {lastInviteUrl}
             </span>
             <button
               type="button"
               onClick={() => copyUrl(lastInviteUrl)}
-              className="text-violet-600 hover:text-violet-800 dark:text-violet-300 dark:hover:text-violet-100"
+              className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary"
               aria-label={t("copyLink")}
             >
               <Copy className="h-4 w-4" />

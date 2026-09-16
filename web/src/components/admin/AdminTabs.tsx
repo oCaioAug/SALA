@@ -29,7 +29,9 @@ export function AdminTabs({
   className,
 }: AdminTabsProps) {
   return (
-    <div className={cn("overflow-hidden rounded-xl", adminCardClass, className)}>
+    <div
+      className={cn("overflow-hidden rounded-xl", adminCardClass, className)}
+    >
       <div
         className="flex overflow-x-auto border-b border-border"
         role="tablist"

@@ -57,12 +57,15 @@ type CreateOrganizationWizardProps = {
 };
 
 function SummaryRow({ label, value }: { label: string; value: string }) {
+  const t = useTranslations("CreateOrganizationPage");
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </dt>
-      <dd className="text-sm text-foreground sm:text-right">{value || "—"}</dd>
+      <dd className="text-sm text-foreground sm:text-right">
+        {value || t("emptyValue")}
+      </dd>
     </div>
   );
 }
@@ -375,7 +378,7 @@ export function CreateOrganizationWizard({
               </AuthField>
 
               <AuthField
-                label="Instituição de Ensino"
+                label={t("fields.isSchool")}
                 error={fieldErrors.isSchool}
               >
                 <label className="flex items-center gap-3 mt-2 cursor-pointer">
@@ -392,7 +395,7 @@ export function CreateOrganizationWizard({
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
                   </div>
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Ativar módulo de Grade Horária para Escolas/Universidades
+                    {t("isSchoolHint")}
                   </span>
                 </label>
               </AuthField>
@@ -422,7 +425,7 @@ export function CreateOrganizationWizard({
             </div>
 
             <section className="rounded-xl border border-border bg-muted/30 p-4">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-violet-400/90">
+              <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary/90">
                 {t("sections.organization")}
               </h3>
               <dl className="space-y-3">
@@ -435,15 +438,15 @@ export function CreateOrganizationWizard({
                 <SummaryRow label={t("fields.email")} value={form.email} />
                 <SummaryRow label={t("fields.phone")} value={form.phone} />
                 <SummaryRow
-                  label="Instituição de Ensino"
-                  value={form.isSchool ? "Sim" : "Não"}
+                  label={t("fields.isSchool")}
+                  value={form.isSchool ? t("yes") : t("no")}
                 />
               </dl>
             </section>
 
             {selectedPlan && (
               <section className="rounded-xl border border-border bg-muted/30 p-4">
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-violet-400/90">
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary/90">
                   {t("sections.plan")}
                 </h3>
                 <dl className="space-y-3">

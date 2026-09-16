@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useRouter } from "@/navigation";
 
@@ -15,33 +15,6 @@ export const useNavigation = ({
 }: UseNavigationProps) => {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [prefetchedPages, setPrefetchedPages] = useState<Set<string>>(
-    new Set()
-  );
-
-  useEffect(() => {
-    const pagesToPrefetch = [
-      "/configuracoes",
-      "/agendamentos",
-      "/solicitacoes",
-      "/setores",
-      "/notificacoes",
-      "/incidentes",
-      "/users",
-      "/profile",
-      "/salas",
-      "/organizations",
-      "/explorar",
-      "/grade-horaria",
-    ];
-
-    pagesToPrefetch.forEach(page => {
-      if (!prefetchedPages.has(page)) {
-        router.prefetch(page);
-        setPrefetchedPages(prev => new Set([...prev, page]));
-      }
-    });
-  }, [router, prefetchedPages]);
 
   const navigate = useCallback(
     async (page: string) => {
@@ -68,9 +41,16 @@ export const useNavigation = ({
         users: "/users",
         profile: "/profile",
         "grade-horaria": "/grade-horaria",
+        "grade-horaria-turmas": "/grade-horaria/turmas",
+        "grade-horaria-disciplinas": "/grade-horaria/disciplinas",
+        "grade-horaria-professores": "/grade-horaria/professores",
+        "grade-horaria-cargas": "/grade-horaria/cargas",
+        "grade-horaria-disponibilidades": "/grade-horaria/disponibilidades",
+        "grade-horaria-gerar": "/grade-horaria/gerar",
+        "grade-horaria-configuracoes": "/grade-horaria/configuracoes",
       };
 
-      const route = routeMap[page] || "/explorar";
+      const route = routeMap[page] || (page.startsWith("/") ? page : "/explorar");
       router.push(route);
 
       setTimeout(() => setIsNavigating(false), 200);

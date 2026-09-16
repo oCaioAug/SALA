@@ -15,6 +15,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useTheme } from "@/lib/providers/ThemeProvider";
 import { getIntlLocale } from "@/lib/utils";
 
 interface DailyStatPoint {
@@ -35,6 +36,13 @@ export function OrganizationDailyStatsChart({
 }: OrganizationDailyStatsChartProps) {
   const t = useTranslations("Admin.charts");
   const locale = useLocale();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const chartGrid = isDark ? "#374151" : "#e2e8f0";
+  const chartTick = isDark ? "#9ca3af" : "#64748b";
+  const chartTooltipStyle = isDark
+    ? { background: "#111827", border: "1px solid #374151", color: "#f3f4f6" }
+    : { background: "#ffffff", border: "1px solid #e2e8f0", color: "#0f172a" };
   const [data, setData] = useState<(DailyStatPoint & { label: string })[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,21 +89,19 @@ export function OrganizationDailyStatsChart({
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{
-                  background: "#111827",
-                  border: "1px solid #374151",
-                }}
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: chartTick, fontSize: 11 }}
               />
+              <YAxis tick={{ fill: chartTick, fontSize: 11 }} />
+              <Tooltip contentStyle={chartTooltipStyle} />
               <Legend />
               <Line
                 type="monotone"
                 dataKey="reservationsCount"
                 name={t("reservations")}
-                stroke="#8b5cf6"
+                stroke="#3b82f6"
                 strokeWidth={2}
                 dot={false}
               />
@@ -103,7 +109,7 @@ export function OrganizationDailyStatsChart({
                 type="monotone"
                 dataKey="activeUsersCount"
                 name={t("activeUsers")}
-                stroke="#3b82f6"
+                stroke="#10b981"
                 strokeWidth={2}
                 dot={false}
               />

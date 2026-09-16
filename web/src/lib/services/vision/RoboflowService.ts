@@ -10,7 +10,12 @@ export class RoboflowService extends VisionService {
   private confidence?: number;
   private overlap?: number;
 
-  constructor(apiKey: string, modelId: string, confidence?: number, overlap?: number) {
+  constructor(
+    apiKey: string,
+    modelId: string,
+    confidence?: number,
+    overlap?: number
+  ) {
     super();
     this.apiKey = apiKey;
     this.modelId = modelId;
@@ -33,7 +38,9 @@ export class RoboflowService extends VisionService {
             const project = parts[1];
             const version = parts[2] || "1";
             cleanModelId = `${project}/${version}`;
-            console.log(`🧹 [Roboflow] Extraído ID de modelo do painel: ${cleanModelId}`);
+            console.log(
+              `🧹 [Roboflow] Extraído ID de modelo do painel: ${cleanModelId}`
+            );
           }
         } catch (e) {
           console.error("❌ Erro ao analisar URL do painel do Roboflow:", e);
@@ -41,11 +48,15 @@ export class RoboflowService extends VisionService {
       }
 
       // Permite usar uma URL base customizada via variável de ambiente (ex: https://serverless.roboflow.com)
-      const baseUrl = process.env.ROBOFLOW_API_URL || "https://detect.roboflow.com";
+      const baseUrl =
+        process.env.ROBOFLOW_API_URL || "https://detect.roboflow.com";
       const cleanBaseUrl = baseUrl.replace(/\/$/, "");
 
       let url = "";
-      if (cleanModelId.startsWith("http://") || cleanModelId.startsWith("https://")) {
+      if (
+        cleanModelId.startsWith("http://") ||
+        cleanModelId.startsWith("https://")
+      ) {
         // Se o cleanModelId já for uma URL completa da API (ex: serverless.roboflow.com), usa ela
         const parsedUrl = new URL(cleanModelId);
         parsedUrl.searchParams.set("api_key", this.apiKey);
@@ -113,7 +124,7 @@ export class RoboflowService extends VisionService {
         // Uniformizar nomes de classe conhecidos
         let className = p.class.toLowerCase();
         if (className === "people") className = "person";
-        
+
         detectedClasses[className] = (detectedClasses[className] || 0) + 1;
       });
 

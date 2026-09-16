@@ -6,7 +6,6 @@ import {
 import { NextResponse } from "next/server";
 import {
   apiErrorResponse,
-  apiInternalError,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 
@@ -46,7 +45,7 @@ export async function GET() {
         _count: { id: true },
       }),
       prisma.user.count({
-        where: { platformRole: "NONE", deletedAt: null },
+        where: { deletedAt: null },
       }),
       prisma.room.count({ where: { deletedAt: null } }),
       prisma.reservation.count({
@@ -70,7 +69,6 @@ export async function GET() {
       }),
       prisma.user.findMany({
         where: {
-          platformRole: "NONE",
           createdAt: { gte: horizon },
           deletedAt: null,
         },

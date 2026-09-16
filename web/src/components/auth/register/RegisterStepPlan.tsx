@@ -33,7 +33,9 @@ export function RegisterStepPlan({
 
   if (loading) {
     return (
-      <div className="py-12 text-center text-sm text-muted-foreground">{t("loading")}</div>
+      <div className="py-12 text-center text-sm text-muted-foreground">
+        {t("loading")}
+      </div>
     );
   }
 
@@ -47,7 +49,9 @@ export function RegisterStepPlan({
 
   if (plans.length === 0) {
     return (
-      <div className="py-12 text-center text-sm text-muted-foreground">{t("empty")}</div>
+      <div className="py-12 text-center text-sm text-muted-foreground">
+        {t("empty")}
+      </div>
     );
   }
 
@@ -69,11 +73,11 @@ export function RegisterStepPlan({
               type="button"
               onClick={() => onSelect(plan)}
               className={cn(
-                "group relative flex flex-col rounded-2xl border p-5 text-left transition-all",
-                "focus:outline-none focus:ring-2 focus:ring-violet-500/30",
+                "group relative flex flex-col rounded-lg border p-5 text-left transition-all",
+                "focus:outline-none focus:ring-2 focus:ring-ring/30",
                 isSelected
-                  ? "border-violet-500/60 bg-violet-500/10 shadow-lg shadow-violet-500/10"
-                  : "border-border bg-card hover:border-violet-500/30 hover:bg-muted/40"
+                  ? "border-primary/60 bg-primary/10 shadow-lg "
+                  : "border-border bg-card hover:border-primary/30 hover:bg-muted/40"
               )}
             >
               <div className="mb-4 flex items-start justify-between gap-3">
@@ -81,20 +85,22 @@ export function RegisterStepPlan({
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-xl",
                     isSelected
-                      ? "bg-violet-500/20 text-violet-600 dark:text-violet-300"
-                      : "bg-muted text-muted-foreground group-hover:text-violet-600 dark:group-hover:text-violet-300"
+                      ? "bg-primary/20 text-primary dark:text-primary"
+                      : "bg-muted text-muted-foreground group-hover:text-primary dark:group-hover:text-primary"
                   )}
                 >
                   <Icon className="h-5 w-5" />
                 </span>
                 {isSelected && (
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-600 text-white">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
                     <Check className="h-3.5 w-3.5" />
                   </span>
                 )}
               </div>
 
-              <h3 className="text-base font-semibold text-foreground">{plan.name}</h3>
+              <h3 className="text-base font-semibold text-foreground">
+                {plan.name}
+              </h3>
 
               <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
                 <li>{t("rooms", { count: plan.maxRooms })}</li>
@@ -106,13 +112,15 @@ export function RegisterStepPlan({
                 </li>
               </ul>
 
-              <p className="mt-4 text-xs text-emerald-600 dark:text-emerald-400">{t("trialDays")}</p>
+              <p className="mt-4 text-xs text-emerald-600 dark:text-emerald-400">
+                {t("trialDays")}
+              </p>
 
               <span
                 className={cn(
                   "mt-4 inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold",
                   isSelected
-                    ? "bg-violet-600 text-white"
+                    ? "bg-primary text-white"
                     : "bg-muted text-foreground group-hover:bg-muted/80"
                 )}
               >

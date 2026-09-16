@@ -131,7 +131,11 @@ export function CompleteProfileStep({ onComplete }: CompleteProfileStepProps) {
               inputClassName={inputClass("cpf")}
             />
           </AuthField>
-          <AuthField label={t("fields.phone")} required error={fieldErrors.phone}>
+          <AuthField
+            label={t("fields.phone")}
+            required
+            error={fieldErrors.phone}
+          >
             <MaskedInput
               name="phone"
               type="tel"

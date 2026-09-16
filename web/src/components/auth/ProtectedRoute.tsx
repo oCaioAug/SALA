@@ -1,32 +1,40 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ReactNode, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { ReactNode, Suspense, useEffect } from "react";
 
+import { getSafeCallbackPath } from "@/lib/auth/callback-path";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { useRouter } from "@/navigation";
+import { usePathname, useRouter } from "@/navigation";
 
 interface ProtectedRouteProps {
   children: ReactNode;
   fallback?: ReactNode;
 }
 
-export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+function ProtectedRouteContent({ children, fallback }: ProtectedRouteProps) {
   const t = useTranslations("Common");
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { status } = useSession();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-    }
-  }, [status, router]);
+    if (status !== "unauthenticated") return;
+
+    const query = searchParams.toString();
+    const returnPath = query ? `${pathname}?${query}` : pathname;
+    const safePath = getSafeCallbackPath(returnPath) ?? "/organizations";
+
+    router.push(`/auth/login?callbackUrl=${encodeURIComponent(safePath)}`);
+  }, [status, pathname, searchParams, router]);
 
   if (status === "loading") {
     return (
       fallback || (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <LoadingSpinner size="lg" />
         </div>
       )
@@ -35,9 +43,9 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
 
   if (status === "unauthenticated") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-foreground">{t("redirectingToLogin")}</p>
         </div>
       </div>
@@ -45,4 +53,20 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   }
 
   return <>{children}</>;
+}
+
+export function ProtectedRoute(props: ProtectedRouteProps) {
+  return (
+    <Suspense
+      fallback={
+        props.fallback || (
+          <div className="flex min-h-screen items-center justify-center bg-background">
+            <LoadingSpinner size="lg" />
+          </div>
+        )
+      }
+    >
+      <ProtectedRouteContent {...props} />
+    </Suspense>
+  );
 }

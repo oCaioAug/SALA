@@ -6,51 +6,103 @@ import React from "react";
 import { RoomStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+interface RoomBadgePillProps extends React.HTMLAttributes<HTMLSpanElement> {
+  className?: string;
+  children: React.ReactNode;
+}
+
+function RoomBadgePill({ className, children, ...props }: RoomBadgePillProps) {
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide ring-1 ring-inset",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </span>
+  );
+}
+
+const roomStatusStyles: Record<RoomStatus, string> = {
+  LIVRE:
+    "bg-emerald-500/15 text-emerald-800 ring-emerald-500/25 dark:text-emerald-300",
+  EM_USO: "bg-rose-500/15 text-rose-800 ring-rose-500/25 dark:text-rose-300",
+  RESERVADO:
+    "bg-amber-500/15 text-amber-900 ring-amber-500/25 dark:text-amber-200",
+};
+
+const activeReservationStyle =
+  "bg-amber-500/15 text-amber-900 ring-amber-500/25 dark:text-amber-200";
+
 interface StatusBadgeProps {
   status: RoomStatus;
   className?: string;
 }
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
+function StatusBadge({ status, className }: StatusBadgeProps) {
   const t = useTranslations("Dashboard.filters");
 
-  const statusConfig = {
-    LIVRE: {
-      dotColor: "bg-green-500",
-      text: t("statusFree"),
-      textColor: "text-green-700 dark:text-green-300",
-      bgColor: "bg-green-50 dark:bg-green-500/20",
-    },
-    EM_USO: {
-      dotColor: "bg-red-500",
-      text: t("statusInUse"),
-      textColor: "text-red-700 dark:text-red-300",
-      bgColor: "bg-red-50 dark:bg-red-500/20",
-    },
-    RESERVADO: {
-      dotColor: "bg-yellow-500",
-      text: t("statusReserved"),
-      textColor: "text-yellow-700 dark:text-yellow-300",
-      bgColor: "bg-yellow-50 dark:bg-yellow-500/20",
-    },
+  const statusLabels: Record<RoomStatus, string> = {
+    LIVRE: t("statusFree"),
+    EM_USO: t("statusInUse"),
+    RESERVADO: t("statusReserved"),
   };
 
-  const config = statusConfig[status];
+  return (
+    <RoomBadgePill
+      role="status"
+      className={cn(roomStatusStyles[status], className)}
+    >
+      {statusLabels[status]}
+    </RoomBadgePill>
+  );
+}
+
+interface RoomActiveReservationBadgeProps {
+  className?: string;
+}
+
+function RoomActiveReservationBadge({ className }: RoomActiveReservationBadgeProps) {
+  const t = useTranslations("Dashboard.card");
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2 px-2 py-1 rounded-full",
-        config.bgColor,
-        className
-      )}
+    <RoomBadgePill
+      role="status"
+      className={cn(activeReservationStyle, className)}
     >
-      <div className={cn("h-2 w-2 rounded-full", config.dotColor)} />
-      <span className={cn("text-sm font-medium", config.textColor)}>
-        {config.text}
-      </span>
+      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+      {t("reservedTag")}
+    </RoomBadgePill>
+  );
+}
+
+interface RoomStatusBadgesProps {
+  status: RoomStatus;
+  hasActiveReservation?: boolean;
+  className?: string;
+}
+
+function RoomStatusBadges({
+  status,
+  hasActiveReservation = false,
+  className,
+}: RoomStatusBadgesProps) {
+  const showActiveReservation =
+    hasActiveReservation && status !== "RESERVADO";
+
+  return (
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+      <StatusBadge status={status} />
+      {showActiveReservation ? <RoomActiveReservationBadge /> : null}
     </div>
   );
-};
+}
 
-export { StatusBadge };
+export {
+  RoomActiveReservationBadge,
+  RoomBadgePill,
+  RoomStatusBadges,
+  StatusBadge,
+};

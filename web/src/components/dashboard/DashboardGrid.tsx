@@ -130,6 +130,8 @@ type Props = {
   rooms: { status: string }[];
   chartStats: DashboardChartStats | null;
   chartStatsLoading: boolean;
+  title: string;
+  subtitle: string;
 };
 
 function placeWidgetAtBottom(
@@ -212,17 +214,18 @@ function WidgetShell({
   onRemoveFromDashboard?: () => void;
   removeLabel?: string;
 }) {
+  const tGrid = useTranslations("DashboardHome.grid");
   return (
     <div
       className={cn(
         "relative h-full min-h-0 w-full min-w-0 overflow-hidden",
-        !editMode && "rounded-2xl border-0 bg-transparent shadow-none",
+        !editMode && "rounded-lg border-0 bg-transparent shadow-none",
         className
       )}
     >
       <div
         className={cn(
-          "flex h-full min-h-0 min-w-0 flex-col overflow-x-hidden",
+          "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden",
           editMode ? "overflow-y-auto" : "overflow-y-hidden"
         )}
       >
@@ -253,7 +256,7 @@ function WidgetShell({
                 type="button"
                 className="dashboard-widget-no-drag shrink-0 rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400"
                 onClick={onRemoveFromDashboard}
-                aria-label={removeLabel ?? "Remove"}
+                aria-label={removeLabel ?? tGrid("removeWidget")}
               >
                 <Trash2 className="h-4 w-4" aria-hidden />
               </button>
@@ -265,7 +268,13 @@ function WidgetShell({
   );
 }
 
-export function DashboardGrid({ rooms, chartStats, chartStatsLoading }: Props) {
+export function DashboardGrid({
+  rooms,
+  chartStats,
+  chartStatsLoading,
+  title,
+  subtitle,
+}: Props) {
   const { data: session } = useSession();
   const { showSuccess, showError } = useApp();
   const tGrid = useTranslations("DashboardHome.grid");
@@ -616,24 +625,33 @@ export function DashboardGrid({ rooms, chartStats, chartStatsLoading }: Props) {
 
   if (!layoutsReady) {
     return (
-      <div className="mb-10 h-[420px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/80" />
+      <div className="mb-6 space-y-3">
+        <div>
+          <h1 className="mb-1 text-xl font-semibold text-foreground sm:text-2xl">
+            {title}
+          </h1>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        </div>
+        <div className="h-[420px] animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800/80" />
+      </div>
     );
   }
 
   const canCustomize = Boolean(session?.user?.email);
 
   return (
-    <div className="mb-10">
-      {canCustomize ? (
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          {isEditing ? (
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {tGrid("editModeHint")}
-            </p>
-          ) : (
-            <span className="hidden min-h-[1.25rem] sm:block" aria-hidden />
-          )}
-          <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="mb-6">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="mb-1 text-xl font-semibold text-foreground sm:text-2xl">
+            {title}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {isEditing ? tGrid("editModeHint") : subtitle}
+          </p>
+        </div>
+        {canCustomize ? (
+          <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
             {!isEditing ? (
               <Button
                 type="button"
@@ -683,8 +701,8 @@ export function DashboardGrid({ rooms, chartStats, chartStatsLoading }: Props) {
               </>
             )}
           </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       <Drawer
         isOpen={widgetDrawerOpen || paletteDragging}

@@ -33,10 +33,13 @@ export const ProductionErrorLogger: React.FC = () => {
         }
       }
 
-      // Filtrar erro de postMessage
-      if (error?.message?.includes('can\'t access property "postMessage"')) {
-        console.warn("PostMessage error ignorado:", error.message);
-        // Não fazer nada - erro conhecido de extensões do navegador
+      // Filtrar erro de ResizeObserver
+      const msg = event.message || error?.message || "";
+      if (
+        msg.includes("ResizeObserver loop") ||
+        msg.includes('can\'t access property "postMessage"')
+      ) {
+        event.stopImmediatePropagation();
         event.preventDefault();
         return true;
       }

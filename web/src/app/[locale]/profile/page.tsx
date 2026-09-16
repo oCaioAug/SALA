@@ -9,12 +9,10 @@ import {
   Mail,
   Save,
   Settings,
-  Shield,
   User as UserIcon,
   Users,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -22,6 +20,7 @@ import { useLocale, useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 
 import { AvatarUpload } from "@/components/forms/AvatarUpload";
+import { AccountSecurityForm } from "@/components/account/AccountSecurityForm";
 import { ErrorPage } from "@/components/layout/ErrorPage";
 import { LoadingPage } from "@/components/layout/LoadingPage";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -31,7 +30,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
-import { getIntlLocale } from "@/lib/utils";
+import { cn, getIntlLocale } from "@/lib/utils";
 
 interface UserData {
   id: string;
@@ -60,6 +59,7 @@ const ProfilePage: React.FC = () => {
   const [saveLoading, setSaveLoading] = useState(false);
 
   const { showSuccess, showError } = useApp();
+  const [hasPassword, setHasPassword] = useState(false);
 
   // Hook de navegação
   const { navigate, isNavigating } = useNavigation({
@@ -74,20 +74,26 @@ const ProfilePage: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/users/profile?email=${session.user.email}`
-        );
+        const [profileRes, meRes] = await Promise.all([
+          fetch(`/api/users/profile?email=${session.user.email}`),
+          fetch("/api/users/me"),
+        ]);
 
-        if (!response.ok) {
+        if (!profileRes.ok) {
           throw new Error(t("errors.userLoadError"));
         }
 
-        const data = await response.json();
+        const data = await profileRes.json();
         setUserData(data);
         setEditForm({
           name: data.name || "",
           email: data.email || "",
         });
+
+        if (meRes.ok) {
+          const me = await meRes.json();
+          setHasPassword(Boolean(me.hasPassword));
+        }
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         showError(t("errors.userLoadError"));
@@ -182,6 +188,10 @@ const ProfilePage: React.FC = () => {
     });
   };
 
+  const isAdmin = userData?.role === "ADMIN";
+  const fieldInputClass =
+    "h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm transition-colors placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-gray-400";
+
   return (
     <PageLayout
       currentPage={currentPage}
@@ -204,11 +214,8 @@ const ProfilePage: React.FC = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl">
-                  <UserIcon className="w-8 h-8 text-blue-400" />
-                </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                     {t("title")}
                   </h1>
                   <p className="text-slate-600 dark:text-gray-400">
@@ -233,13 +240,12 @@ const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Card do perfil principal */}
             <div className="lg:col-span-2">
-              <Card variant="elevated" className="p-6">
-                <div className="flex items-start justify-between mb-6">
-                  <CardTitle className="text-2xl">
-                    {t("personalInfo")}
-                  </CardTitle>
+              <Card variant="elevated" className="overflow-hidden p-0">
+                <div className="flex items-center justify-between border-b border-border px-6 py-4">
+                  <CardTitle className="text-lg">{t("personalInfo")}</CardTitle>
                   <Button
-                    variant="outline"
+                    variant={isEditing ? "ghost" : "outline"}
+                    size="sm"
                     onClick={() =>
                       isEditing ? handleCancel() : setIsEditing(true)
                     }
@@ -247,141 +253,120 @@ const ProfilePage: React.FC = () => {
                   >
                     {isEditing ? (
                       <>
-                        <X className="w-4 h-4 mr-2" />
+                        <X className="mr-2 h-4 w-4" />
                         {t("actions.cancel")}
                       </>
                     ) : (
                       <>
-                        <Edit className="w-4 h-4 mr-2" />
+                        <Edit className="mr-2 h-4 w-4" />
                         {t("actions.edit")}
                       </>
                     )}
                   </Button>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Foto do perfil */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <div className="border-b border-border bg-muted/30 px-6 py-6">
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                     <AvatarUpload
                       currentAvatar={userData.image}
                       userName={userData.name || t("userWithoutName")}
                       onAvatarUpdate={handleAvatarUpdate}
                       disabled={saveLoading}
+                      layout="profile"
+                      className="shrink-0"
                     />
 
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-1">
-                        {userData.name || t("userWithoutName")}
-                      </h3>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            userData.role === "ADMIN"
-                              ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30"
-                              : "bg-green-500/20 text-green-600 dark:text-green-300 border border-green-500/30"
-                          }`}
-                        >
-                          {userData.role === "ADMIN" ? (
-                            <>
-                              <Crown className="w-4 h-4 inline mr-1" />
-                              {t("roles.admin")}
-                            </>
-                          ) : (
-                            <>
-                              <UserIcon className="w-4 h-4 inline mr-1" />
-                              {t("roles.user")}
-                            </>
-                          )}
-                        </span>
-                      </div>
-                      <p className="text-slate-600 dark:text-gray-400 text-sm">
-                        {t("ownProfilePictureDescription")}
-                      </p>
-                    </div>
-                  </div>
+                    <div className="min-w-0 flex-1 space-y-3">
+                      {!isEditing ? (
+                        <>
+                          <div>
+                            <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                              {userData.name || t("userWithoutName")}
+                            </h2>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold ring-1 ring-inset",
+                                  isAdmin
+                                    ? "bg-slate-500/10 text-slate-700 ring-slate-500/20 dark:text-slate-300"
+                                    : "bg-emerald-500/10 text-emerald-800 ring-emerald-500/25 dark:text-emerald-300"
+                                )}
+                              >
+                                {isAdmin ? (
+                                  <Crown className="h-3 w-3" aria-hidden />
+                                ) : (
+                                  <UserIcon className="h-3 w-3" aria-hidden />
+                                )}
+                                {isAdmin ? t("roles.admin") : t("roles.user")}
+                              </span>
+                            </div>
+                          </div>
 
-                  {/* Campos de edição */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                        {t("fullName")}
-                      </label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editForm.name}
-                          onChange={e =>
-                            setEditForm({ ...editForm, name: e.target.value })
-                          }
-                          className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder={t("fullNamePlaceholder")}
-                        />
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Mail className="h-4 w-4 shrink-0" aria-hidden />
+                            <span className="truncate">{userData.email}</span>
+                          </div>
+
+                          <p className="text-xs leading-relaxed text-muted-foreground">
+                            {t("ownProfilePictureDescription")}
+                          </p>
+                        </>
                       ) : (
-                        <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                          <UserIcon className="w-5 h-5 text-slate-500 dark:text-gray-400" />
-                          <span className="text-slate-900 dark:text-white">
-                            {userData.name || t("userWithoutName")}
-                          </span>
-                        </div>
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                          {t("ownProfilePictureDescription")}
+                        </p>
                       )}
                     </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                        {t("email")}
-                      </label>
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          value={editForm.email}
-                          onChange={e =>
-                            setEditForm({ ...editForm, email: e.target.value })
-                          }
-                          className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder={t("emailPlaceholder")}
-                        />
-                      ) : (
-                        <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                          <Mail className="w-5 h-5 text-slate-500 dark:text-gray-400" />
-                          <span className="text-slate-900 dark:text-white">
-                            {userData.email}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">
-                        {t("role")}
-                      </label>
-                      <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                        {userData.role === "ADMIN" ? (
-                          <>
-                            <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                            <span className="text-purple-600 dark:text-purple-400 font-medium">
-                              {t("roles.admin")}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
-                            <span className="text-green-600 dark:text-green-400 font-medium">
-                              {t("roles.user")}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
                   </div>
+                </div>
 
-                  {/* Botões de ação */}
-                  {isEditing && (
-                    <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <Button
-                        onClick={handleSave}
-                        disabled={saveLoading}
-                        className="flex-1"
-                      >
+                {isEditing ? (
+                  <div className="p-6">
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="profile-name"
+                            className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                          >
+                            {t("fullName")}
+                          </label>
+                          <input
+                            id="profile-name"
+                            type="text"
+                            value={editForm.name}
+                            onChange={e =>
+                              setEditForm({ ...editForm, name: e.target.value })
+                            }
+                            className={fieldInputClass}
+                            placeholder={t("fullNamePlaceholder")}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label
+                            htmlFor="profile-email"
+                            className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                          >
+                            {t("email")}
+                          </label>
+                          <input
+                            id="profile-email"
+                            type="email"
+                            value={editForm.email}
+                            onChange={e =>
+                              setEditForm({
+                                ...editForm,
+                                email: e.target.value,
+                              })
+                            }
+                            className={fieldInputClass}
+                            placeholder={t("emailPlaceholder")}
+                          />
+                        </div>
+                      </div>
+
+                    <div className="mt-5 flex justify-end border-t border-border pt-5">
+                      <Button onClick={handleSave} disabled={saveLoading}>
                         {saveLoading ? (
                           <>
                             <LoadingSpinner size="sm" />
@@ -389,14 +374,14 @@ const ProfilePage: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <Save className="w-4 h-4 mr-2" />
+                            <Save className="mr-2 h-4 w-4" />
                             {t("save.save")}
                           </>
                         )}
                       </Button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : null}
               </Card>
             </div>
 
@@ -433,6 +418,20 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </Card>
+
+              <Card variant="elevated" className="p-6">
+                <AccountSecurityForm
+                  hasPassword={hasPassword}
+                  onSuccess={action => {
+                    setHasPassword(true);
+                    showSuccess(
+                      action === "change"
+                        ? t("security.changed")
+                        : t("security.created")
+                    );
+                  }}
+                />
               </Card>
 
               {/* Card de configurações */}

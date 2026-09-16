@@ -14,7 +14,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
-import { HiBeaker } from "react-icons/hi2";
 
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -174,22 +173,6 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  // Função de teste da API
-  const testSession = async () => {
-    try {
-      const response = await fetch("/api/test-session");
-      const data = await response.json();
-      console.log("Teste da sessão:", data);
-      if (response.ok) {
-        showSuccess(t("sessionValid"));
-      } else {
-        showError(t("sessionError", { error: data.error }));
-      }
-    } catch (_error) {
-      showError(t("sessionTestError"));
-    }
-  };
-
   if (!isAdmin) {
     return (
       <ProtectedRoute>
@@ -220,11 +203,8 @@ const UsersPage: React.FC = () => {
       <div className="mb-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-              <Users className="h-8 w-8 text-blue-500 dark:text-blue-400" />
-            </div>
             <div>
-              <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+              <h1 className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
                 {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-slate-400">
@@ -234,14 +214,6 @@ const UsersPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={testSession}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm"
-            >
-              <HiBeaker className="h-4 w-4 shrink-0" aria-hidden />
-              {t("testSession")}
-            </Button>
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {users.length}
@@ -281,11 +253,8 @@ const UsersPage: React.FC = () => {
         <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 p-3 transition-transform duration-300 group-hover:scale-110">
-                <Users className="h-6 w-6 text-blue-500 dark:text-blue-400" />
-              </div>
               <div>
-                <p className="mb-1 text-3xl font-bold text-slate-900 dark:text-white">
+                <p className="mb-1 text-xl font-semibold text-foreground sm:text-2xl">
                   {users.length}
                 </p>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -297,11 +266,8 @@ const UsersPage: React.FC = () => {
 
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 p-3 transition-transform duration-300 group-hover:scale-110">
-                <Crown className="h-6 w-6 text-purple-500 dark:text-purple-400" />
-              </div>
               <div>
-                <p className="mb-1 text-3xl font-bold text-slate-900 dark:text-white">
+                <p className="mb-1 text-xl font-semibold text-foreground sm:text-2xl">
                   {users.filter(u => u.role === "ADMIN").length}
                 </p>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -313,11 +279,8 @@ const UsersPage: React.FC = () => {
 
           <Card variant="elevated" hover className="group">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-3 transition-transform duration-300 group-hover:scale-110">
-                <UserIcon className="h-6 w-6 text-green-500 dark:text-green-400" />
-              </div>
               <div>
-                <p className="mb-1 text-3xl font-bold text-slate-900 dark:text-white">
+                <p className="mb-1 text-xl font-semibold text-foreground sm:text-2xl">
                   {users.filter(u => u.role === "USER").length}
                 </p>
                 <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -374,7 +337,7 @@ const UsersPage: React.FC = () => {
                         />
                       ) : (
                         <div
-                          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg ${getUserGradient(user.name)}`}
+                          className={`flex h-12 w-12 items-center justify-center rounded-md ${getUserGradient(user.name)}`}
                         >
                           <span className="text-lg font-semibold text-white">
                             {getUserInitials(user.name)}
@@ -398,7 +361,7 @@ const UsersPage: React.FC = () => {
                         <span
                           className={`rounded-full border px-2 py-1 text-xs font-medium ${
                             user.role === "ADMIN"
-                              ? "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-500/30 dark:bg-purple-500/20 dark:text-purple-300"
+                              ? "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-500/30 dark:bg-slate-600/20 dark:text-slate-300"
                               : "border-green-200 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/20 dark:text-green-300"
                           }`}
                         >
@@ -435,7 +398,7 @@ const UsersPage: React.FC = () => {
                         className={`${
                           user.role === "ADMIN"
                             ? "text-orange-600 hover:bg-orange-500/10 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300"
-                            : "text-purple-600 hover:bg-purple-500/10 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+                            : "text-slate-700 hover:bg-slate-600/10 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
                         } ${!isAdmin ? "cursor-not-allowed opacity-50" : ""}`}
                         title={
                           !isAdmin

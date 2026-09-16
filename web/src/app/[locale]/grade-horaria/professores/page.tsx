@@ -1,25 +1,34 @@
 "use client";
 
-import { GraduationCap, Plus, Trash2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { AlertTriangle,GraduationCap, Plus, Search, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { Pagination } from "@/components/ui/Pagination";
+import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
   createProfessor,
   deleteProfessor,
+  getDisciplinas,
   getOrgUsers,
   getProfessores,
+  updateProfessor,
 } from "../actions";
 
 const ProfessoresPage: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState("grade-horaria");
+  const t = useTranslations("GradeHoraria.teachers");
+  const tCommon = useTranslations("GradeHoraria.common");
+  const [currentPage, setCurrentPage] = useState("grade-horaria-professores");
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -28,23 +37,63 @@ const ProfessoresPage: React.FC = () => {
 
   const [professores, setProfessores] = useState<any[]>([]);
   const [orgUsers, setOrgUsers] = useState<any[]>([]);
+  const [disciplinas, setDisciplinas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newNome, setNewNome] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newUserId, setNewUserId] = useState("");
+  const [newDisciplinaIds, setNewDisciplinaIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editingProf, setEditingProf] = useState<any | null>(null);
+  const [editNome, setEditNome] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editUserId, setEditUserId] = useState("");
+  const [editDisciplinaIds, setEditDisciplinaIds] = useState<string[]>([]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDisciplinaFilter, setSelectedDisciplinaFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedDisciplinaFilter]);
+
+  const filteredProfessores = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    return professores.filter(p => {
+      const matchesText =
+        !q ||
+        p.name?.toLowerCase().includes(q) ||
+        p.email?.toLowerCase().includes(q);
+
+      const matchesDisciplina =
+        !selectedDisciplinaFilter ||
+        p.disciplinas?.some((d: any) => d.id === selectedDisciplinaFilter);
+
+      return matchesText && matchesDisciplina;
+    });
+  }, [professores, searchTerm, selectedDisciplinaFilter]);
+
+  const paginatedProfessores = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredProfessores.slice(start, start + pageSize);
+  }, [filteredProfessores, page, pageSize]);
 
   const fetchProfessores = async () => {
     try {
       setLoading(true);
-      const [profs, users] = await Promise.all([
+      const [profs, users, discs] = await Promise.all([
         getProfessores(),
         getOrgUsers(),
+        getDisciplinas(),
       ]);
       setProfessores(profs);
       setOrgUsers(users);
+      setDisciplinas(discs);
     } catch (err: any) {
-      showError(err.message || "Erro ao carregar professores");
+      showError(err.message || t("toastLoadError"));
     } finally {
       setLoading(false);
     }
@@ -52,6 +101,7 @@ const ProfessoresPage: React.FC = () => {
 
   useEffect(() => {
     fetchProfessores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -63,35 +113,72 @@ const ProfessoresPage: React.FC = () => {
       const newProf = await createProfessor(
         newNome,
         newEmail || undefined,
-        newUserId || undefined
+        newUserId || undefined,
+        newDisciplinaIds
       );
-      showSuccess("Professor adicionado com sucesso!");
+      showSuccess(t("toastCreateSuccess"));
       setNewNome("");
       setNewEmail("");
       setNewUserId("");
-      setProfessores(prev =>
-        [...prev, newProf].sort((a, b) => a.name.localeCompare(b.name))
-      );
+      setNewDisciplinaIds([]);
+      
+      // refetch to get joined relations easily
+      fetchProfessores();
     } catch (err: any) {
-      showError(err.message || "Erro ao adicionar professor");
+      showError(err.message || t("toastCreateError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProf || !editNome.trim()) return;
+
+    try {
+      setIsSubmitting(true);
+      const updatedProf = await updateProfessor(
+        editingProf.id,
+        editNome,
+        editEmail || undefined,
+        editUserId || undefined,
+        editDisciplinaIds
+      );
+      showSuccess("Professor atualizado com sucesso");
+      cancelEdit();
+      // refetch to get relations
+      fetchProfessores();
+    } catch (err: any) {
+      showError(err.message || "Erro ao atualizar professor");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const startEdit = (prof: any) => {
+    setEditingProf(prof);
+    setEditNome(prof.name);
+    setEditEmail(prof.email || "");
+    setEditUserId(prof.userId || "");
+    setEditDisciplinaIds(prof.disciplinas?.map((d: any) => d.id) || []);
+  };
+
+  const cancelEdit = () => {
+    setEditingProf(null);
+    setEditNome("");
+    setEditEmail("");
+    setEditUserId("");
+    setEditDisciplinaIds([]);
+  };
+
   const handleDelete = async (id: string) => {
-    if (
-      !confirm(
-        "Tem certeza que deseja excluir este professor? Todas as cargas horárias e disponibilidades associadas serão perdidas."
-      )
-    )
-      return;
+    if (!confirm(t("confirmDelete"))) return;
     try {
       await deleteProfessor(id);
-      showSuccess("Professor excluído com sucesso!");
+      showSuccess(t("toastDeleteSuccess"));
       setProfessores(prev => prev.filter(p => p.id !== id));
     } catch (err: any) {
-      showError(err.message || "Erro ao excluir professor");
+      showError(err.message || t("toastDeleteError"));
     }
   };
 
@@ -106,62 +193,71 @@ const ProfessoresPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <GraduationCap className="w-8 h-8 text-blue-500" />
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Professores
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
+                {t("title")}
               </h1>
               <p className="text-slate-600 dark:text-gray-400">
-                Cadastre os professores que serão alocados na grade horária.
+                {t("description")}
               </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate("/grade-horaria")}>
-            Voltar
-          </Button>
+          <BackButton />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Form */}
           <Card className="md:col-span-1">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Novo Professor</h2>
+              <h2 className="text-xl font-semibold mb-4">{t("formTitle")}</h2>
               <form onSubmit={handleCreate} className="space-y-4">
                 <Input
-                  label="Nome do Professor"
-                  placeholder="Ex: João da Silva"
+                  label={t("nameLabel")}
+                  placeholder={t("namePlaceholder")}
                   value={newNome}
                   onChange={e => setNewNome(e.target.value)}
                   disabled={isSubmitting}
                 />
                 <Input
-                  label="E-mail (Opcional)"
+                  label={t("emailLabel")}
                   type="email"
-                  placeholder="Ex: joao@escola.com"
+                  placeholder={t("emailPlaceholder")}
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
                   disabled={isSubmitting}
                 />
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Vincular a Usuário (Opcional)
+                    {t("linkUserLabel")}
                   </label>
-                  <select
-                    className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  <SearchableSelect
                     value={newUserId}
-                    onChange={e => setNewUserId(e.target.value)}
+                    onChange={setNewUserId}
+                    options={orgUsers.map(u => ({
+                      value: u.id,
+                      label: u.name || u.email,
+                    }))}
+                    placeholder={t("linkUserNone")}
+                    allowEmpty
                     disabled={isSubmitting}
-                  >
-                    <option value="">Não vincular...</option>
-                    {orgUsers.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.name || u.email}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-slate-500">
-                    Se vinculado, o professor poderá fazer login no sistema no
-                    futuro.
-                  </p>
+                  />
+                  <p className="text-xs text-slate-500">{t("linkUserHint")}</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Disciplinas Lecionadas
+                  </label>
+                  <SearchableMultiSelect
+                    options={disciplinas.map(d => ({
+                      value: d.id,
+                      label: d.name,
+                    }))}
+                    value={newDisciplinaIds}
+                    onChange={setNewDisciplinaIds}
+                    placeholder="Selecione as disciplinas..."
+                    disabled={isSubmitting}
+                  />
                 </div>
 
                 <Button
@@ -169,7 +265,7 @@ const ProfessoresPage: React.FC = () => {
                   className="w-full"
                   disabled={isSubmitting || !newNome.trim()}
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Adicionar
+                  <Plus className="w-4 h-4 mr-2" /> {tCommon("add")}
                 </Button>
               </form>
             </CardContent>
@@ -177,52 +273,207 @@ const ProfessoresPage: React.FC = () => {
 
           {/* List */}
           <Card className="md:col-span-2">
-            <CardContent className="p-0">
+            <CardContent className="p-0 flex flex-col">
+              {/* Filters Bar - ALWAYS VISIBLE */}
+              <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar professores..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="w-full sm:w-64">
+                  <SearchableSelect
+                    options={disciplinas.map(d => ({
+                      value: d.id,
+                      label: d.name,
+                    }))}
+                    value={selectedDisciplinaFilter}
+                    onChange={setSelectedDisciplinaFilter}
+                    placeholder="Todas as disciplinas"
+                    allowEmpty
+                  />
+                </div>
+              </div>
+
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
-                  Carregando...
+                  {tCommon("loading")}
                 </div>
-              ) : professores.length === 0 ? (
-                <div className="p-8 text-center text-slate-500">
-                  Nenhum professor cadastrado.
+              ) : filteredProfessores.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">
+                    {professores.length === 0
+                      ? t("empty")
+                      : "Nenhum professor encontrado para os filtros selecionados."}
+                  </p>
+                  {(searchTerm || selectedDisciplinaFilter) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setSelectedDisciplinaFilter("");
+                      }}
+                    >
+                      Limpar filtros
+                    </Button>
+                  )}
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {professores.map(p => (
-                    <div
-                      key={p.id}
-                      className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <div>
-                        <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
-                          {p.name}
-                          {p.user && (
-                            <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
-                              Vinculado
-                            </span>
+                <div className="flex flex-col">
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {paginatedProfessores.map(p => (
+                      <div
+                        key={p.id}
+                        className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                            {p.name}
+                            {p.user && (
+                              <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
+                                {t("linkedBadge")}
+                              </span>
+                            )}
+                          </div>
+                          {p.email && (
+                            <div className="text-sm text-slate-500">
+                              {p.email}
+                            </div>
+                          )}
+                          {p.disciplinas && p.disciplinas.length > 0 ? (
+                            <div className="text-xs text-slate-400 mt-1 line-clamp-1">
+                              {p.disciplinas.map((d: any) => d.name).join(", ")}
+                            </div>
+                          ) : (
+                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 mt-1 rounded inline-flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                              <span>Nenhuma disciplina vinculada</span>
+                            </div>
                           )}
                         </div>
-                        {p.email && (
-                          <div className="text-sm text-slate-500">
-                            {p.email}
-                          </div>
-                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                            onClick={() => startEdit(p)}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                            onClick={() => handleDelete(p.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
-                        onClick={() => handleDelete(p.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                    <Pagination
+                      page={page}
+                      pageSize={pageSize}
+                      total={filteredProfessores.length}
+                      onPageChange={setPage}
+                      onPageSizeChange={setPageSize}
+                      pageSizeOptions={[10, 20, 50]}
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal de Edição */}
+        {editingProf && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <Card className="w-full max-w-md shadow-xl">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Editar Professor</h2>
+                <form onSubmit={handleUpdate} className="space-y-4">
+                  <Input
+                    label={t("nameLabel")}
+                    placeholder={t("namePlaceholder")}
+                    value={editNome}
+                    onChange={e => setEditNome(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <Input
+                    label={t("emailLabel")}
+                    type="email"
+                    placeholder={t("emailPlaceholder")}
+                    value={editEmail}
+                    onChange={e => setEditEmail(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {t("linkUserLabel")}
+                    </label>
+                    <SearchableSelect
+                      value={editUserId}
+                      onChange={setEditUserId}
+                      options={orgUsers.map(u => ({
+                        value: u.id,
+                        label: u.name || u.email,
+                      }))}
+                      placeholder={t("linkUserNone")}
+                      allowEmpty
+                      disabled={isSubmitting}
+                    />
+                    <p className="text-xs text-slate-500">{t("linkUserHint")}</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Disciplinas Lecionadas
+                    </label>
+                    <SearchableMultiSelect
+                      options={disciplinas.map(d => ({
+                        value: d.id,
+                        label: d.name,
+                      }))}
+                      value={editDisciplinaIds}
+                      onChange={setEditDisciplinaIds}
+                      placeholder="Selecione as disciplinas..."
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 justify-end mt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={cancelEdit}
+                      disabled={isSubmitting}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || !editNome.trim()}
+                    >
+                      Salvar
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </PageLayout>
     </OrgAdminGuard>
   );

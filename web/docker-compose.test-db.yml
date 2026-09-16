@@ -1,0 +1,24 @@
+services:
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: sala_postgres_test
+    environment:
+      POSTGRES_DB: sala_db_test
+      POSTGRES_USER: sala_user
+      POSTGRES_PASSWORD: sala_password
+    ports:
+      # Expondo na porta 5433 para não conflitar com o banco principal (5432)
+      - "5433:5432"
+    volumes:
+      # Volume separado para persistir os dados apenas desse banco de teste
+      - postgres_test_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sala_user -d sala_db_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres_test_data:

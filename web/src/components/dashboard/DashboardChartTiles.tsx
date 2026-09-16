@@ -35,11 +35,12 @@ type RoomLite = { status: string };
 
 const cardEmbed = (embedded: boolean) =>
   cn(
-    "flex min-h-0 flex-col overflow-x-hidden overflow-y-auto",
-    embedded && "h-full !p-3"
+    "flex min-h-0 flex-col overflow-hidden",
+    embedded && "h-full min-h-0 flex-1 !p-3"
   );
 
-const headerEmbed = (embedded: boolean) => cn(embedded && "space-y-1 !pb-2");
+const headerEmbed = (embedded: boolean) =>
+  cn("shrink-0", embedded && "space-y-1 !pb-2");
 
 const titleEmbed = (embedded: boolean) =>
   cn(embedded && "!text-base leading-tight");
@@ -49,16 +50,16 @@ const descEmbed = (embedded: boolean) =>
 
 const contentEmbed = (embedded: boolean) =>
   cn(
-    "flex min-h-0 flex-col overflow-x-hidden overflow-y-auto",
+    "flex min-h-0 flex-1 flex-col overflow-hidden",
     embedded && "!p-0 pt-0"
   );
 
 const chartBox = (embedded: boolean) =>
   cn(
-    "w-full min-w-0 max-w-full",
+    "w-full min-w-0 max-w-full [&_.recharts-responsive-container]:!size-full",
     embedded
-      ? "aspect-auto h-full min-h-[100px] flex-1"
-      : "h-[240px] min-h-[200px]"
+      ? "!aspect-auto h-full min-h-0 flex-1"
+      : "aspect-video h-[240px] min-h-[200px]"
   );
 
 function ChartTileSkeleton({ embedded }: { embedded?: boolean }) {
@@ -71,8 +72,8 @@ function ChartTileSkeleton({ embedded }: { embedded?: boolean }) {
         <div className="h-5 w-32 max-w-full rounded bg-slate-200 dark:bg-slate-700" />
         <div className="h-3 w-44 max-w-full rounded bg-slate-100 dark:bg-slate-800" />
       </CardHeader>
-      <CardContent className={cn(contentEmbed(Boolean(embedded)), "flex-1")}>
-        <div className="min-h-[120px] flex-1 rounded-lg bg-slate-100 dark:bg-slate-800" />
+      <CardContent className={contentEmbed(Boolean(embedded))}>
+        <div className="min-h-0 flex-1 rounded-lg bg-slate-100 dark:bg-slate-800" />
       </CardContent>
     </Card>
   );
@@ -172,7 +173,7 @@ export function DashboardChartRoomStatusTile({
           config={roomStatusConfig}
           className={cn(
             chartBox(embedded),
-            embedded ? "max-h-full justify-center" : "mx-auto max-h-[280px]"
+            !embedded && "mx-auto max-h-[280px]"
           )}
         >
           <PieChart>
@@ -184,8 +185,8 @@ export function DashboardChartRoomStatusTile({
               data={roomStatusData}
               dataKey="amount"
               nameKey="key"
-              innerRadius="42%"
-              outerRadius="72%"
+              innerRadius={embedded ? "48%" : "42%"}
+              outerRadius={embedded ? "80%" : "72%"}
               strokeWidth={1}
               isAnimationActive={false}
             >

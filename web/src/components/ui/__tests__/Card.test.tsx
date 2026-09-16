@@ -37,7 +37,7 @@ describe("Card Component Structure", () => {
       </Card>
     );
     const card = screen.getByTestId("elevated-card");
-    expect(card).toHaveClass("shadow-2xl");
+    expect(card).toHaveClass("shadow-sm");
   });
 
   it("applies hover effects when hover prop is true", () => {
@@ -47,6 +47,8 @@ describe("Card Component Structure", () => {
       </Card>
     );
     const card = screen.getByTestId("hover-card");
-    expect(card).toHaveClass("hover:shadow-2xl hover:scale-[1.02]");
+    expect(card).toHaveClass(
+      "hover:border-slate-400 dark:hover:border-slate-500"
+    );
   });
 });

@@ -26,17 +26,26 @@ export async function POST(request: NextRequest) {
 
     if (authResult.user.role !== "ADMIN") {
       return NextResponse.json(
-        { error: "Acesso proibido: Requer nível Administrador para provisionar salas." },
+        {
+          error:
+            "Acesso proibido: Requer nível Administrador para provisionar salas.",
+        },
         { status: 403 }
       );
     }
 
     const body = await request.json();
-    const { roomId, items } = body as { roomId: string; items: ProvisionItemDto[] };
+    const { roomId, items } = body as {
+      roomId: string;
+      items: ProvisionItemDto[];
+    };
 
     if (!roomId || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: "Campos obrigatórios: roomId e array de items contendo ao menos 1 item." },
+        {
+          error:
+            "Campos obrigatórios: roomId e array de items contendo ao menos 1 item.",
+        },
         { status: 400 }
       );
     }
@@ -47,10 +56,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!room) {
-      return NextResponse.json({ error: "Sala não encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Sala não encontrada" },
+        { status: 404 }
+      );
     }
 
-    console.log(`🔨 [ProvisionConfirm] Cadastrando ${items.length} itens detectados na sala "${room.name}" (ID: ${roomId})...`);
+    console.log(
+      `🔨 [ProvisionConfirm] Cadastrando ${items.length} itens detectados na sala "${room.name}" (ID: ${roomId})...`
+    );
 
     // 3. Cadastrar os itens no banco associados à sala
     // Usamos uma transação para garantir atomicidade e consistência (KISS + SOLID)
@@ -63,13 +77,17 @@ export async function POST(request: NextRequest) {
             icon: item.icon || "📦",
             roomId: roomId,
             description: `Provisionado de forma autônoma via IA em ${new Date().toLocaleDateString("pt-BR")}.`,
-            specifications: ["Detectado por Inteligência Artificial (Visão Computacional)."],
+            specifications: [
+              "Detectado por Inteligência Artificial (Visão Computacional).",
+            ],
           },
         })
       )
     );
 
-    console.log(`✅ [ProvisionConfirm] Sincronização em lote concluída com sucesso! ${createdItems.length} itens inseridos.`);
+    console.log(
+      `✅ [ProvisionConfirm] Sincronização em lote concluída com sucesso! ${createdItems.length} itens inseridos.`
+    );
 
     return NextResponse.json({
       success: true,

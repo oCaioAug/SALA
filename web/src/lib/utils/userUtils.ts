@@ -32,29 +32,28 @@ export function formatUserName(name: string | null | undefined): string {
 }
 
 /**
- * Gera cores de gradiente consistentes baseadas no nome do usuário
+ * Cor sólida de avatar baseada no nome (sem gradientes)
  * @param name Nome do usuário
- * @returns Classes do Tailwind para gradiente
+ * @returns Classes do Tailwind para fundo sólido
  */
 export function getUserGradient(name: string | null | undefined): string {
-  if (!name) return "from-blue-500 to-purple-600";
+  if (!name) return "bg-slate-600";
 
-  // Gera um hash simples do nome para cores consistentes
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = ((hash << 5) - hash + name.charCodeAt(i)) & 0xffffffff;
   }
 
-  const gradients = [
-    "from-blue-500 to-purple-600",
-    "from-green-500 to-blue-500",
-    "from-purple-500 to-pink-500",
-    "from-orange-500 to-red-500",
-    "from-teal-500 to-cyan-500",
-    "from-indigo-500 to-purple-500",
-    "from-pink-500 to-rose-500",
-    "from-emerald-500 to-teal-500",
+  const solids = [
+    "bg-slate-600",
+    "bg-slate-700",
+    "bg-zinc-600",
+    "bg-stone-600",
+    "bg-neutral-600",
+    "bg-slate-500",
+    "bg-zinc-700",
+    "bg-stone-700",
   ];
 
-  return gradients[Math.abs(hash) % gradients.length];
+  return solids[Math.abs(hash) % solids.length];
 }

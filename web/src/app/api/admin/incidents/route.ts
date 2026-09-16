@@ -35,9 +35,7 @@ export async function GET(request: NextRequest) {
     });
 
     const where = {
-      ...(query.organizationId
-        ? { organizationId: query.organizationId }
-        : {}),
+      ...(query.organizationId ? { organizationId: query.organizationId } : {}),
       ...(query.priority ? { priority: query.priority } : {}),
       ...(query.status
         ? { status: query.status }
@@ -82,10 +80,7 @@ export async function GET(request: NextRequest) {
         where,
         skip,
         take: query.pageSize,
-        orderBy: [
-          { priority: "desc" },
-          { createdAt: "desc" },
-        ],
+        orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
         include: {
           organization: {
             select: { id: true, name: true, slug: true },

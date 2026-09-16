@@ -10,7 +10,7 @@ import { authOptions } from "@/lib/auth";
 import {
   canApproveRoom,
   getSectorManagedRoomIds,
-  isSectorManagerInOrg,
+  hasSectorCapabilityInOrg,
 } from "@/lib/auth/permissions";
 import { isNextResponse } from "@/lib/auth/platform";
 import { isOrgAdmin } from "@/lib/auth/roles";
@@ -60,11 +60,12 @@ export async function GET(request: NextRequest) {
     });
 
     if (!userIsOrgAdmin) {
-      const isManager = await isSectorManagerInOrg(
+      const canApprove = await hasSectorCapabilityInOrg(
         ctx.user.id,
-        ctx.organizationId
+        ctx.organizationId,
+        "canApproveReservations"
       );
-      if (isManager) {
+      if (canApprove) {
         const managedRoomIds = await getSectorManagedRoomIds(
           ctx.user.id,
           ctx.organizationId
@@ -77,6 +78,13 @@ export async function GET(request: NextRequest) {
             ? roomId
             : { in: [] }
           : { in: managedRoomIds };
+      } else if (!roomId) {
+        // Non-approvers without room scope only see their own reservations.
+        // Room calendars still pass roomId for availability visibility.
+        if (userId && userId !== ctx.user.id) {
+          return apiErrorResponse(ApiErrorCode.ACCESS_DENIED, 403);
+        }
+        where.userId = ctx.user.id;
       }
     }
 

@@ -1,6 +1,5 @@
 import {
   apiErrorResponse,
-  apiInternalError,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";

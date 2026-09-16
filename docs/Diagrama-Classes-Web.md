@@ -93,7 +93,6 @@ classDiagram
         +String organizationId
         +String name
         +String? description
-        +DateTime? deletedAt
         +DateTime createdAt
         +DateTime updatedAt
     }
@@ -103,6 +102,8 @@ classDiagram
         +String sectorId
         +String userId
         +SectorMemberRole role
+        +Boolean canApproveReservations
+        +Boolean canManageRooms
         +DateTime createdAt
         +DateTime updatedAt
     }
@@ -448,7 +449,7 @@ Unidade de responsabilidade da organização (ex.: Cord de TI, NIC). Agrupa sala
 
 #### SectorMember
 
-Vínculo usuário–setor com papel `MANAGER`, permitindo aprovação de reservas e edição de infos/itens das salas do setor.
+Vínculo usuário–setor com papel `MANAGER` e duas funções: `canApproveReservations` (agendas) e `canManageRooms` (infos da sala + itens). OWNER/ADMIN da organização escolhe o que cada pessoa pode fazer.
 
 #### Item
 

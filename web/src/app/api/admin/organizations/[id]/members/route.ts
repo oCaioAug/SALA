@@ -1,6 +1,5 @@
 import {
   apiErrorResponse,
-  apiInternalError,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { OrganizationRole } from "@prisma/client";
@@ -61,10 +60,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     if (data.role === OrganizationRole.OWNER) {
-      return NextResponse.json(
-        { error: "Use transferência de ownership para definir owner" },
-        { status: 400 }
-      );
+      return apiErrorResponse(ApiErrorCode.OWNER_TRANSFER_REQUIRED, 400);
     }
 
     const memberLimit = await assertCanAddMember(organizationId);

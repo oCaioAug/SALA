@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Clock,
   Eye,
+  Network,
   Search,
   User as UserIcon,
   XCircle,
@@ -31,7 +32,8 @@ import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
 import { ReservationWithDetails, Room, User } from "@/lib/types";
-import { getIntlLocale } from "@/lib/utils";
+import { getReservationStatusStyle } from "@/lib/reservations/status";
+import { cn, getIntlLocale } from "@/lib/utils";
 
 type ReservationWithSector = ReservationWithDetails & {
   room: Room & { sector?: { id: string; name: string } | null };
@@ -54,9 +56,7 @@ const SolicitacoesPage: React.FC = () => {
   const { data: session } = useSession();
   const { isOrgAdmin } = useOrgPermissions();
   const [currentPage, setCurrentPage] = useState("solicitacoes");
-  const [solicitacoes, setSolicitacoes] = useState<ReservationWithSector[]>(
-    []
-  );
+  const [solicitacoes, setSolicitacoes] = useState<ReservationWithSector[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [scopeSectors, setScopeSectors] = useState<ScopeSector[]>([]);
@@ -113,24 +113,31 @@ const SolicitacoesPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [solicitacoesResponse, roomsResponse, usersResponse, sectorsResponse] =
-          await Promise.all([
-            fetch("/api/reservations?status=PENDING"),
-            fetch("/api/rooms"),
-            fetch("/api/users").catch(() => null),
-            fetch("/api/sectors").catch(() => null),
-          ]);
+        const [
+          solicitacoesResponse,
+          roomsResponse,
+          usersResponse,
+          sectorsResponse,
+        ] = await Promise.all([
+          fetch("/api/reservations?status=PENDING"),
+          fetch("/api/rooms"),
+          fetch("/api/users").catch(() => null),
+          fetch("/api/sectors").catch(() => null),
+        ]);
 
         if (!solicitacoesResponse.ok) {
           const errorData = await solicitacoesResponse.json().catch(() => ({}));
           throw new Error(
             errorData.error ||
-              `Erro ${solicitacoesResponse.status}: ${solicitacoesResponse.statusText}`
+              t("errors.httpStatus", {
+                status: solicitacoesResponse.status,
+                statusText: solicitacoesResponse.statusText,
+              })
           );
         }
 
         if (!roomsResponse.ok) {
-          throw new Error("Erro ao carregar salas");
+          throw new Error(t("errors.loadRooms"));
         }
 
         const [solicitacoesData, roomsData, usersData, sectorsData] =
@@ -138,9 +145,7 @@ const SolicitacoesPage: React.FC = () => {
             solicitacoesResponse.json(),
             roomsResponse.json(),
             usersResponse?.ok ? usersResponse.json() : Promise.resolve([]),
-            sectorsResponse?.ok
-              ? sectorsResponse.json()
-              : Promise.resolve([]),
+            sectorsResponse?.ok ? sectorsResponse.json() : Promise.resolve([]),
           ]);
 
         // Agrupar reservas recorrentes para mostrar apenas uma por template
@@ -177,7 +182,7 @@ const SolicitacoesPage: React.FC = () => {
       } catch (err) {
         console.error("Erro ao carregar solicitações:", err);
         const errorMessage =
-          err instanceof Error ? err.message : "Erro desconhecido";
+          err instanceof Error ? err.message : t("errors.unknown");
         setError(errorMessage);
         showError(errorMessage);
       } finally {
@@ -251,7 +256,7 @@ const SolicitacoesPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao verificar conflitos");
+        throw new Error(t("errors.checkConflicts"));
       }
 
       const conflictData = await response.json();
@@ -265,9 +270,7 @@ const SolicitacoesPage: React.FC = () => {
   const isOwnRequest = (solicitacao: ReservationWithDetails) => {
     const myId = session?.user?.id;
     if (!myId) return false;
-    return (
-      solicitacao.userId === myId || solicitacao.user?.id === myId
-    );
+    return solicitacao.userId === myId || solicitacao.user?.id === myId;
   };
 
   const scopeBannerText = useMemo(() => {
@@ -363,7 +366,7 @@ const SolicitacoesPage: React.FC = () => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Erro ao aprovar solicitação");
+      throw new Error(errorData.error || t("errors.approve"));
     }
 
     const data = await response.json();
@@ -384,7 +387,9 @@ const SolicitacoesPage: React.FC = () => {
       data.message ||
         t("feedback.successApprove") +
           (data.recurringInstances
-            ? ` (${data.recurringInstances} instâncias)`
+            ? t("errors.instancesSuffix", {
+                count: data.recurringInstances,
+              })
             : "")
     );
     setIsDetailsModalOpen(false);
@@ -406,7 +411,7 @@ const SolicitacoesPage: React.FC = () => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Erro ao rejeitar solicitação");
+      throw new Error(errorData.error || t("errors.reject"));
     }
 
     const data = await response.json();
@@ -427,7 +432,9 @@ const SolicitacoesPage: React.FC = () => {
       data.message ||
         t("feedback.successReject") +
           (data.recurringInstances
-            ? ` (${data.recurringInstances} instâncias)`
+            ? t("errors.instancesSuffix", {
+                count: data.recurringInstances,
+              })
             : "")
     );
     setIsDetailsModalOpen(false);
@@ -461,7 +468,6 @@ const SolicitacoesPage: React.FC = () => {
   };
 
   const formatDateTime = (date: Date): string => {
-    // Converter locale do next-intl para formato do Intl
     const intlLocale = getIntlLocale(locale);
 
     return date.toLocaleString(intlLocale, {
@@ -473,17 +479,28 @@ const SolicitacoesPage: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "PENDING":
-        return "text-yellow-400 bg-yellow-500/10";
-      case "APPROVED":
-        return "text-green-400 bg-green-500/10";
-      case "REJECTED":
-        return "text-red-400 bg-red-500/10";
-      default:
-        return "text-slate-600 dark:text-gray-400 bg-slate-100 dark:bg-gray-500/10";
+  const formatScheduleLabel = (start: Date, end: Date): string => {
+    const intlLocale = getIntlLocale(locale);
+    const sameDay = start.toDateString() === end.toDateString();
+
+    if (sameDay) {
+      const datePart = start.toLocaleString(intlLocale, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      const startTime = start.toLocaleString(intlLocale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const endTime = end.toLocaleString(intlLocale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return `${datePart} · ${startTime} – ${endTime}`;
     }
+
+    return `${formatDateTime(start)} – ${formatDateTime(end)}`;
   };
 
   const getStatusText = (status: string): string => {
@@ -524,11 +541,8 @@ const SolicitacoesPage: React.FC = () => {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl">
-                    <ClipboardList className="w-8 h-8 text-amber-400" />
-                  </div>
                   <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                    <h1 className="text-xl font-semibold text-foreground sm:text-2xl mb-2">
                       {t("title")}
                     </h1>
                     <p className="text-slate-600 dark:text-gray-400">
@@ -595,131 +609,189 @@ const SolicitacoesPage: React.FC = () => {
                 description={t("empty.description")}
               />
             ) : (
-              <div className="space-y-4">
-                {paginatedSolicitacoes.map(solicitacao => (
-                  <Card
-                    key={solicitacao.id}
-                    variant="elevated"
-                    hover
-                    className={`group ${
-                      focusedReservationId === solicitacao.id
-                        ? "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/50"
-                        : ""
-                    }`}
-                    id={`solicitacao-${solicitacao.id}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-amber-500/20 rounded-xl">
-                            <Calendar className="w-6 h-6 text-amber-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-                              {solicitacao.room?.name ||
-                                rooms.find(r => r.id === solicitacao.roomId)
-                                  ?.name ||
-                                "Sala desconhecida"}
-                            </h3>
-                            {solicitacao.room?.sector?.name ? (
-                              <p className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">
-                                {t("card.sector")}:{" "}
-                                {solicitacao.room.sector.name}
-                              </p>
-                            ) : null}
-                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-gray-400">
-                              <div className="flex items-center gap-1">
-                                <UserIcon className="w-4 h-4" />
-                                {solicitacao.user.name}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {formatDateTime(
-                                  new Date(solicitacao.startTime)
-                                )}{" "}
-                                -{" "}
-                                {formatDateTime(new Date(solicitacao.endTime))}
-                              </div>
+              <div className="space-y-3">
+                {paginatedSolicitacoes.map(solicitacao => {
+                  const roomName =
+                    solicitacao.room?.name ||
+                    rooms.find(r => r.id === solicitacao.roomId)?.name ||
+                    t("unknownRoom");
+                  const sectorName = solicitacao.room?.sector?.name;
+                  const start = new Date(solicitacao.startTime);
+                  const end = new Date(solicitacao.endTime);
+                  const scheduleLabel = formatScheduleLabel(start, end);
+                  const isFocused = focusedReservationId === solicitacao.id;
+                  const isPending = solicitacao.status === "PENDING";
+                  const ownRequest = isOwnRequest(solicitacao);
+                  const isLoading = actionLoading === solicitacao.id;
+
+                  return (
+                    <Card
+                      key={solicitacao.id}
+                      variant="elevated"
+                      className={cn(
+                        "overflow-hidden transition-all",
+                        isFocused &&
+                          "border-blue-500/40 ring-2 ring-blue-500/30 dark:border-blue-500/50"
+                      )}
+                      id={`solicitacao-${solicitacao.id}`}
+                    >
+                      <CardContent className="p-0">
+                        <div className="space-y-4 p-4 sm:p-5">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                              <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
+                                {roomName}
+                              </h3>
+                              <span
+                                className={cn(
+                                  "inline-flex shrink-0 items-center rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide ring-1 ring-inset",
+                                  getReservationStatusStyle(solicitacao.status)
+                                )}
+                              >
+                                {getStatusText(solicitacao.status)}
+                              </span>
+                              {solicitacao.isRecurring &&
+                              solicitacao.recurringTemplateId ? (
+                                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                  {t("recurringInfo")}
+                                </span>
+                              ) : null}
                             </div>
-                            {solicitacao.isRecurring &&
-                              solicitacao.recurringTemplateId && (
-                                <p className="text-xs text-blue-400 mt-1">
-                                  {t("recurringInfo") ||
-                                    "Esta é uma reserva recorrente. Aprovar/rejeitar afetará todas as instâncias."}
-                                </p>
-                              )}
-                            {solicitacao.purpose && (
-                              <p className="text-sm text-slate-700 dark:text-gray-300 mt-2">
-                                {solicitacao.purpose}
-                              </p>
-                            )}
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                              solicitacao.status
-                            )}`}
-                          >
-                            {getStatusText(solicitacao.status)}
-                          </span>
+                            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleSolicitacaoClick(solicitacao)
+                                }
+                                className="gap-1.5"
+                              >
+                                <Eye className="h-4 w-4" aria-hidden />
+                                <span className="hidden sm:inline">
+                                  {t("card.viewDetails")}
+                                </span>
+                              </Button>
 
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleSolicitacaoClick(solicitacao)
-                              }
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
+                              {isPending && !ownRequest ? (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleApprove(solicitacao)}
+                                    disabled={isLoading}
+                                    className="gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                                  >
+                                    {isLoading ? (
+                                      <LoadingSpinner size="sm" />
+                                    ) : (
+                                      <CheckCircle
+                                        className="h-4 w-4"
+                                        aria-hidden
+                                      />
+                                    )}
+                                    <span className="hidden sm:inline">
+                                      {t("card.approve")}
+                                    </span>
+                                  </Button>
 
-                            {solicitacao.status === "PENDING" &&
-                              !isOwnRequest(solicitacao) && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApprove(solicitacao)}
-                                  disabled={actionLoading === solicitacao.id}
-                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10"
-                                >
-                                  {actionLoading === solicitacao.id ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <CheckCircle className="w-4 h-4" />
-                                  )}
-                                </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openRejectDrawer(solicitacao)}
+                                    disabled={isLoading}
+                                    className="gap-1.5 border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-300 dark:hover:bg-rose-500/10"
+                                  >
+                                    {isLoading ? (
+                                      <LoadingSpinner size="sm" />
+                                    ) : (
+                                      <XCircle
+                                        className="h-4 w-4"
+                                        aria-hidden
+                                      />
+                                    )}
+                                    <span className="hidden sm:inline">
+                                      {t("card.reject")}
+                                    </span>
+                                  </Button>
+                                </>
+                              ) : null}
 
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => openRejectDrawer(solicitacao)}
-                                  disabled={actionLoading === solicitacao.id}
-                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                >
-                                  {actionLoading === solicitacao.id ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <XCircle className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                            {solicitacao.status === "PENDING" &&
-                              isOwnRequest(solicitacao) && (
-                                <p className="max-w-[10rem] text-right text-xs text-slate-500 dark:text-slate-400">
+                              {isPending && ownRequest ? (
+                                <p className="text-xs leading-relaxed text-muted-foreground sm:max-w-[14rem] sm:text-right">
                                   {t("card.selfApproveBlocked")}
                                 </p>
-                              )}
+                              ) : null}
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg border border-border bg-muted/20 p-3.5 sm:p-4">
+                            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+                              {sectorName ? (
+                                <div className="min-w-0">
+                                  <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                    {t("card.sector")}
+                                  </dt>
+                                  <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                    <Network
+                                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                      aria-hidden
+                                    />
+                                    <span className="truncate">{sectorName}</span>
+                                  </dd>
+                                </div>
+                              ) : null}
+                              <div className="min-w-0">
+                                <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t("modal.user")}
+                                </dt>
+                                <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium text-foreground">
+                                  <UserIcon
+                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                    aria-hidden
+                                  />
+                                  <span className="truncate">
+                                    {solicitacao.user.name}
+                                  </span>
+                                </dd>
+                              </div>
+                              <div
+                                className={cn(
+                                  "min-w-0",
+                                  sectorName
+                                    ? "sm:col-span-2 lg:col-span-1"
+                                    : "sm:col-span-1"
+                                )}
+                              >
+                                <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t("modal.start")} / {t("modal.end")}
+                                </dt>
+                                <dd className="mt-1 flex items-center gap-1.5 text-sm font-medium tabular-nums text-foreground">
+                                  <Calendar
+                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                    aria-hidden
+                                  />
+                                  <span className="truncate">{scheduleLabel}</span>
+                                </dd>
+                              </div>
+                            </dl>
+
+                            {solicitacao.purpose ? (
+                              <div className="mt-3 border-t border-border/70 pt-3">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                  {t("modal.purpose")}
+                                </p>
+                                <p className="mt-1 text-sm leading-relaxed text-foreground/90">
+                                  {solicitacao.purpose}
+                                </p>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
                 <Pagination
                   page={safeSolPage}
                   pageSize={listPageSize}
@@ -752,7 +824,7 @@ const SolicitacoesPage: React.FC = () => {
                           {selectedSolicitacao.room?.name ||
                             rooms.find(r => r.id === selectedSolicitacao.roomId)
                               ?.name ||
-                            "Sala desconhecida"}
+                            t("unknownRoom")}
                         </span>
                       </div>
                       {selectedSolicitacao.room?.sector?.name ? (
@@ -855,9 +927,10 @@ const SolicitacoesPage: React.FC = () => {
                       {t("modal.status")}
                     </label>
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        selectedSolicitacao.status
-                      )}`}
+                      className={cn(
+                        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1 ring-inset",
+                        getReservationStatusStyle(selectedSolicitacao.status)
+                      )}
                     >
                       {getStatusText(selectedSolicitacao.status)}
                     </span>
@@ -865,45 +938,45 @@ const SolicitacoesPage: React.FC = () => {
 
                   {selectedSolicitacao.status === "PENDING" &&
                     !isOwnRequest(selectedSolicitacao) && (
-                    <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsDetailsModalOpen(false)}
-                        className="flex-1"
-                      >
-                        {t("modal.close")}
-                      </Button>
-                      <Button
-                        onClick={() => handleApprove(selectedSolicitacao)}
-                        disabled={actionLoading === selectedSolicitacao.id}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        {actionLoading === selectedSolicitacao.id ? (
-                          <LoadingSpinner size="sm" />
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            {t("card.approve")}
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => openRejectDrawer(selectedSolicitacao)}
-                        disabled={actionLoading === selectedSolicitacao.id}
-                        variant="outline"
-                        className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      >
-                        {actionLoading === selectedSolicitacao.id ? (
-                          <LoadingSpinner size="sm" />
-                        ) : (
-                          <>
-                            <XCircle className="w-4 h-4 mr-2" />
-                            {t("card.reject")}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
+                      <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsDetailsModalOpen(false)}
+                          className="flex-1"
+                        >
+                          {t("modal.close")}
+                        </Button>
+                        <Button
+                          onClick={() => handleApprove(selectedSolicitacao)}
+                          disabled={actionLoading === selectedSolicitacao.id}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          {actionLoading === selectedSolicitacao.id ? (
+                            <LoadingSpinner size="sm" />
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              {t("card.approve")}
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => openRejectDrawer(selectedSolicitacao)}
+                          disabled={actionLoading === selectedSolicitacao.id}
+                          variant="outline"
+                          className="flex-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        >
+                          {actionLoading === selectedSolicitacao.id ? (
+                            <LoadingSpinner size="sm" />
+                          ) : (
+                            <>
+                              <XCircle className="w-4 h-4 mr-2" />
+                              {t("card.reject")}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   {selectedSolicitacao.status === "PENDING" &&
                     isOwnRequest(selectedSolicitacao) && (
                       <p className="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-600 dark:border-slate-600 dark:text-slate-300">
@@ -936,7 +1009,7 @@ const SolicitacoesPage: React.FC = () => {
 
                   <div>
                     <h4 className="font-medium text-white mb-3">
-                      Reservas Conflitantes:
+                      {t("conflict.listTitle")}
                     </h4>
                     <div className="space-y-3">
                       {conflictData.conflicts.map(
@@ -948,8 +1021,7 @@ const SolicitacoesPage: React.FC = () => {
                             <div className="flex items-center justify-between">
                               <div>
                                 <p className="font-medium text-white">
-                                  {conflict.user?.name ||
-                                    "Usuário desconhecido"}
+                                  {conflict.user?.name || t("unknownUser")}
                                 </p>
                                 <p className="text-sm text-gray-400">
                                   {formatDateTime(new Date(conflict.startTime))}{" "}
@@ -957,7 +1029,7 @@ const SolicitacoesPage: React.FC = () => {
                                 </p>
                               </div>
                               <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">
-                                Conflito
+                                {t("conflict.badge")}
                               </span>
                             </div>
                           </div>

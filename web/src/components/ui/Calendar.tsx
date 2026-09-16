@@ -157,7 +157,17 @@ const Calendar: React.FC<CalendarProps> = ({
 
   const calendarDays = getCalendarDays();
 
+  const isPastEmptyDay = (day: CalendarDay): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dayDate = new Date(day.date);
+    dayDate.setHours(0, 0, 0, 0);
+    return dayDate.getTime() < today.getTime() && day.reservations.length === 0;
+  };
+
   const handleDayClick = (day: CalendarDay) => {
+    // Past days without reservations are not actionable (no create).
+    if (isPastEmptyDay(day)) return;
     setSelectedDay(day.date);
     onDateSelect?.(day.date);
     onDateClick?.(day.date);
@@ -167,7 +177,7 @@ const Calendar: React.FC<CalendarProps> = ({
     const colors = [
       "bg-blue-500",
       "bg-green-500",
-      "bg-purple-500",
+      "bg-slate-600",
       "bg-orange-500",
       "bg-pink-500",
       "bg-indigo-500",
@@ -236,48 +246,47 @@ const Calendar: React.FC<CalendarProps> = ({
 
       {/* Grid do calendário */}
       <div className="grid grid-cols-7">
-        {calendarDays.map((day, index) => (
+        {calendarDays.map((day, index) => {
+          const pastEmpty = isPastEmptyDay(day);
+          return (
           <div
             key={index}
             className={`
-              min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-600 last:border-r-0 cursor-pointer transition-colors
-              ${
-                day.isCurrentMonth
-                  ? "bg-white dark:bg-slate-800"
-                  : "bg-slate-50 dark:bg-slate-900/50"
-              }
-              ${
-                day.isToday
-                  ? "bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/30"
-                  : ""
-              }
-              ${
-                day.isSelected
-                  ? "bg-blue-100 dark:bg-blue-600/20 border-blue-500"
-                  : ""
-              }
-              hover:bg-slate-100 dark:hover:bg-slate-700/50
-            `}
+ min-h-[120px] p-2 border-r border-b border-slate-200 dark:border-slate-600 last:border-r-0 transition-colors
+ ${
+   pastEmpty
+     ? "cursor-default opacity-50"
+     : "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50"
+ }
+ ${
+   day.isCurrentMonth
+     ? "bg-white dark:bg-slate-800"
+     : "bg-slate-50 dark:bg-slate-900/50"
+ }
+ ${
+   day.isToday
+     ? "bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/30"
+     : ""
+ }
+ ${day.isSelected ? "bg-blue-100 dark:bg-blue-600/20 border-blue-500" : ""}
+ `}
             onClick={() => handleDayClick(day)}
+            aria-disabled={pastEmpty}
           >
             <div className="flex flex-col h-full">
               {/* Número do dia */}
               <div className="relative mb-2">
                 <div
                   className={`
-                  text-sm font-medium
-                  ${
-                    day.isCurrentMonth
-                      ? "text-slate-900 dark:text-white"
-                      : "text-slate-400 dark:text-slate-500"
-                  }
-                  ${
-                    day.isToday
-                      ? "text-blue-600 dark:text-blue-400 font-bold"
-                      : ""
-                  }
-                  ${day.isSelected ? "text-blue-700 dark:text-blue-300" : ""}
-                `}
+ text-sm font-medium
+ ${
+   day.isCurrentMonth
+     ? "text-slate-900 dark:text-white"
+     : "text-slate-400 dark:text-slate-500"
+ }
+ ${day.isToday ? "text-blue-600 dark:text-blue-400 font-bold" : ""}
+ ${day.isSelected ? "text-blue-700 dark:text-blue-300" : ""}
+ `}
                 >
                   {day.date.getDate()}
                 </div>
@@ -299,10 +308,10 @@ const Calendar: React.FC<CalendarProps> = ({
                     <div
                       key={reservation.id}
                       className={`
-                        text-xs p-1 rounded cursor-pointer transition-all hover:scale-105
-                        ${getReservationColor(reservation.roomId)} text-white
-                        ${isMultiDay ? "border-l-2 border-white/30" : ""}
-                      `}
+ text-xs p-1 rounded cursor-pointer transition-all hover:scale-105
+ ${getReservationColor(reservation.roomId)} text-white
+ ${isMultiDay ? "border-l-2 border-white/30" : ""}
+ `}
                       onClick={e => {
                         e.stopPropagation();
                         onReservationClick?.(reservation);
@@ -340,7 +349,8 @@ const Calendar: React.FC<CalendarProps> = ({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Legenda */}
@@ -353,7 +363,7 @@ const Calendar: React.FC<CalendarProps> = ({
             const colors = [
               "bg-blue-500",
               "bg-green-500",
-              "bg-purple-500",
+              "bg-slate-600",
               "bg-orange-500",
               "bg-pink-500",
               "bg-indigo-500",

@@ -34,7 +34,7 @@ export async function GET(
     });
 
     if (!subscription) {
-      return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
+      return apiErrorResponse(ApiErrorCode.SUBSCRIPTION_NOT_FOUND, 404);
     }
 
     return NextResponse.json(subscription);
@@ -62,7 +62,7 @@ export async function PATCH(
     });
 
     if (!existing) {
-      return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
+      return apiErrorResponse(ApiErrorCode.SUBSCRIPTION_NOT_FOUND, 404);
     }
 
     if (data.planId) {

@@ -46,6 +46,8 @@ const RoomDetailPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [updateRoomLoading, setUpdateRoomLoading] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const canEditRoom = Boolean(room?.canEditRoom);
   const canManageItems = Boolean(room?.canManageItems);
@@ -86,6 +88,7 @@ const RoomDetailPage: React.FC = () => {
     >
   ) => {
     try {
+      setUpdateRoomLoading(true);
       const response = await fetch(`/api/rooms/${roomId}`, {
         method: "PUT",
         headers: {
@@ -113,6 +116,8 @@ const RoomDetailPage: React.FC = () => {
       setIsEditModalOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.updateRoom"));
+    } finally {
+      setUpdateRoomLoading(false);
     }
   };
 
@@ -235,6 +240,7 @@ const RoomDetailPage: React.FC = () => {
     if (!confirm(t("confirmations.deleteItem"))) return;
 
     try {
+      setDeletingItemId(itemId);
       const response = await fetch(`/api/items/${itemId}`, {
         method: "DELETE",
       });
@@ -253,6 +259,8 @@ const RoomDetailPage: React.FC = () => {
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.deleteItem"));
+    } finally {
+      setDeletingItemId(null);
     }
   };
 
@@ -285,61 +293,76 @@ const RoomDetailPage: React.FC = () => {
               </Link>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                  {room.name}
-                </h1>
-                <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                    {room.name}
+                  </h1>
                   <StatusBadge status={room.status} />
-                  {room.capacity && (
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                      <div className="w-4 h-4 bg-slate-200 dark:bg-slate-600 rounded-full flex items-center justify-center">
-                        <HiUsers
-                          className="h-3 w-3 text-slate-600 dark:text-slate-400"
-                          aria-hidden
-                        />
-                      </div>
-                      <span>{t("capacity", { count: room.capacity })}</span>
-                    </div>
-                  )}
-                  {room.sector?.name ? (
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
-                      {t("sector")}: {room.sector.name}
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                      {t("noSector")}
-                    </span>
-                  )}
                 </div>
+
+                <ul
+                  className="flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400"
+                  aria-label={t("infoTitle")}
+                >
+                  {room.capacity ? (
+                    <li className="flex items-center gap-2.5">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <HiUsers className="h-4 w-4" aria-hidden />
+                      </span>
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {t("capacity", { count: room.capacity })}
+                      </span>
+                    </li>
+                  ) : null}
+                  <li className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <Network className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      {room.sector?.name ? (
+                        <>
+                          <span className="text-slate-500 dark:text-slate-500">
+                            {t("sector")}:{" "}
+                          </span>
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            {room.sector.name}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-slate-500 dark:text-slate-500">
+                          {t("noSector")}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                </ul>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex w-full min-w-0 flex-col gap-2 sm:w-52 sm:shrink-0">
                 <Button
                   variant="outline"
                   onClick={() => router.push(`/salas/${roomId}/agendamentos`)}
-                  className="gap-2"
+                  className="w-full justify-center gap-2"
                 >
                   <CalendarIcon className="w-4 h-4" />
                   {t("viewReservations")}
                 </Button>
                 {canEditRoom && (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditModalOpen(true)}
-                      className="gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      {t("editRoom")}
-                    </Button>
-                  </>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="w-full justify-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    {t("editRoom")}
+                  </Button>
                 )}
                 {canManageItems && (
                   <Button
                     onClick={() => setIsAddItemModalOpen(true)}
-                    className="gap-2"
+                    className="w-full justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
                     {t("addItem")}
@@ -361,30 +384,43 @@ const RoomDetailPage: React.FC = () => {
 
           <Card className="mb-6">
             <CardTitle className="mb-4 text-lg">{t("infoTitle")}</CardTitle>
-            <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+            <div className="grid grid-cols-1 gap-4 text-sm text-slate-700 dark:text-slate-300 sm:grid-cols-2 lg:grid-cols-5">
               <div className="flex gap-3">
                 <Network className="mt-0.5 h-5 w-5 shrink-0 text-indigo-500" />
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-slate-900 dark:text-white">
                     {t("sector")}
                   </p>
-                  <p>
+                  <p className="truncate">
                     {room.sector?.name?.trim() || t("noSector")}
                   </p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-slate-900 dark:text-white">
                     {t("location")}
                   </p>
-                  <p>{room.locationDescription?.trim() || "—"}</p>
+                  <p className="truncate">
+                    {room.locationDescription?.trim() || "—"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <HiUsers className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" />
+                <div className="min-w-0">
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {t("capacityLabel")}
+                  </p>
+                  <p>
+                    {room.capacity != null ? room.capacity : "—"}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Plug className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-slate-900 dark:text-white">
                     {t("outlets")}
                   </p>
@@ -397,7 +433,7 @@ const RoomDetailPage: React.FC = () => {
               </div>
               <div className="flex gap-3">
                 <Snowflake className="mt-0.5 h-5 w-5 shrink-0 text-cyan-500" />
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-slate-900 dark:text-white">
                     {room.climateControlled ? t("climateYes") : t("climateNo")}
                   </p>
@@ -511,6 +547,7 @@ const RoomDetailPage: React.FC = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteItem(item.id)}
+                                loading={deletingItemId === item.id}
                                 className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -571,6 +608,7 @@ const RoomDetailPage: React.FC = () => {
               onSubmit={handleUpdateRoom}
               onCancel={() => setIsEditModalOpen(false)}
               allowSectorChange={isAdmin}
+              loading={updateRoomLoading}
             />
           </Drawer>
 
@@ -781,7 +819,7 @@ const ItemForm: React.FC<{
       </div>
 
       <div className="flex gap-3 pt-4">
-        <Button type="submit" className="flex-1" disabled={uploading}>
+        <Button type="submit" className="flex-1" loading={uploading}>
           {uploading
             ? t("form.saving")
             : item
@@ -793,6 +831,7 @@ const ItemForm: React.FC<{
           variant="outline"
           onClick={onCancel}
           className="flex-1"
+          disabled={uploading}
         >
           {t("form.cancel")}
         </Button>

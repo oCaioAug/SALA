@@ -1,10 +1,8 @@
 "use client";
 
-import { Building2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import type { DashboardChartStats } from "@/components/dashboard/dashboardChartStats";
@@ -16,6 +14,8 @@ import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 import { useNotificationHandler } from "@/lib/hooks/useNotificationHandler";
 import { useOrgPermissions } from "@/lib/hooks/useOrgPermissions";
+import { useRouter } from "@/navigation";
+
 const DashboardPage: React.FC = () => {
   const t = useTranslations("Dashboard");
   const th = useTranslations("DashboardHome");
@@ -40,6 +40,11 @@ const DashboardPage: React.FC = () => {
     showError,
   } = useApp();
 
+  const roomsCacheRef = useRef(roomsCache);
+  roomsCacheRef.current = roomsCache;
+  const lastFetchTimeRef = useRef(lastFetchTime);
+  lastFetchTimeRef.current = lastFetchTime;
+
   const { navigate, isNavigating } = useNavigation({
     currentPage,
     onPageChange: setCurrentPage,
@@ -48,8 +53,10 @@ const DashboardPage: React.FC = () => {
   const { handleNotificationClick: globalNotificationHandler } =
     useNotificationHandler();
 
+  const redirectedRef = useRef(false);
   useEffect(() => {
-    if (!permLoading && isOrgMember) {
+    if (!permLoading && isOrgMember && !redirectedRef.current) {
+      redirectedRef.current = true;
       router.replace("/explorar");
     }
   }, [isOrgMember, permLoading, router]);
@@ -71,8 +78,12 @@ const DashboardPage: React.FC = () => {
         const now = Date.now();
         const cacheExpiry = 5 * 60 * 1000;
 
-        if (lastFetchTime > 0 && now - lastFetchTime < cacheExpiry) {
-          setRooms(roomsCache);
+        if (
+          lastFetchTimeRef.current > 0 &&
+          now - lastFetchTimeRef.current < cacheExpiry &&
+          roomsCacheRef.current.length > 0
+        ) {
+          setRooms(roomsCacheRef.current);
           setLoading(false);
           return;
         }
@@ -101,7 +112,7 @@ const DashboardPage: React.FC = () => {
     };
 
     fetchRooms();
-  }, [session?.user?.email, roomsCache, lastFetchTime, showError, t]);
+  }, [session?.user?.email]);
 
   useEffect(() => {
     if (!session?.user?.email) {
@@ -160,30 +171,13 @@ const DashboardPage: React.FC = () => {
             retryLabel={t("actions.retry")}
           />
         ) : (
-          <div className="mb-8">
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-                <Building2 className="h-8 w-8 text-blue-400" />
-              </div>
-              <div>
-                <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
-                  {th("title")}
-                </h1>
-                <p className="text-slate-600 dark:text-gray-400">
-                  {th("subtitle")}
-                </p>
-                <p className="mt-3 max-w-3xl text-sm text-slate-500 dark:text-slate-400">
-                  {t("header.description")}
-                </p>
-              </div>
-            </div>
-
-            <DashboardGrid
-              rooms={rooms}
-              chartStats={chartStats}
-              chartStatsLoading={chartStatsLoading}
-            />
-          </div>
+          <DashboardGrid
+            rooms={rooms}
+            chartStats={chartStats}
+            chartStatsLoading={chartStatsLoading}
+            title={th("title")}
+            subtitle={th("subtitle")}
+          />
         )}
       </PageLayout>
     </OrgAdminGuard>

@@ -17,7 +17,10 @@
       "statusAll": "Todos los Estados",
       "statusFree": "Disponible",
       "statusInUse": "En Uso",
-      "statusReserved": "Reservado"
+      "statusReserved": "Reservado",
+      "viewMode": "Modo de visualización",
+      "gridView": "Cuadrícula",
+      "listView": "Lista"
     },
     "stats": {
       "total": "Total de Salas",
@@ -62,15 +65,16 @@
       "submitCreate": "Crear Sala",
       "submitUpdate": "Actualizar Sala",
       "cancel": "Cancelar",
-      "locationLabel": "Localização",
-      "locationPlaceholder": "Ex.: Próximo à esquina, 2º andar...",
-      "outletsLabel": "Tomadas (parede)",
-      "outletsPlaceholder": "Quantidade",
+      "locationLabel": "Ubicación",
+      "locationPlaceholder": "Ej.: Cerca de la esquina, 2º piso...",
+      "outletsLabel": "Tomacorrientes (pared)",
+      "outletsPlaceholder": "Cantidad",
       "climateLabel": "Ambiente climatizado",
       "sectorLabel": "Sector responsable",
       "sectorNone": "Sin sector",
       "sectorHelp": "Los gestores de este sector podrán aprobar reservas de esta sala.",
-      "sectorHelpNone": "Sin sector, solo admins de la organización aprueban reservas de esta sala."
+      "sectorHelpNone": "Sin sector, solo admins de la organización aprueban reservas de esta sala.",
+      "sectorLoadError": "No se pudieron cargar los sectores. Inténtalo de nuevo."
     }
   },
   "Pagination": {
@@ -194,7 +198,7 @@
   "Common": {
     "systemName": "S.A.L.A",
     "systemDescription": "Sistema de Gestión",
-    "online": "Sistema Online",
+    "online": "Sistema en Línea",
     "lastUpdate": "Última actualización: ahora",
     "user": "Usuario",
     "loading": "Cargando...",
@@ -202,11 +206,19 @@
     "success": "Éxito",
     "warning": "Advertencia",
     "info": "Información",
-    "redirectingToLogin": "Redirecionando para login...",
+    "redirectingToLogin": "Redirigiendo al inicio de sesión...",
     "a11y": {
-      "closePanel": "Fechar painel",
-      "close": "Fechar"
-    }
+      "closePanel": "Cerrar panel",
+      "close": "Cerrar",
+      "dismiss": "Cerrar"
+    },
+    "searchSelect": {
+      "searchPlaceholder": "Buscar...",
+      "empty": "Sin resultados",
+      "placeholder": "Seleccione..."
+    },
+    "all": "Todos",
+    "search": "Buscar..."
   },
   "ErrorBoundary": {
     "title": "¡Ups! Algo salió mal",
@@ -259,19 +271,27 @@
       },
       "explorar": {
         "label": "Explorar salas",
-        "description": "Encontrar salas disponíveis"
+        "description": "Encontrar salas disponibles"
       },
       "agendamentosMember": {
-        "label": "Meus agendamentos",
-        "description": "Suas reservas de salas"
+        "label": "Mis reservas",
+        "description": "Tus reservas de salas"
       },
       "incidentesMember": {
         "label": "Reportar problema",
-        "description": "Informar problemas nas salas"
+        "description": "Informar problemas en las salas"
       },
       "setores": {
         "label": "Sectores",
         "description": "Responsables de salas y aprobaciones"
+      },
+      "gradeHoraria": {
+        "label": "Horario",
+        "description": "Asignación y horarios"
+      },
+      "vision": {
+        "label": "Visión Computacional",
+        "description": "Automatizaciones y Auditorías con IA"
       }
     }
   },
@@ -281,7 +301,18 @@
       "overview": "Visión General"
     },
     "search": {
-      "placeholder": "Buscar salas, ítems, usuarios..."
+      "placeholder": "Buscar salas, ítems, usuarios...",
+      "ariaLabel": "Búsqueda universal",
+      "minChars": "Escribe al menos 2 caracteres para buscar salas e ítems.",
+      "empty": "No se encontraron resultados.",
+      "loading": "Buscando...",
+      "groups": {
+        "pages": "Páginas",
+        "rooms": "Salas",
+        "sectors": "Sectores",
+        "users": "Usuarios",
+        "items": "Ítems"
+      }
     },
     "userMenu": {
       "profile": "Perfil",
@@ -292,10 +323,16 @@
     "guest": {
       "greeting": "Hola, visitante",
       "loginPrompt": "Inicia sesión",
-      "login": "Entrar"
+      "login": "Iniciar sesión"
     },
     "openMenu": "Abrir menú",
-    "menuTitle": "Menú"
+    "menuTitle": "Menú",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrador",
+      "member": "Miembro",
+      "platformSuperAdmin": "Super Admin (plataforma)"
+    }
   },
   "LanguageSwitcher": {
     "changeLanguage": "Cambiar idioma",
@@ -307,6 +344,94 @@
   },
   "LoadingPage": {
     "loading": "Cargando..."
+  },
+  "OrganizationsPage": {
+    "greeting": "Hola",
+    "title": "Tus organizaciones",
+    "subtitle": "Selecciona una organización para acceder a tu panel.",
+    "hubBadge": "Centro de acceso",
+    "signOut": "Salir",
+    "enter": "Acceder",
+    "enterAdmin": "Abrir panel",
+    "enterMember": "Explorar salas",
+    "activeOrg": "Activa",
+    "inviteError": "Error al aceptar la invitación",
+    "completeProfileHint": "Completa tu perfil (CPF y teléfono) antes de crear una organización, o acepta una invitación abajo.",
+    "completeProfileHintNoInvites": "Completa tu perfil (CPF y teléfono) antes de crear tu empresa.",
+    "security": {
+      "title": "Seguridad de la cuenta",
+      "createHint": "Entraste con Google. Crea una contraseña aquí para también entrar con correo — sin necesidad de una empresa."
+    },
+    "superAdminOrgHint": "Como administrador de la plataforma, gestiona organizaciones desde el panel de la plataforma.",
+    "shell": {
+      "brand": "Panel"
+    },
+    "card": {
+      "planLine": "Plan {plan} · {role}",
+      "roleLine": "Tu rol: {role}",
+      "createdAt": "Creada el {date}"
+    },
+    "sections": {
+      "organizations": "Tus organizaciones",
+      "organizationsDesc": "Selecciona una organización para acceder a tu panel.",
+      "actions": "Acciones rápidas",
+      "actionsDesc": "Registra una nueva organización o accede al panel de la plataforma"
+    },
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "member": "Miembro"
+    },
+    "status": {
+      "active": "Activa",
+      "trial": "Trial",
+      "suspended": "Suspendida"
+    },
+    "stats": {
+      "members": "{count, plural, one {# miembro} other {# miembros}}",
+      "rooms": "{count, plural, one {# sala} other {# salas}}"
+    },
+    "empty": {
+      "title": "Aún no tienes una empresa",
+      "subtitle": "Crea tu empresa o acepta una invitación para comenzar.",
+      "description": "Registra tu empresa para gestionar salas y reservas en SALA.",
+      "cta": "Crear ahora",
+      "superAdminTitle": "Panel de la plataforma",
+      "superAdminSubtitle": "Gestiona organizaciones, planes y usuarios de la plataforma SALA.",
+      "superAdminDescription": "Como administrador de la plataforma, no necesitas una empresa vinculada para acceder al panel global."
+    },
+    "platform": {
+      "title": "Panel de la plataforma",
+      "description": "Gestiona todas las organizaciones, planes, usuarios y auditoría de SALA",
+      "badge": "Super Admin"
+    },
+    "manageOrg": {
+      "title": "Gestionar organizaciones",
+      "description": "Invita miembros y cambia permisos."
+    },
+    "organization": {
+      "adminTitle": "Panel de la organización",
+      "adminDescription": "Salas, reservas, usuarios y configuración de tu organización",
+      "memberTitle": "Explorar salas",
+      "memberDescription": "Ver salas disponibles, reservar e informar problemas",
+      "namedTitle": "{name}"
+    },
+    "createOrg": {
+      "title": "Crear nueva organización",
+      "description": "Empieza una nueva organización desde cero.",
+      "action": "Registrar"
+    },
+    "anotherOrg": {
+      "title": "Crear nueva organización",
+      "description": "Empieza una nueva organización desde cero."
+    },
+    "invites": {
+      "title": "Invitaciones pendientes",
+      "subtitle": "Acepta para unirte a un equipo existente",
+      "role": "Rol: {role}",
+      "invitedBy": "Invitado por {name}",
+      "accept": "Aceptar invitación"
+    }
   },
   "Calendar": {
     "monthNames": {
@@ -351,7 +476,7 @@
     "fullNamePlaceholder": "Ej: Juan Pérez",
     "fullNameRequired": "El nombre completo es obligatorio",
     "fullNameInvalid": "El nombre completo es inválido",
-    "email": "Correo Electrónico",
+    "email": "Email",
     "emailPlaceholder": "Ej: juan.perez@ejemplo.com",
     "emailRequired": "El correo es obligatorio",
     "emailInvalid": "El correo es inválido",
@@ -385,6 +510,21 @@
       "security": "Seguridad",
       "preferences": "Preferencias"
     },
+    "security": {
+      "title": "Seguridad",
+      "createHint": "Esta cuenta inició sesión con Google. Cree una contraseña para entrar también con correo. Google seguirá funcionando.",
+      "changeHint": "Cambie su contraseña de correo. El inicio de sesión con Google no se ve afectado.",
+      "password": "Contraseña",
+      "newPassword": "Nueva contraseña",
+      "currentPassword": "Contraseña actual",
+      "confirmPassword": "Confirmar contraseña",
+      "createSubmit": "Crear contraseña",
+      "changeSubmit": "Cambiar contraseña",
+      "saving": "Guardando...",
+      "created": "Contraseña creada. Ya puede entrar con correo y contraseña.",
+      "changed": "Contraseña actualizada correctamente.",
+      "error": "No se pudo actualizar la contraseña."
+    },
     "errors": {
       "userNotFound": "Usuario no encontrado",
       "userLoadError": "Error al cargar datos del usuario",
@@ -393,7 +533,7 @@
     },
     "actions": {
       "back": "Volver",
-      "removeAdmin": "Remover Admin",
+      "removeAdmin": "Eliminar Admin",
       "makeAdmin": "Hacer Admin",
       "manageUsers": "Gestionar Usuarios",
       "cancel": "Cancelar",
@@ -557,12 +697,18 @@
     "close": "Cerrar",
     "cancelReservation": "Cancelar Reserva",
     "roomContext": {
-      "back": "Voltar",
+      "back": "Volver",
       "listView": "Lista",
-      "calendarView": "Calendário",
-      "searchPlaceholder": "Buscar por usuário ou propósito...",
-      "statusAll": "Todos os Status"
-    }
+      "calendarView": "Calendario",
+      "searchPlaceholder": "Buscar por usuario o propósito...",
+      "statusAll": "Todos los Estados",
+      "emptyFiltered": "Intente ajustar los filtros de búsqueda para encontrar reservas.",
+      "emptyRoom": "Esta sala aún no tiene agendamientos.",
+      "createFirst": "Crear primera reserva",
+      "reservationsOnDay": "{count} reserva(s) en este día"
+    },
+    "roomTitle": "Reservas - {name}",
+    "roomReservationsFound": "{count} reserva(s) encontrada(s) para esta sala"
   },
   "SettingsPage": {
     "title": "Configuración",
@@ -663,7 +809,9 @@
       "title": "Conflicto de Reserva",
       "message": "Esta solicitud entra en conflicto con las siguientes reservas:",
       "forceApprove": "Aprobar de todos modos",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "listTitle": "Reservas en conflicto:",
+      "badge": "Conflicto"
     },
     "feedback": {
       "successApprove": "¡Solicitud aprobada con éxito!",
@@ -688,7 +836,18 @@
       "org": "Alcance: toda la organización",
       "manager": "Alcance: {sectors} — {count} sala(s)",
       "managerEmpty": "Alcance: ningún sector con salas vinculadas"
-    }
+    },
+    "unknownRoom": "Sala desconocida",
+    "errors": {
+      "loadRooms": "Error al cargar salas",
+      "unknown": "Error desconocido",
+      "checkConflicts": "Error al verificar conflictos",
+      "approve": "Error al aprobar solicitud",
+      "reject": "Error al rechazar solicitud",
+      "httpStatus": "Error {status}: {statusText}",
+      "instancesSuffix": " ({count} instancias)"
+    },
+    "unknownUser": "Usuario desconocido"
   },
   "Notifications": {
     "title": "Notificaciones",
@@ -751,7 +910,7 @@
     "description": "Gestione problemas y mantenimiento en laboratorios y equipos",
     "loading": "Cargando incidentes...",
     "time": {
-      "ago": "atrás",
+      "ago": "hace",
       "justNow": "Justo ahora",
       "minutes": "minutos",
       "minute": "minuto",
@@ -801,7 +960,6 @@
       "description": "Descripción",
       "category": "Categoría",
       "priority": "Prioridad",
-      "statusLabel": "Estado",
       "status": "Estado",
       "room": "Sala",
       "item": "Ítem",
@@ -898,10 +1056,6 @@
   },
   "ImageUpload": {
     "label": "Imagen de Referencia",
-    "uploading": "Subiendo...",
-    "change": "Cambiar",
-    "upload": "Subir",
-    "removing": "Eliminando...",
     "errors": {
       "invalidImage": "Por favor, seleccione una imagen válida.",
       "unsupportedFormat": "Formato no soportado. Use JPG, PNG o WebP.",
@@ -933,7 +1087,7 @@
     "login": {
       "title": "S.A.L.A",
       "subtitle": "Sistema de Gestión de Salas",
-      "email": "Correo Electrónico",
+      "email": "Email",
       "emailPlaceholder": "tu@email.com",
       "password": "Contraseña",
       "passwordPlaceholder": "Ingrese su contraseña",
@@ -949,18 +1103,48 @@
       "noAccount": "¿No tiene una cuenta?",
       "createAccount": "Registrarse",
       "or": "o",
-      "invalidCredentials": "Correo o contraseña incorrectos. Las cuentas de Google deben usar el botón de arriba.",
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "oauthOnlyAccount": "Esta cuenta fue creada con Google. Entre con Google; después puede crear una contraseña aquí en el hub o en el perfil.",
       "oauthAccountNotLinked": "Esta cuenta usa otro método de inicio de sesión. Intente con Google o correo y contraseña.",
-      "googleHint": "Las cuentas creadas con Google deben usar el botón Entrar con Google.",
+      "passwordResetSuccess": "Contraseña restablecida. Inicie sesión con su nueva contraseña.",
+      "googleHint": "Google también crea una cuenta nueva. Después puede registrar la empresa o aceptar una invitación.",
       "registeredSuccess": "Cuenta creada con éxito. Inicie sesión para continuar.",
       "legalConsent": "Al iniciar sesión, acepta nuestros",
       "legalAnd": "y nuestra",
       "termsOfService": "Términos de Servicio",
       "privacyPolicy": "Política de Privacidad"
     },
+    "forgotPassword": {
+      "title": "Olvidé mi contraseña",
+      "subtitle": "Ingrese su correo. Si existe una cuenta con contraseña, enviaremos un enlace de restablecimiento.",
+      "email": "Email",
+      "emailPlaceholder": "su@email.com",
+      "submit": "Enviar enlace",
+      "loading": "Enviando...",
+      "success": "Si existe una cuenta con contraseña para este correo, enviaremos un enlace de restablecimiento.",
+      "error": "No se pudo procesar su solicitud.",
+      "errorTitle": "Error:",
+      "connectionError": "Error de conexión. Intente de nuevo.",
+      "backToLogin": "Volver al login"
+    },
+    "resetPassword": {
+      "title": "Nueva contraseña",
+      "subtitle": "Elija una nueva contraseña para su cuenta.",
+      "password": "Nueva contraseña",
+      "passwordPlaceholder": "Mínimo 8 caracteres",
+      "confirmPassword": "Confirmar contraseña",
+      "confirmPasswordPlaceholder": "Repita la nueva contraseña",
+      "submit": "Restablecer contraseña",
+      "loading": "Guardando...",
+      "missingToken": "Enlace inválido o expirado. Solicite un nuevo restablecimiento.",
+      "error": "No se pudo restablecer la contraseña.",
+      "errorTitle": "Error:",
+      "connectionError": "Error de conexión. Intente de nuevo.",
+      "backToLogin": "Volver al login"
+    },
     "register": {
       "title": "Crear cuenta",
-      "subtitle": "Registre su organización y comience a usar SALA",
+      "subtitle": "Cree su cuenta. Después registre la empresa o acepte una invitación.",
       "subtitles": {
         "step1": "Ingrese sus datos personales y de la organización",
         "step2": "Elija el plan ideal para su equipo",
@@ -987,7 +1171,7 @@
       },
       "fields": {
         "name": "Nombre completo",
-        "email": "Correo electrónico",
+        "email": "Email",
         "cpf": "CPF",
         "phone": "Teléfono",
         "password": "Contraseña",
@@ -1035,7 +1219,7 @@
         "plan": "Plan seleccionado",
         "fields": {
           "name": "Nombre",
-          "email": "Correo",
+          "email": "Email",
           "cpf": "CPF",
           "phone": "Teléfono",
           "organizationName": "Nombre comercial",
@@ -1060,6 +1244,7 @@
       "submit": "Crear cuenta",
       "submitting": "Creando cuenta...",
       "googleSignUp": "Registrarse con Google",
+      "googleHint": "Entre ahora y complete la empresa a continuación.",
       "hasAccount": "¿Ya tiene una cuenta?",
       "loginLink": "Iniciar sesión",
       "errors": {
@@ -1067,23 +1252,23 @@
       }
     },
     "errorPage": {
-      "title": "Erro de Autenticação",
-      "tryAgain": "Tentar Novamente",
-      "goDashboard": "Ir para Dashboard",
-      "loading": "Carregando...",
-      "errorCodeLabel": "Código do erro:",
-      "errorDescriptionLabel": "Descrição:",
-      "troubleshootTitle": "Se o problema persistir, verifique:",
-      "troubleshootOAuth": "Configuração do Google OAuth",
+      "title": "Error de Autenticación",
+      "tryAgain": "Intentar de Nuevo",
+      "goToHub": "Ir al centro de acceso",
+      "loading": "Cargando...",
+      "errorCodeLabel": "Código del error:",
+      "errorDescriptionLabel": "Descripción:",
+      "troubleshootTitle": "Si el problema persiste, verifica:",
+      "troubleshootOAuth": "Configuración de Google OAuth",
       "troubleshootRedirect": "Redirect URIs autorizados",
-      "troubleshootEnv": "Variáveis de ambiente",
+      "troubleshootEnv": "Variables de entorno",
       "errors": {
-        "Configuration": "Erro de configuração do provedor de autenticação.",
-        "AccessDenied": "Acesso negado. Você cancelou o login ou não tem permissão.",
-        "Verification": "Token de verificação inválido ou expirado.",
-        "Default": "Ocorreu um erro durante a autenticação.",
-        "Callback": "Erro no callback do Google. Verifique se o redirect URI está configurado corretamente.",
-        "unknown": "Erro desconhecido durante a autenticação."
+        "Configuration": "Error de configuración del proveedor de autenticación.",
+        "AccessDenied": "Acceso denegado. Cancelaste el inicio de sesión o no tienes permiso.",
+        "Verification": "Token de verificación inválido o expirado.",
+        "Default": "Ocurrió un error durante la autenticación.",
+        "Callback": "Error en el callback de Google. Verifica que el redirect URI esté configurado correctamente.",
+        "unknown": "Error desconocido durante la autenticación."
       }
     }
   },
@@ -1093,6 +1278,7 @@
     "backToDashboard": "Volver al Dashboard",
     "back": "Volver",
     "capacity": "Capacidad: {count} personas",
+    "capacityLabel": "Capacidad",
     "viewReservations": "Ver Reservas",
     "editRoom": "Editar Sala",
     "addItem": "Agregar Ítem",
@@ -1143,11 +1329,11 @@
     "confirmations": {
       "deleteItem": "¿Está seguro de que desea eliminar este ítem?"
     },
-    "infoTitle": "Informações",
-    "location": "Localização",
-    "outlets": "Tomadas",
+    "infoTitle": "Información",
+    "location": "Ubicación",
+    "outlets": "Tomacorrientes",
     "climateYes": "Climatizado",
-    "climateNo": "Sem climatização",
+    "climateNo": "Sin climatización",
     "sector": "Sector",
     "noSector": "Sin sector"
   },
@@ -1185,10 +1371,9 @@
       "email": "Email",
       "role": "Rol",
       "status": "Estado",
-      "actions": "Acciones",
-      "permissions": "Permissões",
+      "permissions": "Permisos",
       "groups": "Grupos",
-      "locations": "Localizações",
+      "locations": "Ubicaciones",
       "devices": "Dispositivos"
     },
     "testSession": "Probar Sesión",
@@ -1214,33 +1399,33 @@
     "backToDashboard": "Volver al Dashboard",
     "createdAt": "Creado el {date}",
     "onlyAdminsCanChangePermissions": "Solo los administradores pueden cambiar permisos",
-    "removeAdmin": "Remover Admin",
+    "removeAdmin": "Eliminar Admin",
     "makeAdmin": "Hacer Admin",
     "you": "Tú",
     "actions": {
-      "view": "Ver Detalhes",
+      "view": "Ver Detalles",
       "edit": "Editar",
-      "delete": "Excluir",
-      "refresh": "Atualizar",
-      "close": "Fechar",
+      "delete": "Eliminar",
+      "refresh": "Actualizar",
+      "close": "Cerrar",
       "cancel": "Cancelar"
     },
     "feedback": {
-      "createSuccess": "Usuário criado com sucesso!",
-      "updateSuccess": "Usuário atualizado com sucesso!",
-      "deleteSuccess": "Usuário excluído com sucesso!",
-      "deleteConfirm": "Tem certeza que deseja deletar este usuário?",
-      "error": "Erro ao processar usuário",
-      "authError": "Você precisa estar logado para acessar esta página."
+      "createSuccess": "¡Usuario creado con éxito!",
+      "updateSuccess": "¡Usuario actualizado con éxito!",
+      "deleteSuccess": "¡Usuario eliminado con éxito!",
+      "deleteConfirm": "¿Estás seguro de que deseas eliminar este usuario?",
+      "error": "Error al procesar usuario",
+      "authError": "Debes iniciar sesión para acceder a esta página."
     },
     "modals": {
-      "createUser": "Criar Usuário",
-      "editUser": "Editar Usuário",
-      "deleteUser": "Excluir Usuário"
+      "createUser": "Crear Usuario",
+      "editUser": "Editar Usuario",
+      "deleteUser": "Eliminar Usuario"
     },
     "form": {
-      "name": "Nome",
-      "namePlaceholder": "Ex: João da Silva",
+      "name": "Nombre",
+      "namePlaceholder": "Ej: Juan Pérez",
       "email": "Email"
     }
   },
@@ -1278,7 +1463,13 @@
       "delete": "Eliminar",
       "reload": "Recargar"
     },
-    "loadError": "Erro ao carregar notificações"
+    "noneDescription": "No tienes notificaciones en este momento.",
+    "timeAgo": {
+      "justNow": "Ahora mismo",
+      "hoursAgo": "hace {count}h",
+      "daysAgo": "hace {count}d"
+    },
+    "loadError": "Error al cargar notificaciones"
   },
   "NotificationService": {
     "titles": {
@@ -1348,13 +1539,19 @@
     "EMAIL_IN_USE": "Este correo ya está en uso",
     "CPF_IN_USE": "Este CPF ya está registrado",
     "CNPJ_IN_USE": "Este CNPJ ya está registrado",
-    "OAUTH_ONLY_ACCOUNT": "Esta cuenta fue creada con Google. Use el botón Entrar con Google.",
+    "OAUTH_ONLY_ACCOUNT": "Esta cuenta fue creada con Google. Entre con Google; después puede crear una contraseña en el perfil.",
+    "CURRENT_PASSWORD_REQUIRED": "Ingrese la contraseña actual para cambiarla",
+    "CURRENT_PASSWORD_INVALID": "La contraseña actual es incorrecta",
+    "RESET_TOKEN_INVALID": "Enlace de restablecimiento inválido o ya utilizado",
+    "RESET_TOKEN_EXPIRED": "Enlace de restablecimiento expirado. Solicite uno nuevo.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos",
     "NO_IMAGE": "No se proporcionó imagen",
     "LOGIN_CREDENTIALS_REQUIRED": "Correo y contraseña son obligatorios",
     "LOGIN_INVALID": "Correo o contraseña incorrectos",
     "ADMIN_USER_NOT_FOUND": "Usuario admin no encontrado. Ejecute el seed primero.",
     "CANNOT_REMOVE_OWN_SUPER_ADMIN": "No puedes eliminar tu propio acceso de super admin",
     "SUBSCRIPTION_NO_PLAN": "Organización sin suscripción. Indique planId.",
+    "SUBSCRIPTION_NOT_FOUND": "Suscripción no encontrada.",
     "USER_ID_REQUIRED": "userId es obligatorio",
     "MEMBER_ALREADY_EXISTS": "El usuario ya es miembro de esta organización",
     "PLAN_LIMIT_ROOMS": "Límite de salas alcanzado ({max}). Actualice su plan.",
@@ -1362,14 +1559,15 @@
     "PLAN_LIMIT_RESERVATIONS": "Límite mensual de reservas alcanzado ({max}). Actualice su plan.",
     "UPLOAD_INVALID_FORMAT": "Formato de imagen no soportado. Use JPG, PNG o WebP.",
     "UPLOAD_TOO_LARGE": "Imagen demasiado grande. Tamaño máximo: 15MB",
-    "UNKNOWN": "Ocurrió un error inesperado"
+    "UNKNOWN": "Ocurrió un error inesperado",
+    "PROFILE_INCOMPLETE": "Completa tu perfil con CPF y teléfono antes de continuar"
   },
   "Metadata": {
     "appTitle": "SALA - Sistema de gestión de salas",
     "appDescription": "Sistema completo para gestión de salas, ítems y reservas",
     "adminTitle": "SALA Admin - Panel de la plataforma",
     "adminDescription": "Gestión global de la plataforma SALA",
-    "landingTitle": "S.A.L.A. — Sistema de reservas de espacios",
+    "landingTitle": "S.A.L.A. · Sistema de reservas de espacios",
     "landingDescription": "Sistema institucional para reservas de salas y espacios.",
     "termsTitle": "Términos de servicio - SALA",
     "termsDescription": "Términos de servicio del sistema SALA.",
@@ -1481,215 +1679,373 @@
   },
   "LandingPage": {
     "nav": {
-      "terms": "Termos de Serviço",
-      "privacy": "Privacidade",
-      "login": "Entrar"
+      "product": "Producto",
+      "features": "Funciones",
+      "howItWorks": "Cómo funciona",
+      "login": "Iniciar sesión",
+      "start": "Empezar",
+      "terms": "Términos",
+      "privacy": "Privacidad"
     },
     "hero": {
-      "badge": "Sistema Institucional",
-      "titleLine1": "S.A.L.A.",
-      "titleLine2": "Gerenciamento inteligente",
-      "titleLine3": "de espaços",
-      "subtitleBold": "Sistema de Agendamento e Locação de Ambientes.",
-      "subtitle": "Uma plataforma institucional para reserva de salas, controle de equipamentos e gestão de incidentes — tudo em um só lugar.",
-      "ctaLogin": "Acessar o sistema →",
-      "ctaFeatures": "Conhecer recursos"
+      "badge": "Gestión institucional de espacios",
+      "titleLine1": "Reserva salas. Aprueba flujos.",
+      "titleLine2": "Controla cada espacio.",
+      "subtitle": "S.A.L.A. es la plataforma para organizaciones, universidades y escuelas que reservan salas, gestionan equipos y siguen incidentes, en un solo lugar.",
+      "ctaLogin": "Iniciar sesión",
+      "ctaStart": "Crear organización",
+      "dashboardAlt": "Panel de S.A.L.A. con resumen de salas, gráficos y accesos rápidos"
+    },
+    "product": {
+      "title": "Mira el producto en acción",
+      "subtitle": "Explora el panel, aprueba reservas, sigue incidentes y mira la agenda. Todo simulado, sin inicio de sesión.",
+      "dashboardCta": "Adapta la vista a lo que más necesitas.",
+      "tabs": {
+        "dashboard": "Dashboard",
+        "reservations": "Reservas",
+        "incidents": "Incidentes",
+        "calendar": "Calendario"
+      },
+      "rooms": {
+        "lab1": "Lab 1",
+        "lab2": "Lab 2",
+        "auditorium": "Auditorio"
+      },
+      "demos": {
+        "reservations": {
+          "hint": "Aprueba o rechaza solicitudes pendientes. Solo una demo local.",
+          "approve": "Aprobar",
+          "reject": "Rechazar",
+          "approved": "Aprobada",
+          "rejected": "Rechazada",
+          "empty": "No hay solicitudes pendientes. Buen trabajo.",
+          "reset": "Recargar lista",
+          "by": "Solicitado por {name}",
+          "when": {
+            "r1": "Hoy · 14:00–16:00",
+            "r2": "Mañana · 10:00–12:00",
+            "r3": "Jueves · 09:00–11:00",
+            "r4": "Viernes · 15:00–17:00"
+          },
+          "requesters": {
+            "u1": "Ana Costa",
+            "u2": "Bruno Lima",
+            "u3": "Carla Mendes",
+            "u4": "Diego Santos"
+          }
+        },
+        "incidents": {
+          "hint": "Avanza el estado de los incidentes como en la operación real.",
+          "reset": "Reiniciar demo",
+          "items": {
+            "i1": "Proyector sin imagen",
+            "i2": "Aire acondicionado ruidoso",
+            "i3": "Enchufe dañado"
+          },
+          "status": {
+            "OPEN": "Abierto",
+            "IN_PROGRESS": "En progreso",
+            "RESOLVED": "Resuelto"
+          },
+          "actions": {
+            "OPEN": "Iniciar atención",
+            "IN_PROGRESS": "Marcar resuelto"
+          }
+        },
+        "calendar": {
+          "hint": "Haz clic en un horario para destacar la selección.",
+          "free": "Libre",
+          "days": {
+            "mon": "Lun",
+            "tue": "Mar",
+            "wed": "Mié",
+            "thu": "Jue",
+            "fri": "Vie"
+          },
+          "slots": {
+            "morning": "Mañana",
+            "afternoon": "Tarde"
+          },
+          "bookings": {
+            "b1": "Reunión de equipo",
+            "b2": "Charla",
+            "b3": "Workshop"
+          },
+          "selectedFree": "{day} · {slot}: horario libre",
+          "selectedBusy": "{day} · {slot}: {room} · {title}"
+        }
+      },
+      "dragHint": "Arrastra y redimensiona las tarjetas. Así funciona el panel real.",
+      "restore": "Restaurar diseño"
     },
     "features": {
-      "title": "Tudo que sua instituição precisa",
-      "subtitle": "O S.A.L.A. facilita o gerenciamento de espaços físicos para escolas, universidades e organizações institucionais.",
+      "title": "Todo lo que tu institución necesita",
+      "subtitle": "Hecho para la operación de espacios físicos: estado claro, aprobaciones y responsabilidad.",
       "f1": {
-        "aria": "Calendário",
-        "title": "Reserva de Salas",
-        "desc": "Agende salas com calendário e reservas recorrentes."
+        "title": "Reserva de salas",
+        "desc": "Calendario y reservas recurrentes para labs, aulas y auditorios."
       },
       "f2": {
-        "aria": "Aprovação",
-        "title": "Fluxo de Aprovação",
-        "desc": "Solicitações passam por aprovação de administradores."
+        "title": "Flujo de aprobación",
+        "desc": "Las solicitudes pasan por admins o responsables de sector antes de la agenda."
       },
       "f3": {
-        "aria": "Incidentes",
-        "title": "Gestão de Incidentes",
-        "desc": "Reporte e acompanhe problemas em salas e equipamentos."
+        "title": "Gestión de incidentes",
+        "desc": "Reporta y sigue problemas en salas y equipos hasta resolverlos."
       },
       "f4": {
-        "aria": "Notificações",
-        "title": "Notificações em Tempo Real",
-        "desc": "Alertas sobre aprovações, rejeições e lembretes."
-      },
-      "f5": {
-        "aria": "Google Calendar",
-        "title": "Integração Google Calendar",
-        "desc": "Sincronize reservas aprovadas com sua agenda."
-      },
-      "f6": {
-        "aria": "Autenticação",
-        "title": "Login com Google",
-        "desc": "Acesso seguro via OAuth 2.0 institucional."
+        "title": "Google Calendar",
+        "desc": "Las reservas aprobadas se sincronizan con la agenda institucional."
       }
     },
+    "story": {
+      "aria": "Historia del producto",
+      "text": "Reserva. Aprueba. Ocupa. Resuelve, un solo flujo."
+    },
     "howItWorks": {
-      "title": "Como funciona",
-      "subtitle": "Em poucos passos, sua instituição tem controle total dos espaços.",
+      "title": "Cómo funciona",
+      "subtitle": "Cuatro pasos de la invitación al espacio bajo control.",
       "step1": {
-        "title": "Entre com sua conta Google",
-        "desc": "Login institucional sem cadastro manual."
+        "title": "Inicia sesión",
+        "desc": "Correo o Google: acceso institucional sin fricción."
       },
       "step2": {
-        "title": "Visualize e reserve uma sala",
-        "desc": "Veja disponibilidade e escolha horários."
+        "title": "Explora y reserva",
+        "desc": "Mira disponibilidad y elige el horario de tu equipo."
       },
       "step3": {
-        "title": "Aguarde a aprovação",
-        "desc": "Administradores aprovam ou rejeitam com notificação."
+        "title": "Espera la aprobación",
+        "desc": "Los admins revisan y te avisan cuando hay decisión."
       },
       "step4": {
-        "title": "Use o espaço",
-        "desc": "Com a reserva aprovada, utilize o espaço e reporte incidentes."
+        "title": "Usa el espacio",
+        "desc": "Llega con la reserva confirmada, y reporta incidentes si hace falta."
       }
     },
     "cta": {
-      "title": "Pronto para organizar os espaços da sua instituição?",
-      "subtitle": "Faça login com sua conta Google institucional.",
-      "button": "Acessar o S.A.L.A. →"
+      "title": "¿Listo para organizar los espacios de tu institución?",
+      "subtitle": "Crea una organización o inicia sesión para continuar.",
+      "button": "Empezar con S.A.L.A.",
+      "login": "¿Ya tienes cuenta? Iniciar sesión"
     },
     "footer": {
-      "brand": "S.A.L.A. — Sistema de Agendamento e Locação de Ambientes",
-      "terms": "Termos de Serviço",
-      "privacy": "Política de Privacidade",
-      "login": "Login"
+      "brand": "S.A.L.A. · Reserva y gestión de espacios",
+      "terms": "Términos de Servicio",
+      "privacy": "Política de Privacidad",
+      "login": "Iniciar sesión"
     }
   },
   "Invites": {
-    "title": "Convidar membros",
+    "title": "Invitar miembros",
     "emailPlaceholder": "email@empresa.com",
     "sending": "Enviando...",
-    "sendInvite": "Enviar convite",
-    "copyLink": "Copiar link",
-    "pendingTitle": "Convites pendentes",
+    "sendInvite": "Enviar invitación",
+    "copyLink": "Copiar enlace",
+    "pendingTitle": "Invitaciones pendientes",
     "expires": "{role} · expira {date}",
-    "cancelInvite": "Cancelar convite"
+    "cancelInvite": "Cancelar invitación"
   },
   "AvatarUpload": {
-    "invalidFormat": "Formato não suportado. Use JPG, PNG ou WebP.",
-    "tooLarge": "Imagem muito grande. Máximo 15MB.",
-    "uploadError": "Erro ao fazer upload do avatar",
-    "uploading": "Enviando...",
-    "change": "Alterar",
-    "upload": "Enviar",
-    "removing": "Removendo...",
-    "remove": "Remover",
-    "hint": "JPG, PNG ou WebP · Máximo 15MB",
-    "previewAlt": "Preview do avatar"
+    "invalidFormat": "Formato no soportado. Usa JPG, PNG o WebP.",
+    "tooLarge": "Imagen muy grande. Máximo 15MB.",
+    "uploadError": "Error al subir el avatar",
+    "uploading": "Subiendo...",
+    "change": "Cambiar",
+    "upload": "Subir",
+    "removing": "Eliminando...",
+    "remove": "Eliminar",
+    "hint": "JPG, PNG o WebP · Máximo 15MB",
+    "previewAlt": "Vista previa del avatar"
   },
   "Admin": {
     "brand": "SALA Admin",
-    "subtitle": "Painel da Plataforma",
+    "subtitle": "Panel de la Plataforma",
     "nav": {
       "dashboard": "Dashboard",
-      "organizations": "Organizações",
-      "users": "Usuários",
-      "plans": "Planos",
+      "organizations": "Organizaciones",
+      "users": "Usuarios",
+      "plans": "Planes",
       "audit": "Audit Log",
       "incidents": "Incidentes",
       "billing": "Billing",
-      "home": "Início",
-      "logout": "Sair",
+      "home": "Inicio",
+      "logout": "Salir",
       "myOrganizations": "My Organizations"
     },
     "charts": {
-      "usageTitle": "Uso ao longo do tempo (30d)",
-      "noHistory": "Sem histórico materializado. Use \"Atualizar métricas diárias\" no dashboard.",
+      "usageTitle": "Uso en el tiempo (30d)",
+      "noHistory": "Sin historial materializado. Use \"Actualizar métricas diarias\" en el dashboard.",
       "reservations": "Reservas",
-      "activeUsers": "Usuários ativos",
-      "openIncidents": "Incidentes abertos"
+      "activeUsers": "Usuarios activos",
+      "openIncidents": "Incidentes abiertos"
     },
     "dashboard": {
       "title": "Dashboard",
-      "description": "Visão geral da plataforma",
-      "loadError": "Falha ao carregar estatísticas",
-      "unknownError": "Erro desconhecido",
-      "refreshMetrics": "Atualizar métricas diárias",
-      "refreshing": "Atualizando...",
-      "activeOrgs": "Organizações ativas",
-      "totalUsers": "Usuários",
+      "description": "Vista general de la plataforma",
+      "loadError": "Error al cargar estadísticas",
+      "unknownError": "Error desconocido",
+      "refreshMetrics": "Actualizar métricas diarias",
+      "refreshing": "Actualizando...",
+      "activeOrgs": "Organizaciones activas",
+      "totalUsers": "Usuarios",
       "totalRooms": "Salas",
       "reservations30d": "Reservas (30d)",
-      "openIncidents": "Incidentes abertos",
-      "weeklyOrgs": "Novas organizações por semana",
-      "weeklyUsers": "Novos usuários por semana",
-      "topOrgs": "Top organizações por reservas",
-      "orgsByPlan": "Organizações por plano",
-      "expiringTrials": "Trials expirando",
-      "inactiveOrgs": "Organizações inativas",
-      "viewAllOrgs": "Ver todas as organizações",
-      "retention": "Retenção (30d)",
-      "activeOrgs30d": "Orgs ativas (30d)",
-      "analyticsDescription": "Analytics global da plataforma SALA"
+      "openIncidents": "Incidentes abiertos",
+      "weeklyOrgs": "Nuevas organizaciones por semana",
+      "weeklyUsers": "Nuevos usuarios por semana",
+      "topOrgs": "Top organizaciones por reservas",
+      "orgsByPlan": "Organizaciones por plan",
+      "expiringTrials": "Trials por expirar",
+      "inactiveOrgs": "Organizaciones inactivas",
+      "viewAllOrgs": "Ver todas las organizaciones",
+      "retention": "Retención (30d)",
+      "activeOrgs30d": "Orgs activas (30d)",
+      "analyticsDescription": "Analytics global de la plataforma SALA",
+      "retentionLine": "Retención (30d): {rate}% · Orgs activas: {active}/{total}",
+      "chartCount": "Cantidad",
+      "noData": "Sin datos",
+      "orgsCount": "{count} orgs",
+      "expiringTrialsWindow": "Trials por expirar (7d)",
+      "noExpiringTrials": "Ningún trial por expirar",
+      "inactiveOrgsWindow": "Organizaciones sin actividad (30d)",
+      "createdOn": "creada el {date}",
+      "topOrgsWindow": "Top organizaciones por reservas (30d)",
+      "noRecentReservations": "Sin reservas recientes",
+      "reservationsCount": "{count} reservas",
+      "organizationsTotal": "Organizaciones",
+      "organizationsActiveSub": "{count} activas",
+      "totalUsersSub": "Registrados en la plataforma (todos los roles)",
+      "totalRoomsSub": "En todas las orgs",
+      "reservations30dSub": "Últimos 30 días",
+      "openIncidentsSub": "Requieren atención",
+      "loadDataError": "Error al cargar datos"
     },
     "organizations": {
-      "title": "Organizações",
-      "description": "Gerencie os clientes da plataforma",
-      "emptyTitle": "Nenhuma organização encontrada",
-      "emptyDesc": "Crie a primeira organização para começar",
-      "newTitle": "Nova organização",
-      "newDesc": "Cadastre um novo cliente na plataforma",
-      "detailTitle": "Organização",
-      "notFound": "Organização não encontrada",
-      "noPlan": "Sem plano",
-      "saveRole": "Salvar",
-      "backToList": "Voltar para organizações",
-      "changeStatus": "Alterar status",
-      "createdAt": "Criada em",
-      "orgContactEmail": "Email da organização",
-      "orgContactPhone": "Telefone da organização",
-      "addMember": "Adicionar",
-      "addMemberPlaceholder": "Adicionar membro por e-mail",
-      "removeMember": "Remover",
-      "removeMemberConfirm": "Remover este membro da organização?",
-      "usageVsLimits": "Uso vs limites do plano",
-      "planSubscription": "Plano e assinatura",
-      "renewsOn": "Renova em",
-      "changePlan": "Alterar plano",
-      "noRoomsTitle": "Nenhuma sala",
-      "noRoomsDesc": "Esta organização ainda não possui salas cadastradas",
+      "title": "Organizaciones",
+      "description": "Gestiona los clientes de la plataforma",
+      "emptyTitle": "No se encontraron organizaciones",
+      "emptyDesc": "Crea la primera organización para comenzar",
+      "newTitle": "Nueva organización",
+      "newDesc": "Registra un nuevo cliente en la plataforma",
+      "detailTitle": "Organización",
+      "notFound": "Organización no encontrada",
+      "noPlan": "Sin plan",
+      "saveRole": "Guardar",
+      "backToList": "Volver a organizaciones",
+      "changeStatus": "Cambiar estado",
+      "createdAt": "Creada el",
+      "orgContactEmail": "Email de la organización",
+      "orgContactPhone": "Teléfono de la organización",
+      "addMember": "Agregar",
+      "addMemberPlaceholder": "Agregar miembro por email",
+      "removeMember": "Eliminar",
+      "removeMemberConfirm": "¿Eliminar este miembro de la organización?",
+      "usageVsLimits": "Uso vs límites del plan",
+      "planSubscription": "Plan y suscripción",
+      "renewsOn": "Renueva el",
+      "changePlan": "Cambiar plan",
+      "noRoomsTitle": "Sin salas",
+      "noRoomsDesc": "Esta organización aún no tiene salas registradas",
       "tabs": {
-        "general": "Geral",
-        "members": "Membros",
+        "general": "General",
+        "members": "Miembros",
         "rooms": "Salas",
-        "usage": "Uso e plano"
-      }
+        "usage": "Uso y plan"
+      },
+      "roleOwner": "Owner",
+      "roleAdmin": "Admin",
+      "roleMember": "Miembro",
+      "metricMembers": "Miembros",
+      "metricRooms": "Salas",
+      "metricReservations30d": "Reservas (30d)",
+      "metricOpenIncidents": "Incidentes abiertos",
+      "metricUsers": "Usuarios",
+      "metricReservationsMonth": "Reservas (mes)",
+      "isSchool": "Institución educativa",
+      "toggle": "Cambiar",
+      "yes": "Sí",
+      "no": "No",
+      "ownerLabel": "Owner",
+      "seats": "{count} plazas",
+      "formTitle": "Datos de la organización",
+      "unknownError": "Error desconocido",
+      "ownerWithoutPasswordWarning": "El owner fue creado sin contraseña. Pídele que use la recuperación de contraseña para acceder.",
+      "statusActive": "Activa",
+      "statusTrial": "Trial",
+      "statusSuspended": "Suspendida",
+      "cancel": "Cancelar",
+      "creating": "Creando...",
+      "create": "Crear organización",
+      "saveProfile": "Guardar datos",
+      "savingProfile": "Guardando...",
+      "deleteOrg": "Desactivar organización",
+      "deleteOrgConfirm": "¿Desactivar (soft-delete) esta organización? Dejará de aparecer en los listados.",
+      "transferOwnership": "Transferir ownership",
+      "transferOwnershipConfirm": "¿Transferir ownership a este miembro?",
+      "fields": {
+        "name": "Nombre de la organización",
+        "slug": "Slug (URL)",
+        "status": "Estado",
+        "plan": "Plan",
+        "ownerEmail": "Email del owner",
+        "ownerName": "Nombre del owner (opcional)",
+        "email": "Email de contacto",
+        "phone": "Teléfono de contacto"
+      },
+      "newOrg": "Nueva organización",
+      "searchTitle": "Buscar organización",
+      "searchPlaceholder": "Nombre, slug o e-mail del owner...",
+      "filterStatus": "Estado",
+      "allStatuses": "Todos los estados",
+      "filterActive": "Activas",
+      "filterSuspended": "Suspendidas",
+      "filterTrial": "Trial",
+      "filterPlan": "Plan",
+      "allPlans": "Todos los planes",
+      "ownerPrefix": "Owner:",
+      "planPrefix": "Plan:",
+      "membersRooms": "{members} miembros · {rooms} salas",
+      "loadError": "Error al cargar",
+      "metricTotal": "Total",
+      "metricTotalSub": "Organizaciones registradas",
+      "metricActive": "Activas",
+      "metricActiveSub": "En operación",
+      "metricTrial": "Trial",
+      "metricTrialSub": "Periodo de prueba",
+      "metricSuspended": "Suspendidas",
+      "metricSuspendedSub": "Acceso bloqueado"
     },
     "users": {
-      "title": "Usuários",
-      "description": "Visão cross-org de todos os usuários da plataforma",
-      "emptyTitle": "Nenhum usuário",
-      "emptyDesc": "Nenhum usuário cadastrado na plataforma",
-      "searchTitle": "Buscar usuário",
-      "searchPlaceholder": "Nome ou e-mail...",
-      "roleFilter": "Papel na plataforma",
-      "allRoles": "Todos os papéis",
-      "regularUsers": "Usuários comuns",
+      "title": "Usuarios",
+      "description": "Vista cross-org de todos los usuarios de la plataforma",
+      "emptyTitle": "Sin usuarios",
+      "emptyDesc": "No hay usuarios registrados en la plataforma",
+      "searchTitle": "Buscar usuario",
+      "searchPlaceholder": "Nombre o email...",
+      "roleFilter": "Rol en la plataforma",
+      "allRoles": "Todos los roles",
+      "regularUsers": "Usuarios comunes",
       "superAdmins": "Super admins",
-      "viewDetails": "Ver detalhes",
-      "closeModal": "Fechar",
-      "platformRole": "Papel na plataforma",
-      "memberSince": "Cadastrado em",
-      "organizations": "Organizações",
-      "noOrganizations": "Sem membership em nenhuma organização",
+      "viewDetails": "Ver detalles",
+      "closeModal": "Cerrar",
+      "platformRole": "Rol en la plataforma",
+      "memberSince": "Registrado el",
+      "organizations": "Organizaciones",
+      "noOrganizations": "Sin membership en ninguna organización",
       "promoteSuperAdmin": "Promover SUPER_ADMIN",
-      "removeSuperAdmin": "Remover SUPER_ADMIN",
+      "removeSuperAdmin": "Eliminar SUPER_ADMIN",
       "stats": {
         "total": "Total",
-        "totalSub": "Usuários na plataforma",
+        "totalSub": "Usuarios en la plataforma",
         "superAdmins": "Super admins",
-        "superAdminsSub": "Acesso ao painel",
-        "withOrg": "Com organização",
-        "withOrgSub": "Membros ativos",
-        "withoutOrg": "Sem organização",
-        "withoutOrgSub": "Sem membership"
-      }
+        "superAdminsSub": "Acceso al panel",
+        "withOrg": "Con organización",
+        "withOrgSub": "Miembros activos",
+        "withoutOrg": "Sin organización",
+        "withoutOrgSub": "Sin membership"
+      },
+      "includeDeleted": "Incluir eliminados",
+      "deleted": "Eliminado"
     },
     "plans": {
       "title": "Plans",
@@ -1718,8 +2074,6 @@
         "maxReservations": "Reservations per month",
         "maxReservationsHint": "Optional. Leave empty for unlimited reservations.",
         "maxReservationsPlaceholder": "Unlimited",
-        "reservationsShort": "Res./mo",
-        "slugPreview": "slug: {slug} · edit",
         "isActive": "Active plan",
         "isActiveHint": "Inactive plans are not available for new sign-ups."
       },
@@ -1733,226 +2087,297 @@
         "active": "Active",
         "inactive": "Inactive",
         "activate": "Activate plan",
-        "deactivate": "Deactivate plan"
+        "deactivate": "Deactivate plan",
+        "edit": "Editar"
       },
       "actions": {
         "cancel": "Cancel",
         "create": "Create plan",
         "saving": "Saving...",
-        "editSlug": "edit"
+        "editSlug": "edit",
+        "save": "Guardar cambios"
       },
       "errors": {
-        "createFailed": "Could not create the plan. Check the data and try again."
+        "createFailed": "Could not create the plan. Check the data and try again.",
+        "updateFailed": "No se pudo actualizar el plan. Verifica los datos e intenta de nuevo."
       },
       "summaryPlanOne": "plan registered",
       "summaryPlanMany": "plans registered",
       "summaryActiveOne": "active",
-      "summaryActiveMany": "active"
+      "summaryActiveMany": "active",
+      "editTitle": "Editar plan"
     },
     "audit": {
       "title": "Audit Log",
-      "description": "Trilha de ações administrativas na plataforma"
+      "description": "Rastreo de acciones administrativas en la plataforma",
+      "searchPlaceholder": "Filtrar por acción...",
+      "refresh": "Actualizar",
+      "emptyTitle": "No se encontraron registros",
+      "emptyDesc": "No hay registros de auditoría con el filtro actual"
     },
     "incidents": {
       "title": "Incidentes",
-      "description": "Visão cross-org de incidentes reportados nas organizações",
+      "description": "Vista cross-org de incidentes reportados en las organizaciones",
       "searchTitle": "Buscar incidente",
-      "searchPlaceholder": "Título, descrição ou organização...",
-      "organizationFilter": "Organização",
-      "allOrganizations": "Todas as organizações",
-      "statusFilter": "Status",
-      "allStatuses": "Todos os status",
-      "priorityFilter": "Prioridade",
-      "allPriorities": "Todas as prioridades",
-      "emptyTitle": "Nenhum incidente encontrado",
-      "emptyDesc": "Não há incidentes com os filtros selecionados",
-      "viewDetails": "Ver detalhes",
-      "closeModal": "Fechar",
-      "loading": "Carregando...",
-      "notFound": "Incidente não encontrado",
-      "organization": "Organização",
+      "searchPlaceholder": "Título, descripción u organización...",
+      "organizationFilter": "Organización",
+      "allOrganizations": "Todas las organizaciones",
+      "statusFilter": "Estado",
+      "allStatuses": "Todos los estados",
+      "priorityFilter": "Prioridad",
+      "allPriorities": "Todas las prioridades",
+      "emptyTitle": "No se encontraron incidentes",
+      "emptyDesc": "No hay incidentes con los filtros seleccionados",
+      "viewDetails": "Ver detalles",
+      "closeModal": "Cerrar",
+      "loading": "Cargando...",
+      "notFound": "Incidente no encontrado",
+      "organization": "Organización",
       "reportedBy": "Reportado por",
-      "createdAt": "Criado em",
-      "target": "Sala / item",
+      "createdAt": "Creado el",
+      "target": "Sala / ítem",
       "noTarget": "—",
-      "status": "Status",
-      "priority": "Prioridade",
-      "resolutionNotes": "Notas de resolução",
-      "history": "Histórico de status",
-      "resolve": "Marcar resolvido",
-      "saveChanges": "Salvar alterações",
-      "saving": "Salvando...",
+      "status": "Estado",
+      "priority": "Prioridad",
+      "resolutionNotes": "Notas de resolución",
+      "assignedTo": "Asignado a",
+      "unassigned": "Sin asignar",
+      "history": "Historial de estados",
+      "resolve": "Marcar resuelto",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando...",
       "tabs": {
-        "open": "Abertos",
-        "resolved": "Resolvidos / cancelados"
+        "open": "Abiertos",
+        "resolved": "Resueltos / cancelados"
       },
       "stats": {
-        "open": "Abertos",
-        "openSub": "Requerem acompanhamento",
-        "critical": "Críticos abertos",
-        "criticalSub": "Prioridade máxima",
-        "resolved": "Encerrados",
-        "resolvedSub": "Resolvidos ou cancelados",
+        "open": "Abiertos",
+        "openSub": "Requieren seguimiento",
+        "critical": "Críticos abiertos",
+        "criticalSub": "Prioridad máxima",
+        "resolved": "Cerrados",
+        "resolvedSub": "Resueltos o cancelados",
         "total": "Total",
-        "totalSub": "Todos os incidentes"
+        "totalSub": "Todos los incidentes"
       }
     },
     "billing": {
       "title": "Billing",
-      "description": "Gestão centralizada de assinaturas e renovações das organizações",
-      "searchTitle": "Buscar assinatura",
-      "searchPlaceholder": "Organização, plano ou ID externo...",
-      "statusFilter": "Status",
-      "allStatuses": "Todos os status",
-      "planFilter": "Plano",
-      "allPlans": "Todos os planos",
-      "emptyTitle": "Nenhuma assinatura encontrada",
-      "emptyDesc": "Não há assinaturas com os filtros selecionados",
-      "manage": "Gerenciar",
-      "closeModal": "Fechar",
-      "loading": "Carregando...",
-      "notFound": "Assinatura não encontrada",
-      "organization": "Organização",
+      "description": "Gestión centralizada de suscripciones y renovaciones de las organizaciones",
+      "searchTitle": "Buscar suscripción",
+      "searchPlaceholder": "Organización, plan o ID externo...",
+      "statusFilter": "Estado",
+      "allStatuses": "Todos los estados",
+      "planFilter": "Plan",
+      "allPlans": "Todos los planes",
+      "emptyTitle": "No se encontraron suscripciones",
+      "emptyDesc": "No hay suscripciones con los filtros seleccionados",
+      "manage": "Gestionar",
+      "closeModal": "Cerrar",
+      "loading": "Cargando...",
+      "notFound": "Suscripción no encontrada",
+      "organization": "Organización",
       "owner": "Owner",
-      "currentPlan": "Plano atual",
-      "periodStart": "Início do período",
-      "periodEnd": "Fim do período / renovação",
-      "status": "Status",
-      "changePlan": "Alterar plano",
+      "currentPlan": "Plan actual",
+      "periodStart": "Inicio del período",
+      "periodEnd": "Fin del período / renovación",
+      "status": "Estado",
+      "changePlan": "Cambiar plan",
       "externalId": "ID externo",
-      "saveChanges": "Salvar alterações",
-      "saving": "Salvando...",
-      "renewsOn": "Renova em",
-      "expiringSoon": "Expira em 7 dias",
-      "orgsWithoutSubscription": "{count} organização(ões) sem assinatura cadastrada",
-      "viewOrganizations": "Ver organizações",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando...",
+      "renewsOn": "Renueva el",
+      "expiringSoon": "Expira en 7 días",
+      "orgsWithoutSubscription": "{count} organización(es) sin suscripción registrada",
+      "viewOrganizations": "Ver organizaciones",
       "tabs": {
         "all": "Todas",
-        "active": "Ativas / trial",
-        "attention": "Atenção",
+        "active": "Activas / trial",
+        "attention": "Atención",
         "cancelled": "Canceladas"
       },
       "stats": {
-        "active": "Ativas",
+        "active": "Activas",
         "activeSub": "ACTIVE + TRIALING",
-        "attention": "Atenção",
-        "attentionSub": "Inadimplentes ou expirando",
+        "attention": "Atención",
+        "attentionSub": "Morosas o por expirar",
         "cancelled": "Canceladas",
-        "cancelledSub": "Assinaturas encerradas",
+        "cancelledSub": "Suscripciones finalizadas",
         "total": "Total",
-        "totalSub": "{count} org(s) sem assinatura"
+        "totalSub": "{count} org(s) sin suscripción"
+      }
+    },
+    "badges": {
+      "organization": {
+        "ACTIVE": "Activa",
+        "SUSPENDED": "Suspendida",
+        "TRIAL": "Trial"
+      },
+      "platformRole": {
+        "SUPER_ADMIN": "Super Admin",
+        "NONE": "Usuario"
+      },
+      "subscription": {
+        "ACTIVE": "Activa",
+        "TRIALING": "Trial",
+        "PAST_DUE": "Vencida",
+        "CANCELLED": "Cancelada"
+      },
+      "incident": {
+        "REPORTED": "Reportado",
+        "IN_ANALYSIS": "En análisis",
+        "IN_PROGRESS": "En progreso",
+        "RESOLVED": "Resuelto",
+        "CANCELLED": "Cancelado"
+      },
+      "incidentPriority": {
+        "LOW": "Baja",
+        "MEDIUM": "Media",
+        "HIGH": "Alta",
+        "CRITICAL": "Crítica"
       }
     }
   },
   "InicioPage": {
-    "greeting": "Olá",
-    "title": "Para onde você quer ir?",
-    "subtitle": "Escolha o ambiente que deseja acessar nesta sessão",
-    "signOut": "Sair",
-    "enter": "Acessar",
-    "inviteError": "Erro ao aceitar convite",
-    "superAdminOrgHint": "Como administrador da plataforma, gerencie organizações pelo painel da plataforma. O painel da organização no app é para membros e admins do tenant.",
+    "greeting": "Hola",
+    "title": "¿A dónde quieres ir?",
+    "subtitle": "Elige el ambiente que deseas acceder en esta sesión",
+    "signOut": "Salir",
+    "enter": "Acceder",
+    "inviteError": "Error al aceptar invitación",
+    "superAdminOrgHint": "Como administrador de la plataforma, gestiona organizaciones desde el panel de la plataforma. El panel de la organización en la app es para miembros y admins del tenant.",
     "platform": {
-      "title": "Painel da plataforma",
-      "description": "Gerenciar todas as organizações, planos, usuários e auditoria do SALA",
+      "title": "Panel de la plataforma",
+      "description": "Gestionar todas las organizaciones, planes, usuarios y auditoría de SALA",
       "badge": "Super Admin"
     },
     "organization": {
-      "adminTitle": "Painel da organização",
-      "adminDescription": "Salas, reservas, usuários e configurações da sua organização",
+      "adminTitle": "Panel de la organización",
+      "adminDescription": "Salas, reservas, usuarios y configuración de tu organización",
       "memberTitle": "Explorar salas",
-      "memberDescription": "Ver salas disponíveis, agendar e reportar problemas",
+      "memberDescription": "Ver salas disponibles, agendar y reportar problemas",
       "namedTitle": "{name}"
     },
     "createOrg": {
-      "title": "Criar organização",
-      "description": "Configure uma nova empresa ou equipe no SALA",
+      "title": "Crear organización",
+      "description": "Configura una nueva empresa o equipo en SALA",
       "action": "Registrar"
     },
     "anotherOrg": {
-      "title": "Outra organização",
-      "description": "Criar nova organização ou aceitar convites"
+      "title": "Otra organización",
+      "description": "Crear nueva organización o aceptar invitaciones"
     },
     "invites": {
-      "title": "Convites pendentes",
-      "role": "Papel: {role}",
-      "accept": "Aceitar convite"
+      "title": "Invitaciones pendientes",
+      "role": "Rol: {role}",
+      "accept": "Aceptar invitación"
     }
+  },
+  "OrganizationSetup": {
+    "title": "Configurar su cuenta",
+    "subtitle": "Complete su perfil y cree su primera organización, o vuelva al hub para aceptar una invitación.",
+    "backToHub": "Volver a las organizaciones",
+    "hintProfile": "Paso 1: complete su perfil con CPF y teléfono. Si fue invitado, vuelva y acepte la invitación.",
+    "hintOrganization": "Paso 2: registre su organización y elija el plan."
   },
   "ExplorarPage": {
     "title": "Explorar salas",
-    "subtitle": "Encontre salas livres, veja quem está usando e confira os materiais disponíveis",
-    "loading": "Carregando salas...",
-    "errorLoad": "Erro ao carregar salas",
-    "retry": "Tentar novamente",
+    "subtitle": "Encuentra salas libres, ve quién las usa y revisa los materiales disponibles",
+    "loading": "Cargando salas...",
+    "errorLoad": "Error al cargar salas",
+    "retry": "Intentar de nuevo",
     "bookRoom": "Agendar sala",
     "statsTotal": "Total de salas",
-    "recommended": "Recomendadas para você",
-    "searchPlaceholder": "Buscar por nome, descrição ou local...",
-    "equipmentPlaceholder": "Filtrar por equipamento (ex: projetor)",
-    "emptyTitle": "Nenhuma sala encontrada",
-    "emptyDesc": "Tente ajustar os filtros ou a busca",
+    "recommended": "Recomendadas para ti",
+    "searchPlaceholder": "Buscar por nombre, descripción o ubicación...",
+    "equipmentPlaceholder": "Filtrar por equipo (ej: proyector)",
+    "emptyTitle": "No se encontraron salas",
+    "emptyDesc": "Intenta ajustar los filtros o la búsqueda",
     "climate": "Climatizada",
-    "inUseBy": "Em uso por {name}",
-    "viewDetails": "Ver detalhes"
+    "inUseBy": "En uso por {name}",
+    "viewDetails": "Ver detalles"
   },
   "OnboardingPage": {
-    "title": "Bem-vindo ao SALA",
-    "subtitle": "Crie sua organização ou aceite um convite para começar",
-    "createOrgTitle": "Criar organização",
-    "orgNamePlaceholder": "Nome da sua empresa ou equipe",
-    "trialHint": "Você será o owner. Plano trial de 30 dias incluído.",
-    "creating": "Criando...",
-    "createOrg": "Criar organização",
-    "pendingInvitesTitle": "Convites pendentes",
-    "noInvites": "Nenhum convite pendente para {email}",
-    "role": "Papel: {role}",
-    "invitedBy": "convidado por {name}",
-    "acceptInvite": "Aceitar convite",
+    "title": "Bienvenido a SALA",
+    "subtitle": "Crea tu organización o acepta una invitación para comenzar",
+    "createOrgTitle": "Crear organización",
+    "orgNamePlaceholder": "Nombre de tu empresa o equipo",
+    "trialHint": "Serás el owner. Plan trial de 30 días incluido.",
+    "creating": "Creando...",
+    "createOrg": "Crear organización",
+    "pendingInvitesTitle": "Invitaciones pendientes",
+    "noInvites": "No hay invitaciones pendientes para {email}",
+    "role": "Rol: {role}",
+    "invitedBy": "invitado por {name}",
+    "acceptInvite": "Aceptar invitación",
     "errors": {
-      "createOrg": "Erro ao criar organização",
-      "acceptInvite": "Erro ao aceitar convite"
+      "createOrg": "Error al crear organización",
+      "acceptInvite": "Error al aceptar invitación"
     }
   },
   "InvitePage": {
-    "invalidInvite": "Convite inválido",
-    "notFound": "Convite não encontrado",
-    "goOnboarding": "Ir para onboarding",
-    "title": "Convite para {org}",
-    "invitedAs": "Você foi convidado para participar como {role}.",
-    "inviteEmail": "Email do convite: {email}",
+    "invalidInvite": "Invitación inválida",
+    "notFound": "Invitación no encontrada",
+    "goToHub": "Ir al centro de acceso",
+    "title": "Invitación para {org}",
+    "invitedAs": "Fuiste invitado para participar como {role}.",
+    "inviteEmail": "Email de la invitación: {email}",
     "sentBy": "Enviado por: {name}",
-    "expiresAt": "Expira em: {date}",
-    "loginGoogle": "Entrar com Google para aceitar",
-    "wrongAccount": "Você está logado como {current}, mas o convite foi enviado para {expected}.",
-    "switchAccount": "Trocar conta",
-    "alreadyInOrg": "Você já pertence a uma organização.",
-    "accepting": "Aceitando...",
-    "acceptInvite": "Aceitar convite",
-    "createOwnOrg": "Criar minha própria organização",
+    "expiresAt": "Expira el: {date}",
+    "loginGoogle": "Entrar con Google",
+    "loginEmail": "Entrar con correo y contraseña",
+    "createAccount": "Crear cuenta",
+    "wrongAccount": "Ha iniciado sesión como {current}, pero la invitación se envió a {expected}.",
+    "switchAccount": "Cambiar cuenta",
+    "alreadyInOrg": "Ya pertenece a esta organización.",
+    "accepting": "Aceptando...",
+    "acceptInvite": "Aceptar invitación",
+    "createOwnOrg": "Crear mi propia organización",
     "errors": {
-      "acceptInvite": "Erro ao aceitar convite"
+      "acceptInvite": "Error al aceptar invitación"
     }
   },
   "RoomItemsPage": {
-    "title": "Itens da Sala",
-    "back": "Voltar",
-    "addItem": "Adicionar Item",
-    "noItems": "Nenhum item cadastrado",
+    "title": "Ítems de la Sala",
+    "back": "Volver",
+    "addItem": "Agregar Ítem",
+    "noItems": "No hay ítems registrados",
     "edit": "Editar",
-    "delete": "Deletar",
-    "drawerAddTitle": "Adicionar Item",
-    "drawerEditTitle": "Editar Item",
-    "namePlaceholder": "Ex: Computador",
-    "loading": "Carregando itens...",
+    "delete": "Eliminar",
+    "drawerAddTitle": "Agregar Ítem",
+    "drawerEditTitle": "Editar Ítem",
+    "namePlaceholder": "Ej: Computadora",
+    "loading": "Cargando ítems...",
     "errors": {
-      "roomNotFound": "Sala não encontrada",
-      "loadItems": "Erro ao carregar itens",
-      "unknown": "Erro desconhecido",
-      "addItem": "Erro ao adicionar item",
-      "updateItem": "Erro ao atualizar item",
-      "deleteItem": "Erro ao deletar item"
-    }
+      "roomNotFound": "Sala no encontrada",
+      "loadItems": "Error al cargar ítems",
+      "unknown": "Error desconocido",
+      "addItem": "Error al agregar ítem",
+      "updateItem": "Error al actualizar ítem",
+      "deleteItem": "Error al eliminar ítem",
+      "saveItem": "Error al guardar el ítem"
+    },
+    "emptyDescription": "Empiece añadiendo ítems para esta sala",
+    "addFirstItem": "Añadir primer ítem",
+    "quantityLabel": "Cantidad: {count}",
+    "specifications": "Especificaciones:",
+    "confirmDelete": "¿Seguro que desea eliminar este ítem?",
+    "form": {
+      "itemName": "Nombre del ítem",
+      "itemNamePlaceholder": "Ej: Computadora",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describa el ítem...",
+      "specifications": "Especificaciones (separadas por coma)",
+      "specificationsPlaceholder": "Ej: Windows 11, 16GB RAM, Core i7",
+      "quantity": "Cantidad",
+      "icon": "Icono",
+      "iconHint": "Opcional — se usa como respaldo si no hay imagen",
+      "saving": "Guardando...",
+      "updateItem": "Actualizar ítem",
+      "addItem": "Añadir ítem",
+      "cancel": "Cancelar"
+    },
+    "itemsRegistered": "{count} ítems registrados"
   },
   "Preferences": {
     "switchToLight": "Switch to light theme",
@@ -1960,68 +2385,70 @@
   },
   "SetoresPage": {
     "title": "Sectores",
-    "subtitle": "Defina quién aprueba reservas: asigne salas y gestores a cada sector",
+    "subtitle": "Asigne salas y elija, por persona, qué puede hacer en el sector",
     "create": "Nuevo sector",
-    "edit": "Editar",
-    "archive": "Archivar",
+    "archive": "Eliminar",
+    "archiveConfirmTitle": "¿Eliminar sector?",
+    "archiveConfirmAction": "Eliminar sector",
+    "discardConfirmTitle": "¿Descartar cambios?",
+    "discardConfirmAction": "Descartar",
     "searchPlaceholder": "Buscar sectores...",
     "emptyTitle": "Ningún sector registrado",
-    "emptyDescription": "Cree un sector, pulse Gestionar y asigne salas y gestores de aprobación.",
+    "emptyDescription": "Cree un sector y, en el mismo flujo, asigne salas y funciones por persona.",
+    "emptySearchTitle": "Ningún sector encontrado",
+    "emptySearchDescription": "Pruebe otro término de búsqueda o limpie el filtro.",
     "drawerCreateTitle": "Crear sector",
     "drawerEditTitle": "Gestionar sector",
+    "drawerSubtitleEdit": "Editando “{name}” — salas y funciones de este sector",
+    "progressLabel": "Progreso del formulario",
+    "roomSearchPlaceholder": "Filtrar salas...",
+    "roomSearchEmpty": "Ninguna sala coincide con la búsqueda.",
+    "unsavedChangesHint": "Hay cambios sin guardar.",
+    "allSavedHint": "Sin cambios pendientes.",
     "nameLabel": "Nombre",
     "namePlaceholder": "Ej: Coordinación de TI",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Opcional",
-    "roomsLabel": "Salas del sector",
     "noRooms": "Ninguna sala disponible",
-    "membersLabel": "Gestores del sector",
     "selectMember": "Seleccionar gestor...",
     "removeMember": "Quitar gestor",
     "roomsCount": "{count} salas",
     "membersCount": "{count} gestores",
-    "save": "Guardar",
     "saving": "Guardando...",
     "cancel": "Cancelar",
-    "confirmArchive": "¿Archivar el sector \"{name}\"? {count} sala(s) quedarán sin sector y solo admins de la org podrán aprobarlas.",
+    "confirmArchive": "¿Eliminar el sector \"{name}\"? {count} sala(s) quedarán sin sector y solo admins de la org podrán aprobarlas.",
     "feedback": {
       "created": "Sector creado con éxito",
       "updated": "Sector actualizado con éxito",
-      "archived": "Sector archivado",
-      "memberAdded": "Gestor añadido",
-      "memberRemoved": "Gestor eliminado",
-      "memberRefreshHint": "Gestores ya conectados en otra sesión deben actualizar la página para ver Solicitudes",
-      "createdContinue": "Sector creado. Revise las salas y añada gestores abajo."
+      "archived": "Sector eliminado",
+      "memberRefreshHint": "Quien ya esté conectado en otra sesión debe actualizar la página para ver las nuevas funciones"
     },
     "errors": {
       "load": "Error al cargar sectores",
       "save": "Error al guardar sector",
-      "archive": "Error al archivar sector",
+      "archive": "Error al eliminar sector",
       "nameRequired": "El nombre es obligatorio",
       "addMember": "Error al añadir gestor",
-      "removeMember": "Error al quitar gestor"
+      "memberNeedsCapability": "Cada persona del sector necesita al menos una función"
     },
     "managersLabel": "Gestores",
     "otherSector": "otro sector",
     "assignedToSector": "ya en {name}",
     "manage": "Gestionar",
     "drawerHintCreate": "Complete datos, salas y gestores. Todo se crea de una vez al guardar.",
-    "drawerHintEdit": "Asigne salas y gestores. Un gestor solo controla las salas de este sector.",
+    "drawerHintEdit": "Asigne salas y funciones. Cada persona solo actúa en las salas de este sector, con las funciones marcadas.",
     "sectionBasicsTitle": "Datos del sector",
     "sectionBasicsHelp": "Nombre visible en la organización",
     "sectionRoomsTitle": "Asignar salas",
-    "sectionRoomsHelp": "Salas bajo este sector — los gestores podrán gestionarlas",
+    "sectionRoomsHelp": "Salas bajo este sector",
     "sectionMembersTitle": "Añadir gestores",
-    "sectionMembersHelp": "Personas que pueden aprobar, rechazar y ver la cola de estas salas",
+    "sectionMembersHelp": "Marque las funciones de cada persona: confirmar reservas y/o gestionar salas (datos + ítems)",
     "roomsSelected": "{count} seleccionada(s)",
-    "roomsSaveHint": "Las salas marcadas se guardan al pulsar \"Guardar cambios\".",
-    "membersAfterCreate": "Los gestores solo se pueden añadir después de crear el sector. Pulse \"Crear y continuar\".",
     "noMembersYet": "Ningún gestor en la lista. Añada abajo y luego guarde.",
     "addMemberLabel": "Incluir gestor",
     "addMember": "Añadir",
-    "addMemberHint": "La lista solo se guarda al guardar. Gestores en otra sesión deben actualizar para ver Solicitudes.",
+    "addMemberHint": "La lista y las funciones solo se graban al guardar. Quien esté en otra sesión debe actualizar la página.",
     "noMemberCandidates": "No hay más miembros. Regístrelos en Usuarios primero.",
-    "saveAndContinue": "Crear y continuar",
     "saveChanges": "Guardar cambios",
     "cardEmptyHint": "Sin salas ni gestores. Pulse Gestionar para configurar.",
     "roomsSaveHintCreate": "Las salas marcadas se vinculan al guardar el sector.",
@@ -2031,10 +2458,426 @@
     "checklistMembers": "Gestores",
     "checklistReady": "Listo",
     "checklistPending": "Pendiente",
-    "checklistAfterCreate": "Tras crear",
-    "roomsManageEffect": "Efecto: los gestores de este sector podrán aprobar, rechazar y seguir las reservas de estas salas.",
-    "membersSaveHint": "Los gestores de la lista se guardan con las salas al pulsar \"Guardar cambios\".",
+    "roomsManageEffect": "Efecto: quien confirme reservas ve Solicitudes; quien gestione salas edita la sala y los ítems de estas salas.",
     "createSubmit": "Crear sector",
-    "confirmDiscard": "Hay cambios sin guardar. ¿Descartar y cerrar?"
+    "confirmDiscard": "Hay cambios sin guardar. ¿Descartar y cerrar?",
+    "capabilityApprove": "Confirmar reservas",
+    "capabilityManageRooms": "Gestionar salas (datos + ítems)",
+    "capabilityRequiredHint": "Marque al menos una función para esta persona."
+  },
+  "GradeHoraria": {
+    "common": {
+      "back": "Volver",
+      "loading": "Cargando...",
+      "access": "Acceder",
+      "add": "Añadir",
+      "days": {
+        "1": "Lunes",
+        "2": "Martes",
+        "3": "Miércoles",
+        "4": "Jueves",
+        "5": "Viernes"
+      }
+    },
+    "hub": {
+      "title": "Asignación de Horario",
+      "description": "Configure los parámetros y genere el horario automáticamente para su institución.",
+      "menu": {
+        "classes": {
+          "title": "Grupos",
+          "description": "Gestione los grupos de la institución y sus periodos."
+        },
+        "subjects": {
+          "title": "Asignaturas",
+          "description": "Registre las materias y asignaturas ofertadas."
+        },
+        "teachers": {
+          "title": "Profesores",
+          "description": "Registre a los profesores independientemente de sus usuarios."
+        },
+        "loads": {
+          "title": "Carga Horaria",
+          "description": "Asocie profesores, asignaturas y grupos."
+        },
+        "availability": {
+          "title": "Disponibilidades",
+          "description": "Defina los horarios disponibles de cada profesor."
+        },
+        "generate": {
+          "title": "Generar Horario",
+          "description": "Ejecute el motor de asignación para generar los horarios."
+        },
+        "settings": {
+          "title": "Configuración del Horario",
+          "description": "Defina los turnos y las horas de inicio y fin de las clases."
+        }
+      }
+    },
+    "settings": {
+      "title": "Configuración del Horario",
+      "description": "Gestione los turnos y los horarios de las clases de la institución.",
+      "saveChanges": "Guardar Cambios",
+      "injectMocks": "Inyectar Datos de Prueba",
+      "newShiftName": "Nuevo Turno",
+      "shiftNamePlaceholder": "Nombre del turno (ej: Mañana)",
+      "removeShift": "Eliminar Turno",
+      "confirmRemoveShift": "¿Seguro que desea eliminar este turno?",
+      "lessonSlotsTitle": "Horarios de las Clases",
+      "addLesson": "Añadir Clase",
+      "emptySlots": "Ningún horario registrado en este turno.",
+      "lessonLabel": "Etiqueta de la Clase",
+      "lessonLabelPlaceholder": "ej: 1ª Clase",
+      "defaultLessonLabel": "Clase {n}",
+      "start": "Inicio",
+      "end": "Fin",
+      "addShift": "Añadir Nuevo Turno",
+      "toastLoadError": "Error al cargar la configuración",
+      "toastSaveSuccess": "¡Configuración guardada con éxito!",
+      "toastSaveError": "Error al guardar la configuración",
+      "toastMocksSuccess": "¡Mocks inyectados con éxito! Pulse F5 para recargar.",
+      "toastMocksError": "Error al inyectar mocks"
+    },
+    "classes": {
+      "title": "Grupos",
+      "description": "Gestione los grupos disponibles para la asignación de horarios.",
+      "formTitle": "Nuevo Grupo",
+      "nameLabel": "Nombre del Grupo",
+      "namePlaceholder": "Ej: 1º Año A",
+      "shiftLabel": "Turno del Grupo",
+      "noShifts": "Ningún turno configurado",
+      "addButton": "Añadir Grupo",
+      "empty": "Ningún grupo registrado.",
+      "confirmDelete": "¿Seguro que desea eliminar este grupo?",
+      "toastLoadError": "Error al cargar los datos",
+      "toastCreateSuccess": "¡Grupo creado con éxito!",
+      "toastCreateError": "Error al crear el grupo",
+      "toastDeleteSuccess": "¡Grupo eliminado con éxito!",
+      "toastDeleteError": "Error al eliminar el grupo"
+    },
+    "teachers": {
+      "title": "Profesores",
+      "description": "Registre a los profesores que serán asignados en el horario.",
+      "formTitle": "Nuevo Profesor",
+      "nameLabel": "Nombre del Profesor",
+      "namePlaceholder": "Ej: Juan Pérez",
+      "emailLabel": "Correo (Opcional)",
+      "emailPlaceholder": "Ej: juan@escuela.com",
+      "linkUserLabel": "Vincular a Usuario (Opcional)",
+      "linkUserNone": "No vincular...",
+      "linkUserHint": "Si se vincula, el profesor podrá iniciar sesión en el sistema en el futuro.",
+      "linkedBadge": "Vinculado",
+      "empty": "Ningún profesor registrado.",
+      "confirmDelete": "¿Seguro que desea eliminar este profesor? Se perderán todas las cargas horarias y disponibilidades asociadas.",
+      "toastLoadError": "Error al cargar profesores",
+      "toastCreateSuccess": "¡Profesor añadido con éxito!",
+      "toastCreateError": "Error al añadir profesor",
+      "toastDeleteSuccess": "¡Profesor eliminado con éxito!",
+      "toastDeleteError": "Error al eliminar profesor"
+    },
+    "subjects": {
+      "title": "Asignaturas",
+      "description": "Gestione las materias y asignaturas ofertadas por la institución.",
+      "formTitle": "Nueva Asignatura",
+      "nameLabel": "Nombre de la Asignatura",
+      "namePlaceholder": "Ej: Matemáticas",
+      "codeLabel": "Código (opcional)",
+      "codePlaceholder": "Ej: MAT01",
+      "codeDisplay": "Código: {code}",
+      "empty": "Ninguna asignatura registrada.",
+      "confirmDelete": "¿Seguro que desea eliminar esta asignatura?",
+      "toastLoadError": "Error al cargar asignaturas",
+      "toastCreateSuccess": "¡Asignatura creada con éxito!",
+      "toastCreateError": "Error al crear asignatura",
+      "toastDeleteSuccess": "¡Asignatura eliminada con éxito!",
+      "toastDeleteError": "Error al eliminar asignatura"
+    },
+    "loads": {
+      "title": "Cargas Horarias",
+      "description": "Asocie Grupos, Asignaturas y Profesores con sus respectivas clases por semana.",
+      "formTitle": "Nueva Carga Horaria",
+      "classLabel": "Grupo",
+      "classPlaceholder": "Seleccione el grupo...",
+      "subjectLabel": "Asignatura",
+      "subjectPlaceholder": "Seleccione la asignatura...",
+      "teacherLabel": "Profesor",
+      "teacherPlaceholder": "Seleccione el profesor...",
+      "lessonsPerWeek": "Clases por Semana",
+      "linkButton": "Vincular Carga",
+      "empty": "Ninguna carga horaria vinculada.",
+      "teacherPrefix": "Profesor: {name}",
+      "lessonsCount": "{count, plural, one {# clase} other {# clases}}",
+      "confirmDelete": "¿Seguro que desea eliminar esta carga horaria?",
+      "toastLoadError": "Error al cargar los datos",
+      "toastCreateSuccess": "¡Carga horaria vinculada con éxito!",
+      "toastCreateError": "Error al vincular carga horaria",
+      "toastDeleteSuccess": "¡Carga horaria eliminada con éxito!",
+      "toastDeleteError": "Error al eliminar carga horaria"
+    },
+    "availability": {
+      "title": "Disponibilidad de los Profesores",
+      "description": "Seleccione un profesor y marque los horarios en los que puede impartir clase.",
+      "selectTeacher": "Seleccione el Profesor",
+      "selectPlaceholder": "Seleccione...",
+      "gridTitle": "Cuadrícula de Horarios",
+      "saveButton": "Guardar Disponibilidad",
+      "lessonColumn": "Clase",
+      "emptyShiftSlots": "Ninguna clase configurada para este turno.",
+      "toastLoadError": "Error al cargar los datos",
+      "toastLoadAvailabilityError": "Error al cargar disponibilidades",
+      "toastSaveSuccess": "¡Disponibilidades guardadas con éxito!",
+      "toastSaveError": "Error al guardar disponibilidades"
+    },
+    "generate": {
+      "title": "Generar Horario",
+      "description": "Ejecute el motor de asignación para distribuir las clases según las disponibilidades.",
+      "readyTitle": "¿Listo para generar?",
+      "readyDescription": "El motor analizará todas las cargas horarias y disponibilidades para crear el mejor horario posible sin conflictos.",
+      "runButton": "Ejecutar Motor de Asignación",
+      "processing": "Procesando Algoritmo...",
+      "perfectTitle": "¡Asignación Perfecta!",
+      "partialTitle": "Asignación Parcial",
+      "fitnessScore": "Fitness Score: {score}%",
+      "unallocatedTitle": "Cargas no asignadas:",
+      "unallocatedItem": "{className} - {subjectName} ({teacherName}): Faltan {count} clases",
+      "errorsTitle": "Errores de Restricción:",
+      "schedulesByClass": "Horarios por Grupo",
+      "timeColumn": "Horario",
+      "toastSuccess": "¡Horario generado con éxito!",
+      "toastPartial": "Horario generado con restricciones (algunas clases no asignadas).",
+      "toastError": "Error al generar el horario"
+    }
+  },
+  "ProfileSetup": {
+    "title": "Completa tu perfil",
+    "subtitle": "Ingresa CPF y teléfono para continuar. Estos datos identifican al responsable de la cuenta.",
+    "sections": {
+      "account": "Cuenta",
+      "personal": "Datos personales"
+    },
+    "fields": {
+      "name": "Nombre",
+      "email": "Email",
+      "cpf": "CPF",
+      "phone": "Teléfono"
+    },
+    "placeholders": {
+      "cpf": "000.000.000-00",
+      "phone": "(00) 00000-0000"
+    },
+    "submit": "Continuar",
+    "messages": {
+      "fixErrors": "Corrige los campos resaltados"
+    },
+    "errors": {
+      "generic": "Error al guardar perfil. Intenta de nuevo."
+    }
+  },
+  "CreateOrganizationPage": {
+    "title": "Nueva organización",
+    "subtitle": "Registra una empresa o equipo y elige el plan",
+    "backToInicio": "Volver al inicio",
+    "backToHub": "Volver a organizaciones",
+    "sections": {
+      "organization": "Datos de la organización",
+      "plan": "Plan seleccionado"
+    },
+    "fields": {
+      "name": "Nombre comercial",
+      "legalName": "Razón social",
+      "cnpj": "CNPJ",
+      "email": "Email de la organización",
+      "phone": "Teléfono de la organización",
+      "planName": "Plan",
+      "planLimits": "Límites",
+      "trial": "Período de prueba",
+      "isSchool": "Institución educativa"
+    },
+    "placeholders": {
+      "name": "Nombre de la organización",
+      "legalName": "Razón social completa",
+      "cnpj": "00.000.000/0000-00",
+      "email": "contacto@empresa.com",
+      "phone": "(00) 00000-0000"
+    },
+    "steps": {
+      "step1": "Organización",
+      "step2": "Plan",
+      "step3": "Confirmar"
+    },
+    "buttons": {
+      "next": "Continuar",
+      "back": "Volver",
+      "cancel": "Cancelar"
+    },
+    "messages": {
+      "fixErrors": "Corrige los campos resaltados para continuar"
+    },
+    "step2": {
+      "title": "Elige el plan",
+      "subtitle": "Todos los planes incluyen 30 días de trial gratuito",
+      "loading": "Cargando planes...",
+      "error": "No se pudieron cargar los planes. Intenta de nuevo.",
+      "empty": "No hay planes disponibles en este momento.",
+      "selectPlan": "Selecciona un plan para continuar",
+      "select": "Seleccionar",
+      "selected": "Seleccionado",
+      "rooms": "Hasta {count} salas",
+      "users": "Hasta {count} usuarios",
+      "reservations": "Hasta {count} reservas/mes",
+      "unlimitedReservations": "Reservas ilimitadas",
+      "trialDays": "30 días de trial incluidos"
+    },
+    "step3": {
+      "title": "Revisa los datos",
+      "subtitle": "Revisa la información antes de crear la organización",
+      "planLimitsValue": "{rooms} salas · {users} usuarios",
+      "trialValue": "30 días"
+    },
+    "submit": "Crear organización",
+    "submitting": "Creando...",
+    "errors": {
+      "generic": "Error al crear organización. Verifica los datos e intenta de nuevo."
+    },
+    "isSchoolHint": "Activar módulo de Horario para Escuelas/Universidades",
+    "yes": "Sí",
+    "no": "No",
+    "emptyValue": "—"
+  },
+  "Vision": {
+    "title": "Visión Computacional y Automatización",
+    "description": "Automatiza la gestión de salas, realiza auditorías en tiempo real y provisiona ítems con Inteligencia Artificial.",
+    "tabs": {
+      "occupancy": "Ocupación de Sala",
+      "audit": "Auditoría de Ítems",
+      "provision": "Provisionamiento de Ítems"
+    },
+    "workflow": {
+      "stepRoom": "Sala",
+      "stepImage": "Imagen",
+      "stepAnalyze": "Análisis",
+      "imageStatus": "Estado de la imagen",
+      "imageReady": "Lista para análisis",
+      "imageMissing": "Esperando carga o captura",
+      "webcamActive": "Webcam activa",
+      "needRoom": "Selecciona una sala para continuar.",
+      "needImage": "Sube o captura una imagen antes de analizar."
+    },
+    "provider": {
+      "title": "Motor de Inteligencia Artificial",
+      "mock": "Simulador Offline (Alta Fidelidad)",
+      "real": "Roboflow API (Nube Real)",
+      "usingEnv": "Usando Claves Globales (.env)",
+      "notConfigured": "No Configurado (Simulador Activo)"
+    },
+    "credentials": {
+      "title": "Configuraciones Administrativas de Roboflow",
+      "apiKey": "Clave de API de Roboflow",
+      "apiKeyPlaceholder": "Ingresa tu Clave Privada de Roboflow...",
+      "modelId": "ID del Modelo (Model ID)",
+      "modelIdPlaceholder": "Ej: yolov8n, s-a-l-a-detector/1",
+      "save": "Cifrar y Guardar en la Base",
+      "clear": "Eliminar de la Base (Revertir)",
+      "clearShort": "Limpiar",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "saved": "¡Credenciales cifradas y guardadas con éxito!",
+      "cleared": "Credenciales eliminadas de la base de datos.",
+      "onlyAdmins": "Solo administradores pueden gestionar claves de API.",
+      "securedLabel": "Almacenamiento Cifrado AES-256-GCM activo en el Servidor"
+    },
+    "console": {
+      "title": "Terminal de Automatización de Negocio",
+      "subtitle": "Logs de Eventos en Tiempo Real",
+      "waiting": "Esperando envío de imagen para procesamiento...",
+      "empty": "Sin registros..."
+    },
+    "controls": {
+      "selectRoom": "Selecciona una Sala",
+      "selectRoomPlaceholder": "Selecciona...",
+      "captureArea": "Área de captura",
+      "useWebcam": "Usar Webcam",
+      "stopCamera": "Desactivar Cámara",
+      "selectFile": "Seleccionar Archivo",
+      "clearImage": "Eliminar imagen",
+      "uploadTitle": "Subir Foto para Análisis",
+      "uploadSubtitle": "Arrastra una foto o haz clic para subir",
+      "analyzeBtn": "Ejecutar Análisis con IA",
+      "analyzing": "Analizando...",
+      "camera": "Webcam del Laboratorio",
+      "capture": "Capturar Foto",
+      "presets": "Escenarios de prueba",
+      "presetsSubtitle": "Carga una imagen preconfigurada para validar el flujo rápidamente.",
+      "presetEmpty": "Laboratorio Vacío",
+      "presetFull": "Laboratorio en Uso",
+      "presetAudit": "Falta de Equipos",
+      "presetProvision": "Nueva Sala para Provisionar",
+      "previewAlt": "Vista previa del laboratorio"
+    },
+    "auditTable": {
+      "item": "Equipo",
+      "expected": "Registrado en la Base",
+      "detected": "Detectado por IA",
+      "status": "Estado de la Auditoría",
+      "statusOk": "OK",
+      "statusMissing": "¡Faltante!",
+      "statusExcess": "Exceso",
+      "auditSummary": "Resumen de la Auditoría",
+      "summaryHint": "Reconciliación entre ítems registrados y objetos identificados visualmente.",
+      "noDiscrepancy": "No se encontraron discrepancias. ¡Todos los equipos están en orden!",
+      "discrepancyFound": "¡Discrepancias detectadas! {count} equipo(s) registrado(s) no fueron identificados.",
+      "incidentGenerated": "¡Incidente automático generado con éxito por SALA-BOT!",
+      "viewIncident": "Ver Ticket Generado"
+    },
+    "provisionPanel": {
+      "title": "Revisión de Provisionamiento",
+      "description": "Edita y confirma las cantidades sugeridas por Visión Computacional para esta sala antes de guardar.",
+      "nameCol": "Nombre del Activo",
+      "qtyCol": "Cantidad Sugerida",
+      "iconCol": "Ícono",
+      "saveBtn": "Confirmar y Registrar en la Base",
+      "processing": "Procesando...",
+      "success": "¡Sala provisionada con éxito! Se crearon {count} ítems.",
+      "successBanner": "Sala provisionada con éxito. Los equipos fueron guardados y están activos.",
+      "empty": "No se detectaron ítems para provisionamiento. Intenta cargar otra foto.",
+      "removeSuggestion": "Eliminar sugerencia",
+      "aiClassSuggested": "Clase IA: Sugerida"
+    },
+    "toasts": {
+      "loadRoomsError": "Error al cargar la lista de salas.",
+      "saveKeysError": "Error al guardar las claves.",
+      "clearCredsError": "Error al eliminar las credenciales.",
+      "cameraAccessError": "No se pudo acceder a la cámara del dispositivo.",
+      "invalidImageFile": "Seleccione un archivo de imagen válido.",
+      "needImageOrPreset": "Envíe una foto o use un escenario de prueba antes de analizar.",
+      "needRoom": "Seleccione una sala de destino para sincronizar los datos.",
+      "auditMissing": "¡Atención! La auditoría detectó equipos faltantes. Se generó un incidente automáticamente.",
+      "auditOk": "¡Bien! Se identificaron todos los equipos registrados.",
+      "provisionFound": "La IA identificó {count} tipos de equipos listos para aprovisionar.",
+      "provisionNone": "No se identificó ningún equipo registrable.",
+      "processError": "Ocurrió un error al procesar la imagen.",
+      "provisionConfirmError": "Error al confirmar el aprovisionamiento."
+    },
+    "logs": {
+      "cameraEnabled": "Cámara del laboratorio activada.",
+      "cameraDisabled": "Cámara desactivada.",
+      "snapshotOk": "¡Captura de cámara realizada con éxito!",
+      "imageLoaded": "Imagen \"{name}\" cargada por el usuario.",
+      "presetSelected": "Escenario preset seleccionado: \"{name}\".",
+      "analysisStarted": "Iniciando análisis inteligente en modo \"{mode}\"...",
+      "processError": "Error de procesamiento: {message}",
+      "httpFailure": "Fallo HTTP.",
+      "suggestionRemoved": "Sugerencia de aprovisionamiento eliminada de la lista.",
+      "provisionSending": "Enviando solicitud de aprovisionamiento masivo...",
+      "syncDone": "[DATABASE] ¡Sincronización completada! {count} equipos registrados en la sala.",
+      "tabChanged": "Pestaña cambiada a: \"{tab}\"",
+      "roomChanged": "Sala de destino cambiada al ID: {id}"
+    },
+    "errors": {
+      "loadRooms": "Error al cargar salas",
+      "saveCreds": "Error al guardar credenciales",
+      "clearCreds": "Error al eliminar configuración",
+      "processImage": "Error al procesar imagen vía API",
+      "saveProvision": "Error al guardar aprovisionamiento"
+    }
   }
 }

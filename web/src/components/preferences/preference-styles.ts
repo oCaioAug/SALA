@@ -18,7 +18,7 @@ export function preferencesDropdownClass(
   placement: "top" | "bottom" = "bottom"
 ) {
   return cn(
-    "absolute right-0 z-50 w-48 overflow-hidden rounded-xl border shadow-2xl transition-colors duration-300",
+    "absolute right-0 z-50 w-48 overflow-hidden rounded-xl border shadow-sm transition-colors duration-300",
     placement === "bottom" ? "top-full mt-2" : "bottom-full mb-2",
     variant === "tenant"
       ? "border-slate-200 bg-white dark:border-slate-600/50 dark:bg-slate-800"

@@ -75,10 +75,9 @@ describe("Items API (List and Create)", () => {
     });
 
     it("should create a new item and invalidate cache", async () => {
-      const {
-        mockAdminContextValue,
-        mockRequireTenantContext,
-      } = await import("../../../../../prisma/auth-mocks");
+      const { mockAdminContextValue, mockRequireTenantContext } = await import(
+        "../../../../../prisma/auth-mocks"
+      );
       mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
 
       const mockItem = { id: "new-item", name: "Novo Projetor" };
@@ -116,13 +115,16 @@ describe("Items API (List and Create)", () => {
     });
 
     it("should create item in room when org admin", async () => {
-      const {
-        mockAdminContextValue,
-        mockRequireTenantContext,
-      } = await import("../../../../../prisma/auth-mocks");
+      const { mockAdminContextValue, mockRequireTenantContext } = await import(
+        "../../../../../prisma/auth-mocks"
+      );
       mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
 
-      const mockItem = { id: "new-item", name: "Projetor Sala", roomId: "room-1" };
+      const mockItem = {
+        id: "new-item",
+        name: "Projetor Sala",
+        roomId: "room-1",
+      };
       prismaMock.item.create.mockResolvedValue(mockItem as any);
 
       const req = new NextRequest("http://localhost:3000/api/items", {
@@ -139,10 +141,9 @@ describe("Items API (List and Create)", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      const {
-        mockAdminContextValue,
-        mockRequireTenantContext,
-      } = await import("../../../../../prisma/auth-mocks");
+      const { mockAdminContextValue, mockRequireTenantContext } = await import(
+        "../../../../../prisma/auth-mocks"
+      );
       mockRequireTenantContext.mockResolvedValueOnce(mockAdminContextValue);
 
       prismaMock.item.create.mockRejectedValue(new Error("DB error"));

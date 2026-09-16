@@ -1,14 +1,21 @@
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
   reactStrictMode: false, // Desabilitar para evitar problemas de hidratação dupla
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
 
   // Configuração de imagens atualizada para Next.js 16
   images: {
+    qualities: [75, 95],
     remotePatterns: [
       {
         protocol: "https",
@@ -34,8 +41,10 @@ const nextConfig = {
   // serverExternalPackages movido para fora de experimental no Next.js 16
   serverExternalPackages: ["prisma", "@prisma/client"],
 
-  // Configuração do Turbopack (novo bundler padrão no Next.js 16)
-  // Removendo o root chumbado que causava o erro invalid distDirRoot
+  // Limita o escopo do Turbopack ao diretório do projeto (menos I/O e cache inflado)
+  turbopack: {
+    root: projectRoot,
+  },
 
   // Reescrever URLs para servir uploads
   async rewrites() {

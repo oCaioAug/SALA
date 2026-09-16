@@ -21,12 +21,12 @@
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU1, CDU5, CDU6, CDU8, CDU10
 - **Critérios de Aceitação**:
-  - Acesso à plataforma e permissões de recursos são validados com base nas roles de organização e setor.
-  - Ações de gestão global (ex: gerenciar usuários, criar salas, gerir organizações) são restritas aos papéis OWNER e ADMIN.
-  - Ações de gestão departamental (ex: aprovar reservas e atualizar incidentes de salas do setor) podem ser delegadas ao MANAGER.
-  - O papel MEMBER possui acesso padrão, podendo gerenciar apenas seus próprios recursos (perfil, suas reservas, reportar incidentes).
+  - Apenas ADMIN/OWNER podem aprovar/rejeitar qualquer sala; membros de setor aprovam só se tiverem a função de confirmar agendas no escopo
+  - Criar/excluir salas e vincular setor: apenas ADMIN/OWNER; editar infos da sala e itens: ADMIN/OWNER ou membro de setor com a função correspondente
+  - Apenas ADMIN pode gerenciar usuários
+  - Apenas ADMIN pode atribuir e resolver incidentes
 
-#### [DESCONTINUADO] Geração de Token para Mobile
+#### RF03 - Geração de Token para Mobile
 
 - **Descrição**: O sistema deve gerar tokens de autenticação para aplicativo mobile. (Recurso descontinuado)
 - **Prioridade**: Baixa
@@ -99,7 +99,7 @@
 - **Casos de Uso Relacionados**: CDU5 (Aprovar / Rejeitar Reserva)
 - **Critérios de Aceitação**:
   - OWNER/ADMIN da organização podem aprovar/rejeitar qualquer sala
-  - Gestores de setor (SectorMember MANAGER) podem aprovar/rejeitar apenas salas do(s) setor(es) que gerenciam
+  - Gestores de setor (SectorMember) podem aprovar/rejeitar apenas salas do(s) setor(es) em que tiverem `canApproveReservations`
   - Salas sem setor responsável: apenas OWNER/ADMIN aprovam
   - Fila `/solicitacoes` e notificações de criação respeitam o escopo do aprovador
   - Decisão registra `decidedById`, `decidedAt` e `decisionReason` opcional
@@ -108,14 +108,15 @@
 
 #### RF09 - Gestão de Setores
 
-- **Descrição**: Administrador da organização ou Gestor (MANAGER) deve poder gerenciar setores, vincular salas e adicionar novos membros ao setor.
+- **Descrição**: Administrador da organização deve poder criar setores, vincular salas e designar membros com funções independentes naquele setor.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU12 (Gerenciar Setores)
 - **Critérios de Aceitação**:
   - Cada sala pertence a no máximo um setor (`Room.sectorId`)
-  - O gestor do setor (`MANAGER`) pode adicionar outros usuários ao setor, atribuindo níveis de acesso como `MANAGER` ou `MEMBER` (membro comum do setor)
-  - Soft-delete de setor desvincula salas
-  - Apenas o Administrador global pode criar ou excluir setores. O Gestor administra o conteúdo do seu próprio setor (membros, informações de salas, aprovação de reservas)
+  - Setor contém membros com papel MANAGER e funções (`canApproveReservations`, `canManageRooms`)
+  - ADMIN escolhe, por pessoa, quais funções estão ativas; ao menos uma é obrigatória
+  - Remoção de setor é definitiva (hard delete), desvincula salas e registra auditoria (`sector.deleted`)
+  - Membros de setor não gerenciam criar/excluir salas, usuários ou setores — só as funções marcadas no vínculo
 
 #### RF10 - Verificação de Conflitos
 
@@ -154,12 +155,12 @@
 
 #### RF13 - Gestão de Salas
 
-- **Descrição**: Administradores da organização gerenciam o ciclo completo de salas; gestores de setor podem editar informações das salas do respectivo escopo.
+- **Descrição**: Administradores da organização gerenciam o ciclo completo de salas; membros de setor com `canManageRooms` podem editar salas (infos + itens) no respectivo escopo.
 - **Prioridade**: Alta
 - **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - OWNER/ADMIN podem criar nova sala com nome, descrição e capacidade
-  - OWNER/ADMIN e gestores de setor podem editar informações da sala (nome, descrição, capacidade, localização, tomadas, clima, status) no respectivo escopo
+  - OWNER/ADMIN e membros de setor com `canManageRooms` podem editar informações da sala e gerenciar itens no respectivo escopo
   - Alterar status da sala (LIVRE, EM_USO, RESERVADO) no mesmo escopo de edição
   - Excluir sala permanece exclusivo de OWNER/ADMIN
   - Vincular/desvincular setor (`sectorId`) permanece exclusivo de OWNER/ADMIN
@@ -167,16 +168,15 @@
 
 #### RF14 - Gestão de Itens
 
-- **Descrição**: Administradores da organização e gestores de setor devem poder gerenciar itens/equipamentos das salas no respectivo escopo.
+- **Descrição**: Coberta por `canManageRooms` no escopo do setor (ver RF13). OWNER/ADMIN em qualquer sala.
 - **Prioridade**: Média
 - **Casos de Uso Relacionados**: CDU6 (Gerenciar Salas e Itens)
 - **Critérios de Aceitação**:
   - OWNER/ADMIN podem gerenciar itens de qualquer sala da organização
-  - Gestores de setor (SectorMember MANAGER) podem adicionar, editar e remover itens apenas das salas do(s) setor(es) que gerenciam
-  - Salas sem setor: apenas OWNER/ADMIN gerenciam itens
-  - Upload de imagens dos itens no mesmo escopo
-  - Visualização de imagens dos itens
-  - Criar e excluir sala permanece exclusivo de OWNER/ADMIN; editar infos da sala no escopo do gestor (ver RF13)
+  - Membros de setor com `canManageRooms` gerenciam itens das salas do(s) setor(es) correspondentes
+  - Salas sem setor: apenas OWNER/ADMIN
+  - Upload de imagens no mesmo escopo
+  - Criar/excluir sala permanece exclusivo de OWNER/ADMIN
 
 ### 1.5 Gestão de Incidentes
 
@@ -324,7 +324,6 @@
   - Expor dados via endpoint de estatísticas de incidentes
   - Integrar os dados ao dashboard administrativo
 
-
 ### 1.9 Gestão SaaS e Organizações
 
 #### RF27 - Cadastro de Usuário (Sign-Up)
@@ -367,7 +366,6 @@
   - Cada plano possui limites pré-definidos (ex: `maxRooms`, `maxUsers`)
   - A assinatura (`Subscription`) controla a vigência do plano para a organização
   - O sistema bloqueia a criação de novas salas ou membros se o limite do plano for atingido
-
 
 ### 1.10 Gestão da Plataforma (Super Admin)
 
@@ -604,48 +602,46 @@
 
 ## 3. Matriz de Rastreabilidade: Requisitos x Casos de Uso
 
-| Requisito                          | Casos de Uso Relacionados              | Prioridade |
-| ---------------------------------- | -------------------------------------- | ---------- |
-| RF01 - Autenticação Google OAuth   | CDU1                                   | Alta       |
-| RF02 - Controle de Acesso          | CDU1, CDU5, CDU6, CDU8, CDU10         | Alta       |
-| [DESCONTINUADO] Token Mobile       | CDU1                                   | Média      |
-| RF03 - Visualizar Perfil           | CDU2                                   | Média      |
-| RF04 - Editar Perfil               | CDU2                                   | Média      |
-| RF05 - Criar Reserva               | CDU3                                   | Alta       |
-| RF06 - Reservas Recorrentes        | CDU3                                   | Média      |
-| RF07 - Visualizar Reservas         | CDU4                                   | Alta       |
-| RF08 - Aprovar/Rejeitar            | CDU5                                   | Alta       |
-| RF09 - Gestão de Setores           | CDU12                                  | Alta       |
-| RF10 - Verificar Conflitos         | CDU3                                   | Alta       |
-| RF11 - Cancelar Reserva            | CDU4                                   | Média      |
-| RF12 - Visualizar Salas            | CDU6                                   | Alta       |
-| RF13 - Gestão de Salas             | CDU6                                   | Alta       |
-| RF14 - Gestão de Itens             | CDU6                                   | Média      |
-| RF15 - Reportar Incidente          | CDU7                                   | Alta       |
-| RF16 - Gestão de Incidentes        | CDU8                                   | Alta       |
-| RF17 - Histórico de Incidentes     | CDU8                                   | Baixa      |
-| RF18 - Visualizar Notificações     | CDU9                                   | Alta       |
-| RF19 - Marcar como Lida            | CDU9                                   | Média      |
-| RF20 - Notificações Automáticas    | CDU3, CDU4, CDU5, CDU7, CDU8 → CDU9  | Alta       |
-| RF21 - Visualizar Usuários         | CDU10                                  | Média      |
-| RF22 - Alterar Role                | CDU10                                  | Média      |
-| RF23 - Dashboard                   | CDU11                                  | Média      |
-| RF24 - Estatísticas por Usuário    | CDU11                                  | Média      |
-| RF25 - Relatórios de Incidentes    | CDU8, CDU11                            | Média      |
-| RF26 - Integração Google Calendar  | CDU3, CDU4, CDU5                       | Média      |
+| Requisito                         | Casos de Uso Relacionados           | Prioridade |
+| --------------------------------- | ----------------------------------- | ---------- |
+| RF01 - Autenticação Google OAuth  | CDU1                                | Alta       |
+| RF02 - Controle de Acesso         | CDU1, CDU5, CDU6, CDU8, CDU10       | Alta       |
+| [DESCONTINUADO] Token Mobile      | CDU1                                | Média      |
+| RF03 - Visualizar Perfil          | CDU2                                | Média      |
+| RF04 - Editar Perfil              | CDU2                                | Média      |
+| RF05 - Criar Reserva              | CDU3                                | Alta       |
+| RF06 - Reservas Recorrentes       | CDU3                                | Média      |
+| RF07 - Visualizar Reservas        | CDU4                                | Alta       |
+| RF08 - Aprovar/Rejeitar           | CDU5                                | Alta       |
+| RF09 - Gestão de Setores          | CDU12                               | Alta       |
+| RF10 - Verificar Conflitos        | CDU3                                | Alta       |
+| RF11 - Cancelar Reserva           | CDU4                                | Média      |
+| RF12 - Visualizar Salas           | CDU6                                | Alta       |
+| RF13 - Gestão de Salas            | CDU6                                | Alta       |
+| RF14 - Gestão de Itens            | CDU6                                | Média      |
+| RF15 - Reportar Incidente         | CDU7                                | Alta       |
+| RF16 - Gestão de Incidentes       | CDU8                                | Alta       |
+| RF17 - Histórico de Incidentes    | CDU8                                | Baixa      |
+| RF18 - Visualizar Notificações    | CDU9                                | Alta       |
+| RF19 - Marcar como Lida           | CDU9                                | Média      |
+| RF20 - Notificações Automáticas   | CDU3, CDU4, CDU5, CDU7, CDU8 → CDU9 | Alta       |
+| RF21 - Visualizar Usuários        | CDU10                               | Média      |
+| RF22 - Alterar Role               | CDU10                               | Média      |
+| RF23 - Dashboard                  | CDU11                               | Média      |
+| RF24 - Estatísticas por Usuário   | CDU11                               | Média      |
+| RF25 - Relatórios de Incidentes   | CDU8, CDU11                         | Média      |
+| RF26 - Integração Google Calendar | CDU3, CDU4, CDU5                    | Média      |
 
+| RF27 - Cadastro de Usuário (Sign-Up) | CDU13 | Alta |
+| RF28 - Criação e Gestão de Org | CDU14 | Alta |
+| RF29 - Convite e Participantes | CDU14 | Alta |
+| RF30 - Planos e Assinaturas (SaaS) | CDU15 | Alta |
 
-| RF27 - Cadastro de Usuário (Sign-Up) | CDU13                                  | Alta       |
-| RF28 - Criação e Gestão de Org     | CDU14                                  | Alta       |
-| RF29 - Convite e Participantes     | CDU14                                  | Alta       |
-| RF30 - Planos e Assinaturas (SaaS) | CDU15                                  | Alta       |
-
-
-| RF31 - Gestão Global de Planos     | CDU16                                  | Alta       |
-| RF32 - Gestão de Organizações      | CDU17                                  | Alta       |
-| RF33 - Auditoria e Logs            | CDU18                                  | Média      |
-| RF34 - Configurações Globais       | CDU19                                  | Média      |
-| RF35 - Bootstrapping Super Admin   | CDU10                                  | Alta       |
+| RF31 - Gestão Global de Planos | CDU16 | Alta |
+| RF32 - Gestão de Organizações | CDU17 | Alta |
+| RF33 - Auditoria e Logs | CDU18 | Média |
+| RF34 - Configurações Globais | CDU19 | Média |
+| RF35 - Bootstrapping Super Admin | CDU10 | Alta |
 
 ## 4. Tecnologias e Ferramentas
 

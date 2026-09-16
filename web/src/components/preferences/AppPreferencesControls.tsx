@@ -4,7 +4,10 @@ import { cn } from "@/lib/utils";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-import { type DropdownPlacement, type PreferencesVariant } from "./preference-styles";
+import {
+  type DropdownPlacement,
+  type PreferencesVariant,
+} from "./preference-styles";
 import { ThemeToggle } from "./ThemeToggle";
 
 type AppPreferencesControlsProps = {

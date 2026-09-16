@@ -2,7 +2,6 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -22,10 +21,9 @@ type OrganizationSetupWizardProps = {
 
 export function OrganizationSetupWizard({
   cancelHref = "/organizations",
-  onFinishedHref = "/organizations",
+  onFinishedHref = "/dashboard",
 }: OrganizationSetupWizardProps) {
   const t = useTranslations("OrganizationSetup");
-  const router = useRouter();
   const { update } = useSession();
   const [loading, setLoading] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
@@ -65,7 +63,7 @@ export function OrganizationSetupWizard({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3 text-sm text-violet-100/90">
+      <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary/90">
         {phase === "profile" ? t("hintProfile") : t("hintOrganization")}
       </div>
 

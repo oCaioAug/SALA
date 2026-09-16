@@ -17,8 +17,12 @@ export class VisionServiceFactory {
         where: { provider: "ROBOFLOW" },
       });
 
-      const confidence = process.env.ROBOFLOW_CONFIDENCE ? parseFloat(process.env.ROBOFLOW_CONFIDENCE) : undefined;
-      const overlap = process.env.ROBOFLOW_OVERLAP ? parseFloat(process.env.ROBOFLOW_OVERLAP) : undefined;
+      const confidence = process.env.ROBOFLOW_CONFIDENCE
+        ? parseFloat(process.env.ROBOFLOW_CONFIDENCE)
+        : undefined;
+      const overlap = process.env.ROBOFLOW_OVERLAP
+        ? parseFloat(process.env.ROBOFLOW_OVERLAP)
+        : undefined;
 
       if (dbCredential) {
         console.log(
@@ -36,7 +40,12 @@ export class VisionServiceFactory {
           console.log(
             `🚀 [VisionFactory] Ativando RoboflowService via Banco de Dados (Modelo: ${modelId}, Confiança: ${confidence ?? "padrão"}, Overlap: ${overlap ?? "padrão"})`
           );
-          return new RoboflowService(decryptedKey, modelId, confidence, overlap);
+          return new RoboflowService(
+            decryptedKey,
+            modelId,
+            confidence,
+            overlap
+          );
         } catch (decryptError) {
           console.error(
             "❌ [VisionFactory] Erro ao descriptografar chave do banco. Tentando fallback...",

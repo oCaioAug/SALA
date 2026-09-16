@@ -1,26 +1,44 @@
 "use client";
 
-import { Network, Plus, Search, Trash2, UserPlus, X } from "lucide-react";
+import {
+  Check,
+  ClipboardCheck,
+  DoorOpen,
+  Network,
+  Plus,
+  Search,
+  Trash2,
+  UserPlus,
+  Users,
+  X,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import type { ElementType, ReactNode } from "react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Drawer } from "@/components/ui/Drawer";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { Switch } from "@/components/ui/Switch";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
+import { cn } from "@/lib/utils";
 
 type SectorRoom = { id: string; name: string; status: string };
 type SectorMember = {
   id: string;
   userId: string;
   role: string;
+  canApproveReservations: boolean;
+  canManageRooms: boolean;
   user: {
     id: string;
     name: string | null;
@@ -28,6 +46,52 @@ type SectorMember = {
     image?: string | null;
   };
 };
+
+const defaultMemberCaps = {
+  canApproveReservations: true,
+  canManageRooms: true,
+};
+
+function withMemberCaps(
+  member: Omit<SectorMember, "canApproveReservations" | "canManageRooms"> &
+    Partial<Pick<SectorMember, "canApproveReservations" | "canManageRooms">> & {
+      canEditRooms?: boolean;
+      canManageItems?: boolean;
+    }
+): SectorMember {
+  let canManageRooms = member.canManageRooms;
+  if (canManageRooms === undefined) {
+    if (
+      member.canEditRooms !== undefined ||
+      member.canManageItems !== undefined
+    ) {
+      canManageRooms = Boolean(member.canEditRooms || member.canManageItems);
+    } else {
+      canManageRooms = defaultMemberCaps.canManageRooms;
+    }
+  }
+
+  return {
+    ...member,
+    canApproveReservations:
+      member.canApproveReservations ?? defaultMemberCaps.canApproveReservations,
+    canManageRooms,
+  };
+}
+
+function membersSignature(members: SectorMember[]) {
+  return [...members]
+    .map(
+      m =>
+        `${m.userId}:${Number(m.canApproveReservations)}:${Number(m.canManageRooms)}`
+    )
+    .sort()
+    .join("|");
+}
+
+function memberHasAnyCapability(member: SectorMember) {
+  return member.canApproveReservations || member.canManageRooms;
+}
 type Sector = {
   id: string;
   name: string;
@@ -43,6 +107,106 @@ type OrgRoom = {
   sectorId?: string | null;
   sector?: { id: string; name: string } | null;
 };
+
+function SectorCountBadge({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full bg-background px-2.5 py-0.5 text-xs font-semibold tabular-nums text-foreground ring-1 ring-border">
+      {children}
+    </span>
+  );
+}
+
+function SectorFormSection({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  children,
+}: {
+  icon: ElementType;
+  title: string;
+  description: string;
+  badge?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex items-start justify-between gap-3 border-b border-border bg-muted/25 px-4 py-3.5 sm:px-5">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background text-muted-foreground ring-1 ring-border">
+            <Icon className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+          </div>
+        </div>
+        {badge}
+      </div>
+      <div className="space-y-4 p-4 sm:p-5">{children}</div>
+    </section>
+  );
+}
+
+type ProgressStep = {
+  label: string;
+  done: boolean;
+  meta?: string;
+};
+
+function SectorFormProgress({
+  label,
+  steps,
+  pendingLabel,
+  readyLabel,
+}: {
+  label: string;
+  steps: ProgressStep[];
+  pendingLabel: string;
+  readyLabel: string;
+}) {
+  return (
+    <nav
+      aria-label={label}
+      className="rounded-xl border border-border bg-muted/30 p-3 sm:p-4"
+    >
+      <ol className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {steps.map((step, index) => (
+          <li
+            key={step.label}
+            className={cn(
+              "flex items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors",
+              step.done
+                ? "border-emerald-500/25 bg-emerald-500/5"
+                : "border-border bg-background"
+            )}
+          >
+            <span
+              className={cn(
+                "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                step.done
+                  ? "bg-emerald-600 text-white"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              {step.done ? <Check className="h-3.5 w-3.5" aria-hidden /> : index + 1}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-foreground">
+                {step.label}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">
+                {step.meta ?? (step.done ? readyLabel : pendingLabel)}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
 
 const SetoresPage: React.FC = () => {
   const t = useTranslations("SetoresPage");
@@ -62,17 +226,21 @@ const SetoresPage: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<Sector | null>(null);
   const [saving, setSaving] = useState(false);
+  const [sectorToArchive, setSectorToArchive] = useState<Sector | null>(null);
+  const [archiving, setArchiving] = useState(false);
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
   const [draftMembers, setDraftMembers] = useState<SectorMember[]>([]);
   const [memberUserId, setMemberUserId] = useState("");
+  const [roomSearch, setRoomSearch] = useState("");
   const [baseline, setBaseline] = useState({
     name: "",
     description: "",
     roomIds: [] as string[],
-    memberIds: [] as string[],
+    membersKey: "",
   });
 
   const sortedIds = (ids: string[]) => [...ids].sort().join(",");
@@ -82,8 +250,7 @@ const SetoresPage: React.FC = () => {
       name.trim() !== baseline.name ||
       (description.trim() || "") !== baseline.description ||
       sortedIds(selectedRoomIds) !== sortedIds(baseline.roomIds) ||
-      sortedIds(draftMembers.map(m => m.userId)) !==
-        sortedIds(baseline.memberIds)
+      membersSignature(draftMembers) !== baseline.membersKey
     );
   }, [name, description, selectedRoomIds, draftMembers, baseline]);
 
@@ -91,47 +258,65 @@ const SetoresPage: React.FC = () => {
     name: string;
     description: string;
     roomIds: string[];
-    memberIds: string[];
+    members: SectorMember[];
   }) => {
     setBaseline({
       name: next.name.trim(),
       description: next.description.trim(),
       roomIds: [...next.roomIds],
-      memberIds: [...next.memberIds],
+      membersKey: membersSignature(next.members),
     });
   };
 
   const requestCloseDrawer = () => {
-    if (isDirty && !confirm(t("confirmDiscard"))) return;
+    if (isDirty) {
+      setDiscardConfirmOpen(true);
+      return;
+    }
     setDrawerOpen(false);
   };
 
-  const loadData = useCallback(async (opts?: { silent?: boolean }) => {
-    try {
-      if (!opts?.silent) setLoading(true);
-      const [sectorsRes, roomsRes, usersRes] = await Promise.all([
-        fetch("/api/sectors"),
-        fetch("/api/rooms"),
-        fetch("/api/users"),
-      ]);
-      if (!sectorsRes.ok) throw new Error(t("errors.load"));
-      const sectorsData = await sectorsRes.json();
-      setSectors(Array.isArray(sectorsData) ? sectorsData : []);
-      if (roomsRes.ok) {
-        const roomsData = await roomsRes.json();
-        setRooms(Array.isArray(roomsData) ? roomsData : []);
+  const confirmDiscardDrawer = () => {
+    setDiscardConfirmOpen(false);
+    setDrawerOpen(false);
+  };
+
+  const loadData = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      try {
+        if (!opts?.silent) setLoading(true);
+        const [sectorsRes, roomsRes, usersRes] = await Promise.all([
+          fetch("/api/sectors"),
+          fetch("/api/rooms"),
+          fetch("/api/users"),
+        ]);
+        if (!sectorsRes.ok) throw new Error(t("errors.load"));
+        const sectorsData = await sectorsRes.json();
+        setSectors(
+          Array.isArray(sectorsData)
+            ? sectorsData.map((sector: Sector) => ({
+                ...sector,
+                members: (sector.members ?? []).map(withMemberCaps),
+              }))
+            : []
+        );
+        if (roomsRes.ok) {
+          const roomsData = await roomsRes.json();
+          setRooms(Array.isArray(roomsData) ? roomsData : []);
+        }
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          setUsers(Array.isArray(usersData) ? usersData : []);
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t("errors.load");
+        showError(msg);
+      } finally {
+        if (!opts?.silent) setLoading(false);
       }
-      if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        setUsers(Array.isArray(usersData) ? usersData : []);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t("errors.load");
-      showError(msg);
-    } finally {
-      if (!opts?.silent) setLoading(false);
-    }
-  }, [showError, t]);
+    },
+    [showError, t]
+  );
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -156,29 +341,31 @@ const SetoresPage: React.FC = () => {
     setSelectedRoomIds([]);
     setDraftMembers([]);
     setMemberUserId("");
+    setRoomSearch("");
     captureBaseline({
       name: "",
       description: "",
       roomIds: [],
-      memberIds: [],
+      members: [],
     });
     setDrawerOpen(true);
   };
 
   const openEdit = (sector: Sector) => {
     const roomIds = sector.rooms.map(r => r.id);
-    const members = sector.members ?? [];
+    const members = (sector.members ?? []).map(withMemberCaps);
     setEditing(sector);
     setName(sector.name);
     setDescription(sector.description ?? "");
     setSelectedRoomIds(roomIds);
     setDraftMembers(members);
     setMemberUserId("");
+    setRoomSearch("");
     captureBaseline({
       name: sector.name,
       description: sector.description ?? "",
       roomIds,
-      memberIds: members.map(m => m.userId),
+      members,
     });
     setDrawerOpen(true);
   };
@@ -199,6 +386,20 @@ const SetoresPage: React.FC = () => {
     });
   }, [rooms, editing?.id, selectedRoomIds, t]);
 
+  const filteredRoomsForSelect = useMemo(() => {
+    const q = roomSearch.trim().toLowerCase();
+    if (!q) return roomsForSelect;
+    return roomsForSelect.filter(
+      room =>
+        room.name.toLowerCase().includes(q) ||
+        (room.otherSectorName ?? "").toLowerCase().includes(q)
+    );
+  }, [roomsForSelect, roomSearch]);
+
+  const stepBasicsDone = name.trim().length > 0;
+  const stepRoomsDone = selectedRoomIds.length > 0;
+  const stepMembersDone = draftMembers.length > 0;
+
   const toggleRoom = (roomId: string) => {
     setSelectedRoomIds(prev =>
       prev.includes(roomId)
@@ -212,20 +413,35 @@ const SetoresPage: React.FC = () => {
       showError(t("errors.nameRequired"));
       return;
     }
+    if (draftMembers.some(m => !memberHasAnyCapability(m))) {
+      showError(t("errors.memberNeedsCapability"));
+      return;
+    }
     setSaving(true);
     try {
-      const memberUserIds = draftMembers.map(m => m.userId);
+      const membersPayload = draftMembers.map(m => ({
+        userId: m.userId,
+        canApproveReservations: m.canApproveReservations,
+        canManageRooms: m.canManageRooms,
+      }));
       const myId = session?.user?.id;
       const wasMember =
         !!myId && (editing?.members.some(m => m.userId === myId) ?? false);
-      const willBeMember = !!myId && memberUserIds.includes(myId);
-      const membershipChanged = wasMember !== willBeMember;
+      const willBeMember = !!myId && draftMembers.some(m => m.userId === myId);
+      const previousMe = editing?.members.find(m => m.userId === myId);
+      const nextMe = draftMembers.find(m => m.userId === myId);
+      const myCapsChanged =
+        Boolean(previousMe) &&
+        Boolean(nextMe) &&
+        membersSignature([withMemberCaps(previousMe!)]) !==
+          membersSignature([nextMe!]);
+      const membershipChanged = wasMember !== willBeMember || myCapsChanged;
 
       const payload = {
         name: name.trim(),
         description: description.trim() || null,
         roomIds: selectedRoomIds,
-        memberUserIds,
+        members: membersPayload,
       };
       const res = editing
         ? await fetch(`/api/sectors/${editing.id}`, {
@@ -268,21 +484,18 @@ const SetoresPage: React.FC = () => {
     }
   };
 
-  const handleArchive = async (sector: Sector) => {
-    const roomCount =
-      sector.rooms?.length ?? sector._count?.rooms ?? 0;
-    if (
-      !confirm(
-        t("confirmArchive", { name: sector.name, count: roomCount })
-      )
-    ) {
-      return;
-    }
+  const handleArchive = (sector: Sector) => {
+    setSectorToArchive(sector);
+  };
+
+  const confirmArchiveSector = async () => {
+    if (!sectorToArchive) return;
+    setArchiving(true);
     try {
       const myId = session?.user?.id;
       const affectsCurrentUser =
-        !!myId && sector.members.some(m => m.userId === myId);
-      const res = await fetch(`/api/sectors/${sector.id}`, {
+        !!myId && sectorToArchive.members.some(m => m.userId === myId);
+      const res = await fetch(`/api/sectors/${sectorToArchive.id}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -290,12 +503,15 @@ const SetoresPage: React.FC = () => {
         throw new Error(data.error || t("errors.archive"));
       }
       showSuccess(t("feedback.archived"));
+      setSectorToArchive(null);
       await loadData();
       if (affectsCurrentUser) {
         await updateSession();
       }
     } catch (err) {
       showError(err instanceof Error ? err.message : t("errors.archive"));
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -318,6 +534,7 @@ const SetoresPage: React.FC = () => {
           name: user.name,
           email: user.email,
         },
+        ...defaultMemberCaps,
       },
     ]);
     setMemberUserId("");
@@ -325,6 +542,19 @@ const SetoresPage: React.FC = () => {
 
   const handleRemoveMember = (userId: string) => {
     setDraftMembers(prev => prev.filter(m => m.userId !== userId));
+  };
+
+  const toggleMemberCapability = (
+    userId: string,
+    field: "canApproveReservations" | "canManageRooms"
+  ) => {
+    setDraftMembers(prev =>
+      prev.map(member =>
+        member.userId === userId
+          ? { ...member, [field]: !member[field] }
+          : member
+      )
+    );
   };
 
   const memberCandidates = users.filter(
@@ -341,11 +571,8 @@ const SetoresPage: React.FC = () => {
         <div className="mb-6 sm:mb-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 p-3">
-                <Network className="h-8 w-8 text-blue-400" />
-              </div>
               <div>
-                <h1 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                <h1 className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
                   {t("title")}
                 </h1>
                 <p className="text-slate-600 dark:text-gray-400">
@@ -380,8 +607,22 @@ const SetoresPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={<Network className="h-8 w-8 text-slate-400" />}
-            title={t("emptyTitle")}
-            description={t("emptyDescription")}
+            title={
+              searchTerm.trim() ? t("emptySearchTitle") : t("emptyTitle")
+            }
+            description={
+              searchTerm.trim()
+                ? t("emptySearchDescription")
+                : t("emptyDescription")
+            }
+            action={
+              searchTerm.trim()
+                ? undefined
+                : {
+                    label: t("create"),
+                    onClick: openCreate,
+                  }
+            }
           />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -426,9 +667,7 @@ const SetoresPage: React.FC = () => {
                     <span>
                       {t("membersCount", {
                         count:
-                          sector.members?.length ??
-                          sector._count?.members ??
-                          0,
+                          sector.members?.length ?? sector._count?.members ?? 0,
                       })}
                     </span>
                   </div>
@@ -477,58 +716,72 @@ const SetoresPage: React.FC = () => {
           isOpen={drawerOpen}
           onClose={requestCloseDrawer}
           title={editing ? t("drawerEditTitle") : t("drawerCreateTitle")}
+          description={
+            editing
+              ? t("drawerSubtitleEdit", { name: editing.name })
+              : t("drawerHintCreate")
+          }
           size="lg"
-        >
-          <div className="space-y-5">
-            <p className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-200">
-              {editing ? t("drawerHintEdit") : t("drawerHintCreate")}
-            </p>
-
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-lg border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-900/50">
-                <p className="font-semibold text-slate-900 dark:text-white">
-                  1. {t("checklistBasics")}
-                </p>
-                <p className="mt-0.5 text-slate-500">
-                  {name.trim() ? t("checklistReady") : t("checklistPending")}
-                </p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-900/50">
-                <p className="font-semibold text-slate-900 dark:text-white">
-                  2. {t("checklistRooms")}
-                </p>
-                <p className="mt-0.5 text-slate-500">
-                  {selectedRoomIds.length > 0
-                    ? t("roomsSelected", { count: selectedRoomIds.length })
-                    : t("checklistPending")}
-                </p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-900/50">
-                <p className="font-semibold text-slate-900 dark:text-white">
-                  3. {t("checklistMembers")}
-                </p>
-                <p className="mt-0.5 text-slate-500">
-                  {draftMembers.length > 0
-                    ? t("membersCount", { count: draftMembers.length })
-                    : t("checklistPending")}
-                </p>
+          footer={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-slate-500 dark:text-slate-400 sm:max-w-[45%]">
+                {isDirty ? t("unsavedChangesHint") : t("allSavedHint")}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  onClick={requestCloseDrawer}
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  className="flex-1 sm:min-w-[10rem] sm:flex-none"
+                  onClick={handleSave}
+                  disabled={saving || !name.trim()}
+                >
+                  {saving
+                    ? t("saving")
+                    : editing
+                      ? t("saveChanges")
+                      : t("createSubmit")}
+                </Button>
               </div>
             </div>
+          }
+        >
+          <div className="space-y-5">
+            <SectorFormProgress
+              label={t("progressLabel")}
+              pendingLabel={t("checklistPending")}
+              readyLabel={t("checklistReady")}
+              steps={[
+                {
+                  label: t("checklistBasics"),
+                  done: stepBasicsDone,
+                },
+                {
+                  label: t("checklistRooms"),
+                  done: stepRoomsDone,
+                  meta: stepRoomsDone
+                    ? t("roomsSelected", { count: selectedRoomIds.length })
+                    : undefined,
+                },
+                {
+                  label: t("checklistMembers"),
+                  done: stepMembersDone,
+                  meta: stepMembersDone
+                    ? t("membersCount", { count: draftMembers.length })
+                    : undefined,
+                },
+              ]}
+            />
 
-            <section className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
-                  1
-                </span>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {t("sectionBasicsTitle")}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {t("sectionBasicsHelp")}
-                  </p>
-                </div>
-              </div>
+            <SectorFormSection
+              icon={Network}
+              title={t("sectionBasicsTitle")}
+              description={t("sectionBasicsHelp")}
+            >
               <Input
                 label={t("nameLabel")}
                 value={name}
@@ -536,200 +789,267 @@ const SetoresPage: React.FC = () => {
                 placeholder={t("namePlaceholder")}
                 required
               />
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="sector-description"
+                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
                   {t("descriptionLabel")}
                 </label>
                 <textarea
+                  id="sector-description"
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder={t("descriptionPlaceholder")}
-                  rows={2}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+                  rows={3}
+                  className="w-full rounded-lg border border-input bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
                 />
               </div>
-            </section>
+            </SectorFormSection>
 
-            <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900/40">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
-                    2
-                  </span>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {t("sectionRoomsTitle")}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {t("sectionRoomsHelp")}
-                    </p>
-                  </div>
-                </div>
-                <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
+            <SectorFormSection
+              icon={DoorOpen}
+              title={t("sectionRoomsTitle")}
+              description={t("sectionRoomsHelp")}
+              badge={
+                <SectorCountBadge>
                   {t("roomsSelected", { count: selectedRoomIds.length })}
-                </span>
+                </SectorCountBadge>
+              }
+            >
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={roomSearch}
+                  onChange={e => setRoomSearch(e.target.value)}
+                  placeholder={t("roomSearchPlaceholder")}
+                  className="h-10 w-full rounded-lg border border-input bg-card py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+                />
               </div>
 
-              <div className="max-h-52 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-slate-700">
-                {roomsForSelect.length === 0 ? (
-                  <p className="px-2 py-6 text-center text-sm text-slate-500">
-                    {t("noRooms")}
+              <div className="max-h-56 overflow-y-auto rounded-lg border border-border">
+                {filteredRoomsForSelect.length === 0 ? (
+                  <p className="px-3 py-8 text-center text-sm text-muted-foreground">
+                    {roomsForSelect.length === 0
+                      ? t("noRooms")
+                      : t("roomSearchEmpty")}
                   </p>
                 ) : (
-                  roomsForSelect.map(room => (
-                    <label
-                      key={room.id}
-                      className={`flex items-start gap-3 rounded-lg px-2 py-2 text-sm transition-colors ${
-                        room.disabled
-                          ? "cursor-not-allowed opacity-55"
-                          : selectedRoomIds.includes(room.id)
-                            ? "cursor-pointer bg-blue-50 dark:bg-blue-500/15"
-                            : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        className="mt-0.5"
-                        checked={selectedRoomIds.includes(room.id)}
-                        disabled={room.disabled}
-                        onChange={() => toggleRoom(room.id)}
-                      />
-                      <span className="min-w-0">
-                        <span className="block font-medium text-slate-900 dark:text-white">
-                          {room.name}
-                        </span>
-                        {room.otherSectorName ? (
-                          <span className="block text-xs text-amber-700 dark:text-amber-300">
-                            {t("assignedToSector", {
-                              name: room.otherSectorName,
-                            })}
+                  filteredRoomsForSelect.map(room => {
+                    const selected = selectedRoomIds.includes(room.id);
+                    return (
+                      <label
+                        key={room.id}
+                        className={cn(
+                          "flex items-center gap-3 border-b border-border px-3 py-3 text-sm last:border-b-0",
+                          room.disabled
+                            ? "cursor-not-allowed opacity-50"
+                            : selected
+                              ? "cursor-pointer bg-muted/40"
+                              : "cursor-pointer hover:bg-muted/25"
+                        )}
+                      >
+                        <Switch
+                          checked={selected}
+                          disabled={room.disabled}
+                          onChange={() => toggleRoom(room.id)}
+                          aria-label={room.name}
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-medium text-foreground">
+                            {room.name}
                           </span>
-                        ) : null}
-                      </span>
-                    </label>
-                  ))
+                          {room.otherSectorName ? (
+                            <span className="mt-0.5 block text-xs text-amber-700 dark:text-amber-300">
+                              {t("assignedToSector", {
+                                name: room.otherSectorName,
+                              })}
+                            </span>
+                          ) : null}
+                        </span>
+                      </label>
+                    );
+                  })
                 )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {editing ? t("roomsSaveHintEdit") : t("roomsSaveHintCreate")}
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {selectedRoomIds.length > 0
+                  ? t("roomsManageEffect")
+                  : editing
+                    ? t("roomsSaveHintEdit")
+                    : t("roomsSaveHintCreate")}
               </p>
-              {selectedRoomIds.length > 0 ? (
-                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  {t("roomsManageEffect")}
-                </p>
-              ) : null}
-            </section>
+            </SectorFormSection>
 
-            <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900/40">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-xs font-semibold text-white">
-                    3
-                  </span>
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {t("sectionMembersTitle")}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {t("sectionMembersHelp")}
-                    </p>
-                  </div>
-                </div>
-                <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                  {t("membersCount", {
-                    count: draftMembers.length,
-                  })}
-                </span>
-              </div>
-
+            <SectorFormSection
+              icon={Users}
+              title={t("sectionMembersTitle")}
+              description={t("sectionMembersHelp")}
+              badge={
+                <SectorCountBadge>
+                  {t("membersCount", { count: draftMembers.length })}
+                </SectorCountBadge>
+              }
+            >
               {draftMembers.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center text-sm text-slate-500 dark:border-slate-600">
+                <p className="rounded-lg border border-dashed border-border bg-muted/20 px-3 py-8 text-center text-sm text-muted-foreground">
                   {t("noMembersYet")}
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-3" role="list">
                   {draftMembers.map(member => (
                     <li
                       key={member.userId}
-                      className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                      className="rounded-lg border border-border bg-muted/15 p-3.5"
                     >
-                      <div className="min-w-0">
-                        <p className="truncate font-medium text-slate-900 dark:text-white">
-                          {member.user.name || member.user.email}
-                        </p>
-                        {member.user.name ? (
-                          <p className="truncate text-xs text-slate-500">
-                            {member.user.email}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">
+                            {member.user.name || member.user.email}
                           </p>
-                        ) : null}
+                          {member.user.name ? (
+                            <p className="truncate text-xs text-muted-foreground">
+                              {member.user.email}
+                            </p>
+                          ) : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(member.userId)}
+                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
+                          aria-label={t("removeMember")}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMember(member.userId)}
-                        className="ml-2 rounded-md p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
-                        aria-label={t("removeMember")}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+
+                      <div className="mt-3 space-y-2">
+                        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <ClipboardCheck
+                              className="h-4 w-4 shrink-0 text-muted-foreground"
+                              aria-hidden
+                            />
+                            <span className="text-xs font-medium text-foreground">
+                              {t("capabilityApprove")}
+                            </span>
+                          </div>
+                          <Switch
+                            checked={member.canApproveReservations}
+                            onChange={() =>
+                              toggleMemberCapability(
+                                member.userId,
+                                "canApproveReservations"
+                              )
+                            }
+                            aria-label={t("capabilityApprove")}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <DoorOpen
+                              className="h-4 w-4 shrink-0 text-muted-foreground"
+                              aria-hidden
+                            />
+                            <span className="text-xs font-medium text-foreground">
+                              {t("capabilityManageRooms")}
+                            </span>
+                          </div>
+                          <Switch
+                            checked={member.canManageRooms}
+                            onChange={() =>
+                              toggleMemberCapability(
+                                member.userId,
+                                "canManageRooms"
+                              )
+                            }
+                            aria-label={t("capabilityManageRooms")}
+                          />
+                        </div>
+                      </div>
+
+                      {!memberHasAnyCapability(member) ? (
+                        <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                          {t("capabilityRequiredHint")}
+                        </p>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
               )}
 
-              <div className="space-y-2 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/60">
-                <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <div className="rounded-lg border border-dashed border-border bg-muted/15 p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("addMemberLabel")}
                 </p>
-                <div className="flex gap-2">
-                  <select
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <SearchableSelect
                     value={memberUserId}
-                    onChange={e => setMemberUserId(e.target.value)}
-                    className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-white"
-                  >
-                    <option value="">{t("selectMember")}</option>
-                    {memberCandidates.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.name ? `${u.name} (${u.email})` : u.email}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setMemberUserId}
+                    options={memberCandidates.map(u => ({
+                      value: u.id,
+                      label: u.name ? `${u.name} (${u.email})` : u.email,
+                    }))}
+                    placeholder={t("selectMember")}
+                    allowEmpty
+                    className="min-w-0 flex-1"
+                    triggerClassName="h-10"
+                  />
                   <Button
                     type="button"
                     onClick={handleAddMember}
                     disabled={!memberUserId}
-                    className="inline-flex items-center gap-2"
+                    className="inline-flex shrink-0 items-center justify-center gap-2"
                   >
                     <UserPlus className="h-4 w-4" />
                     {t("addMember")}
                   </Button>
                 </div>
-                {memberCandidates.length === 0 ? (
-                  <p className="text-xs text-slate-500">
-                    {t("noMemberCandidates")}
-                  </p>
-                ) : null}
-                <p className="text-xs text-slate-500">{t("addMemberHint")}</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {memberCandidates.length === 0
+                    ? t("noMemberCandidates")
+                    : t("addMemberHint")}
+                </p>
               </div>
-            </section>
-
-            <div className="sticky bottom-0 flex gap-3 border-t border-slate-200 bg-white pt-4 dark:border-slate-700 dark:bg-slate-900">
-              <Button className="flex-1" onClick={handleSave} disabled={saving}>
-                {saving
-                  ? t("saving")
-                  : editing
-                    ? t("saveChanges")
-                    : t("createSubmit")}
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={requestCloseDrawer}
-              >
-                {t("cancel")}
-              </Button>
-            </div>
+            </SectorFormSection>
           </div>
         </Drawer>
+
+        <ConfirmModal
+          isOpen={!!sectorToArchive}
+          variant="destructive"
+          title={t("archiveConfirmTitle")}
+          description={
+            sectorToArchive
+              ? t("confirmArchive", {
+                  name: sectorToArchive.name,
+                  count:
+                    sectorToArchive.rooms?.length ??
+                    sectorToArchive._count?.rooms ??
+                    0,
+                })
+              : ""
+          }
+          confirmLabel={t("archiveConfirmAction")}
+          cancelLabel={t("cancel")}
+          loading={archiving}
+          onConfirm={() => {
+            void confirmArchiveSector();
+          }}
+          onCancel={() => {
+            if (!archiving) setSectorToArchive(null);
+          }}
+        />
+
+        <ConfirmModal
+          isOpen={discardConfirmOpen}
+          title={t("discardConfirmTitle")}
+          description={t("confirmDiscard")}
+          confirmLabel={t("discardConfirmAction")}
+          cancelLabel={t("cancel")}
+          onConfirm={confirmDiscardDrawer}
+          onCancel={() => setDiscardConfirmOpen(false)}
+        />
       </PageLayout>
     </OrgAdminGuard>
   );

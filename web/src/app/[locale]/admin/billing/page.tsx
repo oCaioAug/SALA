@@ -17,7 +17,10 @@ import {
   AdminBillingSubscriptionModal,
 } from "@/components/admin/AdminBillingSubscriptionModal";
 import { AdminFilterBar } from "@/components/admin/AdminFilterBar";
-import { AdminPageContent, AdminPageHeader } from "@/components/admin/AdminLayout";
+import {
+  AdminPageContent,
+  AdminPageHeader,
+} from "@/components/admin/AdminLayout";
 import { AdminMetricCards } from "@/components/admin/AdminMetricCards";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
@@ -43,9 +46,9 @@ interface BillingStats {
 export default function AdminBillingPage() {
   const t = useTranslations("Admin.billing");
   const [scope, setScope] = useState<BillingScope>("all");
-  const [subscriptions, setSubscriptions] = useState<AdminBillingSubscription[]>(
-    []
-  );
+  const [subscriptions, setSubscriptions] = useState<
+    AdminBillingSubscription[]
+  >([]);
   const [stats, setStats] = useState<BillingStats | null>(null);
   const [plans, setPlans] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +152,7 @@ export default function AdminBillingPage() {
         count: stats?.orgsWithoutSubscription ?? 0,
       }),
       icon: CreditCard,
-      iconClassName: "text-violet-400",
+      iconClassName: "text-primary",
     },
   ];
 
@@ -180,7 +183,7 @@ export default function AdminBillingPage() {
               </p>
               <Link
                 href="/admin/organizations"
-                className="text-sm text-violet-600 hover:text-violet-500 dark:text-violet-700 dark:text-violet-300 dark:hover:text-violet-200"
+                className="text-sm text-primary hover:text-primary dark:text-primary dark:text-primary dark:hover:text-primary"
               >
                 {t("viewOrganizations")}
               </Link>
@@ -215,6 +218,7 @@ export default function AdminBillingPage() {
                   setPage(1);
                 },
                 allLabel: t("allStatuses"),
+                native: true,
                 options: Object.values(SubscriptionStatus).map(value => ({
                   value,
                   label: value,
@@ -255,7 +259,7 @@ export default function AdminBillingPage() {
                   return (
                     <Card
                       key={sub.id}
-                      className="border-border bg-card transition-colors hover:border-violet-500/30"
+                      className="border-border bg-card transition-colors hover:border-primary/30"
                     >
                       <CardContent className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
                         <div className="min-w-0 flex-1">
@@ -277,7 +281,7 @@ export default function AdminBillingPage() {
                           </div>
                           <Link
                             href={`/admin/organizations/${sub.organization.id}`}
-                            className="font-medium text-foreground hover:text-violet-600 dark:hover:text-violet-200"
+                            className="font-medium text-foreground hover:text-primary dark:hover:text-primary"
                           >
                             {sub.organization.name}
                           </Link>

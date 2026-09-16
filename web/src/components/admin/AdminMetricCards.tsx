@@ -27,12 +27,7 @@ export function AdminMetricCards({
   className,
 }: AdminMetricCardsProps) {
   return (
-    <div
-      className={cn(
-        "grid gap-4 sm:grid-cols-2 xl:grid-cols-4",
-        className
-      )}
-    >
+    <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-4", className)}>
       {metrics.map(metric => {
         const Icon = metric.icon;
         return (
@@ -64,7 +59,7 @@ export function AdminMetricCards({
                 <Icon
                   className={cn(
                     "h-8 w-8 shrink-0",
-                    metric.iconClassName ?? "text-violet-600 dark:text-violet-400"
+                    metric.iconClassName ?? "text-primary dark:text-primary"
                   )}
                 />
               </div>

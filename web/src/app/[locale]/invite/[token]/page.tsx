@@ -1,18 +1,20 @@
 "use client";
 
 import { Building2 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { AppPreferencesControls } from "@/components/preferences/AppPreferencesControls";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
-import { Link } from "@/navigation";
+import { organizationEntryPath } from "@/lib/organization/entry-path";
+import { navigateAfterOrgSwitch } from "@/lib/organization/navigate-after-org-switch";
 import { getIntlLocale } from "@/lib/utils";
+import { Link } from "@/navigation";
 
 function InvitePageShell({ children }: { children: ReactNode }) {
   return (
@@ -40,11 +42,16 @@ export default function InviteAcceptPage() {
   const params = useParams();
   const token = params.token as string;
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const [invite, setInvite] = useState<InviteDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [memberOrgIds, setMemberOrgIds] = useState<string[]>([]);
+
+  const inviteCallback = `/invite/${token}`;
+  const loginHref = `/auth/login?callbackUrl=${encodeURIComponent(inviteCallback)}`;
+  const registerHref = `/auth/register?callbackUrl=${encodeURIComponent(inviteCallback)}`;
 
   useEffect(() => {
     const fetchInvite = async () => {
@@ -63,6 +70,26 @@ export default function InviteAcceptPage() {
     fetchInvite();
   }, [token, fromPayload, t]);
 
+  useEffect(() => {
+    if (status !== "authenticated") {
+      setMemberOrgIds([]);
+      return;
+    }
+
+    const loadMemberships = async () => {
+      const res = await fetch("/api/organizations/me");
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        memberships?: { organization: { id: string } }[];
+      };
+      setMemberOrgIds(
+        (data.memberships ?? []).map(membership => membership.organization.id)
+      );
+    };
+
+    void loadMemberships();
+  }, [status]);
+
   const acceptInvite = async () => {
     setAccepting(true);
     setError(null);
@@ -77,7 +104,8 @@ export default function InviteAcceptPage() {
         );
         return;
       }
-      window.location.href = "/organizations";
+      await update({ preferOrganizationId: data.organizationId });
+      navigateAfterOrgSwitch(organizationEntryPath(data.role));
     } catch {
       setError(t("errors.acceptInvite"));
     } finally {
@@ -85,8 +113,8 @@ export default function InviteAcceptPage() {
     }
   };
 
-  const handleLogin = () => {
-    signIn("google", { callbackUrl: `/invite/${token}` });
+  const handleGoogleLogin = () => {
+    signIn("google", { callbackUrl: inviteCallback });
   };
 
   if (loading) {
@@ -107,10 +135,10 @@ export default function InviteAcceptPage() {
             <CardContent className="p-6 text-center">
               <p className="text-destructive">{error ?? t("notFound")}</p>
               <Link
-                href="/organizations/setup"
+                href="/organizations"
                 className="mt-4 inline-block text-primary"
               >
-                {t("goOnboarding")}
+                {t("goToHub")}
               </Link>
             </CardContent>
           </Card>
@@ -121,6 +149,7 @@ export default function InviteAcceptPage() {
 
   const emailMatches =
     session?.user?.email?.toLowerCase() === invite.email.toLowerCase();
+  const alreadyMember = memberOrgIds.includes(invite.organization.id);
 
   const expiresLabel = new Date(invite.expiresAt).toLocaleString(
     getIntlLocale(locale)
@@ -132,7 +161,7 @@ export default function InviteAcceptPage() {
         <Card className="w-full max-w-lg border-border bg-card/80 backdrop-blur">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <Building2 className="h-5 w-5 text-violet-500" />
+              <Building2 className="h-5 w-5 text-primary" />
               {t("title", { org: invite.organization.name })}
             </CardTitle>
           </CardHeader>
@@ -161,9 +190,26 @@ export default function InviteAcceptPage() {
             )}
 
             {status === "unauthenticated" ? (
-              <Button onClick={handleLogin} className="w-full">
-                {t("loginGoogle")}
-              </Button>
+              <div className="space-y-3">
+                <Button onClick={handleGoogleLogin} className="w-full">
+                  {t("loginGoogle")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push(loginHref)}
+                >
+                  {t("loginEmail")}
+                </Button>
+                <p className="text-center text-sm text-muted-foreground">
+                  <Link
+                    href={registerHref}
+                    className="font-medium text-primary hover:text-primary"
+                  >
+                    {t("createAccount")}
+                  </Link>
+                </p>
+              </div>
             ) : !emailMatches ? (
               <div className="space-y-3">
                 <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -174,13 +220,20 @@ export default function InviteAcceptPage() {
                 </p>
                 <Button
                   variant="outline"
-                  onClick={handleLogin}
+                  onClick={handleGoogleLogin}
                   className="w-full"
                 >
                   {t("switchAccount")}
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => router.push(loginHref)}
+                >
+                  {t("loginEmail")}
+                </Button>
               </div>
-            ) : session?.user?.organizationId ? (
+            ) : alreadyMember ? (
               <p className="text-sm text-amber-700 dark:text-amber-300">
                 {t("alreadyInOrg")}
               </p>
@@ -196,7 +249,7 @@ export default function InviteAcceptPage() {
 
             <button
               type="button"
-              onClick={() => router.push("/organizations/setup")}
+              onClick={() => router.push("/organizations")}
               className="w-full text-sm text-muted-foreground hover:text-foreground"
             >
               {t("createOwnOrg")}

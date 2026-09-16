@@ -2,7 +2,7 @@
 
 import { Building2, MapPin, Plug, Search, Snowflake } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HiUsers } from "react-icons/hi2";
 
 import { ErrorPage } from "@/components/layout/ErrorPage";
@@ -74,12 +74,16 @@ export default function ExplorarPage() {
   });
   const { handleNotificationClick } = useNotificationHandler();
 
+  const redirectedRef = useRef(false);
   useEffect(() => {
-    if (!permLoading && isSuperAdmin && !hasOrganization) {
+    if (redirectedRef.current || permLoading) return;
+    if (isSuperAdmin && !hasOrganization) {
+      redirectedRef.current = true;
       router.replace("/organizations");
       return;
     }
-    if (!permLoading && isOrgAdmin) {
+    if (isOrgAdmin) {
+      redirectedRef.current = true;
       router.replace("/dashboard");
     }
   }, [isOrgAdmin, isSuperAdmin, hasOrganization, permLoading, router]);
@@ -174,11 +178,8 @@ export default function ExplorarPage() {
         <div className="space-y-8">
           <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-emerald-500/20 to-blue-500/20 p-3">
-                <Building2 className="h-8 w-8 text-emerald-400" />
-              </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+                <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                   {t("title")}
                 </h1>
                 <p className="text-slate-600 dark:text-gray-400">

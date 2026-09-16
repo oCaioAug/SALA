@@ -81,7 +81,9 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof Error && error.message === "INVALID_PLAN") {
       return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400, {
-        issues: [{ path: ["planId"], message: "Plano inválido ou indisponível" }],
+        issues: [
+          { path: ["planId"], message: "Plano inválido ou indisponível" },
+        ],
       });
     }
 
