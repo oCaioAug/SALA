@@ -6,6 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 
 import { verifyPassword } from "@/lib/auth/password";
 import { getSafeCallbackPath } from "@/lib/auth/callback-path";
+import { resolveJwtPreferredOrganizationId } from "@/lib/auth/jwt-preferred-organization";
 import { getOrgSectorCapabilities } from "@/lib/auth/permissions";
 import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
 import { toLegacySessionRole } from "@/lib/auth/roles";
@@ -128,13 +129,14 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (token.sub) {
-        const preferOrganizationId =
-          trigger === "update" &&
-          session &&
-          typeof session === "object" &&
-          "preferOrganizationId" in session
-            ? (session.preferOrganizationId as string | null | undefined)
-            : undefined;
+        const preferOrganizationId = resolveJwtPreferredOrganizationId({
+          trigger,
+          session,
+          currentOrganizationId: token.organizationId as
+            | string
+            | null
+            | undefined,
+        });
 
         const enriched = await enrichSessionUser(
           token.sub,

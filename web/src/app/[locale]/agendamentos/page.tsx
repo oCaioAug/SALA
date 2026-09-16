@@ -394,7 +394,7 @@ const AgendamentosPage: React.FC = () => {
                         rooms.find(r => r.id === reservation.roomId)?.name ||
                         t("unknownRoom")
                       }
-                      userName={reservation.user.name}
+                      userName={reservation.user.name ?? undefined}
                       startTime={new Date(reservation.startTime)}
                       endTime={new Date(reservation.endTime)}
                       purpose={reservation.purpose}

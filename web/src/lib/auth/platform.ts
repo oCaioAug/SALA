@@ -35,7 +35,12 @@ export async function getAuthUser(): Promise<AuthUser | null> {
 
   if (!user || user.deletedAt) return null;
 
-  const resolved = await resolvePrimaryOrganization(user.id);
+  // Respeita a org ativa da sessão (troca de tenant); sem isso a API
+  // sempre cai na primeira membership e ignora a empresa selecionada.
+  const resolved = await resolvePrimaryOrganization(
+    user.id,
+    session.user.organizationId
+  );
 
   return {
     ...user,

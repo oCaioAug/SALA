@@ -43,7 +43,6 @@ type PlanFormState = {
   maxRooms: string;
   maxUsers: string;
   maxReservationsPerMonth: string;
-  features: string;
   isActive: boolean;
 };
 
@@ -53,7 +52,6 @@ const emptyForm: PlanFormState = {
   maxRooms: "10",
   maxUsers: "50",
   maxReservationsPerMonth: "",
-  features: "",
   isActive: true,
 };
 
@@ -371,25 +369,6 @@ function PlanFormModal({
               </div>
             </div>
 
-            <div>
-              <FieldLabel
-                id="plan-features"
-                label={t("fields.features")}
-                tip={t("fields.featuresHint")}
-              />
-              <textarea
-                id="plan-features"
-                value={form.features}
-                onChange={e => onChange({ features: e.target.value })}
-                rows={5}
-                className={cn(
-                  adminInputClass,
-                  "w-full font-mono text-xs leading-relaxed"
-                )}
-                placeholder='{"featureFlag": true}'
-              />
-            </div>
-
             <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border px-4 py-3">
               <span className="text-sm font-medium text-foreground">
                 {t("fields.isActive")}
@@ -475,10 +454,6 @@ export function AdminPlansSection() {
         plan.maxReservationsPerMonth != null
           ? String(plan.maxReservationsPerMonth)
           : "",
-      features:
-        plan.features != null
-          ? JSON.stringify(plan.features, null, 2)
-          : "",
       isActive: plan.isActive,
     });
     setSlugTouched(true);
@@ -497,17 +472,6 @@ export function AdminPlansSection() {
     setSaving(true);
     setError(null);
 
-    let features: unknown = null;
-    if (form.features.trim()) {
-      try {
-        features = JSON.parse(form.features);
-      } catch {
-        setError(t("errors.invalidFeatures"));
-        setSaving(false);
-        return;
-      }
-    }
-
     const payload = {
       name: form.name.trim(),
       slug: form.slug.trim(),
@@ -516,7 +480,6 @@ export function AdminPlansSection() {
       maxReservationsPerMonth: form.maxReservationsPerMonth
         ? Number(form.maxReservationsPerMonth)
         : null,
-      features,
       isActive: form.isActive,
     };
     try {

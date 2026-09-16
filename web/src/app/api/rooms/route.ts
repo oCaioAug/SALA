@@ -149,7 +149,6 @@ export async function POST(request: NextRequest) {
         where: {
           id: sectorId,
           organizationId: auth.organizationId,
-          deletedAt: null,
         },
         select: { id: true },
       });

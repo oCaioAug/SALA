@@ -2192,7 +2192,7 @@
       "summaryActiveOne": "active",
       "summaryActiveMany": "active",
       "emptyTitle": "No plans yet",
-      "emptyDescription": "Create the first plan with space, user, and reservation limits for organizations.",
+      "emptyDescription": "Create the first plan with room, user, and reservation limits for organizations.",
       "sections": {
         "identity": "Identification",
         "limits": "Usage limits",
@@ -2205,8 +2205,8 @@
         "slug": "Identifier (slug)",
         "slugHint": "Used internally and in integrations. Lowercase letters, numbers, and hyphens only.",
         "slugPlaceholder": "e.g.: starter",
-        "maxRooms": "Number of spaces",
-        "maxRoomsHint": "Maximum bookable rooms or spaces per organization.",
+        "maxRooms": "Number of rooms",
+        "maxRoomsHint": "Maximum bookable rooms per organization.",
         "maxUsers": "Number of users",
         "maxUsersHint": "Members allowed per organization on this plan.",
         "maxReservations": "Reservations per month",
@@ -2218,7 +2218,7 @@
         "featuresHint": "JSON object or array with plan feature flags. Leave empty for none."
       },
       "card": {
-        "spaces": "Spaces",
+        "spaces": "Rooms",
         "users": "Users",
         "reservations": "Reservations/mo",
         "unlimited": "Unlimited",

@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { resolvePrimaryOrganization } from "@/lib/auth/resolve-primary-organization";
 import { toLegacySessionRole } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 
@@ -20,33 +21,34 @@ interface AuthResult {
   status?: number;
 }
 
-async function getUserWithOrganization(email: string) {
+async function getUserWithOrganization(
+  email: string,
+  preferredOrganizationId?: string | null
+) {
   const user = await prisma.user.findUnique({
     where: { email },
     select: {
       id: true,
       email: true,
       platformRole: true,
-      memberships: {
-        take: 1,
-        orderBy: { createdAt: "asc" },
-        select: { organizationId: true, role: true },
-      },
     },
   });
 
   if (!user) return null;
 
-  const membership = user.memberships[0] ?? null;
+  const resolved = await resolvePrimaryOrganization(
+    user.id,
+    preferredOrganizationId
+  );
 
   return {
     id: user.id,
     email: user.email,
-    organizationId: membership?.organizationId ?? null,
-    organizationRole: membership?.role ?? null,
+    organizationId: resolved?.organizationId ?? null,
+    organizationRole: resolved?.organizationRole ?? null,
     role: toLegacySessionRole({
       platformRole: user.platformRole,
-      organizationRole: membership?.role ?? null,
+      organizationRole: resolved?.organizationRole ?? null,
     }),
   };
 }
@@ -114,10 +116,13 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
       return { success: false, error: "Token inválido", status: 401 };
     }
 
-    // Tentar autenticação por sessão (web)
+    // Tentar autenticação por sessão (web) — respeita org ativa do JWT
     const session = await getServerSession(authOptions);
     if (session?.user?.email) {
-      const user = await getUserWithOrganization(session.user.email);
+      const user = await getUserWithOrganization(
+        session.user.email,
+        session.user.organizationId
+      );
 
       if (user) {
         return { success: true, user };

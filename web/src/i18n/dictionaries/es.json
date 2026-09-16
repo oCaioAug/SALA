@@ -2099,7 +2099,7 @@
       "createTitle": "Create new plan",
       "createSubtitle": "Set identification, usage limits, and availability for the package.",
       "emptyTitle": "No plans yet",
-      "emptyDescription": "Create the first plan with space, user, and reservation limits for organizations.",
+      "emptyDescription": "Crea el primer plan con límites de salas, usuarios y reservas para las organizaciones.",
       "sections": {
         "identity": "Identification",
         "limits": "Usage limits",
@@ -2112,8 +2112,8 @@
         "slug": "Identifier (slug)",
         "slugHint": "Used internally and in integrations. Lowercase letters, numbers, and hyphens only.",
         "slugPlaceholder": "e.g.: starter",
-        "maxRooms": "Number of spaces",
-        "maxRoomsHint": "Maximum bookable rooms or spaces per organization.",
+        "maxRooms": "Cantidad de salas",
+        "maxRoomsHint": "Número máximo de salas reservables por organización.",
         "maxUsers": "Number of users",
         "maxUsersHint": "Members allowed per organization on this plan.",
         "maxReservations": "Reservations per month",
@@ -2125,7 +2125,7 @@
         "featuresHint": "Objeto o array JSON con flags/recursos del plan. Déjelo vacío si no hay."
       },
       "card": {
-        "spaces": "Spaces",
+        "spaces": "Salas",
         "users": "Users",
         "reservations": "Reservations/mo",
         "unlimited": "Unlimited",

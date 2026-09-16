@@ -564,7 +564,7 @@
       "summaryActiveOne": "ativo",
       "summaryActiveMany": "ativos",
       "emptyTitle": "Nenhum plano cadastrado",
-      "emptyDescription": "Crie o primeiro plano com limites de espaços, usuários e reservas para as organizações.",
+      "emptyDescription": "Crie o primeiro plano com limites de salas, usuários e reservas para as organizações.",
       "sections": {
         "identity": "Identificação",
         "limits": "Limites de uso",
@@ -577,8 +577,8 @@
         "slug": "Identificador (slug)",
         "slugHint": "Usado internamente e em integrações. Apenas letras minúsculas, números e hífen.",
         "slugPlaceholder": "ex.: starter",
-        "maxRooms": "Quantidade de espaços",
-        "maxRoomsHint": "Número máximo de salas ou espaços reserváveis por organização.",
+        "maxRooms": "Quantidade de salas",
+        "maxRoomsHint": "Número máximo de salas reserváveis por organização.",
         "maxUsers": "Quantidade de usuários",
         "maxUsersHint": "Membros permitidos em cada organização neste plano.",
         "maxReservations": "Reservas por mês",
@@ -590,7 +590,7 @@
         "featuresHint": "Objeto ou array JSON com flags/recursos do plano. Deixe vazio para nenhum."
       },
       "card": {
-        "spaces": "Espaços",
+        "spaces": "Salas",
         "users": "Usuários",
         "reservations": "Reservas/mês",
         "unlimited": "Ilimitado",

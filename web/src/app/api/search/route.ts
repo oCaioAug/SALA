@@ -160,13 +160,15 @@ export async function GET(request: NextRequest) {
     if (items.length > 0) {
       groups.push({
         type: "items",
-        items: items.map(item => ({
-          id: item.id,
-          type: "items" as const,
-          title: item.name,
-          subtitle: item.room?.name ?? undefined,
-          href: `/salas/${item.room.id}`,
-        })),
+        items: items
+          .filter(item => item.room != null)
+          .map(item => ({
+            id: item.id,
+            type: "items" as const,
+            title: item.name,
+            subtitle: item.room?.name ?? undefined,
+            href: `/salas/${item.room!.id}`,
+          })),
       });
     }
 

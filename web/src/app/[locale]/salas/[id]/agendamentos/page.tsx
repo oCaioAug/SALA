@@ -471,7 +471,9 @@ const RoomSchedulesPage: React.FC = () => {
                       {dayReservations.map(reservation => (
                         <ReservationListItem
                           key={reservation.id}
-                          title={reservation.user.name}
+                          title={
+                            reservation.user.name ?? reservation.user.email
+                          }
                           startTime={new Date(reservation.startTime)}
                           endTime={new Date(reservation.endTime)}
                           purpose={reservation.purpose}
