@@ -2828,6 +2828,12 @@
   "Vision": {
     "title": "Vision par ordinateur et automatisation",
     "description": "Automatisez la gestion des salles, effectuez des audits en temps réel et provisionnez des éléments avec l'intelligence artificielle.",
+    "tools": {
+      "title": "Outils et configuration",
+      "presets": "Scénarios de test",
+      "console": "Journaux",
+      "credentials": "Identifiants API"
+    },
     "tabs": {
       "occupancy": "Occupation de la salle",
       "audit": "Audit des éléments",
@@ -2839,7 +2845,7 @@
       "stepAnalyze": "Analyse",
       "imageStatus": "Statut de l'image",
       "imageReady": "Prête pour l'analyse",
-      "imageMissing": "En attente de téléversement ou capture",
+      "imageMissing": "En attente d'image",
       "webcamActive": "Webcam active",
       "needRoom": "Sélectionnez une salle pour continuer.",
       "needImage": "Envoyez ou capturez une image avant d'analyser."
@@ -2875,7 +2881,7 @@
     },
     "controls": {
       "selectRoom": "Sélectionnez une salle",
-      "selectRoomPlaceholder": "Sélectionnez...",
+      "selectRoomPlaceholder": "Sélectionnez la salle de la photo envoyée...",
       "captureArea": "Zone de capture",
       "useWebcam": "Utiliser la webcam",
       "stopCamera": "Désactiver la caméra",
@@ -2893,7 +2899,8 @@
       "presetFull": "Laboratoire en cours d'utilisation",
       "presetAudit": "Équipements manquants",
       "presetProvision": "Nouvelle salle à provisionner",
-      "previewAlt": "Aperçu du laboratoire"
+      "previewAlt": "Aperçu du laboratoire",
+      "toolsSection": "Outils et configuration"
     },
     "auditTable": {
       "item": "Équipement",

@@ -2565,6 +2565,12 @@
   "Vision": {
     "title": "Computer Vision & Automation",
     "description": "Automate room status management, run inventory audits, and auto-provision equipment with AI.",
+    "tools": {
+      "title": "Tools and configuration",
+      "presets": "Test scenarios",
+      "console": "Logs",
+      "credentials": "API credentials"
+    },
     "tabs": {
       "occupancy": "Room Occupancy",
       "audit": "Equipment Audit",
@@ -2576,7 +2582,7 @@
       "stepAnalyze": "Analyze",
       "imageStatus": "Image status",
       "imageReady": "Ready for analysis",
-      "imageMissing": "Waiting for upload or capture",
+      "imageMissing": "Waiting for image",
       "webcamActive": "Webcam active",
       "needRoom": "Select a room to continue.",
       "needImage": "Upload or capture an image before analyzing."
@@ -2612,7 +2618,7 @@
     },
     "controls": {
       "selectRoom": "Select a Room",
-      "selectRoomPlaceholder": "Select...",
+      "selectRoomPlaceholder": "Select the room from the uploaded photo...",
       "captureArea": "Capture area",
       "useWebcam": "Use Webcam",
       "stopCamera": "Stop Camera",
@@ -2630,7 +2636,8 @@
       "presetFull": "Class in Session",
       "presetAudit": "Missing Equipment",
       "presetProvision": "New Lab Onboarding",
-      "previewAlt": "Lab preview"
+      "previewAlt": "Lab preview",
+      "toolsSection": "Tools and configuration"
     },
     "auditTable": {
       "item": "Equipment",

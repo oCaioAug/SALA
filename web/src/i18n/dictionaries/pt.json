@@ -2647,6 +2647,12 @@
   "Vision": {
     "title": "Visão Computacional e Automação",
     "description": "Automatize a gestão de salas, realize auditorias em tempo real e faça provisionamento de itens com Inteligência Artificial.",
+    "tools": {
+      "title": "Ferramentas e configuração",
+      "presets": "Cenários de teste",
+      "console": "Logs",
+      "credentials": "Credenciais da API"
+    },
     "tabs": {
       "occupancy": "Ocupação de Sala",
       "audit": "Auditoria de Itens",
@@ -2658,7 +2664,7 @@
       "stepAnalyze": "Análise",
       "imageStatus": "Status da imagem",
       "imageReady": "Pronta para análise",
-      "imageMissing": "Aguardando upload ou captura",
+      "imageMissing": "Aguardando imagem",
       "webcamActive": "Webcam ativa",
       "needRoom": "Selecione uma sala para continuar.",
       "needImage": "Envie ou capture uma imagem antes de analisar."
@@ -2694,7 +2700,7 @@
     },
     "controls": {
       "selectRoom": "Selecione uma Sala",
-      "selectRoomPlaceholder": "Selecione...",
+      "selectRoomPlaceholder": "Selecione a sala da foto enviada...",
       "captureArea": "Área de captura",
       "useWebcam": "Usar Webcam",
       "stopCamera": "Desativar Câmera",
@@ -2712,7 +2718,8 @@
       "presetFull": "Laboratório em Uso",
       "presetAudit": "Falta de Equipamentos",
       "presetProvision": "Nova Sala para Provisionar",
-      "previewAlt": "Preview de laboratório"
+      "previewAlt": "Preview de laboratório",
+      "toolsSection": "Ferramentas e configuração"
     },
     "auditTable": {
       "item": "Equipamento",

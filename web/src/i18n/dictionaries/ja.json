@@ -2828,6 +2828,12 @@
   "Vision": {
     "title": "コンピュータビジョンと自動化",
     "description": "部屋の管理を自動化し、リアルタイム監査を行い、AIでアイテムをプロビジョニングします。",
+    "tools": {
+      "title": "ツールと設定",
+      "presets": "テストシナリオ",
+      "console": "ログ",
+      "credentials": "API認証情報"
+    },
     "tabs": {
       "occupancy": "部屋の占有状況",
       "audit": "アイテム監査",
@@ -2839,7 +2845,7 @@
       "stepAnalyze": "分析",
       "imageStatus": "画像のステータス",
       "imageReady": "分析の準備完了",
-      "imageMissing": "アップロードまたは撮影を待機中",
+      "imageMissing": "画像を待機中",
       "webcamActive": "ウェブカメラが有効です",
       "needRoom": "続行するには部屋を選択してください。",
       "needImage": "分析する前に画像をアップロードまたは撮影してください。"
@@ -2875,7 +2881,7 @@
     },
     "controls": {
       "selectRoom": "部屋を選択",
-      "selectRoomPlaceholder": "選択...",
+      "selectRoomPlaceholder": "送信した写真の部屋を選択してください...",
       "captureArea": "撮影エリア",
       "useWebcam": "ウェブカメラを使用",
       "stopCamera": "カメラを停止",
@@ -2893,7 +2899,8 @@
       "presetFull": "授業中のラボ",
       "presetAudit": "機器の不足",
       "presetProvision": "新規ラボのプロビジョニング",
-      "previewAlt": "ラボのプレビュー"
+      "previewAlt": "ラボのプレビュー",
+      "toolsSection": "ツールと設定"
     },
     "auditTable": {
       "item": "機器",
