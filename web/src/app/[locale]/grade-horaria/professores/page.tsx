@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, Plus, Trash2, Search } from "lucide-react";
+import { AlertTriangle,GraduationCap, Plus, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -18,11 +18,11 @@ import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
   createProfessor,
-  updateProfessor,
   deleteProfessor,
+  getDisciplinas,
   getOrgUsers,
   getProfessores,
-  getDisciplinas,
+  updateProfessor,
 } from "../actions";
 
 const ProfessoresPage: React.FC = () => {
@@ -346,9 +346,14 @@ const ProfessoresPage: React.FC = () => {
                               {p.email}
                             </div>
                           )}
-                          {p.disciplinas && p.disciplinas.length > 0 && (
+                          {p.disciplinas && p.disciplinas.length > 0 ? (
                             <div className="text-xs text-slate-400 mt-1 line-clamp-1">
                               {p.disciplinas.map((d: any) => d.name).join(", ")}
+                            </div>
+                          ) : (
+                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 mt-1 rounded inline-flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                              <span>Nenhuma disciplina vinculada</span>
                             </div>
                           )}
                         </div>

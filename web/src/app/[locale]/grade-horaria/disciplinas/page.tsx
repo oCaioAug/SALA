@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Plus, Trash2, Search } from "lucide-react";
+import { AlertTriangle,BookOpen, Plus, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -16,7 +16,7 @@ import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
-import { createDisciplina, updateDisciplina, deleteDisciplina, getDisciplinas, getProfessores } from "../actions";
+import { createDisciplina, deleteDisciplina, getDisciplinas, getProfessores,updateDisciplina } from "../actions";
 
 const DisciplinasPage: React.FC = () => {
   const t = useTranslations("GradeHoraria.subjects");
@@ -304,10 +304,17 @@ const DisciplinasPage: React.FC = () => {
                               EaD / Extra
                             </div>
                           )}
-                          {d.professores && d.professores.length > 0 && (
+                          {d.professores && d.professores.length > 0 ? (
                             <div className="text-xs text-slate-400 mt-1 line-clamp-1">
                               {d.professores.map((p: any) => p.name).join(", ")}
                             </div>
+                          ) : (
+                            !d.isOffGrid && (
+                              <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 mt-1 rounded inline-flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3 text-amber-500 shrink-0" />
+                                <span>Nenhum professor vinculado</span>
+                              </div>
+                            )
                           )}
                         </div>
                         <div className="flex gap-2">

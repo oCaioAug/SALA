@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Layers, Plus, Trash2, Search } from "lucide-react";
+import { AlertTriangle, Clock, Plus, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -13,19 +13,20 @@ import { Input } from "@/components/ui/Input";
 import { Pagination } from "@/components/ui/Pagination";
 import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { GradeHorariaDiagnosticsService } from "@/domain/timetabling/GradeHorariaDiagnosticsService";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
-  getCargasHorarias,
-  createCargaHoraria,
   createBatchCargasHorarias,
-  updateCargaHoraria,
-  deleteCargaHoraria,
-  getTurmas,
-  getDisciplinas,
-  getProfessores,
   createCargaSinergia,
+  deleteCargaHoraria,
+  getCargasHorarias,
+  getDisciplinas,
+  getGradeSettings,
+  getProfessores,
+  getTurmas,
+  updateCargaHoraria,
 } from "../actions";
 
 const CargasHorariasPage: React.FC = () => {
@@ -42,6 +43,7 @@ const CargasHorariasPage: React.FC = () => {
   const [turmas, setTurmas] = useState<any[]>([]);
   const [disciplinas, setDisciplinas] = useState<any[]>([]);
   const [professores, setProfessores] = useState<any[]>([]);
+  const [shifts, setShifts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Bulk Form state
@@ -155,20 +157,55 @@ const CargasHorariasPage: React.FC = () => {
     return filteredCargas.slice(start, start + pageSize);
   }, [filteredCargas, page, pageSize]);
 
+  const diagnostics = useMemo(() => {
+    const diagService = new GradeHorariaDiagnosticsService();
+    return diagService.runDiagnostics({
+      turmas,
+      disciplinas,
+      professores,
+      cargas,
+      shiftsConfig: shifts,
+    });
+  }, [turmas, disciplinas, professores, cargas, shifts]);
+
+  const selectedTurmaSummary = useMemo(() => {
+    if (!selectedTurmaId) return null;
+    return diagnostics.turmasSummary[selectedTurmaId] || null;
+  }, [diagnostics, selectedTurmaId]);
+
+  const projectedAddition = useMemo(() => {
+    return selectedDisciplinaIds.reduce((sum, dId) => {
+      const aulas = disciplinaConfigs[dId]?.quantidadeAulas ?? defaultAulas;
+      return sum + Number(aulas || 0);
+    }, 0);
+  }, [selectedDisciplinaIds, disciplinaConfigs, defaultAulas]);
+
+  const projectedTotal = (selectedTurmaSummary?.totalClasses || 0) + projectedAddition;
+  const isProjectedOverloaded = selectedTurmaSummary
+    ? projectedTotal > selectedTurmaSummary.maxCapacity
+    : false;
+
+  const filterTurmaSummary = useMemo(() => {
+    if (!filterTurmaId) return null;
+    return diagnostics.turmasSummary[filterTurmaId] || null;
+  }, [diagnostics, filterTurmaId]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [cargasData, turmasData, disciplinasData, professoresData] =
+      const [cargasData, turmasData, disciplinasData, professoresData, settingsData] =
         await Promise.all([
           getCargasHorarias(),
           getTurmas(),
           getDisciplinas(),
           getProfessores(),
+          getGradeSettings(),
         ]);
       setCargas(cargasData);
       setTurmas(turmasData);
       setDisciplinas(disciplinasData);
       setProfessores(professoresData);
+      setShifts(settingsData?.timetabling?.shifts || []);
     } catch (err: any) {
       showError(err.message || t("toastLoadError"));
     } finally {
@@ -493,6 +530,52 @@ const CargasHorariasPage: React.FC = () => {
                         allowEmpty
                         disabled={isSubmitting}
                       />
+
+                      {selectedTurmaSummary && (
+                        <div
+                          className={`p-2.5 rounded-lg border text-xs flex flex-col gap-1.5 transition-colors mt-2 ${
+                            selectedTurmaSummary.isOverloaded || isProjectedOverloaded
+                              ? "bg-red-50 dark:bg-red-950/25 border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300"
+                              : "bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                              Capacidade do turno:
+                            </span>
+                            <span className="font-bold">
+                              {selectedTurmaSummary.totalClasses} / {selectedTurmaSummary.maxCapacity} aulas cadastradas
+                            </span>
+                          </div>
+                          {projectedAddition > 0 && (
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                              <span>Após adicionar selecionadas:</span>
+                              <span
+                                className={`font-bold ${
+                                  isProjectedOverloaded
+                                    ? "text-red-600 dark:text-red-400 font-extrabold"
+                                    : "text-blue-600 dark:text-blue-400"
+                                }`}
+                              >
+                                {projectedTotal} / {selectedTurmaSummary.maxCapacity} aulas
+                              </span>
+                            </div>
+                          )}
+                          {(selectedTurmaSummary.isOverloaded || isProjectedOverloaded) && (
+                            <div className="text-[11px] font-semibold text-red-600 dark:text-red-400 flex items-center gap-1 mt-0.5">
+                              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                              <span>
+                                Excesso de{" "}
+                                {isProjectedOverloaded
+                                  ? projectedTotal - selectedTurmaSummary.maxCapacity
+                                  : selectedTurmaSummary.excessClasses}{" "}
+                                aula(s) além da capacidade máxima do turno!
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* MultiSelect Disciplinas */}
@@ -706,6 +789,16 @@ const CargasHorariasPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Alerta de sobrecarga da turma filtrada */}
+              {filterTurmaSummary && filterTurmaSummary.isOverloaded && (
+                <div className="mx-4 mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                  <span>
+                    <strong>Atenção:</strong> Esta turma possui {filterTurmaSummary.totalClasses} aulas cadastradas para um turno de capacidade máxima de {filterTurmaSummary.maxCapacity} horários ({filterTurmaSummary.excessClasses} aulas em excesso).
+                  </span>
+                </div>
+              )}
+
               {/* List Content */}
               {loading ? (
                 <div className="p-8 text-center text-slate-500">
@@ -742,8 +835,13 @@ const CargasHorariasPage: React.FC = () => {
                         className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
                         <div>
-                          <div className="font-medium text-slate-900 dark:text-white">
-                            {c.turma?.name} - {c.disciplina?.name}
+                          <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                            <span>{c.turma?.name} - {c.disciplina?.name}</span>
+                            {diagnostics.turmasSummary[c.turmaId]?.isOverloaded && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800">
+                                Turma com excesso de aulas
+                              </span>
+                            )}
                           </div>
                           <div className="text-sm text-slate-500 flex flex-wrap gap-4 mt-1">
                             <span>

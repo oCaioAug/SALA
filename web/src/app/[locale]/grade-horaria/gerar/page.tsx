@@ -1,23 +1,29 @@
 "use client";
 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { AlertTriangle, CalendarCheck, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { ExportScheduleDropdown } from "@/components/grade-horaria/ExportScheduleDropdown";
+import { PreFlightDiagnostics } from "@/components/grade-horaria/PreFlightDiagnostics";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  GradeHorariaDiagnosticsResult,
+  GradeHorariaDiagnosticsService,
+} from "@/domain/timetabling/GradeHorariaDiagnosticsService";
 import { useApp } from "@/lib/hooks/useApp";
 import { useNavigation } from "@/lib/hooks/useNavigation";
 
 import {
+  getCargasHorarias,
   getDisciplinas,
   getGradeSettings,
   getLatestGradeHoraria,
@@ -48,16 +54,20 @@ const GerarGradePage: React.FC = () => {
   const [discMap, setDiscMap] = useState<Record<string, string>>({});
   const [profMap, setProfMap] = useState<Record<string, string>>({});
   const [shifts, setShifts] = useState<any[]>([]);
+  const [diagnostics, setDiagnostics] = useState<GradeHorariaDiagnosticsResult | null>(null);
+  const [loadingDiag, setLoadingDiag] = useState(true);
 
   useEffect(() => {
     const fetchDictionaries = async () => {
       try {
-        const [turmas, disc, profs, settings, latestGrade] = await Promise.all([
+        setLoadingDiag(true);
+        const [turmas, disc, profs, settings, latestGrade, cargas] = await Promise.all([
           getTurmas(),
           getDisciplinas(),
           getProfessores(),
           getGradeSettings(),
           getLatestGradeHoraria(),
+          getCargasHorarias(),
         ]);
 
         const tMap: Record<string, string> = {};
@@ -79,12 +89,25 @@ const GerarGradePage: React.FC = () => {
 
         setShifts(settings.timetabling?.shifts || []);
 
+        // Executar diagnóstico preventivo pré-grade
+        const diagService = new GradeHorariaDiagnosticsService();
+        const diagResult = diagService.runDiagnostics({
+          turmas,
+          disciplinas: disc,
+          professores: profs,
+          cargas,
+          shiftsConfig: settings.timetabling?.shifts || [],
+        });
+        setDiagnostics(diagResult);
+
         if (latestGrade) {
           setResult(latestGrade);
           setSavedAt(latestGrade.createdAt);
         }
       } catch (err) {
         console.error("Erro ao carregar dados da grade", err);
+      } finally {
+        setLoadingDiag(false);
       }
     };
     fetchDictionaries();
@@ -230,6 +253,12 @@ const GerarGradePage: React.FC = () => {
           </div>
           <BackButton />
         </div>
+
+        <PreFlightDiagnostics
+          diagnostics={diagnostics}
+          loading={loadingDiag}
+          onNavigate={navigate}
+        />
 
         <Card className="mb-8 text-center bg-card border-2">
           <CardContent className="p-12">
