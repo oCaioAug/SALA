@@ -9,13 +9,21 @@ import {
   AlertTriangle,
   BarChart3,
   Building2,
+  Calendar,
   DoorOpen,
+  GraduationCap,
   Mail,
   Settings,
+  ShieldAlert,
+  UserRound,
   Users,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import {
+  type ElementType,
+  type ReactNode,
+  useState,
+} from "react";
 
 import { AdminMetricCards } from "@/components/admin/AdminMetricCards";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
@@ -23,8 +31,10 @@ import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
 import { OrganizationDailyStatsChart } from "@/components/admin/OrganizationDailyStatsChart";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getIntlLocale } from "@/lib/utils";
+import { Switch } from "@/components/ui/Switch";
+import { cn, getIntlLocale } from "@/lib/utils";
 
 export interface OrganizationUsage {
   planName: string | null;
@@ -42,9 +52,12 @@ export interface OrganizationDetail {
   slug: string;
   email: string | null;
   phone: string | null;
+  legalName?: string | null;
+  cnpj?: string | null;
   status: OrganizationStatus;
   isSchool: boolean;
   createdAt: string;
+  deletedAt?: string | null;
   planId: string | null;
   plan: {
     id: string;
@@ -126,6 +139,8 @@ interface OrganizationDetailViewProps {
     slug: string;
     email: string;
     phone: string;
+    legalName: string;
+    cnpj: string;
   };
   setProfileDraft: React.Dispatch<
     React.SetStateAction<{
@@ -133,11 +148,14 @@ interface OrganizationDetailViewProps {
       slug: string;
       email: string;
       phone: string;
+      legalName: string;
+      cnpj: string;
     }>
   >;
   saveProfile: (e: React.FormEvent) => void;
   transferOwnership: (userId: string) => void;
   deleteOrganization: () => void;
+  restoreOrganization?: () => void;
 }
 
 export function OrganizationDetailView({
@@ -162,11 +180,35 @@ export function OrganizationDetailView({
   saveProfile,
   transferOwnership,
   deleteOrganization,
+  restoreOrganization,
 }: OrganizationDetailViewProps) {
   const t = useTranslations("Admin.organizations");
   const locale = useLocale();
   const intlLocale = getIntlLocale(locale);
   const [activeTab, setActiveTab] = useState<OrgDetailTab>("general");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const isDeleted = Boolean(org.deletedAt);
+  const mutationsDisabled = updating || isDeleted;
+
+  const deleteNameMatches =
+    deleteConfirmName.trim() === org.name.trim() && org.name.trim().length > 0;
+
+  const openDeleteModal = () => {
+    setDeleteConfirmName("");
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    if (updating) return;
+    setIsDeleteModalOpen(false);
+    setDeleteConfirmName("");
+  };
+
+  const confirmDeleteOrganization = () => {
+    if (!deleteNameMatches || updating) return;
+    deleteOrganization();
+  };
 
   const tabs = [
     { id: "general" as const, label: t("tabs.general"), icon: Building2 },
@@ -217,170 +259,289 @@ export function OrganizationDetailView({
       />
 
       <AdminTabPanel tabId="general" activeTab={activeTab}>
-        <div className="space-y-6 pt-6">
-          <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Building2 className="h-5 w-5" />
-                {t("tabs.general")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={saveProfile} className="space-y-3">
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">
-                    {t("fields.name")}
-                  </label>
-                  <input
-                    value={profileDraft.name}
-                    onChange={e =>
-                      setProfileDraft(prev => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">
-                    {t("fields.slug")}
-                  </label>
-                  <input
-                    value={profileDraft.slug}
-                    onChange={e =>
-                      setProfileDraft(prev => ({
-                        ...prev,
-                        slug: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">
-                    {t("fields.email")}
-                  </label>
-                  <input
-                    type="email"
-                    value={profileDraft.email}
-                    onChange={e =>
-                      setProfileDraft(prev => ({
-                        ...prev,
-                        email: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm text-muted-foreground">
-                    {t("fields.phone")}
-                  </label>
-                  <input
-                    value={profileDraft.phone}
-                    onChange={e =>
-                      setProfileDraft(prev => ({
-                        ...prev,
-                        phone: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                  />
-                </div>
-                <Button type="submit" size="sm" disabled={updating}>
+        <div className="space-y-5 pt-6">
+          <OrgDetailSection
+            icon={Building2}
+            title={t("sections.profileTitle")}
+            description={t("sections.profileHelp")}
+          >
+            <form onSubmit={saveProfile} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  id="org-name"
+                  label={t("fields.name")}
+                  value={profileDraft.name}
+                  onChange={value =>
+                    setProfileDraft(prev => ({ ...prev, name: value }))
+                  }
+                  required
+                  disabled={isDeleted}
+                />
+                <Field
+                  id="org-slug"
+                  label={t("fields.slug")}
+                  value={profileDraft.slug}
+                  onChange={value =>
+                    setProfileDraft(prev => ({ ...prev, slug: value }))
+                  }
+                  required
+                  disabled={isDeleted}
+                />
+                <Field
+                  id="org-email"
+                  label={t("fields.email")}
+                  type="email"
+                  value={profileDraft.email}
+                  onChange={value =>
+                    setProfileDraft(prev => ({ ...prev, email: value }))
+                  }
+                  disabled={isDeleted}
+                />
+                <Field
+                  id="org-phone"
+                  label={t("fields.phone")}
+                  value={profileDraft.phone}
+                  onChange={value =>
+                    setProfileDraft(prev => ({ ...prev, phone: value }))
+                  }
+                  disabled={isDeleted}
+                />
+                <Field
+                  id="org-legal-name"
+                  label={t("fields.legalName")}
+                  value={profileDraft.legalName}
+                  onChange={value =>
+                    setProfileDraft(prev => ({ ...prev, legalName: value }))
+                  }
+                  disabled={isDeleted}
+                />
+                <Field
+                  id="org-cnpj"
+                  label={t("fields.cnpj")}
+                  value={profileDraft.cnpj}
+                  onChange={value =>
+                    setProfileDraft(prev => ({ ...prev, cnpj: value }))
+                  }
+                  disabled={isDeleted}
+                />
+              </div>
+              <div className="flex justify-end border-t border-border pt-4">
+                <Button type="submit" size="sm" disabled={mutationsDisabled}>
                   {updating ? t("savingProfile") : t("saveProfile")}
                 </Button>
-              </form>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm text-muted-foreground">
-                  {t("fields.status")}:
-                </span>
-                <AdminStatusBadge status={org.status} kind="organization" />
               </div>
+            </form>
+          </OrgDetailSection>
+
+          <OrgDetailSection
+            icon={Settings}
+            title={t("sections.statusTitle")}
+            description={t("sections.statusHelp")}
+            badge={
+              <AdminStatusBadge status={org.status} kind="organization" />
+            }
+          >
+            <div className="space-y-5">
               <div>
-                <p className="text-sm text-muted-foreground">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("changeStatus")}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div
+                  className="inline-flex flex-wrap rounded-lg border border-border bg-muted/30 p-1"
+                  role="group"
+                  aria-label={t("changeStatus")}
+                >
                   {(
                     [
                       OrganizationStatus.ACTIVE,
                       OrganizationStatus.TRIAL,
                       OrganizationStatus.SUSPENDED,
                     ] as OrganizationStatus[]
-                  ).map(status => (
-                    <Button
-                      key={status}
-                      size="sm"
-                      variant={org.status === status ? "primary" : "outline"}
-                      disabled={updating || org.status === status}
-                      onClick={() => updateStatus(status)}
-                      className={
-                        org.status === status ? "bg-primary" : undefined
-                      }
-                    >
-                      {t(statusLabelsKey[status])}
-                    </Button>
-                  ))}
+                  ).map(status => {
+                    const isActive = org.status === status;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        disabled={mutationsDisabled || isActive}
+                        onClick={() => updateStatus(status)}
+                        className={cn(
+                          "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-background text-foreground shadow-sm ring-1 ring-border"
+                            : "text-muted-foreground hover:text-foreground",
+                          "disabled:cursor-not-allowed disabled:opacity-60"
+                        )}
+                      >
+                        {t(statusLabelsKey[status])}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("isSchool")}
+
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/15 px-3.5 py-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-background text-muted-foreground ring-1 ring-border">
+                    <GraduationCap className="h-4 w-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {t("isSchool")}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {org.isSchool ? t("yes") : t("no")}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={org.isSchool}
+                  disabled={mutationsDisabled}
+                  onChange={e => updateIsSchool(e.target.checked)}
+                  aria-label={t("isSchool")}
+                />
+              </div>
+            </div>
+          </OrgDetailSection>
+
+          <OrgDetailSection
+            icon={UserRound}
+            title={t("sections.ownershipTitle")}
+            description={t("sections.ownershipHelp")}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-muted/15 p-3.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("ownerLabel")}
                 </p>
-                <div className="mt-2 flex items-center gap-3">
-                  <span className="text-sm text-foreground">
-                    {org.isSchool ? t("yes") : t("no")}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateIsSchool(!org.isSchool)}
-                    disabled={updating}
-                  >
-                    {t("toggle")}
-                  </Button>
+                <div className="mt-2 flex items-start gap-2.5">
+                  <Mail
+                    className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {org.owner.name ?? org.owner.email}
+                    </p>
+                    {org.owner.name ? (
+                      <p className="truncate text-xs text-muted-foreground">
+                        {org.owner.email}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("ownerLabel")}</p>
-                <div className="mt-1 flex items-center gap-2 text-foreground">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  {org.owner.name ?? org.owner.email}
-                  <span className="text-muted-foreground">
-                    ({org.owner.email})
-                  </span>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
+              <div className="rounded-lg border border-border bg-muted/15 p-3.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("createdAt")}
                 </p>
-                <p className="text-foreground">
-                  {new Date(org.createdAt).toLocaleDateString(intlLocale)}
-                </p>
+                <div className="mt-2 flex items-center gap-2.5">
+                  <Calendar
+                    className="h-4 w-4 shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <p className="text-sm font-medium tabular-nums text-foreground">
+                    {new Date(org.createdAt).toLocaleDateString(intlLocale)}
+                  </p>
+                </div>
               </div>
-              <div className="border-t border-border pt-4">
+            </div>
+          </OrgDetailSection>
+
+          <OrgDetailSection
+            icon={ShieldAlert}
+            title={t("sections.dangerTitle")}
+            description={t("sections.dangerHelp")}
+            tone="danger"
+            badge={
+              isDeleted ? (
+                <AdminStatusBadge
+                  status="deleted"
+                  kind="danger"
+                  label={t("deleted")}
+                />
+              ) : undefined
+            }
+          >
+            {isDeleted ? (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {t("confirmRestoreOrg")}
+                </p>
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-red-500/40 text-red-300 hover:bg-red-500/10"
+                  size="sm"
+                  className="shrink-0"
+                  disabled={updating || !restoreOrganization}
+                  onClick={() => restoreOrganization?.()}
+                >
+                  {t("restoreOrg")}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {t("deleteOrgConfirm")}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-500/40 dark:text-rose-300 dark:hover:bg-rose-500/10"
                   disabled={updating}
-                  onClick={deleteOrganization}
+                  onClick={openDeleteModal}
                 >
                   {t("deleteOrg")}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </OrgDetailSection>
 
           <OrganizationDailyStatsChart organizationId={org.id} />
         </div>
       </AdminTabPanel>
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        variant="destructive"
+        title={t("deleteOrgModal.title")}
+        description={t("deleteOrgModal.risk")}
+        confirmLabel={t("deleteOrgModal.confirm")}
+        cancelLabel={t("cancel")}
+        loading={updating}
+        confirmDisabled={!deleteNameMatches}
+        onCancel={closeDeleteModal}
+        onConfirm={confirmDeleteOrganization}
+      >
+        <ul className="list-disc space-y-1.5 pl-5 text-sm text-slate-600 dark:text-slate-300">
+          <li>{t("deleteOrgModal.riskHide")}</li>
+          <li>{t("deleteOrgModal.riskAccess")}</li>
+          <li>{t("deleteOrgModal.riskData")}</li>
+        </ul>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="delete-org-confirm-name"
+            className="block text-sm font-medium text-slate-800 dark:text-slate-200"
+          >
+            {t("deleteOrgModal.typeNameLabel", { name: org.name })}
+          </label>
+          <input
+            id="delete-org-confirm-name"
+            value={deleteConfirmName}
+            onChange={e => setDeleteConfirmName(e.target.value)}
+            placeholder={org.name}
+            autoComplete="off"
+            disabled={updating}
+            className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-400/30 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+          />
+        </div>
+
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+          {t("deleteOrgModal.finalConfirm")}
+        </p>
+      </ConfirmModal>
 
       <AdminTabPanel tabId="members" activeTab={activeTab}>
         <Card className="mt-6 border-border bg-card">
@@ -396,14 +557,16 @@ export function OrganizationDetailView({
                 placeholder={t("addMemberPlaceholder")}
                 value={memberEmail}
                 onChange={e => setMemberEmail(e.target.value)}
-                className="min-w-[12rem] flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                disabled={isDeleted}
+                className="min-w-[12rem] flex-1 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60"
               />
               <select
                 value={memberRole}
                 onChange={e =>
                   setMemberRole(e.target.value as OrganizationRole)
                 }
-                className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                disabled={isDeleted}
+                className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <option value={OrganizationRole.MEMBER}>
                   {t(roleLabelsKey.MEMBER)}
@@ -412,7 +575,7 @@ export function OrganizationDetailView({
                   {t(roleLabelsKey.ADMIN)}
                 </option>
               </select>
-              <Button type="submit" size="sm">
+              <Button type="submit" size="sm" disabled={isDeleted}>
                 {t("addMember")}
               </Button>
             </form>
@@ -445,7 +608,8 @@ export function OrganizationDetailView({
                               .value as OrganizationRole,
                           }))
                         }
-                        className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground"
+                        disabled={isDeleted}
+                        className="rounded border border-border bg-background px-2 py-1 text-xs text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <option value="ADMIN">{t(roleLabelsKey.ADMIN)}</option>
                         <option value="MEMBER">
@@ -457,6 +621,7 @@ export function OrganizationDetailView({
                         size="sm"
                         variant="outline"
                         disabled={
+                          isDeleted ||
                           savingMemberRoleId === member.user.id ||
                           (memberRoleDrafts[member.user.id] ?? member.role) ===
                             member.role
@@ -471,15 +636,16 @@ export function OrganizationDetailView({
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={updating}
+                        disabled={mutationsDisabled}
                         onClick={() => transferOwnership(member.user.id)}
                       >
                         {t("transferOwnership")}
                       </Button>
                       <button
                         type="button"
+                        disabled={isDeleted}
                         onClick={() => removeMember(member.user.id)}
-                        className="text-xs text-red-400 hover:text-red-300"
+                        className="text-xs text-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {t("removeMember")}
                       </button>
@@ -577,10 +743,10 @@ export function OrganizationDetailView({
                   </label>
                   <select
                     id="org-plan-select"
-                    disabled={updating}
+                    disabled={mutationsDisabled}
                     value={org.planId ?? ""}
                     onChange={e => updatePlan(e.target.value)}
-                    className="w-full max-w-sm rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                    className="w-full max-w-sm rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {plans.map(plan => (
                       <option key={plan.id} value={plan.id}>
@@ -594,6 +760,101 @@ export function OrganizationDetailView({
           </Card>
         </div>
       </AdminTabPanel>
+    </div>
+  );
+}
+
+function OrgDetailSection({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  tone = "default",
+  children,
+}: {
+  icon: ElementType;
+  title: string;
+  description: string;
+  badge?: ReactNode;
+  tone?: "default" | "danger";
+  children: ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "overflow-hidden rounded-xl border bg-card shadow-sm",
+        tone === "danger"
+          ? "border-rose-200/80 dark:border-rose-500/30"
+          : "border-border"
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-start justify-between gap-3 border-b px-4 py-3.5 sm:px-5",
+          tone === "danger"
+            ? "border-rose-200/70 bg-rose-50/50 dark:border-rose-500/20 dark:bg-rose-500/5"
+            : "border-border bg-muted/25"
+        )}
+      >
+        <div className="flex min-w-0 items-start gap-3">
+          <span
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1",
+              tone === "danger"
+                ? "bg-background text-rose-600 ring-rose-200 dark:text-rose-300 dark:ring-rose-500/30"
+                : "bg-background text-muted-foreground ring-border"
+            )}
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              {description}
+            </p>
+          </div>
+        </div>
+        {badge ? <div className="shrink-0">{badge}</div> : null}
+      </div>
+      <div className="px-4 py-4 sm:px-5">{children}</div>
+    </section>
+  );
+}
+
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+  type = "text",
+  required,
+  disabled,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+  required?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="min-w-0 space-y-1.5">
+      <label
+        htmlFor={id}
+        className="text-sm font-medium text-foreground/90"
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        required={required}
+        disabled={disabled}
+        className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
+      />
     </div>
   );
 }

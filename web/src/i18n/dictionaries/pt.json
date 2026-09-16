@@ -426,6 +426,16 @@
       "savingProfile": "Salvando...",
       "deleteOrg": "Desativar organização",
       "deleteOrgConfirm": "Desativar (soft-delete) esta organização? Ela deixará de aparecer nas listagens.",
+      "deleteOrgModal": {
+        "title": "Desativar organização",
+        "risk": "Esta ação tem impacto alto. A organização será desativada e sumirá das listagens ativas.",
+        "riskHide": "A organização deixará de aparecer nas listagens do admin.",
+        "riskAccess": "Membros podem perder o acesso operacional a salas e reservas.",
+        "riskData": "Dados históricos permanecem, mas a organização fica fora de operação.",
+        "typeNameLabel": "Digite o nome da organização \"{name}\" para confirmar",
+        "finalConfirm": "Você realmente confirma a exclusão desta organização?",
+        "confirm": "Confirmar desativação"
+      },
       "transferOwnership": "Transferir ownership",
       "transferOwnershipConfirm": "Transferir ownership para este membro?",
       "fields": {
@@ -436,13 +446,25 @@
         "ownerEmail": "E-mail do owner",
         "ownerName": "Nome do owner (opcional)",
         "email": "E-mail de contato",
-        "phone": "Telefone de contato"
+        "phone": "Telefone de contato",
+        "legalName": "Razão social",
+        "cnpj": "CNPJ"
       },
       "tabs": {
         "general": "Geral",
         "members": "Membros",
         "rooms": "Salas",
         "usage": "Uso e plano"
+      },
+      "sections": {
+        "profileTitle": "Dados da organização",
+        "profileHelp": "Nome, slug e contatos usados na plataforma.",
+        "statusTitle": "Status e classificação",
+        "statusHelp": "Controle o ciclo de vida e o tipo da organização.",
+        "ownershipTitle": "Propriedade",
+        "ownershipHelp": "Quem é o owner e quando a organização foi criada.",
+        "dangerTitle": "Zona de risco",
+        "dangerHelp": "Ações irreversíveis ou de alto impacto."
       },
       "roleOwner": "Owner",
       "roleAdmin": "Admin",
@@ -473,6 +495,15 @@
       "planPrefix": "Plano:",
       "membersRooms": "{members} membros · {rooms} salas",
       "loadError": "Erro ao carregar",
+      "includeDeleted": "Incluir excluídas",
+      "deleted": "Excluída",
+      "restoreOrg": "Restaurar organização",
+      "confirmRestoreOrg": "Restaurar esta organização?",
+      "confirmAction": "Confirmar",
+      "cancelAction": "Cancelar",
+      "slugLabel": "Slug: {slug}",
+      "removeMemberTitle": "Remover membro",
+      "transferOwnershipTitle": "Transferir propriedade",
       "metricTotal": "Total",
       "metricTotalSub": "Organizações cadastradas",
       "metricActive": "Ativas",
@@ -503,6 +534,13 @@
       "removeSuperAdmin": "Remover SUPER_ADMIN",
       "includeDeleted": "Incluir excluídos",
       "deleted": "Excluído",
+      "deleteUser": "Excluir usuário",
+      "restoreUser": "Restaurar usuário",
+      "confirmAction": "Confirmar",
+      "cancelAction": "Cancelar",
+      "confirmPromoteDesc": "Confirmar alteração de papel para {email}?",
+      "confirmDeleteDesc": "Excluir (soft-delete) o usuário {email}? Ele não poderá mais acessar a plataforma.",
+      "confirmRestoreDesc": "Restaurar o acesso de {email}?",
       "stats": {
         "total": "Total",
         "totalSub": "Usuários na plataforma",
@@ -526,7 +564,7 @@
       "summaryActiveOne": "ativo",
       "summaryActiveMany": "ativos",
       "emptyTitle": "Nenhum plano cadastrado",
-      "emptyDescription": "Crie o primeiro plano com limites de espaços, usuários e reservas para as organizações.",
+      "emptyDescription": "Crie o primeiro plano com limites de salas, usuários e reservas para as organizações.",
       "sections": {
         "identity": "Identificação",
         "limits": "Limites de uso",
@@ -539,18 +577,20 @@
         "slug": "Identificador (slug)",
         "slugHint": "Usado internamente e em integrações. Apenas letras minúsculas, números e hífen.",
         "slugPlaceholder": "ex.: starter",
-        "maxRooms": "Quantidade de espaços",
-        "maxRoomsHint": "Número máximo de salas ou espaços reserváveis por organização.",
+        "maxRooms": "Quantidade de salas",
+        "maxRoomsHint": "Número máximo de salas reserváveis por organização.",
         "maxUsers": "Quantidade de usuários",
         "maxUsersHint": "Membros permitidos em cada organização neste plano.",
         "maxReservations": "Reservas por mês",
         "maxReservationsHint": "Opcional. Deixe vazio para reservas ilimitadas.",
         "maxReservationsPlaceholder": "Ilimitado",
         "isActive": "Plano ativo",
-        "isActiveHint": "Planos inativos não ficam disponíveis para novos cadastros."
+        "isActiveHint": "Planos inativos não ficam disponíveis para novos cadastros.",
+        "features": "Features (JSON)",
+        "featuresHint": "Objeto ou array JSON com flags/recursos do plano. Deixe vazio para nenhum."
       },
       "card": {
-        "spaces": "Espaços",
+        "spaces": "Salas",
         "users": "Usuários",
         "reservations": "Reservas/mês",
         "unlimited": "Ilimitado",
@@ -571,7 +611,8 @@
       },
       "errors": {
         "createFailed": "Não foi possível criar o plano. Verifique os dados e tente novamente.",
-        "updateFailed": "Não foi possível atualizar o plano. Verifique os dados e tente novamente."
+        "updateFailed": "Não foi possível atualizar o plano. Verifique os dados e tente novamente.",
+        "invalidFeatures": "JSON de features inválido"
       }
     },
     "audit": {
@@ -580,7 +621,19 @@
       "searchPlaceholder": "Filtrar por ação...",
       "refresh": "Atualizar",
       "emptyTitle": "Nenhum registro encontrado",
-      "emptyDesc": "Não há logs de auditoria com o filtro atual"
+      "emptyDesc": "Não há logs de auditoria com o filtro atual",
+      "organizationFilter": "Organização",
+      "allOrganizations": "Todas as organizações",
+      "viewDetails": "Ver detalhes",
+      "closeModal": "Fechar",
+      "detailTitle": "Detalhe do log",
+      "actor": "Autor",
+      "organization": "Organização",
+      "entityType": "Tipo de entidade",
+      "entityId": "ID da entidade",
+      "createdAt": "Criado em",
+      "metadata": "Metadata",
+      "loadError": "Erro ao carregar logs de auditoria"
     },
     "incidents": {
       "title": "Incidentes",
@@ -606,6 +659,12 @@
       "noTarget": "—",
       "status": "Status",
       "priority": "Prioridade",
+      "descriptionLabel": "Descrição",
+      "auditTitle": "Auditoria de inventário",
+      "auditDiscrepancies": "{count} divergência(s)",
+      "expectedQty": "Esperado",
+      "detectedQty": "Detectado",
+      "missingQty": "{count} faltando",
       "resolutionNotes": "Notas de resolução",
       "assignedTo": "Atribuído a",
       "unassigned": "Não atribuído",
@@ -626,6 +685,17 @@
         "resolvedSub": "Resolvidos ou cancelados",
         "total": "Total",
         "totalSub": "Todos os incidentes"
+      },
+      "resolvedBySuperAdmin": "Resolvido pelo super admin",
+      "categories": {
+        "EQUIPMENT_FAILURE": "Falha de Equipamento",
+        "INFRASTRUCTURE": "Infraestrutura",
+        "SOFTWARE": "Software",
+        "SAFETY": "Segurança",
+        "MAINTENANCE": "Manutenção",
+        "ELECTRICAL": "Elétrico",
+        "NETWORK": "Rede",
+        "OTHER": "Outro"
       }
     },
     "billing": {
@@ -639,6 +709,7 @@
       "allPlans": "Todos os planos",
       "emptyTitle": "Nenhuma assinatura encontrada",
       "emptyDesc": "Não há assinaturas com os filtros selecionados",
+      "loadError": "Erro ao carregar assinaturas",
       "manage": "Gerenciar",
       "closeModal": "Fechar",
       "loading": "Carregando...",
@@ -683,6 +754,11 @@
       "platformRole": {
         "SUPER_ADMIN": "Super Admin",
         "NONE": "Usuário"
+      },
+      "organizationRole": {
+        "OWNER": "Proprietário",
+        "ADMIN": "Admin",
+        "MEMBER": "Membro"
       },
       "subscription": {
         "ACTIVE": "Ativa",
@@ -2533,6 +2609,13 @@
     "LOGIN_INVALID": "Email ou senha incorretos",
     "ADMIN_USER_NOT_FOUND": "Usuário admin não encontrado. Execute o seed primeiro.",
     "CANNOT_REMOVE_OWN_SUPER_ADMIN": "Você não pode remover seu próprio acesso de super admin",
+    "CANNOT_DELETE_SELF": "Você não pode excluir a própria conta",
+    "USER_ALREADY_DELETED": "Usuário já está excluído",
+    "USER_NOT_DELETED": "Usuário não está excluído",
+    "CANNOT_MODIFY_DELETED_USER": "Não é possível alterar um usuário excluído",
+    "ORGANIZATION_ALREADY_DELETED": "Organização já está excluída",
+    "ORGANIZATION_NOT_DELETED": "Organização não está excluída",
+    "ASSIGNEE_NOT_IN_ORGANIZATION": "Usuário não pertence à organização do incidente",
     "SUBSCRIPTION_NO_PLAN": "Organização sem assinatura. Informe planId.",
     "SUBSCRIPTION_NOT_FOUND": "Assinatura não encontrada.",
     "USER_ID_REQUIRED": "userId é obrigatório",
@@ -2564,6 +2647,12 @@
   "Vision": {
     "title": "Visão Computacional e Automação",
     "description": "Automatize a gestão de salas, realize auditorias em tempo real e faça provisionamento de itens com Inteligência Artificial.",
+    "tools": {
+      "title": "Ferramentas e configuração",
+      "presets": "Cenários de teste",
+      "console": "Logs",
+      "credentials": "Credenciais da API"
+    },
     "tabs": {
       "occupancy": "Ocupação de Sala",
       "audit": "Auditoria de Itens",
@@ -2575,7 +2664,7 @@
       "stepAnalyze": "Análise",
       "imageStatus": "Status da imagem",
       "imageReady": "Pronta para análise",
-      "imageMissing": "Aguardando upload ou captura",
+      "imageMissing": "Aguardando imagem",
       "webcamActive": "Webcam ativa",
       "needRoom": "Selecione uma sala para continuar.",
       "needImage": "Envie ou capture uma imagem antes de analisar."
@@ -2611,7 +2700,7 @@
     },
     "controls": {
       "selectRoom": "Selecione uma Sala",
-      "selectRoomPlaceholder": "Selecione...",
+      "selectRoomPlaceholder": "Selecione a sala da foto enviada...",
       "captureArea": "Área de captura",
       "useWebcam": "Usar Webcam",
       "stopCamera": "Desativar Câmera",
@@ -2629,7 +2718,8 @@
       "presetFull": "Laboratório em Uso",
       "presetAudit": "Falta de Equipamentos",
       "presetProvision": "Nova Sala para Provisionar",
-      "previewAlt": "Preview de laboratório"
+      "previewAlt": "Preview de laboratório",
+      "toolsSection": "Ferramentas e configuração"
     },
     "auditTable": {
       "item": "Equipamento",

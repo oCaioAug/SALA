@@ -2,7 +2,9 @@ import {
   apiErrorResponse,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireSuperAdmin } from "@/lib/auth/platform";
@@ -34,9 +36,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    const { features, ...rest } = data;
     const plan = await prisma.plan.update({
       where: { id },
-      data,
+      data: {
+        ...rest,
+        ...(features !== undefined
+          ? {
+              features:
+                features === null
+                  ? Prisma.DbNull
+                  : (features as Prisma.InputJsonValue),
+            }
+          : {}),
+      },
     });
 
     await writeAuditLog({
@@ -49,6 +62,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(plan);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
+    }
     console.error("Erro ao atualizar plano:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }

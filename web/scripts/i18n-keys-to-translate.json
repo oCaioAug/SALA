@@ -693,7 +693,7 @@
   "Vision.controls.presetsSubtitle": "Carregue uma imagem pré-configurada para validar o fluxo rapidamente.",
   "Vision.controls.selectFile": "Selecionar Arquivo",
   "Vision.controls.selectRoom": "Selecione uma Sala",
-  "Vision.controls.selectRoomPlaceholder": "Selecione...",
+  "Vision.controls.selectRoomPlaceholder": "Selecione a sala da foto enviada...",
   "Vision.controls.stopCamera": "Desativar Câmera",
   "Vision.controls.uploadSubtitle": "Arraste uma foto ou clique para fazer upload",
   "Vision.controls.uploadTitle": "Enviar Foto para Análise",
@@ -732,7 +732,7 @@
   "Vision.tabs.occupancy": "Ocupação de Sala",
   "Vision.tabs.provision": "Provisionamento de Itens",
   "Vision.title": "Visão Computacional e Automação",
-  "Vision.workflow.imageMissing": "Aguardando upload ou captura",
+  "Vision.workflow.imageMissing": "Aguardando imagem",
   "Vision.workflow.imageReady": "Pronta para análise",
   "Vision.workflow.imageStatus": "Status da imagem",
   "Vision.workflow.needImage": "Envie ou capture uma imagem antes de analisar.",
@@ -740,5 +740,10 @@
   "Vision.workflow.stepAnalyze": "Análise",
   "Vision.workflow.stepImage": "Imagem",
   "Vision.workflow.stepRoom": "Sala",
-  "Vision.workflow.webcamActive": "Webcam ativa"
+  "Vision.workflow.webcamActive": "Webcam ativa",
+  "Vision.controls.toolsSection": "Ferramentas e configuração",
+  "Vision.tools.title": "Ferramentas e configuração",
+  "Vision.tools.presets": "Cenários de teste",
+  "Vision.tools.console": "Logs",
+  "Vision.tools.credentials": "Credenciais da API"
 }

@@ -9,9 +9,10 @@ import {
   Eye,
   XCircle,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
+import { AdminActionError } from "@/components/admin/AdminActionError";
 import {
   AdminBillingSubscription,
   AdminBillingSubscriptionModal,
@@ -29,6 +30,8 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Pagination } from "@/components/ui/Pagination";
+import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
+import { getIntlLocale } from "@/lib/utils";
 import { Link } from "@/navigation";
 
 type BillingScope = "all" | "active" | "attention" | "cancelled";
@@ -45,6 +48,10 @@ interface BillingStats {
 
 export default function AdminBillingPage() {
   const t = useTranslations("Admin.billing");
+  const tStatus = useTranslations("Admin.badges.subscription");
+  const { fromResponse } = useApiErrorMessage();
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const [scope, setScope] = useState<BillingScope>("all");
   const [subscriptions, setSubscriptions] = useState<
     AdminBillingSubscription[]
@@ -61,6 +68,7 @@ export default function AdminBillingPage() {
   const [total, setTotal] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
     const res = await fetch("/api/admin/billing/stats");
@@ -78,6 +86,7 @@ export default function AdminBillingPage() {
 
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
+    setListError(null);
     try {
       const params = new URLSearchParams({
         scope,
@@ -89,17 +98,22 @@ export default function AdminBillingPage() {
       if (planFilter) params.set("planId", planFilter);
 
       const res = await fetch(`/api/admin/billing/subscriptions?${params}`);
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) {
+        setListError(await fromResponse(res));
+        setSubscriptions([]);
+        return;
+      }
       const json = await res.json();
       setSubscriptions(json.data);
       setTotalPages(json.pagination.totalPages);
       setTotal(json.pagination.total);
     } catch {
       setSubscriptions([]);
+      setListError(t("loadError"));
     } finally {
       setLoading(false);
     }
-  }, [scope, page, search, statusFilter, planFilter]);
+  }, [scope, page, search, statusFilter, planFilter, fromResponse, t]);
 
   useEffect(() => {
     const timer = setTimeout(fetchSubscriptions, 300);
@@ -167,6 +181,10 @@ export default function AdminBillingPage() {
     <>
       <AdminPageHeader title={t("title")} description={t("description")} />
       <AdminPageContent>
+        <AdminActionError
+          message={listError}
+          onDismiss={() => setListError(null)}
+        />
         <AdminMetricCards
           className="mb-6"
           metrics={metricCards}
@@ -221,7 +239,7 @@ export default function AdminBillingPage() {
                 native: true,
                 options: Object.values(SubscriptionStatus).map(value => ({
                   value,
-                  label: value,
+                  label: tStatus(value),
                 })),
               },
               {
@@ -290,7 +308,7 @@ export default function AdminBillingPage() {
                               {t("renewsOn")}{" "}
                               {new Date(
                                 sub.currentPeriodEnd
-                              ).toLocaleDateString("pt-BR")}
+                              ).toLocaleDateString(intlLocale)}
                             </span>
                             <span>
                               {sub.organization.owner.name ??
@@ -314,16 +332,14 @@ export default function AdminBillingPage() {
                   );
                 })}
               </div>
-              {totalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    page={page}
-                    pageSize={15}
-                    total={total}
-                    onPageChange={setPage}
-                  />
-                </div>
-              )}
+              <div className="mt-8">
+                <Pagination
+                  page={page}
+                  pageSize={15}
+                  total={total}
+                  onPageChange={setPage}
+                />
+              </div>
             </>
           )}
         </AdminTabPanel>

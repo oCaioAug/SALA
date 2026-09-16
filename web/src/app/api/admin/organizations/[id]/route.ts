@@ -4,6 +4,7 @@ import {
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { IncidentStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireSuperAdmin } from "@/lib/auth/platform";
@@ -62,7 +63,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    if (!organization || organization.deletedAt) {
+    if (!organization) {
       return apiErrorResponse(ApiErrorCode.ORGANIZATION_NOT_FOUND, 404);
     }
 
@@ -136,6 +137,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    if (data.cnpj && data.cnpj !== existing.cnpj) {
+      const cnpjTaken = await prisma.organization.findUnique({
+        where: { cnpj: data.cnpj },
+      });
+      if (cnpjTaken) {
+        return apiErrorResponse(ApiErrorCode.CNPJ_IN_USE, 409);
+      }
+    }
+
     const organization = await prisma.organization.update({
       where: { id },
       data,
@@ -171,6 +181,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(organization);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
+    }
     console.error("Erro ao atualizar organização:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }

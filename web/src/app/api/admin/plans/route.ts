@@ -2,7 +2,9 @@ import {
   apiErrorResponse,
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireSuperAdmin } from "@/lib/auth/platform";
@@ -50,6 +52,12 @@ export async function POST(request: NextRequest) {
         maxRooms: data.maxRooms,
         maxUsers: data.maxUsers,
         maxReservationsPerMonth: data.maxReservationsPerMonth ?? null,
+        features:
+          data.features === undefined
+            ? undefined
+            : data.features === null
+              ? Prisma.DbNull
+              : (data.features as Prisma.InputJsonValue),
         isActive: data.isActive,
       },
     });
@@ -64,6 +72,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(plan, { status: 201 });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
+    }
     console.error("Erro ao criar plano:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);
   }

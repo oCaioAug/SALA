@@ -1550,6 +1550,13 @@
     "LOGIN_INVALID": "メールまたはパスワードが正しくありません",
     "ADMIN_USER_NOT_FOUND": "管理者ユーザーが見つかりません。先に seed を実行してください。",
     "CANNOT_REMOVE_OWN_SUPER_ADMIN": "自分のスーパー管理者アクセスは削除できません",
+    "CANNOT_DELETE_SELF": "自分のアカウントは削除できません",
+    "USER_ALREADY_DELETED": "ユーザーは既に削除されています",
+    "USER_NOT_DELETED": "ユーザーは削除されていません",
+    "CANNOT_MODIFY_DELETED_USER": "削除済みユーザーは変更できません",
+    "ORGANIZATION_ALREADY_DELETED": "組織は既に削除されています",
+    "ORGANIZATION_NOT_DELETED": "組織は削除されていません",
+    "ASSIGNEE_NOT_IN_ORGANIZATION": "ユーザーはこのインシデントの組織に所属していません",
     "SUBSCRIPTION_NO_PLAN": "組織にサブスクリプションがありません。planId を指定してください。",
     "SUBSCRIPTION_NOT_FOUND": "サブスクリプションが見つかりません。",
     "USER_ID_REQUIRED": "userId は必須です",
@@ -1952,6 +1959,16 @@
         "rooms": "部屋",
         "usage": "利用状況とプラン"
       },
+      "sections": {
+        "profileTitle": "組織情報",
+        "profileHelp": "プラットフォームで使う名前・スラッグ・連絡先です。",
+        "statusTitle": "ステータスと分類",
+        "statusHelp": "組織のライフサイクルと種別を管理します。",
+        "ownershipTitle": "オーナーシップ",
+        "ownershipHelp": "オーナーと作成日を確認できます。",
+        "dangerTitle": "危険ゾーン",
+        "dangerHelp": "取り消し困難または影響の大きい操作です。"
+      },
       "roleOwner": "Owner",
       "roleAdmin": "管理者",
       "roleMember": "メンバー",
@@ -1980,6 +1997,16 @@
       "savingProfile": "保存中...",
       "deleteOrg": "組織を無効化",
       "deleteOrgConfirm": "この組織をソフト削除しますか？一覧から非表示になります。",
+      "deleteOrgModal": {
+        "title": "組織を無効化",
+        "risk": "影響の大きい操作です。組織は無効化され、有効な一覧から消えます。",
+        "riskHide": "管理画面の一覧に表示されなくなります。",
+        "riskAccess": "メンバーは部屋や予約への運用アクセスを失う可能性があります。",
+        "riskData": "履歴データは残りますが、組織は運用外になります。",
+        "typeNameLabel": "確認のため組織名 \"{name}\" を入力してください",
+        "finalConfirm": "本当にこの組織の削除を確認しますか？",
+        "confirm": "無効化を確認"
+      },
       "transferOwnership": "所有権を譲渡",
       "transferOwnershipConfirm": "このメンバーに所有権を譲渡しますか？",
       "fields": {
@@ -1990,7 +2017,9 @@
         "ownerEmail": "Ownerのemail",
         "ownerName": "Owner名（任意）",
         "email": "連絡先email",
-        "phone": "連絡先電話番号"
+        "phone": "連絡先電話番号",
+        "legalName": "法人名",
+        "cnpj": "CNPJ"
       },
       "newOrg": "新しい組織",
       "searchTitle": "組織を検索",
@@ -2013,7 +2042,16 @@
       "metricTrial": "Trial",
       "metricTrialSub": "試用期間",
       "metricSuspended": "停止中",
-      "metricSuspendedSub": "アクセスブロック"
+      "metricSuspendedSub": "アクセスブロック",
+      "includeDeleted": "削除済みを含む",
+      "deleted": "削除済み",
+      "restoreOrg": "組織を復元",
+      "confirmRestoreOrg": "この組織を復元しますか？",
+      "confirmAction": "確認",
+      "cancelAction": "キャンセル",
+      "slugLabel": "スラッグ: {slug}",
+      "removeMemberTitle": "メンバーを削除",
+      "transferOwnershipTitle": "オーナーシップを譲渡"
     },
     "users": {
       "title": "ユーザー",
@@ -2045,7 +2083,14 @@
         "withoutOrgSub": "所属なし"
       },
       "includeDeleted": "削除済みを含む",
-      "deleted": "削除済み"
+      "deleted": "削除済み",
+      "deleteUser": "ユーザーを削除",
+      "restoreUser": "ユーザーを復元",
+      "confirmAction": "確認",
+      "cancelAction": "キャンセル",
+      "confirmPromoteDesc": "{email} の役割変更を確認しますか？",
+      "confirmDeleteDesc": "ユーザー {email} をソフト削除しますか？プラットフォームにアクセスできなくなります。",
+      "confirmRestoreDesc": "{email} のアクセスを復元しますか？"
     },
     "plans": {
       "title": "Plans",
@@ -2054,7 +2099,7 @@
       "createTitle": "Create new plan",
       "createSubtitle": "Set identification, usage limits, and availability for the package.",
       "emptyTitle": "No plans yet",
-      "emptyDescription": "Create the first plan with space, user, and reservation limits for organizations.",
+      "emptyDescription": "Create the first plan with room, user, and reservation limits for organizations.",
       "sections": {
         "identity": "Identification",
         "limits": "Usage limits",
@@ -2067,18 +2112,20 @@
         "slug": "Identifier (slug)",
         "slugHint": "Used internally and in integrations. Lowercase letters, numbers, and hyphens only.",
         "slugPlaceholder": "e.g.: starter",
-        "maxRooms": "Number of spaces",
-        "maxRoomsHint": "Maximum bookable rooms or spaces per organization.",
+        "maxRooms": "Number of rooms",
+        "maxRoomsHint": "Maximum bookable rooms per organization.",
         "maxUsers": "Number of users",
         "maxUsersHint": "Members allowed per organization on this plan.",
         "maxReservations": "Reservations per month",
         "maxReservationsHint": "Optional. Leave empty for unlimited reservations.",
         "maxReservationsPlaceholder": "Unlimited",
         "isActive": "Active plan",
-        "isActiveHint": "Inactive plans are not available for new sign-ups."
+        "isActiveHint": "Inactive plans are not available for new sign-ups.",
+        "features": "機能 (JSON)",
+        "featuresHint": "プランの機能フラグを含む JSON オブジェクトまたは配列。なしの場合は空のまま。"
       },
       "card": {
-        "spaces": "Spaces",
+        "spaces": "部屋",
         "users": "Users",
         "reservations": "Reservations/mo",
         "unlimited": "Unlimited",
@@ -2099,7 +2146,8 @@
       },
       "errors": {
         "createFailed": "Could not create the plan. Check the data and try again.",
-        "updateFailed": "プランを更新できませんでした。データを確認して再度お試しください。"
+        "updateFailed": "プランを更新できませんでした。データを確認して再度お試しください。",
+        "invalidFeatures": "機能の JSON が無効です"
       },
       "summaryPlanOne": "plan registered",
       "summaryPlanMany": "plans registered",
@@ -2113,7 +2161,19 @@
       "searchPlaceholder": "操作でフィルター...",
       "refresh": "更新",
       "emptyTitle": "レコードが見つかりません",
-      "emptyDesc": "現在のフィルターに一致する監査ログはありません"
+      "emptyDesc": "現在のフィルターに一致する監査ログはありません",
+      "organizationFilter": "組織",
+      "allOrganizations": "すべての組織",
+      "viewDetails": "詳細を見る",
+      "closeModal": "閉じる",
+      "detailTitle": "ログ詳細",
+      "actor": "実行者",
+      "organization": "組織",
+      "entityType": "エンティティ種別",
+      "entityId": "エンティティID",
+      "createdAt": "作成日時",
+      "metadata": "メタデータ",
+      "loadError": "監査ログの読み込みに失敗しました"
     },
     "incidents": {
       "title": "インシデント",
@@ -2139,6 +2199,12 @@
       "noTarget": "—",
       "status": "ステータス",
       "priority": "優先度",
+      "descriptionLabel": "説明",
+      "auditTitle": "在庫監査",
+      "auditDiscrepancies": "{count}件の差異",
+      "expectedQty": "想定",
+      "detectedQty": "検出",
+      "missingQty": "{count} 不足",
       "resolutionNotes": "解決メモ",
       "assignedTo": "担当者",
       "unassigned": "未割り当て",
@@ -2159,6 +2225,17 @@
         "resolvedSub": "解決済みまたはキャンセル済み",
         "total": "合計",
         "totalSub": "すべてのインシデント"
+      },
+      "resolvedBySuperAdmin": "スーパー管理者により解決",
+      "categories": {
+        "EQUIPMENT_FAILURE": "設備故障",
+        "INFRASTRUCTURE": "インフラ",
+        "SOFTWARE": "ソフトウェア",
+        "SAFETY": "安全",
+        "MAINTENANCE": "メンテナンス",
+        "ELECTRICAL": "電気",
+        "NETWORK": "ネットワーク",
+        "OTHER": "その他"
       }
     },
     "billing": {
@@ -2216,6 +2293,11 @@
       "platformRole": {
         "SUPER_ADMIN": "スーパー管理者",
         "NONE": "ユーザー"
+      },
+      "organizationRole": {
+        "OWNER": "オーナー",
+        "ADMIN": "管理者",
+        "MEMBER": "メンバー"
       },
       "subscription": {
         "ACTIVE": "有効",
@@ -2746,6 +2828,12 @@
   "Vision": {
     "title": "コンピュータビジョンと自動化",
     "description": "部屋の管理を自動化し、リアルタイム監査を行い、AIでアイテムをプロビジョニングします。",
+    "tools": {
+      "title": "ツールと設定",
+      "presets": "テストシナリオ",
+      "console": "ログ",
+      "credentials": "API認証情報"
+    },
     "tabs": {
       "occupancy": "部屋の占有状況",
       "audit": "アイテム監査",
@@ -2757,7 +2845,7 @@
       "stepAnalyze": "分析",
       "imageStatus": "画像のステータス",
       "imageReady": "分析の準備完了",
-      "imageMissing": "アップロードまたは撮影を待機中",
+      "imageMissing": "画像を待機中",
       "webcamActive": "ウェブカメラが有効です",
       "needRoom": "続行するには部屋を選択してください。",
       "needImage": "分析する前に画像をアップロードまたは撮影してください。"
@@ -2793,7 +2881,7 @@
     },
     "controls": {
       "selectRoom": "部屋を選択",
-      "selectRoomPlaceholder": "選択...",
+      "selectRoomPlaceholder": "送信した写真の部屋を選択してください...",
       "captureArea": "撮影エリア",
       "useWebcam": "ウェブカメラを使用",
       "stopCamera": "カメラを停止",
@@ -2811,7 +2899,8 @@
       "presetFull": "授業中のラボ",
       "presetAudit": "機器の不足",
       "presetProvision": "新規ラボのプロビジョニング",
-      "previewAlt": "ラボのプレビュー"
+      "previewAlt": "ラボのプレビュー",
+      "toolsSection": "ツールと設定"
     },
     "auditTable": {
       "item": "機器",

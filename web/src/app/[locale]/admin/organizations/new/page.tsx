@@ -27,6 +27,8 @@ export default function NewOrganizationPage() {
   const [form, setForm] = useState({
     name: "",
     slug: "",
+    legalName: "",
+    cnpj: "",
     ownerEmail: "",
     ownerName: "",
     status: OrganizationStatus.ACTIVE as OrganizationStatus,
@@ -65,7 +67,11 @@ export default function NewOrganizationPage() {
       const res = await fetch("/api/admin/organizations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          legalName: form.legalName.trim() || null,
+          cnpj: form.cnpj.trim() || null,
+        }),
       });
 
       const data = await res.json();
@@ -119,6 +125,22 @@ export default function NewOrganizationPage() {
                   setForm(prev => ({ ...prev, slug: e.target.value }))
                 }
                 required
+              />
+
+              <Input
+                label={t("fields.legalName")}
+                value={form.legalName}
+                onChange={e =>
+                  setForm(prev => ({ ...prev, legalName: e.target.value }))
+                }
+              />
+
+              <Input
+                label={t("fields.cnpj")}
+                value={form.cnpj}
+                onChange={e =>
+                  setForm(prev => ({ ...prev, cnpj: e.target.value }))
+                }
               />
 
               <div>

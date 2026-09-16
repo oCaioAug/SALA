@@ -9,12 +9,30 @@ import {
 import { z } from "zod";
 
 import {
+  isValidCnpj,
+  stripDocument,
+} from "@/lib/validations/brazilian-documents";
+import {
   organizationEmailSchema,
   organizationPhoneSchema,
 } from "@/lib/validations/organization";
 
+const optionalCnpjSchema = z.preprocess(
+  value => {
+    if (value == null || value === "") return null;
+    if (typeof value === "string") return stripDocument(value.trim());
+    return value;
+  },
+  z
+    .string()
+    .nullable()
+    .refine(v => v === null || isValidCnpj(v), { message: "CNPJ inválido" })
+);
+
 export const createOrganizationSchema = z.object({
   name: z.string().min(2).max(120),
+  legalName: z.string().min(2).max(200).optional().nullable(),
+  cnpj: optionalCnpjSchema,
   slug: z
     .string()
     .min(2)
@@ -34,6 +52,8 @@ export const transferOwnershipSchema = z.object({
 
 export const updateOrganizationSchema = z.object({
   name: z.string().min(2).max(120).optional(),
+  legalName: z.string().min(2).max(200).optional().nullable(),
+  cnpj: optionalCnpjSchema,
   slug: z
     .string()
     .min(2)
@@ -78,6 +98,10 @@ export const planSchema = z.object({
   maxRooms: z.coerce.number().int().min(1).max(10000),
   maxUsers: z.coerce.number().int().min(1).max(100000),
   maxReservationsPerMonth: z.coerce.number().int().min(1).nullable().optional(),
+  features: z
+    .union([z.record(z.string(), z.unknown()), z.array(z.unknown())])
+    .nullable()
+    .optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -102,6 +126,7 @@ export const organizationListQuerySchema = z.object({
   search: z.string().optional(),
   status: z.nativeEnum(OrganizationStatus).optional(),
   planId: z.string().optional(),
+  includeDeleted: z.coerce.boolean().optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });

@@ -35,7 +35,10 @@ export async function GET() {
       return apiErrorResponse(ApiErrorCode.USER_NOT_FOUND, 404);
     }
 
-    const resolved = await resolvePrimaryOrganization(auth.id);
+    const resolved = await resolvePrimaryOrganization(
+      auth.id,
+      auth.organizationId
+    );
     const { passwordHash, ...publicUser } = user;
 
     return NextResponse.json({

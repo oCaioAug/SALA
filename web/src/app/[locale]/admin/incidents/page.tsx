@@ -2,7 +2,7 @@
 
 import { IncidentPriority, IncidentStatus } from "@prisma/client";
 import { AlertTriangle, CheckCircle2, Eye, Flame, List } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { AdminFilterBar } from "@/components/admin/AdminFilterBar";
@@ -22,6 +22,11 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Pagination } from "@/components/ui/Pagination";
+import {
+  formatAuditDescriptionPreview,
+  parseIncidentDescription,
+} from "@/lib/incidents/parse-audit-description";
+import { getIntlLocale } from "@/lib/utils";
 import { Link } from "@/navigation";
 
 type IncidentScope = "open" | "resolved";
@@ -40,6 +45,11 @@ interface OrganizationOption {
 
 export default function AdminIncidentsPage() {
   const t = useTranslations("Admin.incidents");
+  const tStatus = useTranslations("Admin.badges.incident");
+  const tPriority = useTranslations("Admin.badges.incidentPriority");
+  const tCategories = useTranslations("Admin.incidents.categories");
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const [scope, setScope] = useState<IncidentScope>("open");
   const [incidents, setIncidents] = useState<AdminIncidentListItem[]>([]);
   const [stats, setStats] = useState<IncidentStats | null>(null);
@@ -229,7 +239,7 @@ export default function AdminIncidentsPage() {
                 native: true,
                 options: Object.values(IncidentStatus).map(value => ({
                   value,
-                  label: value,
+                  label: tStatus(value),
                 })),
               },
               {
@@ -244,7 +254,7 @@ export default function AdminIncidentsPage() {
                 native: true,
                 options: Object.values(IncidentPriority).map(value => ({
                   value,
-                  label: value,
+                  label: tPriority(value),
                 })),
               },
             ]}
@@ -280,15 +290,15 @@ export default function AdminIncidentsPage() {
                             kind="incidentPriority"
                           />
                           <span className="text-xs text-muted-foreground">
-                            {incident.category}
+                            {tCategories.has(incident.category)
+                              ? tCategories(incident.category)
+                              : incident.category}
                           </span>
                         </div>
                         <h3 className="font-medium text-foreground">
                           {incident.title}
                         </h3>
-                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                          {incident.description}
-                        </p>
+                        <IncidentListPreview description={incident.description} />
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           <Link
                             href={`/admin/organizations/${incident.organization.id}`}
@@ -298,7 +308,7 @@ export default function AdminIncidentsPage() {
                           </Link>
                           <span>
                             {new Date(incident.createdAt).toLocaleString(
-                              "pt-BR"
+                              intlLocale
                             )}
                           </span>
                           {(incident.room ?? incident.item) && (
@@ -320,16 +330,14 @@ export default function AdminIncidentsPage() {
                   </Card>
                 ))}
               </div>
-              {totalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    page={page}
-                    pageSize={15}
-                    total={total}
-                    onPageChange={setPage}
-                  />
-                </div>
-              )}
+              <div className="mt-8">
+                <Pagination
+                  page={page}
+                  pageSize={15}
+                  total={total}
+                  onPageChange={setPage}
+                />
+              </div>
             </>
           )}
         </AdminTabPanel>
@@ -348,5 +356,29 @@ export default function AdminIncidentsPage() {
         }}
       />
     </>
+  );
+}
+
+function IncidentListPreview({ description }: { description: string }) {
+  const t = useTranslations("Admin.incidents");
+  const parsed = parseIncidentDescription(description);
+  const names = formatAuditDescriptionPreview(description);
+
+  if (parsed && names) {
+    return (
+      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+        <span className="text-amber-800 dark:text-amber-300">
+          {t("auditDiscrepancies", { count: parsed.items.length })}
+        </span>
+        {" · "}
+        {names}
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+      {description}
+    </p>
   );
 }

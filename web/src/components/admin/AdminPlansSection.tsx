@@ -32,6 +32,7 @@ export interface AdminPlan {
   maxRooms: number;
   maxUsers: number;
   maxReservationsPerMonth: number | null;
+  features: unknown;
   isActive: boolean;
   _count: { organizations: number; subscriptions: number };
 }
@@ -470,6 +471,7 @@ export function AdminPlansSection() {
     e.preventDefault();
     setSaving(true);
     setError(null);
+
     const payload = {
       name: form.name.trim(),
       slug: form.slug.trim(),
