@@ -16,9 +16,15 @@ import {
   OrganizationDetail,
   OrganizationDetailView,
 } from "@/components/admin/OrganizationDetailView";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
 import { Link, useRouter } from "@/navigation";
+
+type PendingAction =
+  | { type: "removeMember"; userId: string }
+  | { type: "transferOwnership"; userId: string }
+  | null;
 
 export default function OrganizationDetailPage() {
   const t = useTranslations("Admin.organizations");
@@ -47,12 +53,15 @@ export default function OrganizationDetailPage() {
     slug: "",
     email: "",
     phone: "",
+    legalName: "",
+    cnpj: "",
   });
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   const fetchOrg = useCallback(async () => {
     try {
       const res = await fetch(`/api/admin/organizations/${id}`);
-      if (!res.ok) throw new Error("Não encontrada");
+      if (!res.ok) throw new Error(t("notFound"));
       const data = await res.json();
       setOrg(data);
       setProfileDraft({
@@ -60,13 +69,15 @@ export default function OrganizationDetailPage() {
         slug: data.slug ?? "",
         email: data.email ?? "",
         phone: data.phone ?? "",
+        legalName: data.legalName ?? "",
+        cnpj: data.cnpj ?? "",
       });
     } catch {
       setOrg(null);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchOrg();
@@ -141,6 +152,8 @@ export default function OrganizationDetailPage() {
           slug: profileDraft.slug.trim(),
           email: profileDraft.email.trim() || null,
           phone: profileDraft.phone.trim() || null,
+          legalName: profileDraft.legalName.trim() || null,
+          cnpj: profileDraft.cnpj.trim() || null,
         }),
       })
     );
@@ -203,33 +216,49 @@ export default function OrganizationDetailPage() {
     await fetchOrg();
   };
 
-  const removeMember = async (userId: string) => {
-    if (!confirm(t("removeMemberConfirm"))) return;
-    setActionError(null);
-    const res = await fetch(
-      `/api/admin/organizations/${id}/members?userId=${userId}`,
-      { method: "DELETE" }
-    );
-    if (!res.ok) {
-      setActionError(await fromResponse(res));
-      return;
-    }
-    await fetchOrg();
+  const removeMember = (userId: string) => {
+    setPendingAction({ type: "removeMember", userId });
   };
 
-  const transferOwnership = async (userId: string) => {
-    if (!confirm(t("transferOwnershipConfirm"))) return;
-    await runMutation(() =>
+  const transferOwnership = (userId: string) => {
+    setPendingAction({ type: "transferOwnership", userId });
+  };
+
+  const executePendingAction = async () => {
+    if (!pendingAction) return;
+    const { type, userId } = pendingAction;
+    setActionError(null);
+
+    if (type === "removeMember") {
+      setUpdating(true);
+      try {
+        const res = await fetch(
+          `/api/admin/organizations/${id}/members?userId=${userId}`,
+          { method: "DELETE" }
+        );
+        if (!res.ok) {
+          setActionError(await fromResponse(res));
+          return;
+        }
+        setPendingAction(null);
+        await fetchOrg();
+      } finally {
+        setUpdating(false);
+      }
+      return;
+    }
+
+    const ok = await runMutation(() =>
       fetch(`/api/admin/organizations/${id}/transfer-ownership`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newOwnerUserId: userId }),
       })
     );
+    if (ok) setPendingAction(null);
   };
 
   const deleteOrganization = async () => {
-    if (!confirm(t("deleteOrgConfirm"))) return;
     setUpdating(true);
     setActionError(null);
     try {
@@ -244,6 +273,12 @@ export default function OrganizationDetailPage() {
     } finally {
       setUpdating(false);
     }
+  };
+
+  const restoreOrganization = async () => {
+    await runMutation(() =>
+      fetch(`/api/admin/organizations/${id}/restore`, { method: "POST" })
+    );
   };
 
   if (loading) {
@@ -272,12 +307,32 @@ export default function OrganizationDetailPage() {
     );
   }
 
+  const confirmTitle =
+    pendingAction?.type === "removeMember"
+      ? t("removeMemberTitle")
+      : t("transferOwnershipTitle");
+  const confirmDescription =
+    pendingAction?.type === "removeMember"
+      ? t("removeMemberConfirm")
+      : t("transferOwnershipConfirm");
+
   return (
     <>
       <AdminPageHeader
         title={org.name}
-        description={`Slug: ${org.slug}`}
-        actions={<AdminStatusBadge status={org.status} kind="organization" />}
+        description={t("slugLabel", { slug: org.slug })}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <AdminStatusBadge status={org.status} kind="organization" />
+            {org.deletedAt ? (
+              <AdminStatusBadge
+                status="deleted"
+                kind="danger"
+                label={t("deleted")}
+              />
+            ) : null}
+          </div>
+        }
       />
       <AdminPageContent>
         <Link
@@ -323,6 +378,23 @@ export default function OrganizationDetailPage() {
           saveProfile={saveProfile}
           transferOwnership={transferOwnership}
           deleteOrganization={deleteOrganization}
+          restoreOrganization={restoreOrganization}
+        />
+
+        <ConfirmModal
+          isOpen={Boolean(pendingAction)}
+          variant={
+            pendingAction?.type === "removeMember" ? "destructive" : "default"
+          }
+          title={confirmTitle}
+          description={confirmDescription}
+          confirmLabel={t("confirmAction")}
+          cancelLabel={t("cancelAction")}
+          loading={updating}
+          onCancel={() => {
+            if (!updating) setPendingAction(null);
+          }}
+          onConfirm={() => void executePendingAction()}
         />
       </AdminPageContent>
     </>

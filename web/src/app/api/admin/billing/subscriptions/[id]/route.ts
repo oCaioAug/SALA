@@ -114,7 +114,7 @@ export async function PATCH(
     return NextResponse.json(subscription);
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
     }
     console.error("Erro ao atualizar assinatura admin:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);

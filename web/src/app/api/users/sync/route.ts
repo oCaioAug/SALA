@@ -26,11 +26,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const callerMembership = await prisma.organizationMember.findFirst({
-      where: { userId: authResult.user.id },
-    });
-
-    if (!callerMembership) {
+    const organizationId = authResult.user.organizationId;
+    if (!organizationId) {
       return NextResponse.json(
         { error: "Usuário sem organização vinculada" },
         { status: 403 }
@@ -48,12 +45,12 @@ export async function POST(request: NextRequest) {
       await prisma.organizationMember.upsert({
         where: {
           organizationId_userId: {
-            organizationId: callerMembership.organizationId,
+            organizationId,
             userId: user.id,
           },
         },
         create: {
-          organizationId: callerMembership.organizationId,
+          organizationId,
           userId: user.id,
           role: OrganizationRole.MEMBER,
         },
@@ -67,7 +64,7 @@ export async function POST(request: NextRequest) {
           image,
           memberships: {
             create: {
-              organizationId: callerMembership.organizationId,
+              organizationId,
               role: OrganizationRole.MEMBER,
             },
           },

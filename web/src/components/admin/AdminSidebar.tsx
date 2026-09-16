@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AlertTriangle,
   Building2,
   ChevronRight,
   ClipboardList,
@@ -63,13 +62,7 @@ export function AdminSidebar() {
       icon: Receipt,
       exact: false,
     },
-    {
-      id: "incidents",
-      label: t("nav.incidents"),
-      href: "/admin/incidents" as const,
-      icon: AlertTriangle,
-      exact: false,
-    },
+    // Incidentes oculto temporariamente no menu (rota /admin/incidents permanece)
     {
       id: "audit",
       label: t("nav.audit"),

@@ -4,49 +4,61 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-type SwitchProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "type" | "role"
->;
+type SwitchChangeEvent = {
+  target: { checked: boolean };
+};
 
-const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, checked, disabled, ...props }, ref) => {
+type SwitchProps = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "onChange" | "role" | "type"
+> & {
+  checked?: boolean;
+  onChange?: (event: SwitchChangeEvent) => void;
+};
+
+const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
+  (
+    { className, checked = false, disabled, onChange, onClick, ...props },
+    ref
+  ) => {
     return (
-      <span
+      <button
+        ref={ref}
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={event => {
+          onClick?.(event);
+          if (event.defaultPrevented || disabled) return;
+          onChange?.({ target: { checked: !checked } });
+        }}
         className={cn(
-          "relative inline-block h-5 w-9 shrink-0",
-          disabled && "cursor-not-allowed opacity-50",
+          "relative h-6 w-11 shrink-0 rounded-full border p-0",
+          "cursor-pointer transition-[background-color,border-color] duration-300",
+          "motion-reduce:transition-none",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          checked
+            ? "border-emerald-600 bg-emerald-500 dark:border-emerald-500 dark:bg-emerald-500"
+            : "border-border bg-slate-200 dark:bg-slate-700",
           className
         )}
+        {...props}
       >
-        <input
-          ref={ref}
-          type="checkbox"
-          role="switch"
-          checked={checked}
-          disabled={disabled}
-          className="peer sr-only"
-          {...props}
-        />
         <span
           aria-hidden
           className={cn(
-            "absolute inset-0 rounded-full transition-colors duration-200",
-            "bg-slate-900 dark:bg-slate-700",
-            "peer-checked:bg-emerald-400 dark:peer-checked:bg-emerald-500/60",
-            "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+            "pointer-events-none absolute top-0.5 left-0.5 size-5 rounded-full",
+            "bg-gradient-to-b from-white to-slate-100",
+            "shadow-[0_1px_2px_rgba(15,23,42,0.2)]",
+            "transition-transform duration-[320ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "motion-reduce:transition-none",
+            "translate-x-0",
+            checked && "translate-x-5"
           )}
         />
-        <span
-          aria-hidden
-          className={cn(
-            "pointer-events-none absolute top-0.5 left-0.5 size-4 rounded-full bg-white",
-            "shadow-[0_1px_2px_rgba(15,23,42,0.18)]",
-            "transition-transform duration-200 ease-in-out",
-            "translate-x-0 peer-checked:translate-x-4"
-          )}
-        />
-      </span>
+      </button>
     );
   }
 );

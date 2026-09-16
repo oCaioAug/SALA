@@ -3,6 +3,7 @@ import {
 } from "@/lib/api/api-error-response";
 import { ApiErrorCode } from "@/lib/api/error-codes";
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { writeAuditLog } from "@/lib/audit";
 import { isNextResponse, requireSuperAdmin } from "@/lib/auth/platform";
@@ -23,12 +24,13 @@ export async function GET(request: NextRequest) {
       search: searchParams.get("search") ?? undefined,
       status: searchParams.get("status") ?? undefined,
       planId: searchParams.get("planId") ?? undefined,
+      includeDeleted: searchParams.get("includeDeleted") ?? undefined,
       page: searchParams.get("page") ?? undefined,
       pageSize: searchParams.get("pageSize") ?? undefined,
     });
 
     const where = {
-      deletedAt: null,
+      ...(query.includeDeleted ? {} : { deletedAt: null }),
       ...(query.status ? { status: query.status } : {}),
       ...(query.planId ? { planId: query.planId } : {}),
       ...(query.search
@@ -121,6 +123,8 @@ export async function POST(request: NextRequest) {
     try {
       organization = await createOrganizationWithOwner({
         name: data.name,
+        legalName: data.legalName ?? undefined,
+        cnpj: data.cnpj ?? undefined,
         slug: data.slug,
         ownerId: owner.id,
         status: data.status,
@@ -158,11 +162,8 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        { error: "Dados inválidos", details: error },
-        { status: 400 }
-      );
+    if (error instanceof ZodError) {
+      return apiErrorResponse(ApiErrorCode.INVALID_DATA, 400);
     }
     console.error("Erro ao criar organização:", error);
     return apiErrorResponse(ApiErrorCode.INTERNAL_ERROR, 500);

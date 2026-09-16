@@ -2,7 +2,7 @@
 
 import { SubscriptionStatus } from "@prisma/client";
 import { Building2, Calendar, CreditCard, User, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { AdminActionError } from "@/components/admin/AdminActionError";
@@ -10,6 +10,7 @@ import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useApiErrorMessage } from "@/lib/hooks/useApiErrorMessage";
+import { getIntlLocale } from "@/lib/utils";
 import { Link } from "@/navigation";
 
 export interface AdminBillingSubscription {
@@ -51,6 +52,9 @@ export function AdminBillingSubscriptionModal({
   onUpdated,
 }: AdminBillingSubscriptionModalProps) {
   const t = useTranslations("Admin.billing");
+  const tStatus = useTranslations("Admin.badges.subscription");
+  const locale = useLocale();
+  const intlLocale = getIntlLocale(locale);
   const { fromResponse } = useApiErrorMessage();
   const [subscription, setSubscription] =
     useState<AdminBillingSubscription | null>(null);
@@ -209,9 +213,9 @@ export function AdminBillingSubscriptionModal({
               <MetaField
                 icon={Calendar}
                 label={t("periodStart")}
-                value={new Date(subscription.currentPeriodStart).toLocaleString(
-                  "pt-BR"
-                )}
+                value={new Date(
+                  subscription.currentPeriodStart
+                ).toLocaleString(intlLocale)}
               />
 
               <div>
@@ -227,7 +231,7 @@ export function AdminBillingSubscriptionModal({
                 >
                   {Object.values(SubscriptionStatus).map(value => (
                     <option key={value} value={value}>
-                      {value}
+                      {tStatus(value)}
                     </option>
                   ))}
                 </select>

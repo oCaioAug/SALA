@@ -450,7 +450,11 @@ const RoomSchedulesPage: React.FC = () => {
             <div className="space-y-6">
               {Object.entries(groupedReservations).map(
                 ([dateKey, dayReservations]) => (
-                  <Card key={dateKey} variant="elevated" className="overflow-hidden p-0">
+                  <Card
+                    key={dateKey}
+                    variant="elevated"
+                    className="overflow-hidden p-0"
+                  >
                     <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
                       <div className="min-w-0">
                         <CardTitle className="text-lg capitalize">
@@ -472,9 +476,7 @@ const RoomSchedulesPage: React.FC = () => {
                         <ReservationListItem
                           key={reservation.id}
                           title={
-                            reservation.user.name ||
-                            reservation.user.email ||
-                            t("unknownUser")
+                            reservation.user.name ?? reservation.user.email
                           }
                           startTime={new Date(reservation.startTime)}
                           endTime={new Date(reservation.endTime)}

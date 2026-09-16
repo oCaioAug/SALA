@@ -2,13 +2,10 @@
 
 import {
   AlertTriangle,
-  Building2,
   Camera,
   CheckCircle2,
   ChevronDown,
   Cpu,
-  Key,
-  Lock,
   Minus,
   Plus,
   RefreshCw,
@@ -146,9 +143,6 @@ export default function VisionPage() {
       if (!res.ok) throw new Error(t("errors.loadRooms"));
       const data = await res.json();
       setRooms(data);
-      if (data.length > 0) {
-        setSelectedRoomId(data[0].id);
-      }
     } catch (err) {
       console.error(err);
       showError(t("toasts.loadRoomsError"));
@@ -497,208 +491,59 @@ export default function VisionPage() {
       onNotificationClick={() => {}}
       notificationUpdateTrigger={0}
     >
-      <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="mb-2 text-xl font-semibold text-foreground sm:text-2xl">
+      {/* Cabeçalho quieto */}
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
             {t("title")}
           </h1>
-          <p className="max-w-2xl text-slate-600 dark:text-slate-400">
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
             {t("description")}
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 self-start rounded-md border border-border bg-card px-3 py-1.5 text-xs text-foreground">
+        <div className="inline-flex items-center gap-2 self-start rounded-full border border-border/80 bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
           <span
-            className={`h-2 w-2 rounded-full ${
+            className={`h-1.5 w-1.5 rounded-full ${
               credConfigured || usingEnv ? "bg-emerald-500" : "bg-amber-500"
             }`}
             aria-hidden
           />
-          <span className="font-medium">
+          <span>
             {credConfigured
               ? t("provider.real")
               : usingEnv
                 ? t("provider.usingEnv")
                 : t("provider.mock")}
           </span>
-          {(credConfigured || usingEnv) && (
-            <span className="text-muted-foreground">· {modelId}</span>
-          )}
+          {(credConfigured || usingEnv) && modelId ? (
+            <span className="font-mono text-[10px] opacity-70">· {modelId}</span>
+          ) : null}
         </div>
       </div>
 
-      <div
-        role="tablist"
-        className="mb-5 flex rounded-lg border border-border bg-muted p-1"
-      >
-        {(["audit", "provision"] as const).map(tab => (
-          <button
-            key={tab}
-            role="tab"
-            aria-selected={activeTab === tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setPredictions([]);
-              setAuditComparisons([]);
-              setProvisionSuggestions([]);
-              setCreatedIncidentId(null);
-              addLog(t("logs.tabChanged", { tab: t(`tabs.${tab}`) }));
-            }}
-            className={`flex-1 rounded-md py-2.5 text-center text-sm font-medium transition-colors ${
-              activeTab === tab
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t(`tabs.${tab}`)}
-          </button>
-        ))}
-      </div>
-
-      <Card className="mb-5" variant="elevated">
-        <CardContent className="p-0">
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 ${
-                selectedRoomId
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/10 text-[10px] font-bold">
-                1
-              </span>
-              {t("workflow.stepRoom")}
-            </span>
-            <span className="text-border">→</span>
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 ${
-                imageReady
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/10 text-[10px] font-bold">
-                2
-              </span>
-              {t("workflow.stepImage")}
-            </span>
-            <span className="text-border">→</span>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1 text-muted-foreground">
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-current/10 text-[10px] font-bold">
-                3
-              </span>
-              {t("workflow.stepAnalyze")}
-            </span>
+      {/* Primário: captura + ações */}
+      <Card className="mb-6 overflow-visible p-0" variant="elevated">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+          <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <Camera className="h-4 w-4 text-muted-foreground" />
+            {t("controls.captureArea")}
+          </span>
+          <div className="flex gap-2">
+            {webcamActive ? (
+              <Button size="sm" variant="destructive" onClick={stopWebcam}>
+                {t("controls.stopCamera")}
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" onClick={startWebcam}>
+                <Camera className="mr-1.5 h-3.5 w-3.5" />
+                {t("controls.useWebcam")}
+              </Button>
+            )}
           </div>
+        </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="min-w-0 w-full sm:max-w-md sm:flex-1">
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                {t("controls.selectRoom")}
-              </label>
-              {loadingRooms ? (
-                <div className="h-9 animate-pulse rounded-md bg-muted" />
-              ) : (
-                <SearchableSelect
-                  value={selectedRoomId}
-                  onChange={v => {
-                    setSelectedRoomId(v);
-                    setPredictions([]);
-                    setAuditComparisons([]);
-                    setProvisionSuggestions([]);
-                    setCreatedIncidentId(null);
-                    addLog(t("logs.roomChanged", { id: v }));
-                  }}
-                  options={rooms.map(room => ({
-                    value: room.id,
-                    label: `${room.name} (${room.status})`,
-                  }))}
-                  placeholder={t("controls.selectRoomPlaceholder")}
-                  searchPlaceholder={tCommon("searchPlaceholder")}
-                  emptyMessage={tCommon("empty")}
-                  allowEmpty
-                />
-              )}
-            </div>
-
-            <Button
-              size="lg"
-              className="min-w-[12rem] shrink-0"
-              onClick={handleAnalyzeImage}
-              disabled={!canAnalyze}
-              loading={analyzing}
-              title={
-                !selectedRoomId
-                  ? t("workflow.needRoom")
-                  : !base64Image
-                    ? t("workflow.needImage")
-                    : undefined
-              }
-            >
-              {analyzing ? (
-                t("controls.analyzing")
-              ) : (
-                <>
-                  <Cpu className="mr-2 h-4 w-4" />
-                  {t("controls.analyzeBtn")}
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div
-            className={`mt-3 rounded-md border px-3 py-2 text-xs sm:max-w-md ${
-              imageReady
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
-                : "border-border bg-muted text-muted-foreground"
-            }`}
-          >
-            <p className="font-medium">{t("workflow.imageStatus")}</p>
-            <p className="mt-0.5 truncate">
-              {webcamActive
-                ? t("workflow.webcamActive")
-                : imagePreviewUrl
-                  ? t("workflow.imageReady")
-                  : t("workflow.imageMissing")}
-            </p>
-          </div>
-
-          {!canAnalyze && !analyzing && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              {!selectedRoomId
-                ? t("workflow.needRoom")
-                : !base64Image
-                  ? t("workflow.needImage")
-                  : null}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-8">
-          <Card className="overflow-hidden p-0" variant="elevated">
-            <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/50 px-4 py-3">
-              <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <Camera className="h-4 w-4 text-muted-foreground" />
-                {t("controls.captureArea")}
-              </span>
-              <div className="flex gap-2">
-                {webcamActive ? (
-                  <Button size="sm" variant="destructive" onClick={stopWebcam}>
-                    {t("controls.stopCamera")}
-                  </Button>
-                ) : (
-                  <Button size="sm" variant="outline" onClick={startWebcam}>
-                    <Camera className="mr-1.5 h-3.5 w-3.5" />
-                    {t("controls.useWebcam")}
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <CardContent className="relative flex min-h-[380px] items-center justify-center bg-slate-100 p-0 dark:bg-slate-900/80">
+        <CardContent className="relative flex min-h-[420px] items-center justify-center bg-slate-100 p-0 dark:bg-slate-900/80">
               {webcamActive && (
                 <div className="relative flex h-full w-full items-center justify-center bg-slate-900">
                   <video
@@ -835,188 +680,137 @@ export default function VisionPage() {
               )}
 
               <canvas ref={canvasRef} className="hidden" />
-            </CardContent>
-          </Card>
+        </CardContent>
 
-          <Card variant="elevated">
-            <CardContent className="p-0">
-              <div className="mb-3 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-muted-foreground" />
-                <h3 className="text-sm font-medium text-foreground">
-                  {t("controls.presets")}
-                </h3>
-              </div>
-              <p className="mb-3 text-xs text-muted-foreground">
-                {t("controls.presetsSubtitle")}
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    loadPreset("missing-laptop", t("controls.presetAudit"))
-                  }
-                  className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
-                    base64Image.includes("preset-missing-laptop")
-                      ? "border-ring bg-accent"
-                      : "border-border bg-muted/40 hover:border-slate-400 dark:hover:border-slate-500"
-                  }`}
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-                    <AlertTriangle className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="block text-sm font-medium text-foreground">
-                      {t("controls.presetAudit")}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("tabs.audit")}
-                    </span>
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    loadPreset("onboarding", t("controls.presetProvision"))
-                  }
-                  className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
-                    base64Image.includes("preset-onboarding")
-                      ? "border-ring bg-accent"
-                      : "border-border bg-muted/40 hover:border-slate-400 dark:hover:border-slate-500"
-                  }`}
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
-                    <Sparkles className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="block text-sm font-medium text-foreground">
-                      {t("controls.presetProvision")}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("tabs.provision")}
-                    </span>
-                  </span>
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-4 lg:col-span-4">
-          <Card variant="elevated">
-            <CardContent className="flex flex-col gap-3 p-0">
-              <div className="flex items-center justify-between border-b border-border pb-2">
-                <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                  <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
-                  {t("console.title")}
-                </span>
-                <span className="font-mono text-[10px] text-muted-foreground">
-                  {t("console.subtitle")}
-                </span>
-              </div>
-
-              <div className="flex h-56 flex-col gap-1.5 overflow-y-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
-                {logs.length === 0 ? (
-                  <span className="italic">{t("console.empty")}</span>
-                ) : (
-                  logs.map((log, index) => (
-                    <div
-                      key={index}
-                      className="rounded border-l-2 border-border py-0.5 pl-2"
-                    >
-                      {log}
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <details className="group rounded-lg border border-border bg-card open:shadow-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-foreground">
-              <span className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-amber-500" />
-                {t("credentials.title")}
-              </span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
-            </summary>
-            <form
-              onSubmit={handleSaveCredentials}
-              className="space-y-4 border-t border-border px-4 py-4"
+        <div className="border-t border-border bg-card px-3 py-3 sm:px-4">
+          <div className="flex flex-col gap-2.5 2xl:flex-row 2xl:items-center 2xl:gap-3">
+            <div
+              role="tablist"
+              className="grid h-9 w-full shrink-0 grid-cols-2 rounded-md border border-border bg-muted p-0.5 2xl:inline-flex 2xl:w-auto"
             >
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  {t("credentials.apiKey")}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showApiKey ? "text" : "password"}
-                    value={apiKeyInput}
-                    onChange={e => setApiKeyInput(e.target.value)}
-                    placeholder={
-                      credConfigured
-                        ? "••••••••••••••••••••"
-                        : t("credentials.apiKeyPlaceholder")
-                    }
-                    className="h-9 w-full rounded-md border border-input bg-card py-2 pl-9 pr-12 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                  />
-                  <Key className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                  <button
-                    type="button"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                    className="absolute right-3 top-2 text-xs font-medium text-primary hover:opacity-80"
-                  >
-                    {showApiKey ? t("credentials.hide") : t("credentials.show")}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  {t("credentials.modelId")}
-                </label>
-                <input
-                  type="text"
-                  value={modelIdInput}
-                  onChange={e => setModelIdInput(e.target.value)}
-                  placeholder={t("credentials.modelIdPlaceholder")}
-                  className="h-9 w-full rounded-md border border-input bg-card px-3 py-2 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={savingCreds}
-                  className="flex-1"
+              {(["audit", "provision"] as const).map(tab => (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setPredictions([]);
+                    setAuditComparisons([]);
+                    setProvisionSuggestions([]);
+                    setCreatedIncidentId(null);
+                    addLog(t("logs.tabChanged", { tab: t(`tabs.${tab}`) }));
+                  }}
+                  className={`truncate rounded-[5px] px-2 text-center text-xs font-medium transition-colors sm:px-3 ${
+                    activeTab === tab
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <Save className="mr-1.5 h-3.5 w-3.5" />
-                  {t("credentials.save")}
-                </Button>
-                {credConfigured && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleClearCredentials}
-                    disabled={savingCreds}
-                    className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
-                  >
-                    {t("credentials.clearShort")}
-                  </Button>
+                  {t(`tabs.${tab}`)}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+              <div className="min-w-0 w-full flex-1">
+                <label className="sr-only">{t("controls.selectRoom")}</label>
+                {loadingRooms ? (
+                  <div className="h-9 animate-pulse rounded-md bg-muted" />
+                ) : (
+                  <SearchableSelect
+                    value={selectedRoomId}
+                    onChange={v => {
+                      setSelectedRoomId(v);
+                      setPredictions([]);
+                      setAuditComparisons([]);
+                      setProvisionSuggestions([]);
+                      setCreatedIncidentId(null);
+                      addLog(t("logs.roomChanged", { id: v }));
+                    }}
+                    options={rooms.map(room => ({
+                      value: room.id,
+                      label: `${room.name} (${room.status})`,
+                    }))}
+                    placeholder={t("controls.selectRoomPlaceholder")}
+                    searchPlaceholder={tCommon("searchPlaceholder")}
+                    emptyMessage={tCommon("empty")}
+                    allowEmpty
+                    className="w-full"
+                  />
                 )}
               </div>
 
-              <p className="text-center text-[10px] text-muted-foreground">
-                {t("credentials.securedLabel")}
-              </p>
-            </form>
-          </details>
-        </div>
-      </div>
+              <div className="flex items-center gap-2 sm:shrink-0">
+                <div
+                  className={`inline-flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border px-2.5 text-xs sm:max-w-[11rem] sm:flex-none ${
+                    imageReady
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+                      : "border-border bg-muted/50 text-muted-foreground"
+                  }`}
+                  title={t("workflow.imageStatus")}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                      imageReady ? "bg-emerald-500" : "bg-muted-foreground/50"
+                    }`}
+                  />
+                  <span className="truncate">
+                    {webcamActive
+                      ? t("workflow.webcamActive")
+                      : imagePreviewUrl
+                        ? t("workflow.imageReady")
+                        : t("workflow.imageMissing")}
+                  </span>
+                </div>
 
-      <div className="mt-6 space-y-6">
+                <Button
+                  size="md"
+                  className="h-9 shrink-0"
+                  onClick={handleAnalyzeImage}
+                  disabled={!canAnalyze}
+                  loading={analyzing}
+                  title={
+                    !selectedRoomId
+                      ? t("workflow.needRoom")
+                      : !base64Image
+                        ? t("workflow.needImage")
+                        : undefined
+                  }
+                >
+                  {analyzing ? (
+                    t("controls.analyzing")
+                  ) : (
+                    <>
+                      <Cpu className="mr-1.5 h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {t("controls.analyzeBtn")}
+                      </span>
+                      <span className="sm:hidden">
+                        {t("workflow.stepAnalyze")}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {!canAnalyze && !analyzing && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {!selectedRoomId
+                ? t("workflow.needRoom")
+                : !base64Image
+                  ? t("workflow.needImage")
+                  : null}
+            </p>
+          )}
+        </div>
+      </Card>
+
+      {/* Resultados — logo abaixo da captura */}
+      <div className="space-y-6">
         {activeTab === "audit" && auditComparisons.length > 0 && (
           <Card variant="elevated">
             <CardContent className="p-0">
@@ -1214,6 +1008,190 @@ export default function VisionPage() {
             </div>
           )}
       </div>
+
+      {/* Secundário: recolhido */}
+      <section className="mt-10 space-y-2 border-t border-border pt-6">
+          <details open className="group rounded-lg border border-border bg-card">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-foreground">
+              <span className="flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-muted-foreground" />
+                {t("console.title")}
+              </span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="border-t border-border px-4 py-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  {t("console.subtitle")}
+                </span>
+              </div>
+              <div className="flex h-48 flex-col gap-1.5 overflow-y-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
+                {logs.length === 0 ? (
+                  <span className="italic">{t("console.empty")}</span>
+                ) : (
+                  logs.map((log, index) => (
+                    <div
+                      key={index}
+                      className="rounded border-l-2 border-border py-0.5 pl-2"
+                    >
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </details>
+
+          {/* Cenários de teste — oculto no front
+          <details className="group rounded-lg border border-border bg-card">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-foreground">
+              <span className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-muted-foreground" />
+                {t("controls.presets")}
+              </span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="space-y-3 border-t border-border px-4 py-4">
+              <p className="text-xs text-muted-foreground">
+                {t("controls.presetsSubtitle")}
+              </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    loadPreset("missing-laptop", t("controls.presetAudit"))
+                  }
+                  className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
+                    base64Image.includes("preset-missing-laptop")
+                      ? "border-ring bg-accent"
+                      : "border-border bg-muted/40 hover:border-slate-400 dark:hover:border-slate-500"
+                  }`}
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
+                    <AlertTriangle className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">
+                      {t("controls.presetAudit")}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("tabs.audit")}
+                    </span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    loadPreset("onboarding", t("controls.presetProvision"))
+                  }
+                  className={`flex items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
+                    base64Image.includes("preset-onboarding")
+                      ? "border-ring bg-accent"
+                      : "border-border bg-muted/40 hover:border-slate-400 dark:hover:border-slate-500"
+                  }`}
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
+                    <Sparkles className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-medium text-foreground">
+                      {t("controls.presetProvision")}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("tabs.provision")}
+                    </span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </details>
+          */}
+
+          {/* Credenciais Roboflow — oculto no front
+          <details className="group rounded-lg border border-border bg-card">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-foreground">
+              <span className="flex items-center gap-2">
+                <Lock className="h-4 w-4 text-amber-500" />
+                {t("credentials.title")}
+              </span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <form
+              onSubmit={handleSaveCredentials}
+              className="space-y-4 border-t border-border px-4 py-4"
+            >
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  {t("credentials.apiKey")}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showApiKey ? "text" : "password"}
+                    value={apiKeyInput}
+                    onChange={e => setApiKeyInput(e.target.value)}
+                    placeholder={
+                      credConfigured
+                        ? "••••••••••••••••••••"
+                        : t("credentials.apiKeyPlaceholder")
+                    }
+                    className="h-9 w-full rounded-md border border-input bg-card py-2 pl-9 pr-12 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                  />
+                  <Key className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-3 top-2 text-xs font-medium text-primary hover:opacity-80"
+                  >
+                    {showApiKey ? t("credentials.hide") : t("credentials.show")}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  {t("credentials.modelId")}
+                </label>
+                <input
+                  type="text"
+                  value={modelIdInput}
+                  onChange={e => setModelIdInput(e.target.value)}
+                  placeholder={t("credentials.modelIdPlaceholder")}
+                  className="h-9 w-full rounded-md border border-input bg-card px-3 py-2 text-xs text-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={savingCreds}
+                  className="flex-1"
+                >
+                  <Save className="mr-1.5 h-3.5 w-3.5" />
+                  {t("credentials.save")}
+                </Button>
+                {credConfigured && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleClearCredentials}
+                    disabled={savingCreds}
+                    className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-500/20 dark:text-red-400 dark:hover:bg-red-500/10"
+                  >
+                    {t("credentials.clearShort")}
+                  </Button>
+                )}
+              </div>
+
+              <p className="text-center text-[10px] text-muted-foreground">
+                {t("credentials.securedLabel")}
+              </p>
+            </form>
+          </details>
+          */}
+      </section>
     </PageLayout>
   );
 }

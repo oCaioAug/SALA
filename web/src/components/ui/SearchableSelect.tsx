@@ -167,7 +167,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       </button>
 
       {open ? (
-        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-border bg-card shadow-md">
+        <div className="absolute left-0 z-50 mt-1 min-w-full w-max max-w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-md border border-border bg-card shadow-md">
           <div className="flex items-center gap-2 border-b border-border px-2 py-1.5">
             <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <input
