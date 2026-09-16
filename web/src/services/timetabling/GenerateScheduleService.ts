@@ -1,9 +1,11 @@
 import {
+  CandidateProfessor,
   ClassRequirement,
   ProfessorAvailability,
   TimetablingInputDTO,
   TimetablingOutputDTO,
 } from "@/domain/timetabling/timetabling.types";
+import { ProfessorAssignmentService } from "@/domain/timetabling/ProfessorAssignmentService";
 import { TimetablingEngine } from "@/domain/timetabling/TimetablingEngine";
 import { prisma } from "@/lib/prisma";
 
@@ -89,50 +91,46 @@ export class GenerateScheduleService {
       };
     });
 
-    // 3. Fetch Professor Availabilities for the professors in this organization's requirements
-    const professorIds = Array.from(
-      new Set(requirements.map(r => r.professorId).filter((id): id is string => Boolean(id)))
-    );
-
-    const disponibilidades = await prisma.disponibilidade.findMany({
-      where: {
-        professorId: { in: professorIds },
+    // 3. Fetch Organization Professors with Disciplines and Availabilities
+    const orgProfessors = await prisma.professor.findMany({
+      where: { organizationId },
+      include: {
+        disciplinas: true,
+        disponibilidades: true,
       },
     });
 
-    // Map availabilities to Domain Type
-    const availabilitiesMap = new Map<string, ProfessorAvailability>();
+    const candidateProfessors: CandidateProfessor[] = orgProfessors.map(p => ({
+      id: p.id,
+      name: p.name,
+      disciplinaIds: p.disciplinas.map(d => d.id),
+      availableSlots: new Set(
+        p.disponibilidades.map(d => `${d.diaSemana}_${d.slotId}`)
+      ),
+    }));
 
-    for (const profId of professorIds) {
-      availabilitiesMap.set(profId, {
-        professorId: profId,
-        availableSlots: new Set<string>(),
-      });
-    }
-
-    for (const disp of disponibilidades) {
-      const profAvail = availabilitiesMap.get(disp.professorId);
-      if (profAvail) {
-        profAvail.availableSlots.add(`${disp.diaSemana}_${disp.slotId}`);
-      }
-    }
-
-    const availabilities: ProfessorAvailability[] = Array.from(
-      availabilitiesMap.values()
-    );
-
-    // 4. Build Input DTO
-    const input: TimetablingInputDTO = {
+    // 4. Assign Professors to Requirements without a teacher
+    const assignmentService = new ProfessorAssignmentService();
+    const assignmentResult = assignmentService.assignProfessors({
       requirements,
-      availabilities,
+      professors: candidateProfessors,
+    });
+
+    // 5. Build Input DTO
+    const input: TimetablingInputDTO = {
+      requirements: assignmentResult.requirements,
+      availabilities: assignmentResult.availabilities,
     };
 
-    // 5. Run Engine
+    // 6. Run Engine
     const engine = new TimetablingEngine(input);
     const result = engine.generateSchedule();
 
-    // Na prática, aqui você salvaria a grade no banco ('ClassSchedule' ou algo do tipo)
-    // Para agora, apenas retornamos o output do motor.
+    // Propagate any professor allocation errors/warnings
+    if (assignmentResult.errors.length > 0) {
+      result.errors = [...(result.errors || []), ...assignmentResult.errors];
+    }
+
     return result;
   }
 }

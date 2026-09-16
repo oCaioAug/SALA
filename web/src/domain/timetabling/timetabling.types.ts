@@ -67,3 +67,25 @@ export interface TimetablingOutputDTO {
   fitness?: number;
   errors?: string[];
 }
+
+// ==========================================
+// Tipos para Atribuição de Professores
+// ==========================================
+
+export interface CandidateProfessor {
+  id: string;
+  name: string;
+  disciplinaIds: string[];
+  availableSlots: Set<TimeSlot>;
+}
+
+export interface ProfessorAssignmentInput {
+  requirements: ClassRequirement[];
+  professors: CandidateProfessor[];
+}
+
+export interface ProfessorAssignmentResult {
+  requirements: ClassRequirement[];
+  availabilities: ProfessorAvailability[];
+  errors: string[];
+}
