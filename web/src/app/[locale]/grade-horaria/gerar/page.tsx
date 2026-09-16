@@ -2,7 +2,7 @@
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { AlertTriangle, CalendarCheck, Play } from "lucide-react";
+import { AlertTriangle, CalendarCheck, Info, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
