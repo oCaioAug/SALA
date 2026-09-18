@@ -2343,47 +2343,47 @@
       "backLink": "← Voltar ao início",
       "title": "Política de Privacidade",
       "lastUpdatedLabel": "Última atualização",
-      "lastUpdated": "15 de abril de 2026",
+      "lastUpdated": "18 de setembro de 2026",
       "sections": {
         "s1": {
-          "title": "1. Introdução",
-          "body": "Esta política descreve como o SALA trata dados pessoais de usuários em conformidade com a LGPD e boas práticas de privacidade."
+          "title": "1. Introdução e Identificação do Responsável",
+          "body": "Esta política descreve como o SALA (Sistema de Agendamento e Gestão de Ambientes), acessível em sala.ocaioaug.com.br, trata dados pessoais de usuários em estrita conformidade com a LGPD, o GDPR e as Políticas de Dados do Usuário dos Serviços de API do Google. Dúvidas podem ser encaminhadas para contact@vivacityhub.com."
         },
         "s2": {
-          "title": "2. Dados Coletados",
-          "body": "Coletamos nome, e-mail, foto de perfil (quando disponível via Google), organização, reservas, incidentes e registros de uso necessários ao funcionamento do sistema."
+          "title": "2. Dados Coletados e Integração Google",
+          "body": "Coletamos nome, e-mail institucional, foto de perfil pública do Google, dados de agendamentos e registros de uso necessários. Via Google OAuth (escopos openid, email, profile e https://www.googleapis.com/auth/calendar), acessamos dados de perfil para autenticação e o Google Calendar exclusivamente para sincronização de reservas de salas."
         },
         "s3": {
-          "title": "3. Finalidade",
-          "body": "Os dados são usados para autenticação, gestão de salas e reservas, notificações, segurança, suporte e melhoria do serviço."
+          "title": "3. Finalidade e Uso do Google Calendar",
+          "body": "Os dados de perfil são utilizados para autenticação segura e identificação em fluxos de aprovação. O acesso ao Google Calendar é utilizado exclusivamente para criar, atualizar e remover eventos na agenda principal do usuário correspondentes às reservas de salas realizadas no SALA. O SALA não acessa, não monitora e não altera nenhum outro compromisso pessoal existente na agenda do usuário."
         },
         "s4": {
-          "title": "4. Base Legal",
-          "body": "O tratamento baseia-se em execução de contrato ou política institucional, legítimo interesse da organização e consentimento quando aplicável."
+          "title": "4. Conformidade com a Política de Dados do Google (Uso Limitado)",
+          "body": "O uso e a transferência para qualquer outro aplicativo de informações recebidas das APIs do Google pelo SALA cumprirão a Política de Dados do Usuário dos Serviços de API do Google, incluindo os requisitos de Uso Limitado (Limited Use). SALA's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements."
         },
         "s5": {
-          "title": "5. Compartilhamento",
-          "body": "Dados podem ser processados por provedores de infraestrutura (hospedagem, banco de dados, e-mail/push) sob contratos e medidas de segurança adequadas."
+          "title": "5. Armazenamento Seguro e Gestão de Tokens",
+          "body": "Os tokens OAuth (access token e refresh token) são armazenados em banco de dados isolado com criptografia em repouso e tráfego protegido por TLS 1.3/HTTPS. O acesso à infraestrutura é restrito e monitorado."
         },
         "s6": {
-          "title": "6. Retenção",
-          "body": "Mantemos dados enquanto necessário para as finalidades descritas e obrigações legais. Organizações podem solicitar exclusão conforme política interna."
+          "title": "6. Não Compartilhamento, Não Venda de Dados e Inteligência Artificial",
+          "body": "O SALA nunca vende, aluga ou compartilha dados pessoais ou dados de usuários do Google para publicidade ou corretores de dados. Dados do Google nunca são usados para treinar modelos de inteligência artificial ou modelos de linguagem (LLMs)."
         },
         "s7": {
-          "title": "7. Direitos do Titular",
-          "body": "Você pode solicitar acesso, correção, exclusão, portabilidade e informações sobre tratamento ao administrador da sua organização."
+          "title": "7. Revogação de Acesso e Exclusão de Dados",
+          "body": "Você pode revogar as permissões do SALA a qualquer momento nas Configurações de Segurança do Google (https://myaccount.google.com/permissions). Para solicitar a exclusão definitiva da sua conta e de todos os seus dados e tokens, envie um e-mail para contact@vivacityhub.com."
         },
         "s8": {
-          "title": "8. Segurança",
-          "body": "Adotamos medidas técnicas e organizacionais para proteger dados, incluindo controle de acesso, criptografia em trânsito e monitoramento."
+          "title": "8. Segurança da Informação",
+          "body": "Adotamos padrões elevados de cibersegurança, criptografia e controle de privilégios para resguardar a integridade e privacidade dos dados."
         },
         "s9": {
           "title": "9. Cookies e Sessão",
-          "body": "Utilizamos cookies de sessão para autenticação. Não utilizamos cookies de publicidade comportamental."
+          "body": "Utilizamos unicamente cookies essenciais de sessão criptografados para autenticação e segurança CSRF. Não utilizamos rastreadores ou cookies de terceiros."
         },
         "s10": {
-          "title": "10. Alterações e Contato",
-          "body": "Esta política pode ser atualizada. Para questões de privacidade, contate o administrador da organização ou o encarregado de dados (DPO) institucional."
+          "title": "10. Contato e Encarregado de Dados (DPO)",
+          "body": "Para exercer direitos de titular ou esclarecer dúvidas sobre esta política, entre em contato diretamente pelo e-mail contact@vivacityhub.com."
         }
       }
     }

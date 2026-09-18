@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { LegalDocumentView } from "@/components/marketing/LegalDocumentView";
+import { PrivacyPolicyView } from "@/components/marketing/PrivacyPolicyView";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -19,5 +19,5 @@ export async function generateMetadata({
 }
 
 export default function PrivacyPolicyPage() {
-  return <LegalDocumentView type="privacy" />;
+  return <PrivacyPolicyView />;
 }

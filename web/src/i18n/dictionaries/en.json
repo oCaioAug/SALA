@@ -1727,47 +1727,47 @@
       "backLink": "← Back to home",
       "title": "Privacy Policy",
       "lastUpdatedLabel": "Last updated",
-      "lastUpdated": "April 15, 2026",
+      "lastUpdated": "September 18, 2026",
       "sections": {
         "s1": {
-          "title": "1. Introduction",
-          "body": "This policy describes how SALA handles personal data in accordance with GDPR/LGPD and privacy best practices."
+          "title": "1. Overview and Controller Information",
+          "body": "This Privacy Policy describes how SALA (Room Scheduling and Management System), accessible at sala.ocaioaug.com.br, collects, processes, and protects personal data in strict compliance with GDPR, LGPD, and Google API Services User Data Policy. For inquiries, contact contact@vivacityhub.com."
         },
         "s2": {
-          "title": "2. Data Collected",
-          "body": "We collect name, email, profile photo (when available via Google), organization, reservations, incidents and usage logs."
+          "title": "2. Data Collected and Google Integration",
+          "body": "We collect user profile details, institutional email, public Google avatar, and room scheduling records. Via Google OAuth (scopes openid, email, profile, and https://www.googleapis.com/auth/calendar), we access profile info for authentication and Google Calendar exclusively for room booking synchronization."
         },
         "s3": {
-          "title": "3. Purpose",
-          "body": "Data is used for authentication, room and reservation management, notifications, security, support and service improvement."
+          "title": "3. Purpose and Google Calendar Scope Usage",
+          "body": "Profile information is used for secure sign-in and identification. Google Calendar access is used strictly to create, update, and delete calendar events on your primary calendar corresponding to your SALA room reservations. SALA does not inspect, read, or alter any other personal calendar events."
         },
         "s4": {
-          "title": "4. Legal Basis",
-          "body": "Processing is based on contract or institutional policy, legitimate interest and consent where applicable."
+          "title": "4. Google API Services User Data Policy (Limited Use)",
+          "body": "SALA's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements."
         },
         "s5": {
-          "title": "5. Sharing",
-          "body": "Data may be processed by infrastructure providers (hosting, database, email/push) under appropriate security measures."
+          "title": "5. Secure Storage and Token Protection",
+          "body": "OAuth tokens (access and refresh tokens) are stored in an isolated database with encryption at rest and protected in transit via TLS 1.3/HTTPS. Infrastructure access is restricted and strictly monitored."
         },
         "s6": {
-          "title": "6. Retention",
-          "body": "We retain data as needed for described purposes and legal obligations."
+          "title": "6. No Sharing, No Selling, and No AI Training",
+          "body": "SALA never sells, rents, or commercializes personal data or Google user data. Google user data is never used for advertising, personalized marketing, or training artificial intelligence / machine learning models (LLMs)."
         },
         "s7": {
-          "title": "7. Data Subject Rights",
-          "body": "You may request access, correction, deletion and portability through your organization administrator."
+          "title": "7. User Rights, Access Revocation, and Data Deletion",
+          "body": "You may revoke SALA's access at any time via Google Account Permissions (https://myaccount.google.com/permissions). To request permanent deletion of your account and all associated records, email contact@vivacityhub.com."
         },
         "s8": {
-          "title": "8. Security",
-          "body": "We adopt technical and organizational measures including access control and encryption in transit."
+          "title": "8. Security Standards",
+          "body": "We employ robust cybersecurity controls, database encryption, and role-based access to safeguard all user information."
         },
         "s9": {
           "title": "9. Cookies and Session",
-          "body": "We use session cookies for authentication. We do not use behavioral advertising cookies."
+          "body": "We use strictly necessary encrypted session cookies for authentication and CSRF security. We do not use third-party tracking or advertising cookies."
         },
         "s10": {
-          "title": "10. Changes and Contact",
-          "body": "This policy may be updated. Contact your organization administrator or DPO for privacy questions."
+          "title": "10. Contact and Data Protection Officer (DPO)",
+          "body": "To exercise your privacy rights or submit questions, contact our DPO directly at contact@vivacityhub.com."
         }
       }
     }
