@@ -155,48 +155,62 @@ const GerarGradePage: React.FC = () => {
     (turmasMap[a] || "").localeCompare(turmasMap[b] || "")
   );
 
-  const buildExportData = () => {
-    const data: any[] = [];
-    sortedTurmaIds.forEach(tId => {
-      const shiftId = turmaShiftsMap[tId] || "default";
-      const shiftInfo = shifts.find(s => s.id === shiftId);
-      const slots = shiftInfo?.slots || [];
-      const days = shiftInfo?.daysPerWeek || 5;
-
-      for (let day = 1; day <= days; day++) {
-        for (const slot of slots) {
-          const slotId = `${day}_${slot.id}`;
-          const c = grouped[tId]?.[slotId];
-          if (c) {
-            data.push({
-              Turma: turmasMap[c.turmaId] || "",
-              Dia: `Dia ${day}`,
-              Horário: `${slot.startTime} - ${slot.endTime}`,
-              Disciplina: discMap[c.disciplinaId] || "",
-              Professor: c.professorId
-                ? profMap[c.professorId] || ""
-                : "Sem professor",
-            });
-          }
-        }
-      }
-    });
-    return data;
-  };
-
+  // Exportação CSV: Uma tabela por turma com eixo X = Dias da Semana e eixo Y = Horários / Disciplinas
   const handleExportCSV = () => {
-    const data = buildExportData();
-    if (data.length === 0) return;
+    if (!result?.schedule || sortedTurmaIds.length === 0) return;
 
-    const headers = Object.keys(data[0]).join(",");
-    const rows = data.map(d =>
-      Object.values(d)
-        .map(v => `"${v}"`)
-        .join(",")
-    );
+    const csvLines: string[] = [];
+
+    sortedTurmaIds.forEach((turmaId, idx) => {
+      const shiftId = turmaShiftsMap[turmaId];
+      const shift = shifts.find(s => s.id === shiftId) || shifts[0];
+      const shiftSlots = shift?.slots || [];
+      const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
+      const turmaName = turmasMap[turmaId] || `Turma ${idx + 1}`;
+      const shiftName = shift?.name ? ` (${shift.name})` : "";
+
+      if (idx > 0) {
+        csvLines.push(""); // Linha em branco separadora entre turmas
+      }
+
+      // Título da Turma
+      csvLines.push(`"TURMA: ${turmaName}${shiftName}"`);
+
+      // Cabeçalho (Eixo X: Dias da Semana)
+      const headerCols = [
+        t("timeColumn") || "Horário",
+        ...days.map(diaId => tCommon(`days.${diaId}`) || `Dia ${diaId}`),
+      ];
+      csvLines.push(headerCols.map(c => `"${c}"`).join(","));
+
+      // Linhas (Eixo Y: Horários e Disciplinas com Professores)
+      shiftSlots.forEach((slot: any) => {
+        const slotLabel =
+          slot.label ||
+          (slot.startTime && slot.endTime
+            ? `${slot.startTime} - ${slot.endTime}`
+            : `Horário ${slot.id}`);
+
+        const rowCols = [slotLabel];
+        days.forEach(diaId => {
+          const classInfo = grouped[turmaId]?.[`${diaId}_${slot.id}`];
+          if (classInfo) {
+            const disc = discMap[classInfo.disciplinaId] || "";
+            const prof = classInfo.professorId
+              ? profMap[classInfo.professorId] || ""
+              : (t("noTeacher") || "Sem professor");
+            rowCols.push(`${disc} (${prof})`);
+          } else {
+            rowCols.push("-");
+          }
+        });
+
+        csvLines.push(rowCols.map(c => `"${c.replace(/"/g, '""')}"`).join(","));
+      });
+    });
+
     const csvContent =
-      "data:text/csv;charset=utf-8,\uFEFF" + [headers, ...rows].join("\n");
-
+      "data:text/csv;charset=utf-8,\uFEFF" + csvLines.join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -206,36 +220,295 @@ const GerarGradePage: React.FC = () => {
     link.remove();
   };
 
+  // Exportação Excel (XLSX): Tabela matricial por turma (aba consolidada + abas individuais por turma)
   const handleExportXLSX = () => {
-    const data = buildExportData();
-    if (data.length === 0) return;
+    if (!result?.schedule || sortedTurmaIds.length === 0) return;
 
-    const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Grade Horária");
+
+    // 1. Aba Consolidada contendo todas as turmas
+    const generalRows: any[][] = [];
+
+    sortedTurmaIds.forEach((turmaId, idx) => {
+      const shiftId = turmaShiftsMap[turmaId];
+      const shift = shifts.find(s => s.id === shiftId) || shifts[0];
+      const shiftSlots = shift?.slots || [];
+      const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
+      const turmaName = turmasMap[turmaId] || `Turma ${idx + 1}`;
+      const shiftName = shift?.name ? ` (${shift.name})` : "";
+
+      if (idx > 0) {
+        generalRows.push([]);
+        generalRows.push([]);
+      }
+
+      generalRows.push([`TURMA: ${turmaName}${shiftName}`]);
+
+      const headerRow = [
+        t("timeColumn") || "Horário",
+        ...days.map(diaId => tCommon(`days.${diaId}`) || `Dia ${diaId}`),
+      ];
+      generalRows.push(headerRow);
+
+      shiftSlots.forEach((slot: any) => {
+        const slotLabel =
+          slot.label ||
+          (slot.startTime && slot.endTime
+            ? `${slot.startTime} - ${slot.endTime}`
+            : `Horário ${slot.id}`);
+
+        const rowData = [slotLabel];
+        days.forEach(diaId => {
+          const classInfo = grouped[turmaId]?.[`${diaId}_${slot.id}`];
+          if (classInfo) {
+            const disc = discMap[classInfo.disciplinaId] || "";
+            const prof = classInfo.professorId
+              ? profMap[classInfo.professorId] || ""
+              : (t("noTeacher") || "Sem professor");
+            rowData.push(`${disc} (${prof})`);
+          } else {
+            rowData.push("-");
+          }
+        });
+        generalRows.push(rowData);
+      });
+    });
+
+    const generalWs = XLSX.utils.aoa_to_sheet(generalRows);
+    generalWs["!cols"] = [
+      { wch: 22 },
+      { wch: 28 },
+      { wch: 28 },
+      { wch: 28 },
+      { wch: 28 },
+      { wch: 28 },
+      { wch: 28 },
+    ];
+    XLSX.utils.book_append_sheet(wb, generalWs, "Todas as Turmas");
+
+    // 2. Abas individuais por Turma
+    const usedNames = new Set<string>();
+    sortedTurmaIds.forEach((turmaId, idx) => {
+      const shiftId = turmaShiftsMap[turmaId];
+      const shift = shifts.find(s => s.id === shiftId) || shifts[0];
+      const shiftSlots = shift?.slots || [];
+      const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
+      const rawName = turmasMap[turmaId] || `Turma ${idx + 1}`;
+      const shiftName = shift?.name ? ` (${shift.name})` : "";
+
+      const turmaRows: any[][] = [];
+      turmaRows.push([`Grade Horária — ${rawName}${shiftName}`]);
+      turmaRows.push([]);
+
+      const headerRow = [
+        t("timeColumn") || "Horário",
+        ...days.map(diaId => tCommon(`days.${diaId}`) || `Dia ${diaId}`),
+      ];
+      turmaRows.push(headerRow);
+
+      shiftSlots.forEach((slot: any) => {
+        const slotLabel =
+          slot.label ||
+          (slot.startTime && slot.endTime
+            ? `${slot.startTime} - ${slot.endTime}`
+            : `Horário ${slot.id}`);
+
+        const rowData = [slotLabel];
+        days.forEach(diaId => {
+          const classInfo = grouped[turmaId]?.[`${diaId}_${slot.id}`];
+          if (classInfo) {
+            const disc = discMap[classInfo.disciplinaId] || "";
+            const prof = classInfo.professorId
+              ? profMap[classInfo.professorId] || ""
+              : (t("noTeacher") || "Sem professor");
+            rowData.push(`${disc} (${prof})`);
+          } else {
+            rowData.push("-");
+          }
+        });
+        turmaRows.push(rowData);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(turmaRows);
+      ws["!cols"] = [
+        { wch: 22 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 },
+        { wch: 28 },
+      ];
+
+      // Sanitiza nome da aba (limite de 31 caracteres do Excel)
+      let sheetName = rawName.replace(/[:\\/?*\[\]]/g, "_").slice(0, 28);
+      if (usedNames.has(sheetName.toLowerCase())) {
+        sheetName = `${sheetName.slice(0, 25)}_${idx + 1}`;
+      }
+      usedNames.add(sheetName.toLowerCase());
+
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
     XLSX.writeFile(wb, "grade_horaria.xlsx");
   };
 
+  // Exportação PDF: Uma página em orientação paisagem por turma, com layout matricial idêntico ao do sistema
   const handleExportPDF = () => {
-    const data = buildExportData();
-    if (data.length === 0) return;
+    if (!result?.schedule || sortedTurmaIds.length === 0) return;
 
-    const doc = new jsPDF();
-    doc.text("Grade Horária", 14, 15);
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "pt",
+      format: "a4",
+    });
 
-    const tableColumn = ["Turma", "Dia", "Horário", "Disciplina", "Professor"];
-    const tableRows = data.map(d => [
-      d.Turma,
-      d.Dia,
-      d.Horário,
-      d.Disciplina,
-      d.Professor,
-    ]);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
+    sortedTurmaIds.forEach((turmaId, index) => {
+      if (index > 0) {
+        doc.addPage("a4", "landscape");
+      }
+
+      const shiftId = turmaShiftsMap[turmaId];
+      const shift = shifts.find(s => s.id === shiftId) || shifts[0];
+      const shiftSlots = shift?.slots || [];
+      const days = DAY_IDS.slice(0, shift?.daysPerWeek || 5);
+      const turmaName = turmasMap[turmaId] || `Turma ${index + 1}`;
+      const shiftName = shift?.name ? ` • Turno: ${shift.name}` : "";
+
+      // Faixa decorativa de cabeçalho
+      doc.setFillColor(248, 250, 252);
+      doc.rect(40, 25, pageWidth - 80, 50, "F");
+      doc.setDrawColor(226, 232, 240);
+      doc.rect(40, 25, pageWidth - 80, 50, "S");
+
+      // Título da Turma
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(30, 41, 59);
+      doc.text(`Grade Horária — ${turmaName}`, 55, 48);
+
+      // Subtítulo e data de emissão
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      const nowStr = new Date().toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      doc.text(
+        `SALA — Sistema de Agendamento e Gestão de Ambientes${shiftName} | Emissão: ${nowStr}`,
+        55,
+        64
+      );
+
+      // Colunas (Eixo X: Horário + Dias da Semana)
+      const headColumns = [
+        t("timeColumn") || "Horário",
+        ...days.map(diaId => tCommon(`days.${diaId}`) || `Dia ${diaId}`),
+      ];
+
+      // Linhas (Eixo Y: Horários e Disciplinas)
+      const tableRows = shiftSlots.map((slot: any) => {
+        const slotLabel =
+          slot.label ||
+          (slot.startTime && slot.endTime
+            ? `${slot.startTime} - ${slot.endTime}`
+            : `Horário ${slot.id}`);
+
+        const row = [slotLabel];
+
+        days.forEach(diaId => {
+          const classInfo = grouped[turmaId]?.[`${diaId}_${slot.id}`];
+          if (classInfo) {
+            const disc = discMap[classInfo.disciplinaId] || "Disciplina";
+            const prof = classInfo.professorId
+              ? profMap[classInfo.professorId] || ""
+              : (t("noTeacher") || "Sem professor");
+            row.push(`${disc}\n(${prof})`);
+          } else {
+            row.push("-");
+          }
+        });
+
+        return row;
+      });
+
+      // Cálculo de largura das colunas
+      const timeColWidth = 100;
+      const daysCount = days.length;
+      const remainingWidth = pageWidth - 80 - timeColWidth;
+      const dayColWidth = remainingWidth / (daysCount || 1);
+
+      const colStyles: Record<number, any> = {
+        0: {
+          cellWidth: timeColWidth,
+          fontStyle: "bold",
+          fillColor: [248, 250, 252],
+          textColor: [71, 85, 105],
+          halign: "center",
+          valign: "middle",
+        },
+      };
+
+      for (let i = 1; i <= daysCount; i++) {
+        colStyles[i] = {
+          cellWidth: dayColWidth,
+          halign: "center",
+          valign: "middle",
+        };
+      }
+
+      autoTable(doc, {
+        head: [headColumns],
+        body: tableRows,
+        startY: 90,
+        theme: "grid",
+        headStyles: {
+          fillColor: [37, 99, 235], // Azul primário SALA
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center",
+          valign: "middle",
+          fontSize: 10,
+          cellPadding: 8,
+        },
+        bodyStyles: {
+          fontSize: 9,
+          cellPadding: 8,
+          lineColor: [226, 232, 240],
+          lineWidth: 0.5,
+          textColor: [30, 41, 59],
+        },
+        columnStyles: colStyles,
+        margin: { left: 40, right: 40, bottom: 40 },
+        didParseCell: function (data: any) {
+          if (data.section === "body" && data.column.index > 0) {
+            if (data.cell.raw && data.cell.raw !== "-") {
+              data.cell.styles.fillColor = [239, 246, 255]; // Azul claro de destaque
+              data.cell.styles.fontStyle = "bold";
+            } else {
+              data.cell.styles.textColor = [148, 163, 184]; // Muted
+            }
+          }
+        },
+      });
+
+      // Rodapé da página com numeração
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(
+        `Página ${index + 1} de ${sortedTurmaIds.length}`,
+        pageWidth - 40,
+        pageHeight - 20,
+        { align: "right" }
+      );
     });
 
     doc.save("grade_horaria.pdf");
