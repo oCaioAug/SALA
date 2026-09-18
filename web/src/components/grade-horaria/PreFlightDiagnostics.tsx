@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   ArrowRight,
   BookOpen,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -41,32 +40,7 @@ export const PreFlightDiagnostics: React.FC<PreFlightDiagnosticsProps> = ({
     );
   }
 
-  if (!diagnostics) return null;
-
-  if (!diagnostics.hasIssues) {
-    return (
-      <Card className="mb-6 border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 shadow-sm">
-        <CardContent className="p-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 shrink-0">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
-                Diagnóstico Preventivo: Tudo pronto para gerar a grade!
-              </h4>
-              <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-                Todas as turmas respeitam a capacidade do turno, as disciplinas possuem docentes habilitados e não há professores sem matéria.
-              </p>
-            </div>
-          </div>
-          <span className="hidden sm:inline-flex text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
-            100% Consistente
-          </span>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (!diagnostics || !diagnostics.hasIssues) return null;
 
   const errorsCount = diagnostics.alerts.filter(a => a.severity === "error").length;
   const warningsCount = diagnostics.alerts.filter(a => a.severity === "warning").length;

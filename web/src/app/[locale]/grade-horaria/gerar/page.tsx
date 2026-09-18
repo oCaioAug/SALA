@@ -2,13 +2,14 @@
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { AlertTriangle, CalendarCheck, Info, Play } from "lucide-react";
+import { CalendarCheck, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
 import { OrgAdminGuard } from "@/components/auth/OrgAdminGuard";
 import { ExportScheduleDropdown } from "@/components/grade-horaria/ExportScheduleDropdown";
+import { GenerationResultSummary } from "@/components/grade-horaria/GenerationResultSummary";
 import { PreFlightDiagnostics } from "@/components/grade-horaria/PreFlightDiagnostics";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { BackButton } from "@/components/ui/BackButton";
@@ -306,68 +307,16 @@ const GerarGradePage: React.FC = () => {
         {result && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Resumo */}
-            <Card
-              className={
-                result.success
-                  ? "border-green-200 bg-green-50 dark:bg-green-900/10"
-                  : "border-yellow-200 bg-yellow-50 dark:bg-yellow-900/10"
-              }
-            >
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  {result.success ? (
-                    <CalendarCheck className="w-8 h-8 text-green-600" />
-                  ) : (
-                    <Info className="w-8 h-8 text-blue-600" />
-                  )}
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {result.success ? t("perfectTitle") : t("partialTitle")}
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400 mt-1">
-                      {t("fitnessScore", {
-                        score: (result.fitness ?? 0).toFixed(1),
-                      })}
-                    </p>
-                    {result.unallocatedRequirements && (
-                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-yellow-200">
-                        <p className="font-semibold text-yellow-700 dark:text-yellow-500 mb-2">
-                          {t("unallocatedTitle")}
-                        </p>
-                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
-                          {result.unallocatedRequirements.map(
-                            (req: any, i: number) => (
-                              <li key={i}>
-                                {t("unallocatedItem", {
-                                  className: turmasMap[req.turmaId],
-                                  subjectName: discMap[req.disciplinaId],
-                                  teacherName: req.professorId
-                                    ? profMap[req.professorId] || ""
-                                    : "Sem professor",
-                                  count: req.requiredSlots,
-                                })}
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                    {result.errors && (
-                      <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded border border-red-200">
-                        <p className="font-semibold text-red-700 dark:text-red-500 mb-2">
-                          {t("errorsTitle")}
-                        </p>
-                        <ul className="list-disc list-inside text-sm text-slate-700 dark:text-slate-300">
-                          {result.errors.map((err: string, i: number) => (
-                            <li key={i}>{err}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <GenerationResultSummary
+              success={!!result.success}
+              fitness={result.fitness}
+              unallocatedRequirements={result.unallocatedRequirements}
+              errors={result.errors}
+              turmasMap={turmasMap}
+              discMap={discMap}
+              profMap={profMap}
+              onNavigate={navigate}
+            />
 
             {/* Cabeçalho da Visualização da Grade com Dropdown de Exportação */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 mb-4">

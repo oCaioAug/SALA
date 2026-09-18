@@ -2,7 +2,15 @@
 
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
@@ -27,6 +35,17 @@ interface SearchableMultiSelectProps {
   maxDisplayBadges?: number;
 }
 
+type MenuCoords = {
+  top: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+  placement: "top" | "bottom";
+};
+
+const MENU_GAP = 4;
+const MENU_ESTIMATE = 280;
+
 export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
   options,
   value = [],
@@ -50,10 +69,13 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
 
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [coords, setCoords] = useState<MenuCoords | null>(null);
 
   const safeOptions = useMemo(
     () => (Array.isArray(options) ? options : []),
@@ -79,6 +101,53 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
     );
   }, [safeOptions, query]);
 
+  const updatePosition = () => {
+    const el = triggerRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom - MENU_GAP;
+    const spaceAbove = rect.top - MENU_GAP;
+    const placement: "top" | "bottom" =
+      spaceBelow >= Math.min(MENU_ESTIMATE, 160) || spaceBelow >= spaceAbove
+        ? "bottom"
+        : "top";
+    const available = placement === "bottom" ? spaceBelow : spaceAbove;
+    const maxHeight = Math.min(280, Math.max(140, available));
+    const width = Math.min(rect.width, window.innerWidth - 16);
+    let left = rect.left;
+    if (left + width > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - 8 - width);
+    }
+    if (left < 8) left = 8;
+
+    setCoords({
+      top:
+        placement === "bottom"
+          ? rect.bottom + MENU_GAP
+          : rect.top - MENU_GAP,
+      left,
+      width,
+      maxHeight,
+      placement,
+    });
+  };
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setCoords(null);
+      return;
+    }
+    updatePosition();
+    const onReposition = () => updatePosition();
+    window.addEventListener("resize", onReposition);
+    document.addEventListener("scroll", onReposition, true);
+    return () => {
+      window.removeEventListener("resize", onReposition);
+      document.removeEventListener("scroll", onReposition, true);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     setQuery("");
@@ -89,9 +158,10 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
   useEffect(() => {
     if (!open) return;
     const onDocClick = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      if (rootRef.current?.contains(target)) return;
+      if (menuRef.current?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
@@ -134,9 +204,91 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
     }
   };
 
+  const menu =
+    open && coords && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            ref={menuRef}
+            id={listId}
+            role="listbox"
+            aria-multiselectable="true"
+            className="overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md"
+            style={{
+              position: "fixed",
+              zIndex: 200,
+              left: coords.left,
+              width: coords.width,
+              maxHeight: coords.maxHeight,
+              ...(coords.placement === "bottom"
+                ? { top: coords.top }
+                : { bottom: window.innerHeight - coords.top }),
+            }}
+          >
+            <div className="flex items-center border-b border-border px-3 py-2">
+              <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder={resolvedSearchPlaceholder}
+                className="flex h-7 w-full bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
+
+            <div
+              className="overflow-y-auto p-1"
+              style={{ maxHeight: Math.max(80, coords.maxHeight - 48) }}
+            >
+              {filtered.length === 0 ? (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  {resolvedEmptyMessage}
+                </div>
+              ) : (
+                filtered.map(opt => {
+                  const isSelected = safeValue.includes(opt.value);
+                  return (
+                    <div
+                      key={opt.value}
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleOption(opt.value);
+                      }}
+                      className={cn(
+                        "flex cursor-pointer select-none items-center gap-2.5 rounded-sm px-2.5 py-1.5 text-sm transition-colors",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        isSelected && "bg-accent/60 font-medium"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded-xs border transition-colors",
+                          isSelected
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "border-input bg-background"
+                        )}
+                      >
+                        {isSelected && (
+                          <Check className="h-3 w-3 stroke-[3]" />
+                        )}
+                      </div>
+
+                      <span className="flex-1 truncate">{opt.label}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
-      {/* Hidden input for form serialization */}
       {name && (
         <input
           type="hidden"
@@ -146,8 +298,8 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
         />
       )}
 
-      {/* Trigger Control (Div with Combobox semantics to avoid nested button issues) */}
       <div
+        ref={triggerRef}
         id={id}
         role="combobox"
         tabIndex={disabled ? -1 : 0}
@@ -164,7 +316,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
           triggerClassName
         )}
       >
-        <div className="flex flex-wrap items-center gap-1.5 overflow-hidden text-left flex-1 min-w-0">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 overflow-hidden text-left">
           {selectedOptions.length === 0 ? (
             <span className="text-muted-foreground">{resolvedPlaceholder}</span>
           ) : (
@@ -179,7 +331,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
                     role="button"
                     tabIndex={0}
                     onClick={e => removeBadge(e, opt.value)}
-                    className="rounded-full p-0.5 hover:bg-muted-foreground/20 cursor-pointer"
+                    className="cursor-pointer rounded-full p-0.5 hover:bg-muted-foreground/20"
                     title="Remover"
                   >
                     <X className="h-3 w-3" />
@@ -195,13 +347,13 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-1 text-muted-foreground shrink-0">
+        <div className="flex shrink-0 items-center gap-1 text-muted-foreground">
           {selectedOptions.length > 0 && !disabled && (
             <span
               role="button"
               tabIndex={0}
               onClick={clearAll}
-              className="p-1 hover:text-foreground cursor-pointer"
+              className="cursor-pointer p-1 hover:text-foreground"
               title="Limpar seleção"
             >
               <X className="h-3.5 w-3.5" />
@@ -216,72 +368,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
         </div>
       </div>
 
-      {/* Dropdown Popover */}
-      {open && (
-        <div
-          id={listId}
-          role="listbox"
-          aria-multiselectable="true"
-          className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95"
-        >
-          {/* Search Box */}
-          <div className="flex items-center border-b border-border px-3 py-2">
-            <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
-            <input
-              ref={searchRef}
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder={resolvedSearchPlaceholder}
-              className="flex h-7 w-full bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
-            />
-          </div>
-
-          {/* Options List */}
-          <div className="max-h-48 overflow-y-auto p-1">
-            {filtered.length === 0 ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                {resolvedEmptyMessage}
-              </div>
-            ) : (
-              filtered.map(opt => {
-                const isSelected = safeValue.includes(opt.value);
-                return (
-                  <div
-                    key={opt.value}
-                    role="option"
-                    aria-selected={isSelected}
-                    onClick={e => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleOption(opt.value);
-                    }}
-                    className={cn(
-                      "flex cursor-pointer select-none items-center gap-2.5 rounded-sm px-2.5 py-1.5 text-sm transition-colors",
-                      "hover:bg-accent hover:text-accent-foreground",
-                      isSelected && "bg-accent/60 font-medium"
-                    )}
-                  >
-                    {/* Lightweight Custom Checkbox indicator */}
-                    <div
-                      className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-xs border transition-colors",
-                        isSelected
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-input bg-background"
-                      )}
-                    >
-                      {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
-                    </div>
-
-                    <span className="flex-1 truncate">{opt.label}</span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
+      {menu}
     </div>
   );
 };

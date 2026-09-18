@@ -367,17 +367,17 @@ const CargasHorariasPage: React.FC = () => {
               </div>
 
               <form onSubmit={handleCreate} className="space-y-4">
-                <div className="flex items-center gap-2 mb-2 bg-indigo-50 dark:bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                <div className="mb-2 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-2.5">
                   <input
                     type="checkbox"
                     id="isSinergia"
                     checked={isSinergia}
                     onChange={e => setIsSinergia(e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 rounded"
+                    className="h-4 w-4 rounded text-primary accent-primary"
                   />
                   <label
                     htmlFor="isSinergia"
-                    className="text-xs font-semibold text-indigo-900 dark:text-indigo-200 cursor-pointer"
+                    className="cursor-pointer text-xs font-semibold text-primary"
                   >
                     Agrupar como Sinergia (Múltiplas turmas no mesmo horário)
                   </label>
@@ -427,7 +427,7 @@ const CargasHorariasPage: React.FC = () => {
                                 setTurmaIds(prev => prev.filter(id => id !== tItem.id));
                               }
                             }}
-                            className="w-4 h-4 text-indigo-600 rounded"
+                            className="h-4 w-4 rounded text-primary accent-primary"
                           />
                           <label htmlFor={`sinergia-turma-${tItem.id}`} className="text-sm">
                             {tItem.name}
@@ -442,7 +442,7 @@ const CargasHorariasPage: React.FC = () => {
                         id="sameProf"
                         checked={sameProfessor}
                         onChange={e => setSameProfessor(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 rounded"
+                        className="h-4 w-4 rounded text-primary accent-primary"
                       />
                       <label htmlFor="sameProf" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         Mesmo professor para todas as turmas
@@ -474,7 +474,7 @@ const CargasHorariasPage: React.FC = () => {
                         {turmaIds.map(tId => {
                           const turma = turmas.find(tItem => tItem.id === tId);
                           return (
-                            <div key={tId} className="pl-2 border-l-2 border-indigo-200 dark:border-indigo-800">
+                            <div key={tId} className="border-l-2 border-primary/25 pl-2">
                               <p className="text-xs font-semibold mb-1">{turma?.name}</p>
                               <SearchableSelect
                                 value={turmaProfessores[tId] || ""}
@@ -506,10 +506,10 @@ const CargasHorariasPage: React.FC = () => {
 
                     <Button
                       type="submit"
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                      className="w-full"
                       disabled={isSubmitting}
                     >
-                      <Plus className="w-4 h-4 mr-2" /> Adicionar Sinergia
+                      <Plus className="mr-2 h-4 w-4" /> Adicionar Sinergia
                     </Button>
                   </>
                 ) : (
@@ -643,7 +643,7 @@ const CargasHorariasPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="max-h-72 overflow-y-auto space-y-2 pr-1 border border-border/60 rounded-lg p-2 bg-slate-50/50 dark:bg-slate-900/30">
+                        <div className="space-y-2">
                           {selectedDisciplinaIds.map(dId => {
                             const disc = disciplinas.find(d => d.id === dId);
                             const config = disciplinaConfigs[dId] || {
@@ -720,7 +720,7 @@ const CargasHorariasPage: React.FC = () => {
 
                     <Button
                       type="submit"
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                      className="w-full shadow-sm"
                       disabled={
                         isSubmitting ||
                         !selectedTurmaId ||
